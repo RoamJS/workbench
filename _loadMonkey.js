@@ -47,8 +47,6 @@ addScriptToPage('myKEYEVENTS',     'https://roammonkey.glitch.me/keyevents.js')
 addScriptToPage('myTYPEAHEADDATA', 'https://roammonkey.glitch.me/typeaheadData.js')
 addScriptToPage('myTYPEAHEADUI',   'https://roammonkey.glitch.me/typeaheadUI.js')
 
-var testingScript = ''
-
 // Give the libraries a few seconds to get comfy in their new home 
 // and then let the monkey dance, that is to say,
 // begin initializing the environment with all the cool tools
