@@ -1,16 +1,36 @@
 /* global hotkeys, typeaheadDisplayTextArea,typeaheadDisplayOtherAreas, 
-testingScript, TurndownService , turndownPage, setEmptyNodeValue  */
+testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForDates */
 
 //based on the libary https://wangchujiang.com/hotkeys/
 
-var testingScript = 'https://roammonkey.glitch.me/commonFunctions.js'
+var testingScript = 'https://roammonkey.glitch.me/dateProcessing.js'
 
 
 //CONFIGURE SHORTCUT KEYS for use in the application
 
-
 function loadKeyEvents() {
 
+    // In a textarea  process text with natural language recognition. Using library from:
+  // https://github.com/wanasit/chrono
+  hotkeys('alt+shift+d', function(event, handler) {
+    event.preventDefault()
+    if (event.srcElement.localName == "textarea") {
+      var processText = parseTextForDates( event.target.value )
+      setEmptyNodeValue(document.getElementById(event.srcElement.id), processText )
+      document.getElementById(event.srcElement.id).focus() 
+    }
+  });
+  
+  //alt+.  - in a textarea will pull up the search box
+  hotkeys('alt+.', function(event, handler) {
+    event.preventDefault()
+      if(event.srcElement.localName=='textarea') {
+        typeaheadDisplayTextArea(event.srcElement.id);
+      } else {
+        typeaheadDisplayOtherAreas()
+      }
+  });
+  
   //In a textarea will insert a template of text
   hotkeys('alt+shift+u', function(event, handler) {
     event.preventDefault()
@@ -19,6 +39,7 @@ function loadKeyEvents() {
       document.getElementById(event.srcElement.id).focus()
     }
   });
+  
 
   //In a textarea will strike out text
   hotkeys('alt+t', function(event, handler) {
@@ -39,18 +60,8 @@ function loadKeyEvents() {
       }
     }
   });
+  
 
-  
-  
-  //alt+.  - in a textarea will pull up the search box
-  hotkeys('alt+.', function(event, handler) {
-    event.preventDefault()
-      if(event.srcElement.localName=='textarea') {
-        typeaheadDisplayTextArea(event.srcElement.id);
-      } else {
-        typeaheadDisplayOtherAreas()
-      }
-  });
 
 
   //convert page to markdown
