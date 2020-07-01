@@ -1,5 +1,8 @@
 console.log("loading com fun");
 
+// updates an empty text area with a new value. This fuction does some additional work
+// because the textarea in roam is managed by React component, and it wasn't being triggered to 
+// update when inserting a value
 function setEmptyNodeValue (element, value) {
   
     const e = new Event('input', { bubbles: true })

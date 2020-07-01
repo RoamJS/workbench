@@ -41,11 +41,15 @@ addScriptToPage('HOTKEYJS',        'https://unpkg.com/hotkeys-js/dist/hotkeys.mi
 addScriptToPage('TYPEAHEAD',       'https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js')
 addScriptToPage('TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js')
 addScriptToPage('TOASTR',          'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js')
+addScriptToPage('CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.6/dist/chrono.min.js')
 addScriptToPage('myCOMMONFUNCT',   'https://roammonkey.glitch.me/commonFunctions.js')
 addScriptToPage('myTURNDOWN',      'https://roammonkey.glitch.me/turndownservice.js')
+addScriptToPage('myDATEPROCESS',   'https://roammonkey.glitch.me/dateProcessing.js')
 addScriptToPage('myKEYEVENTS',     'https://roammonkey.glitch.me/keyevents.js')
 addScriptToPage('myTYPEAHEADDATA', 'https://roammonkey.glitch.me/typeaheadData.js')
 addScriptToPage('myTYPEAHEADUI',   'https://roammonkey.glitch.me/typeaheadUI.js')
+addScriptToPage('mySCOPECUE',      'https://roammonkey.glitch.me/ScopeCue.js')
+
 
 // Give the libraries a few seconds to get comfy in their new home 
 // and then let the monkey dance, that is to say,
