@@ -1,6 +1,6 @@
 /* globals chrono */
 
-var months = [
+const months = [
   "January",
   "February",
   "March",
