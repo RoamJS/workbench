@@ -1,4 +1,4 @@
-##Keyboard shortcuts to activate various features:
+## Keyboard shortcuts to activate various features:
 
 
 ### Natural language date recognition  (  ALT+SHIFT+D )
@@ -17,15 +17,18 @@
   - 2014-11-30
 
 
-
-### WordNet search ( ALT + . )
+### WordNet search ( ALT + SHIFT + . )
 ALT + . - brings up a pop dictionary, based on the [Princeton University WordNet Dictionary](https://wordnet.princeton.edu/)
 - If activated while editing a node in the outline, the selected defintion will be inserted into the document
 - If acrivated while not editing, the definition will apprear in a popup toaster alert. It stays visible for 2 minutes. If you click on it, it disappears
 
-### Strikeout (ALT + T)
+### Strikeout (ALT + SHIFT + T)
+-- strikes out selected text or entire line
 
-
-### Urgent TODO ( ALT + SHIFT + U)
-- inserts into the current node **{{{TODO}}}} #urgent**
+### TODO next action ( ALT + SHIFT + N)
+- inserts into the current node **{{{TODO}}}} #na**
 - the text that is inserted can be modified in keyevents.js
+
+### Convert to markdown ( ALT  + M)
+- Converts current page to markdown text
+- very simple conversion for now, no heirarchy supported

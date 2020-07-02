@@ -1,4 +1,4 @@
-/* globals insertIntoNode, toastr */
+/* globals insertAtCaret, toastr */
 
 //this is a test API based on the wordnet DB. This illustrates calling into a REST API
 
@@ -18,5 +18,5 @@ function displayDataInToast(d) {
 
 function insertDataIntoNode(currentTextArea, d) {
   var insertVal =  '**' + d.word + '** (' + d.type + ') \n'  + d.definition
-  insertIntoNode(currentTextArea, insertVal)
+  insertAtCaret(currentTextArea, insertVal)
 }
