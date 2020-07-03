@@ -1,4 +1,4 @@
-/* global danceMonkey, loadKeyEvents, toastr, loadTypeAhead */
+/* global danceMonkey, loadKeyEvents, toastr, loadTypeAhead, displayHelp */
 
 
 // Function to dynamically add a new JS script to the current site 
@@ -8,9 +8,9 @@ function addScriptToPage(tagId, scriptToLoad) {
   if(old){ old.remove()}
 
   var s = document.createElement('script')
-    s.type = "text/javascript"
-    s.src = scriptToLoad
-    s.id  = tagId
+    s.type  = 'text/javascript'
+    s.src   = scriptToLoad
+    s.id    = tagId
     s.async = false
     document.getElementsByTagName('head')[0].appendChild(s)
 }
@@ -22,37 +22,34 @@ function addCSSToPage(tagId, cssToAdd) {
   if(old){ old.remove()}
 
   var cssLink = document.createElement('link')
-    cssLink.type  = "text/css" 
-    cssLink.rel = 'stylesheet';  
+    cssLink.type  = 'text/css' 
+    cssLink.rel   = 'stylesheet';  
     cssLink.href  = cssToAdd
     cssLink.id    = tagId
     cssLink.async = false
     document.getElementsByTagName('head')[0].appendChild(cssLink)
 }
 
-//load all 3rd party & custom CSS files
 
-addCSSToPage('myCSS',              'https://roammonkey.glitch.me/styleRM.css')
-addCSSToPage('toastrCSS',          'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css')
-
-//load all 3rd party & custom JS files
-addScriptToPage('JQUERY',          'https://code.jquery.com/jquery-3.5.1.min.js')
-addScriptToPage('HOTKEYJS',        'https://unpkg.com/hotkeys-js/dist/hotkeys.min.js')
-addScriptToPage('TYPEAHEAD',       'https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js')
-addScriptToPage('TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js')
-addScriptToPage('TOASTR',          'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js')
-addScriptToPage('CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.6/dist/chrono.min.js')
+//load all 3rd party libraries 
+addScriptToPage( 'JQUERY',          'https://code.jquery.com/jquery-3.5.1.min.js'                                )
+addScriptToPage( 'HOTKEYJS',        'https://unpkg.com/hotkeys-js/dist/hotkeys.min.js'                           )
+addScriptToPage( 'TYPEAHEAD',       'https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js' )
+addScriptToPage( 'TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js'                                )
+   addCSSToPage( 'TOASTCSS',        'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css' )
+addScriptToPage( 'TOASTR',          'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js'   )
+addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.6/dist/chrono.min.js'          )
 
 
-
-addScriptToPage('myCOMMONFUNCT',   'https://roammonkey.glitch.me/commonFunctions.js')
-addScriptToPage('myTURNDOWN',      'https://roammonkey.glitch.me/turndownservice.js')
-addScriptToPage('myDATEPROCESS',   'https://roammonkey.glitch.me/dateProcessing.js')
-addScriptToPage('myKEYEVENTS',     'https://roammonkey.glitch.me/keyevents.js')
-addScriptToPage('myTYPEAHEADDATA', 'https://roammonkey.glitch.me/typeaheadData.js')
-addScriptToPage('myTYPEAHEADUI',   'https://roammonkey.glitch.me/typeaheadUI.js')
-addScriptToPage('mySCOPECUE',      'https://roammonkey.glitch.me/ScopeCue.js')
-addScriptToPage('myROAMLIVE',      'https://roammonkey.glitch.me/roam-live-preview.js')
+//load all custom files 
+   addCSSToPage( 'myCSS',           'https://roammonkey.glitch.me/styleRM.css'           )
+addScriptToPage( 'myCOMMONFUNCT',   'https://roammonkey.glitch.me/commonFunctions.js'    )
+addScriptToPage( 'myTURNDOWN',      'https://roammonkey.glitch.me/turndownservice.js'    )
+addScriptToPage( 'myDATEPROCESS',   'https://roammonkey.glitch.me/dateProcessing.js'     )
+addScriptToPage( 'myKEYEVENTS',     'https://roammonkey.glitch.me/keyevents.js'          )
+addScriptToPage( 'myTYPEAHEADDATA', 'https://roammonkey.glitch.me/typeaheadData.js'      )
+addScriptToPage( 'myTYPEAHEADUI',   'https://roammonkey.glitch.me/typeaheadUI.js'        )
+addScriptToPage( 'myROAMLIVE',      'https://roammonkey.glitch.me/roam-live-preview.js'  )
 
 
 
@@ -66,22 +63,22 @@ setTimeout(function(){
   toastr.options = {
     "closeButton": true,
     "debug": false,
-    "newestOnTop": false,
+    "newestOnTop": true,
     "progressBar": true,
     "positionClass": "toast-bottom-right",
     "preventDuplicates": false,
     "onclick": null,
     "showDuration": "300",
     "hideDuration": "1000",
-    "timeOut": "120000",
+    "timeOut": "600000",
     "extendedTimeOut": "1000",
     "showEasing": "swing",
     "hideEasing": "linear",
     "showMethod": "fadeIn",
     "hideMethod": "fadeOut"
   }
-  console.log('The Monkey is dancing.')
-
+  displayHelp()
+  
 }, 3000);
 
 

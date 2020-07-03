@@ -1,35 +1,35 @@
 /* globals chrono */
 
 const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "Octobar",
-  "Novembar",
-  "Decembar"
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'Octobar',
+  'Novembar',
+  'Decembar'
 ];
 
-function nthDate(d) {
-  if (d > 3 && d < 21) return "th";
+const nthDate = d => {
+  if (d > 3 && d < 21) return 'th';
   switch (d % 10) {
     case 1:
-      return "st";
+      return 'st';
     case 2:
-      return "nd";
+      return 'nd';
     case 3:
-      return "rd";
+      return 'rd';
     default:
-      return "th";
+      return 'th';
   }
 }
 
-function getRoamDate(dateString) {
+const getRoamDate = dateString => {
   const d = new Date(dateString);
   const year = d.getFullYear();
   const date = d.getDate();
@@ -38,40 +38,33 @@ function getRoamDate(dateString) {
   return `${month} ${date}${nthStr}, ${year}`;
 }
 
-function replaceBetween(origin, startIndex, endIndex, insertion) {
-  return (
-    origin.substring(0, startIndex) + insertion + origin.substring(endIndex)
-  );
-}
-
-function format_time(date_obj) {
+const format_time = date_obj => {
   // formats a javascript Date object into a 12h AM/PM time string
   var hour = date_obj.getHours();
   var minute = date_obj.getMinutes();
-  var amPM = hour > 11 ? "pm" : "am";
+  var amPM = hour > 11 ? ' PM' : ' AM';
   if (hour > 12) {
     hour -= 12;
   } else if (hour == 0) {
-    hour = "12";
+    hour = '12';
   }
   if (minute < 10) {
-    minute = "0" + minute;
+    minute = '0' + minute;
   }
-  return hour + ":" + minute + amPM;
+  return hour + ':' + minute + amPM;
 }
 
-function parseTextForDates(str) {
+const parseTextForDates = (str) => {
   var txt = chrono.parse( str,  new Date() , { forwardDate: true } )
-  console.log(JSON.stringify(txt, null,2))
   if (txt.length > 0) {
     txt.forEach(function(element) {
-      var roamDate = "";
+      var roamDate = '';
       try {
-        if (element.tags.ENTimeExpressionParser === true || 
-            element.tags.ZHTimeExpressionParser === true   ) {
-          roamDate = format_time(element.start.date());
+        if ( element.tags.ENTimeExpressionParser === true || 
+             element.tags.ZHTimeExpressionParser === true   ) {
+            roamDate = format_time(element.start.date());
           if(element.end) {
-            roamDate = roamDate + ' - ' + format_time(element.end.date());
+            roamDate = `${roamDate} - ${format_time(element.end.date())}`
           }
         }
       } catch (err) {}
@@ -85,7 +78,7 @@ function parseTextForDates(str) {
           element.tags.ENMonthNameLittleEndianParser === true ||
           element.tags.length === undefined
         ) {
-          roamDate = "[[" + getRoamDate(element.start.date()) + "]] " + roamDate
+          roamDate = `[[${getRoamDate(element.start.date())}]] ${roamDate}`
         }
       } catch (err) {}
       str = str.replace(element.text, roamDate);

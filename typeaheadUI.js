@@ -11,20 +11,24 @@ var currentTextArea=''
 
 // This function displays the search ui
 // Called by keyevents.js based on defined keystrokes. 
-function typeaheadDisplayTextArea(srcElementId)	{
+const typeaheadDisplayTextArea = srcElementId =>	{
     currentTextArea = srcElementId 
-    $("#rmSearch").show()
-    $("#rmSearchBox").focus()
+    $('#rmSearch').show()
+    $('#rmSearchBox').focus()
 }
 
-function typeaheadDisplayOtherAreas()	{
-    currentTextArea = "OTHERAREAS" 
-    $("#rmSearch").show()
-    $("#rmSearchBox").focus()
+const typeaheadDisplayOtherAreas = () =>	{
+    currentTextArea = 'OTHERAREAS' 
+    $('#rmSearch').show()
+    $('#rmSearchBox').focus()
 }
 
-function loadTypeAhead()  {
-	$(document.body).append('<div id="rmSearch"><input class="typeahead" id="rmSearchBox" type="text" placeholder="search"></input></div>')
+var loadTypeAhead = () =>  {
+	$(document.body).append(`
+    <div id="rmSearch">
+      <input class="typeahead" id="rmSearchBox" type="text" placeholder="search"></input>
+    </div>
+  `.trim() )
 
 	$('#rmSearch .typeahead').typeahead(null, {
 	  name: 'mySearch', 
@@ -41,7 +45,7 @@ function loadTypeAhead()  {
 	})
 
 	$('.typeahead').bind('typeahead:select', function(ev, data) {
-        if( currentTextArea == "OTHERAREAS" ) { 
+        if( currentTextArea == 'OTHERAREAS' ) { 
           displayDataInToast(data)
         } else { 
           insertDataIntoNode(currentTextArea, data)
@@ -50,7 +54,7 @@ function loadTypeAhead()  {
 
 	$('.typeahead').bind('typeahead:close', function(ev, data) {
       $('.typeahead').typeahead('val', '')
-      $("#rmSearch").hide()      
+      $('#rmSearch').hide()      
 	})
 
 }
