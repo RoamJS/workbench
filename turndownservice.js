@@ -6,22 +6,22 @@
 function turndownPage() {
   var turndownService = new TurndownService({
     blankReplacement: function() {
-      return "";
+      return '';
     }
   });
-  turndownService.addRule("h1", {
-    filter: ["h1"],
+  turndownService.addRule('h1', {
+    filter: ['h1'],
     replacement: function(content) {
       return "\n\r" + content.replace(/(\r\n|\n|\r)/gm, "") + "\n=============";
     }
   });
-  turndownService.addRule("h2", {
-    filter: ["h2"],
+  turndownService.addRule('h2', {
+    filter: ['h2'],
     replacement: function(content) {
       return "\n\r" + content.replace(/(\r\n|\n|\r)/gm, "") + "\n-----";
     }
   });
-  turndownService.addRule("h3", {
+  turndownService.addRule('h3', {
     filter: ["h3"],
     replacement: function(content) {
       return "\n\r### " + content.replace(/(\r\n|\n|\r)/gm, "") + "\n  ";

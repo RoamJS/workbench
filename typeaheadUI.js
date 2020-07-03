@@ -1,4 +1,4 @@
-/* global Bloodhound, displayDataInToast, insertDataIntoNode, typeaheadQueryURL, typeaheadResult */
+/* global Bloodhound, displayDataInToast, insertDataIntoNode, typeaheadQueryURL, typeaheadResult, typeaheadDisplayField */
 
 /* 
    Library that provides dynamic search is based on https://twitter.github.io/typeahead.js
@@ -12,7 +12,6 @@ var currentTextArea=''
 // This function displays the search ui
 // Called by keyevents.js based on defined keystrokes. 
 function typeaheadDisplayTextArea(srcElementId)	{
-    console.log( 'srcElementId ' + srcElementId )
     currentTextArea = srcElementId 
     $("#rmSearch").show()
     $("#rmSearchBox").focus()
@@ -42,7 +41,6 @@ function loadTypeAhead()  {
 	})
 
 	$('.typeahead').bind('typeahead:select', function(ev, data) {
-      console.log('typeahead:select' + currentTextArea)
         if( currentTextArea == "OTHERAREAS" ) { 
           displayDataInToast(data)
         } else { 

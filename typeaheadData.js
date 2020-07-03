@@ -5,18 +5,17 @@
 var typeaheadQueryURL = 'https://wordnet.glitch.me/query?search=%QUERY'
 var typeaheadDisplayField = 'word'
 
-function typeaheadResult(d) {
-  return   '<div class="th-item">' +
-              '<div class="th-term">'  +   d.word         + '</div>' +
-              '<div class="th-def">'   +   d.definition   + '</div>'  +
-          '</div>'
+var typeaheadResult = d => {
+  return   `<div class="th-item">
+              <div class="th-term"> ${d.word}       </div>
+              <div class="th-def">  ${d.definition} </div> 
+          </div>`    
 } 
 
-function displayDataInToast(d) {
-    toastr.info(d.definition, d.word + ' (' + d.type + ')' )
+var displayDataInToast = d => { 
+  toastr.info(d.definition,   `${d.word} (${d.type})`)   
 }
 
-function insertDataIntoNode(currentTextArea, d) {
-  var insertVal =  '**' + d.word + '** (' + d.type + ') \n'  + d.definition
-  insertAtCaret(currentTextArea, insertVal)
+var insertDataIntoNode = (currentTextArea, d) => {
+  insertAtCaret(currentTextArea, `**${d.word}** (${d.type})\n ${d.definition}` )
 }
