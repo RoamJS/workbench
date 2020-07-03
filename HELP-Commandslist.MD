@@ -1,3 +1,9 @@
+## General features
+
+### live preview of ttttag
+= hover mouse over tag and a live preview will showup. See code for credits to author of this feature
+
+
 ## Keyboard shortcuts to activate various features:
 
 
@@ -28,6 +34,11 @@ ALT + . - brings up a pop dictionary, based on the [Princeton University WordNet
 ### TODO next action ( ALT + SHIFT + N)
 - inserts into the current node **{{{TODO}}}} #na**
 - the text that is inserted can be modified in keyevents.js
+
+### TODO weekend action ( ALT + SHIFT + W)
+- inserts into the current node **{{{TODO}}}} #weekend**
+- the text that is inserted can be modified in keyevents.js
+
 
 ### Convert to markdown ( ALT  + M)
 - Converts current page to markdown text
