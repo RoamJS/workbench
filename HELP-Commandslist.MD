@@ -1,11 +1,13 @@
 ## General features
 
 ### live preview of ttttag
-= hover mouse over tag and a live preview will showup. See code for credits to author of this feature
+- hover mouse over tag and a live preview will showup. See code for credits to author of this feature
 
 
 ## Keyboard shortcuts to activate various features:
 
+### Help ( ALT + SHIFT + J )
+- Simple listing of avaible commands in the UI as a notification
 
 ### Natural language date recognition  (  ALT+SHIFT+D )
 - Type in text like **Call Jim on Friday at 3p and ask about a golf match on saturday** 
@@ -31,7 +33,7 @@ ALT + . - brings up a pop dictionary, based on the [Princeton University WordNet
 ### Strikeout (ALT + SHIFT + T)
 -- strikes out selected text or entire line
 
-### TODO next action ( ALT + SHIFT + N)
+### TODO next action ( ALT + SHIFT + A)
 - inserts into the current node **{{{TODO}}}} #na**
 - the text that is inserted can be modified in keyevents.js
 
