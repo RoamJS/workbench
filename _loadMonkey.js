@@ -39,6 +39,7 @@ addScriptToPage( 'TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js
    addCSSToPage( 'TOASTCSS',        'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css' )
 addScriptToPage( 'TOASTR',          'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js'   )
 addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.6/dist/chrono.min.js'          )
+addScriptToPage( 'ISMOBILE',        'https://cdn.jsdelivr.net/npm/ismobilejs@1/dist/isMobile.min.js'             )
 
 
 //load all custom files 
@@ -50,6 +51,7 @@ addScriptToPage( 'myKEYEVENTS',     'https://roammonkey.glitch.me/keyevents.js' 
 addScriptToPage( 'myTYPEAHEADDATA', 'https://roammonkey.glitch.me/typeaheadData.js'      )
 addScriptToPage( 'myTYPEAHEADUI',   'https://roammonkey.glitch.me/typeaheadUI.js'        )
 addScriptToPage( 'myROAMLIVE',      'https://roammonkey.glitch.me/roam-live-preview.js'  )
+addScriptToPage( 'myROAMLIVE',      'https://roammonkey.glitch.me/dailynotespopup.js'  )
 
 
 
@@ -77,8 +79,11 @@ setTimeout(function(){
     "showMethod": "fadeIn",
     "hideMethod": "fadeOut"
   }
-  displayHelp()
   
+  // Dont display in iframe
+  if( window === window.parent ) {
+    displayHelp(3000)
+  }
 }, 3000);
 
 

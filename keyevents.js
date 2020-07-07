@@ -1,12 +1,12 @@
-/* global hotkeys, typeaheadDisplayTextArea,typeaheadDisplayOtherAreas, 
+/* global hotkeys,toggleDailyNotes, typeaheadDisplayTextArea,typeaheadDisplayOtherAreas, 
 testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForDates, toastr */
 
 //based on the libary https://wangchujiang.com/hotkeys/
 
-var testingScript = 'https://roammonkey.glitch.me/dateProcessing.js'
+var testingScript = 'https://roammonkey.glitch.me/dailynotespopup.js'
 
 
-const displayHelp = () => { 
+const displayHelp = (delayTime) => { 
     toastr.success(`
     <table>
       <tr><td>ALT+SHIFT+ H</td><td>&nbsp</td><td>Help             </td></tr>
@@ -16,8 +16,10 @@ const displayHelp = () => {
       <tr><td>ALT+SHIFT+ W</td><td>&nbsp</td><td>TODO #weekend    </td></tr>
       <tr><td>ALT+SHIFT+ T</td><td>&nbsp</td><td>Strikeout text   </td></tr>
       <tr><td>ALT+ m      </td><td>&nbsp</td><td>Markdown (simple)</td></tr>
+      <tr><td>&nbsp       </td><td>&nbsp</td><td>&nbsp            </td></tr>
+      <tr><td>Hover mouse </td><td>&nbsp</td><td>show live<br/> preview of link</td></tr>
     </table>
-    `.trim(), 'RoamMonkey Help', { timeOut: 3000} )
+    `.trim(), 'RoamMonkey Help', { timeOut: delayTime} )
 
 }
 
@@ -28,6 +30,7 @@ const loadKeyEvents = () => {
   // HELP notification
   hotkeys('alt+shift+h', function(event, handler) {
     event.preventDefault()
+    displayHelp(20000)
   });
   
   
@@ -41,7 +44,15 @@ const loadKeyEvents = () => {
     }
   });
   
+
+    //alt+.  - in a textarea will pull up the search box
+  hotkeys('alt+,', function(event, handler) {
+    event.preventDefault()
+      toggleDailyNotes()      
+    
+  });
   
+
   
   //alt+.  - in a textarea will pull up the search box
   hotkeys('alt+shift+.', function(event, handler) {
