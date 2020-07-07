@@ -8,17 +8,30 @@
   visibility:hidden;
   position:absolute;
   height:40%;
-  width:70%;
-  left:15%;
+  right: calc((100% - 720px) / 2);
+  left: calc((100% - 720px) / 2);
   top:55%;
   z-index:1000;
-  background-color:blue;
+  background-color: grey;
+  border: 2px solid;
+  -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.35);
+  -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.35);
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.35);
 }   
 
 
-#dnaiframe {
-  width:100%;
+#dnaborder {
+  position:absolute;
+  border: 0;
   height:100%;
+  width:100%;
+}
+
+#dnaiframe {
+  border:0;
+  position:absolute;
+  height:100%;
+  width:100%;
 }
 
 #rmSearch {

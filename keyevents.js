@@ -46,7 +46,7 @@ const loadKeyEvents = () => {
   
 
     //alt+.  - in a textarea will pull up the search box
-  hotkeys('alt+,', function(event, handler) {
+  hotkeys('alt+shift+,', function(event, handler) {
     event.preventDefault()
       toggleDailyNotes()      
     
