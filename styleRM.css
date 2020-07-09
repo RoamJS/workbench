@@ -39,7 +39,7 @@
   display: none;
   z-index: 1000;
   position: fixed;
-  top: 50%;
+  top: 60px;
   right: -10%;
   transform: translate(-50%, -50%);
 }

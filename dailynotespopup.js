@@ -40,7 +40,7 @@ function initializeIframe() {
     iframe.contentDocument.head.appendChild(style)
 
     iframe.contentWindow.document.body.insertAdjacentHTML('beforeend',`
-    <div style="position:absolute; top:1px; left:1px; z-index:1000;" onclick="closeDailyNotePopup()">[X]</div>
+    <div style="position:absolute; top:10px; right:10px; z-index:1000;" class="bp3-icon-cross" onclick="closeDailyNotePopup()"></div>
     `)
 
   } 
