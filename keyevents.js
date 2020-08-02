@@ -11,6 +11,7 @@ const displayHelp = (delayTime) => {
     <table>
       <tr><td>ALT+SHIFT+ H</td><td>&nbsp</td><td>Help             </td></tr>
       <tr><td>ALT+SHIFT+ D</td><td>&nbsp</td><td>Convert to Date  </td></tr>
+      <tr><td>ALT+SHIFT+ ,</td><td>&nbsp</td><td>Daily note popup </td></tr>
       <tr><td>ALT+SHIFT+ .</td><td>&nbsp</td><td>Lookup           </td></tr>
       <tr><td>ALT+SHIFT+ A</td><td>&nbsp</td><td>TODO #na         </td></tr>
       <tr><td>ALT+SHIFT+ W</td><td>&nbsp</td><td>TODO #weekend    </td></tr>

@@ -51,8 +51,8 @@ addScriptToPage( 'myKEYEVENTS',     'https://roammonkey.glitch.me/keyevents.js' 
 addScriptToPage( 'myTYPEAHEADDATA', 'https://roammonkey.glitch.me/typeaheadData.js'      )
 addScriptToPage( 'myTYPEAHEADUI',   'https://roammonkey.glitch.me/typeaheadUI.js'        )
 addScriptToPage( 'myROAMLIVE',      'https://roammonkey.glitch.me/roam-live-preview.js'  )
-addScriptToPage( 'myROAMLIVE',      'https://roammonkey.glitch.me/dailynotespopup.js'  )
-
+addScriptToPage( 'myDailyNote',     'https://roammonkey.glitch.me/dailynotespopup.js'    )
+addScriptToPage( 'mytemplatepoc',   'https://roammonkey.glitch.me/templatepoc.js'        )
 
 
 // Give the libraries a few seconds to get comfy in their new home 
