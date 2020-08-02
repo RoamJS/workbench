@@ -1,6 +1,13 @@
 ## General features
 
-### live preview of ttttag
+### template engine
+- define a template page in roam using syntax: [[template]]/templatename
+  - multiple template pages can be defined
+- use the template page by typing a colon with the name of the template followed by another colon. Example:
+  - :templatename:
+  
+
+### live preview of ttag
 - hover mouse over tag and a live preview will showup. See code for credits to author of this feature
 
 

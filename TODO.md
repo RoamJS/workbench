@@ -1,27 +1,29 @@
+(1) Color coding of highlights. Check out:
+    https://greasyfork.org/en/scripts/402699-ryan-guill-s-roam-experiments-roamresearch-com
 
+(2) VIM MODE? 
+    https://github.com/tntmarket/vimmyroam
 
-(2) VIM MODE? https://github.com/tntmarket/vimmyroam
+(3) Can this code be used (cross out checked itme)
 
-Can this code be used (cross out checked itme)
-<!-- function setCheckboxClass(checkbox) {
-  let span = checkbox.closest('.roam-block > span');
-  if(checkbox.checked) {
-    span.classList.add("custom-strikethrough");
-  } else {
-    span.classList.remove("custom-strikethrough");
-  }
-}
+    function setCheckboxClass(checkbox) {
+      let span = checkbox.closest('.roam-block > span');
+      if(checkbox.checked) {
+        span.classList.add("custom-strikethrough");
+      } else {
+        span.classList.remove("custom-strikethrough");
+      }
+    }
 
-function scanCheckboxes() {
-  document.querySelectorAll(".check-container input")
-  	.forEach(setCheckboxClass);  
-};
+    function scanCheckboxes() {
+      document.querySelectorAll(".check-container input")
+        .forEach(setCheckboxClass);  
+    };
 
-console.log("START CUSTOM JS - Checkbox Strikeout v2");
-setInterval(scanCheckboxes, 1000); -->
+    console.log("START CUSTOM JS - Checkbox Strikeout v2");
+    setInterval(scanCheckboxes, 1000); 
 
-//
-Live preview of page refs on hover: 
-https://raw.github.com/palashkaria/roam-modifiers/master/roam-live-preview.user.js
+(4) Named entity recognition
+https://twitter.com/roamhacker/status/1281326618162663425?s=21
 
 
