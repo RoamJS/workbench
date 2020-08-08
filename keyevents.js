@@ -11,6 +11,7 @@ const displayHelp = (delayTime) => {
     <table>
       <tr><td>ALT+SHIFT+ H</td><td>&nbsp</td><td>Help             </td></tr>
       <tr><td>ALT+SHIFT+ D</td><td>&nbsp</td><td>Convert to Date  </td></tr>
+      <tr><td>ALT+SHIFT+ /</td><td>&nbsp</td><td>Open side bar    </td></tr>
       <tr><td>ALT+SHIFT+ ,</td><td>&nbsp</td><td>Daily note popup </td></tr>
       <tr><td>ALT+SHIFT+ .</td><td>&nbsp</td><td>Lookup           </td></tr>
       <tr><td>ALT+SHIFT+ A</td><td>&nbsp</td><td>TODO #na         </td></tr>
@@ -32,6 +33,14 @@ const loadKeyEvents = () => {
   hotkeys('alt+shift+h', function(event, handler) {
     event.preventDefault()
     displayHelp(20000)
+  });
+  
+  hotkeys('alt+shift+/', function(event, handler) {
+    event.preventDefault()
+    try {
+        document.getElementsByClassName("bp3-icon-more")[0].click()
+        document.getElementsByClassName("bp3-text-overflow-ellipsis bp3-fill")[0].click()      
+    } catch(e) {console.log(e)}
   });
   
   
