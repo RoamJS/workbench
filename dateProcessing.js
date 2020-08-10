@@ -10,9 +10,9 @@ const months = [
   'July',
   'August',
   'September',
-  'Octobar',
-  'Novembar',
-  'Decembar'
+  'October',
+  'November',
+  'December'
 ];
 
 const nthDate = d => {
