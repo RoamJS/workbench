@@ -30,6 +30,7 @@ function addCSSToPage(tagId, cssToAdd) {
     document.getElementsByTagName('head')[0].appendChild(cssLink)
 }
 
+const URLScriptServer =  document.currentScript.src.replace('_loadMonkey.js','')
 
 //load all 3rd party libraries 
 addScriptToPage( 'JQUERY',          'https://code.jquery.com/jquery-3.5.1.min.js'                                )
@@ -43,16 +44,16 @@ addScriptToPage( 'ISMOBILE',        'https://cdn.jsdelivr.net/npm/ismobilejs@1/d
 
 
 //load all custom files 
-   addCSSToPage( 'myCSS',           'https://roammonkey.glitch.me/styleRM.css'           )
-addScriptToPage( 'myCOMMONFUNCT',   'https://roammonkey.glitch.me/commonFunctions.js'    )
-addScriptToPage( 'myTURNDOWN',      'https://roammonkey.glitch.me/turndownservice.js'    )
-addScriptToPage( 'myDATEPROCESS',   'https://roammonkey.glitch.me/dateProcessing.js'     )
-addScriptToPage( 'myKEYEVENTS',     'https://roammonkey.glitch.me/keyevents.js'          )
-addScriptToPage( 'myTYPEAHEADDATA', 'https://roammonkey.glitch.me/typeaheadData.js'      )
-addScriptToPage( 'myTYPEAHEADUI',   'https://roammonkey.glitch.me/typeaheadUI.js'        )
-addScriptToPage( 'myROAMLIVE',      'https://roammonkey.glitch.me/roam-live-preview.js'  )
-addScriptToPage( 'myDailyNote',     'https://roammonkey.glitch.me/dailynotespopup.js'    )
-addScriptToPage( 'mytemplatepoc',   'https://roammonkey.glitch.me/templatepoc.js'        )
+   addCSSToPage( 'myCSS',           URLScriptServer + 'styleRM.css'           )
+addScriptToPage( 'myCOMMONFUNCT',   URLScriptServer + 'commonFunctions.js'    )
+addScriptToPage( 'myTURNDOWN',      URLScriptServer + 'turndownservice.js'    )
+addScriptToPage( 'myDATEPROCESS',   URLScriptServer + 'dateProcessing.js'     )
+addScriptToPage( 'myKEYEVENTS',     URLScriptServer + 'keyevents.js'          )
+addScriptToPage( 'myTYPEAHEADDATA', URLScriptServer + 'typeaheadData.js'      )
+addScriptToPage( 'myTYPEAHEADUI',   URLScriptServer + 'typeaheadUI.js'        )
+addScriptToPage( 'myROAMLIVE',      URLScriptServer + 'roam-live-preview.js'  )
+addScriptToPage( 'myDailyNote',     URLScriptServer + 'dailynotespopup.js'    )
+addScriptToPage( 'mytemplatepoc',   URLScriptServer + 'templatepoc.js'        )
 
 
 // Give the libraries a few seconds to get comfy in their new home 
