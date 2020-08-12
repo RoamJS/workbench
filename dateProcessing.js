@@ -1,6 +1,6 @@
 /* globals chrono */
 
-const months = [
+const monthsDateProcessing = [
   'January',
   'February',
   'March',
@@ -33,7 +33,7 @@ const getRoamDate = dateString => {
   const d = new Date(dateString);
   const year = d.getFullYear();
   const date = d.getDate();
-  const month = months[d.getMonth()];
+  const month = monthsDateProcessing[d.getMonth()];
   const nthStr = nthDate(date);
   return `${month} ${date}${nthStr}, ${year}`;
 }

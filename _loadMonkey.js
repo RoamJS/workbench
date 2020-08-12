@@ -15,6 +15,20 @@ function addScriptToPage(tagId, scriptToLoad) {
     document.getElementsByTagName('head')[0].appendChild(s)
 }
 
+// Function to dynamically add a new JS script to the current site 
+function addModuleToPage(tagId, scriptToLoad) {
+  //Delete any existing reference added earlier to this script
+  var old = document.getElementById(tagId) 
+  if(old){ old.remove()}
+
+  var s = document.createElement('script')
+    s.type  = 'module'
+    s.src   = scriptToLoad
+    s.id    = tagId
+    s.async = false
+    document.getElementsByTagName('head')[0].appendChild(s)
+}
+
 // Function to dynamically add a new CSS File to the current site 
 function addCSSToPage(tagId, cssToAdd) {
   //Delete any existing reference added earlier to this script
@@ -42,7 +56,6 @@ addScriptToPage( 'TOASTR',          'https://cdnjs.cloudflare.com/ajax/libs/toas
 addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.6/dist/chrono.min.js'          )
 addScriptToPage( 'ISMOBILE',        'https://cdn.jsdelivr.net/npm/ismobilejs@1/dist/isMobile.min.js'             )
 
-
 //load all custom files 
    addCSSToPage( 'myCSS',           URLScriptServer + 'styleRM.css'           )
 addScriptToPage( 'myCOMMONFUNCT',   URLScriptServer + 'commonFunctions.js'    )
@@ -54,6 +67,7 @@ addScriptToPage( 'myTYPEAHEADUI',   URLScriptServer + 'typeaheadUI.js'        )
 addScriptToPage( 'myROAMLIVE',      URLScriptServer + 'roam-live-preview.js'  )
 addScriptToPage( 'myDailyNote',     URLScriptServer + 'dailynotespopup.js'    )
 addScriptToPage( 'mytemplatepoc',   URLScriptServer + 'templatepoc.js'        )
+addModuleToPage( 'myQuickRef',      'https://roam-quickref.glitch.me/rqr-main.mjs' )
 
 
 // Give the libraries a few seconds to get comfy in their new home 
