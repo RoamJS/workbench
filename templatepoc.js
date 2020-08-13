@@ -420,6 +420,11 @@ window.KeyboardLib = {
             shiftKey: true
         })
     },
+    async pressDownKey(delayOverride) {
+        return this.simulateKey(40, delayOverride, {
+            shiftKey: true
+        })
+    },
     async pressCtrlV(delayOverride) {
         return this.simulateKey(118, delayOverride, {
             metaKey: true

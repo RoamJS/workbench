@@ -1,5 +1,5 @@
 /* global hotkeys,toggleDailyNotes, typeaheadDisplayTextArea,typeaheadDisplayOtherAreas, 
-testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForDates, toastr */
+testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForDates, toastr, jumpToDate */
 
 //based on the libary https://wangchujiang.com/hotkeys/
 
@@ -9,10 +9,12 @@ var testingScript = 'https://roammonkey.glitch.me/dailynotespopup.js'
 const displayHelp = (delayTime) => { 
     toastr.success(`
     <table>
-      <tr><td>ALT+SHIFT+ H</td><td>&nbsp</td><td>Help             </td></tr>
+      <tr><td>ALT+SHIFT+ H</td><td>&nbsp</td><td>Roam Help</td></tr>
+      <tr><td>CTRL+SHIFT+H</td><td>&nbsp</td><td>Monkey Help </td></tr>
       <tr><td>ALT+SHIFT+ D</td><td>&nbsp</td><td>Convert to Date  </td></tr>
+      <tr><td>ALT+SHIFT+ J</td><td>&nbsp</td><td>Jump to Date     </td></tr>
       <tr><td>ALT+SHIFT+ /</td><td>&nbsp</td><td>Open side bar    </td></tr>
-      <tr><td>ALT+SHIFT+ ,</td><td>&nbsp</td><td>Daily note popup </td></tr>
+      <tr><td>ALT+SHIFT+ ,</td><td>&nbsp</td><td>Daily popup </td></tr>
       <tr><td>ALT+SHIFT+ .</td><td>&nbsp</td><td>Lookup           </td></tr>
       <tr><td>ALT+SHIFT+ A</td><td>&nbsp</td><td>TODO #na         </td></tr>
       <tr><td>ALT+SHIFT+ W</td><td>&nbsp</td><td>TODO #weekend    </td></tr>
@@ -34,6 +36,22 @@ const loadKeyEvents = () => {
     event.preventDefault()
     displayHelp(20000)
   });
+  
+    // In a textarea  process text with natural language recognition. Using library from:
+  // https://github.com/wanasit/chrono
+  hotkeys('alt+shift+j', function(event, handler) {
+    event.preventDefault()
+    if (event.srcElement.localName == "textarea") {
+      KeyboardLib.pressEsc()
+      setTimeout( ()=> {
+        KeyboardLib.pressEsc()
+        jumpToDate()            
+      },300 )
+    } else {
+      jumpToDate()    
+    }
+  });
+  
   
   hotkeys('alt+shift+/', function(event, handler) {
     event.preventDefault()

@@ -159,3 +159,11 @@
 #rtl-support .tt-menu {
   text-align: right;
 }
+
+#jumptoDatePicker {
+  position: absolute;
+  visibility: hidden;
+  z-index: 1001;
+  top: 20%;
+  left: 30%;
+}

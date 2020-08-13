@@ -24,6 +24,7 @@ function addModuleToPage(tagId, scriptToLoad) {
   var s = document.createElement('script')
     s.type  = 'module'
     s.src   = scriptToLoad
+    s.crossorigin = "anonymous"
     s.id    = tagId
     s.async = false
     document.getElementsByTagName('head')[0].appendChild(s)
@@ -55,6 +56,10 @@ addScriptToPage( 'TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js
 addScriptToPage( 'TOASTR',          'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js'   )
 addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.6/dist/chrono.min.js'          )
 addScriptToPage( 'ISMOBILE',        'https://cdn.jsdelivr.net/npm/ismobilejs@1/dist/isMobile.min.js'             )
+addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'                                     )
+   addCSSToPage( 'cssFlatpckr',     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'              )
+   addCSSToPage( 'cssFlatpckrThme', 'https://npmcdn.com/flatpickr/dist/themes/airbnb.css'                        )
+
 
 //load all custom files 
    addCSSToPage( 'myCSS',           URLScriptServer + 'styleRM.css'           )
@@ -67,6 +72,7 @@ addScriptToPage( 'myTYPEAHEADUI',   URLScriptServer + 'typeaheadUI.js'        )
 addScriptToPage( 'myROAMLIVE',      URLScriptServer + 'roam-live-preview.js'  )
 addScriptToPage( 'myDailyNote',     URLScriptServer + 'dailynotespopup.js'    )
 addScriptToPage( 'mytemplatepoc',   URLScriptServer + 'templatepoc.js'        )
+addScriptToPage( 'myJUMPTODATE',    URLScriptServer + 'jump-to-date.js'        )
 addModuleToPage( 'myQuickRef',      'https://roam-quickref.glitch.me/rqr-main.mjs' )
 
 
@@ -76,6 +82,7 @@ addModuleToPage( 'myQuickRef',      'https://roam-quickref.glitch.me/rqr-main.mj
 setTimeout(function(){
   loadKeyEvents()
   loadTypeAhead()
+  loadJumpToDatePicker()
   
   toastr.options = {
     "closeButton": true,
