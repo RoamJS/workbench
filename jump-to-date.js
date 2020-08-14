@@ -37,14 +37,32 @@ const jumpToDate = () =>	{
   }
 }
 
+const jumpToDateFromButton = ()=> {
+    KeyboardLib.pressEsc()
+    setTimeout( ()=> {
+      jumpToDate()            
+    },100 )
+}
+
 //Initialization for Date picker
 const loadJumpToDatePicker = ()=> {
   $(document.body).append(`
   <div id="jumptoDatePicker">
     <input class="jumptoDatePickerInput" id="jumptoDateInput" type="text" placeholder="" style="width:330px;border:0px"></input>
   </div>
+  </div>
 `.trim() )  
+  
+  var element = document.createElement("div")
+  element.className = 'bp3-button bp3-minimal bp3-small bp3-icon-pivot'
+  element.setAttribute('onClick', 'jumpToDateFromButton()')
+  document.querySelector('.roam-topbar .flex-h-box').appendChild(element)
+    //.insertAdjacentElement('afterbegin', element)
+   //appendChild(element)
+  
   flatpickr("#jumptoDateInput", { dateFormat: "Y-m-d", weekNumbers: true })
+  flatpickr("#jumptoDateInput2", { dateFormat: "Y-m-d", weekNumbers: true })
+
   flCalendar = document.querySelector("#jumptoDateInput")._flatpickr;
   
   flCalendar.config.onValueUpdate.push( function(selectedDates, dateStr, instance) {

@@ -1,6 +1,25 @@
 // Thanks Bro! gracefully borrowed  from: https://github.com/palashkaria/roam-modifiers
 /* globals isMobile  */
 
+
+const getRoamLivePreview_IsEnabled = ()=>{
+  if( Cookies.get('RoamLivePreview_IsEnabled') === 'false' ) {
+    return false
+  } else {
+    return true
+  }
+}
+
+const setRoamLivePreview_IsEnabled = (val)=>{
+  console.log(val)
+  if(val == true) {
+    Cookies.set('RoamLivePreview_IsEnabled', 'true') 
+  } else {
+    Cookies.set('RoamLivePreview_IsEnabled', 'false')     
+  }
+}
+
+
 (function () {
   //Modification for roammonkey
   if( isMobile.any != true &&  window === window.parent  ){
@@ -123,6 +142,8 @@
       const previewIframe = createPreviewIframe();
 
       document.addEventListener('mouseover', (e) => {
+        if( e.ctrlKey == false ) { return }
+        if( getRoamLivePreview_IsEnabled() == false) { return }
         const target = e.target;
         const isPageRef = target.classList.contains('rm-page-ref');
         const isPageRefTag = target.classList.contains('rm-page-ref-tag');
@@ -142,7 +163,7 @@
             previewIframe.style.pointerEvents = 'none';
           }
           if (!popupTimeout) {
-            popupTimeout = window.setTimeout(() => {
+         //   popupTimeout = window.setTimeout(() => {
               if (previewIframe) {
                 previewIframe.style.opacity = '1';
                 previewIframe.style.pointerEvents = 'all';
@@ -165,7 +186,7 @@
                   ],
                 });
               }
-            }, 1500);
+           // }, 100);
           }
         }
       });
