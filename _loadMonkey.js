@@ -24,7 +24,6 @@ function addModuleToPage(tagId, scriptToLoad) {
   var s = document.createElement('script')
     s.type  = 'module'
     s.src   = scriptToLoad
-    s.crossorigin = "anonymous"
     s.id    = tagId
     s.async = false
     document.getElementsByTagName('head')[0].appendChild(s)
@@ -49,6 +48,7 @@ const URLScriptServer =  document.currentScript.src.replace('_loadMonkey.js','')
 
 //load all 3rd party libraries 
 addScriptToPage( 'JQUERY',          'https://code.jquery.com/jquery-3.5.1.min.js'                                )
+addScriptToPage( 'JSCOOKIE',        'https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js'            )
 addScriptToPage( 'HOTKEYJS',        'https://unpkg.com/hotkeys-js/dist/hotkeys.min.js'                           )
 addScriptToPage( 'TYPEAHEAD',       'https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js' )
 addScriptToPage( 'TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js'                                )
@@ -72,7 +72,8 @@ addScriptToPage( 'myTYPEAHEADUI',   URLScriptServer + 'typeaheadUI.js'        )
 addScriptToPage( 'myROAMLIVE',      URLScriptServer + 'roam-live-preview.js'  )
 addScriptToPage( 'myDailyNote',     URLScriptServer + 'dailynotespopup.js'    )
 addScriptToPage( 'mytemplatepoc',   URLScriptServer + 'templatepoc.js'        )
-addScriptToPage( 'myJUMPTODATE',    URLScriptServer + 'jump-to-date.js'        )
+addScriptToPage( 'myJUMPTODATE',    URLScriptServer + 'jump-to-date.js'       )
+addScriptToPage( 'myJUMPTODATE',    URLScriptServer + 'zzzzjspaneltest.js'    )
 addModuleToPage( 'myQuickRef',      'https://roam-quickref.glitch.me/rqr-main.mjs' )
 
 

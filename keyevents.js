@@ -3,8 +3,6 @@ testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForD
 
 //based on the libary https://wangchujiang.com/hotkeys/
 
-var testingScript = 'https://roammonkey.glitch.me/dailynotespopup.js'
-
 
 const displayHelp = (delayTime) => { 
     toastr.success(`
@@ -37,20 +35,22 @@ const loadKeyEvents = () => {
     displayHelp(20000)
   });
   
-    // In a textarea  process text with natural language recognition. Using library from:
-  // https://github.com/wanasit/chrono
-  hotkeys('alt+shift+j', function(event, handler) {
-    event.preventDefault()
-    if (event.srcElement.localName == "textarea") {
-      KeyboardLib.pressEsc()
-      setTimeout( ()=> {
-        KeyboardLib.pressEsc()
-        jumpToDate()            
-      },300 )
-    } else {
-      jumpToDate()    
-    }
-  });
+  //   // In a textarea  process text with natural language recognition. Using library from:
+  // // https://github.com/wanasit/chrono
+  // hotkeys('alt+shift+j', function(event, handler) {
+  //   event.preventDefault()
+  //   if (event.srcElement.localName == "textarea") {
+  //     KeyboardLib.pressEsc()
+  //     setTimeout( ()=> {
+  //       KeyboardLib.pressEsc()
+  //       jumpToDate()            
+  //     },300 )
+  //   } else {
+  //     jumpToDate()    
+  //   }
+  // });
+  
+
   
   
   hotkeys('alt+shift+/', function(event, handler) {
@@ -136,18 +136,6 @@ const loadKeyEvents = () => {
     turndownPage()    
   });
   
-  //RELOAD SCRIPT defined here
-  hotkeys('alt+q', function(event, handler) {
-    event.preventDefault()
-    $.getScript(testingScript)
-      .done(function(script, textStatus) {
-        console.log(textStatus)
-      })
-      .fail(function(jqxhr, settings, exception) {
-        $('div.log').text('Triggered ajaxError handler.')
-      })
-  })
-
   //allow support for textarea editing
   hotkeys.filter = function(event) {
     var tagName = (event.target || event.srcElement).tagName;
