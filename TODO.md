@@ -4,7 +4,7 @@
 (2) VIM MODE? 
     https://github.com/tntmarket/vimmyroam
 
-(3) Can this code be used (cross out checked itme)
+(3) Can this code be used (cross out checked time)
 
     function setCheckboxClass(checkbox) {
       let span = checkbox.closest('.roam-block > span');

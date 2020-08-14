@@ -4,11 +4,21 @@ testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForD
 //based on the libary https://wangchujiang.com/hotkeys/
 
 
+const displayStartup = (delayTime) => { 
+    toastr.success(`
+    <table>
+      <tr><td>ALT+SHIFT+ H</td><td>&nbsp</td><td>Monkey Help</td></tr>
+      <tr><td>CTRL+SHIFT+H</td><td>&nbsp</td><td>Roam Help </td></tr>
+    </table>
+    `.trim(), 'RoamMonkey Starting', { timeOut: delayTime} )
+
+}
+
 const displayHelp = (delayTime) => { 
     toastr.success(`
     <table>
-      <tr><td>ALT+SHIFT+ H</td><td>&nbsp</td><td>Roam Help</td></tr>
-      <tr><td>CTRL+SHIFT+H</td><td>&nbsp</td><td>Monkey Help </td></tr>
+      <tr><td>ALT+SHIFT+ H</td><td>&nbsp</td><td>Monkey Help</td></tr>
+      <tr><td>CTRL+SHIFT+H</td><td>&nbsp</td><td>Roam Help </td></tr>
       <tr><td>ALT+SHIFT+ D</td><td>&nbsp</td><td>Convert to Date  </td></tr>
       <tr><td>ALT+SHIFT+ J</td><td>&nbsp</td><td>Jump to Date     </td></tr>
       <tr><td>ALT+SHIFT+ /</td><td>&nbsp</td><td>Open side bar    </td></tr>
@@ -21,7 +31,7 @@ const displayHelp = (delayTime) => {
       <tr><td>&nbsp       </td><td>&nbsp</td><td>&nbsp            </td></tr>
       <tr><td>Hover mouse </td><td>&nbsp</td><td>show live<br/> preview of link</td></tr>
     </table>
-    `.trim(), 'RoamMonkey Help', { timeOut: delayTime} )
+    `.trim(), 'RoamMonkey Help', { timeOut: delayTime, "preventDuplicates": true , "newestOnTop": true} )
 
 }
 
