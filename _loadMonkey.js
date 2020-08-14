@@ -52,7 +52,7 @@ addScriptToPage( 'JSCOOKIE',        'https://cdn.jsdelivr.net/npm/js-cookie@rc/d
 addScriptToPage( 'HOTKEYJS',        'https://unpkg.com/hotkeys-js/dist/hotkeys.min.js'                           )
 addScriptToPage( 'TYPEAHEAD',       'https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js' )
 addScriptToPage( 'TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js'                                )
-   addCSSToPage( 'TOASTCSS',        'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css' )
+   addCSSToPage( 'TOASTCSS',         URLScriptServer + 'toastr.css'                                              )
 addScriptToPage( 'TOASTR',          'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js'   )
 addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.6/dist/chrono.min.js'          )
 addScriptToPage( 'ISMOBILE',        'https://cdn.jsdelivr.net/npm/ismobilejs@1/dist/isMobile.min.js'             )
@@ -105,7 +105,7 @@ setTimeout(function(){
   
   // Dont display in iframe
   if( window === window.parent ) {
-    displayHelp(3000)
+    displayStartup(4000)
   }
 }, 3000);
 
