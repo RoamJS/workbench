@@ -44,6 +44,7 @@ function addCSSToPage(tagId, cssToAdd) {
     document.getElementsByTagName('head')[0].appendChild(cssLink)
 }
 
+
 const URLScriptServer =  document.currentScript.src.replace('_loadMonkey.js','')
 
 //load all 3rd party libraries 
