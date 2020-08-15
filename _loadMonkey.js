@@ -1,4 +1,4 @@
-/* global danceMonkey, loadKeyEvents, toastr, loadTypeAhead, displayHelp */
+/* global  loadKeyEvents, toastr, loadTypeAhead, displayHelp, displayStartup, loadJumpToDatePicker */
 
 
 // Function to dynamically add a new JS script to the current site 
@@ -60,11 +60,14 @@ addScriptToPage( 'ISMOBILE',        'https://cdn.jsdelivr.net/npm/ismobilejs@1/d
 addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'                                     )
    addCSSToPage( 'cssFlatpckr',     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'              )
    addCSSToPage( 'cssFlatpckrThme', 'https://npmcdn.com/flatpickr/dist/themes/airbnb.css'                        )
+addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.js'               )
+   addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.css'              )
 
 
 //load all custom files 
    addCSSToPage( 'myCSS',           URLScriptServer + 'styleRM.css'           )
 addScriptToPage( 'myCOMMONFUNCT',   URLScriptServer + 'commonFunctions.js'    )
+addScriptToPage( 'myRQR',           URLScriptServer + 'quick-reference.js'    )
 addScriptToPage( 'myTURNDOWN',      URLScriptServer + 'turndownservice.js'    )
 addScriptToPage( 'myDATEPROCESS',   URLScriptServer + 'dateProcessing.js'     )
 addScriptToPage( 'myKEYEVENTS',     URLScriptServer + 'keyevents.js'          )
@@ -74,8 +77,6 @@ addScriptToPage( 'myROAMLIVE',      URLScriptServer + 'roam-live-preview.js'  )
 addScriptToPage( 'myDailyNote',     URLScriptServer + 'dailynotespopup.js'    )
 addScriptToPage( 'mytemplatepoc',   URLScriptServer + 'templatepoc.js'        )
 addScriptToPage( 'myJUMPTODATE',    URLScriptServer + 'jump-to-date.js'       )
-addScriptToPage( 'myJUMPTODATE',    URLScriptServer + 'zzzzjspaneltest.js'    )
-addModuleToPage( 'myQuickRef',      'https://roam-quickref.glitch.me/rqr-main.mjs' )
 
 
 // Give the libraries a few seconds to get comfy in their new home 
@@ -106,9 +107,11 @@ setTimeout(function(){
   
   // Dont display in iframe
   if( window === window.parent ) {
-    displayStartup(4000)
+    setTimeout(()=>{
+      displayStartup(1000)      
+    },5000)
   }
-}, 3000);
+}, 1000);
 
 
 
