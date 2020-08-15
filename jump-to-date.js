@@ -53,15 +53,25 @@ const loadJumpToDatePicker = ()=> {
   </div>
 `.trim() )  
   
-  var element = document.createElement("div")
-  element.className = 'bp3-button bp3-minimal bp3-small bp3-icon-pivot'
-  element.setAttribute('onClick', 'jumpToDateFromButton()')
-  document.querySelector('.roam-topbar .flex-h-box').appendChild(element)
-    //.insertAdjacentElement('afterbegin', element)
-   //appendChild(element)
+  try {
+    var jump = document.createElement("div")
+      jump.className = 'bp3-button bp3-minimal bp3-small bp3-icon-pivot'
+      jump.setAttribute('onClick', 'jumpToDateFromButton()')
+      jump.setAttribute('style','position:relative;left:2px')
+    var spacer = document.createElement("div")
+      spacer.setAttribute('style','flex: 0 0 3px')
+    
+    document.querySelector('.roam-topbar .flex-h-box').appendChild(spacer)
+    document.querySelector('.roam-topbar .flex-h-box').appendChild(jump)
+    
+  } catch(e) {
+    console.log('could not add toolbar buton - see module jump-to-date.js')
+    console.log(e)
+  }
+  
+  
   
   flatpickr("#jumptoDateInput", { dateFormat: "Y-m-d", weekNumbers: true })
-  flatpickr("#jumptoDateInput2", { dateFormat: "Y-m-d", weekNumbers: true })
 
   flCalendar = document.querySelector("#jumptoDateInput")._flatpickr;
   
