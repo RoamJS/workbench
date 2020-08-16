@@ -26,10 +26,20 @@ rqrQuickReferencePanel = jsPanel.create({
         maximize: 'remove'
     },
     borderRadius: '.8rem',
-    headerTitle: '      Quick Reference for Roam',
-    contentSize: {
-        width:  605,
+    headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:200px;">Quick Reference</div>',
+     iconfont: [
+       'bp3-button bp3-minimal bp3-small bp3-icon-small-minus', 
+       'bp3-button bp3-minimal bp3-small bp3-icon-chevron-down',  
+       'bp3-button bp3-minimal bp3-small bp3-icon-chevron-up', 
+       'custom-maximize', 
+       'bp3-button bp3-minimal bp3-small bp3-icon-cross'
+     ],
+   contentSize: {
+        width:  590,
         height: 405
+    },
+    resizeit: {
+        disable: true
     },
     theme: 'light',
     contentOverflow: 'hidden',
@@ -45,14 +55,18 @@ rqrQuickReferencePanel = jsPanel.create({
 document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden"
 
 rqrQuickReferencePanel.options.onbeforeclose.push(function() {
+  console.log( rqrQuickReferencePanel.status )
   document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden"
+  if (rqrQuickReferencePanel.status == 'minimized') {
+    rqrQuickReferencePanel.normalize()
+  }
   return false;
 });
 
-rqrQuickReferencePanel.options.onstatuschange.push(function(panel, status) {
-    console.log(status)
-    // do whatever needs to be done ...
-});
+// rqrQuickReferencePanel.options.onstatuschange.push(function(panel, status) {
+//     console.log(status)
+//     // do whatever needs to be done ...
+// });
 
 	let eventMethodRQR = window.addEventListener
 			? "addEventListener"

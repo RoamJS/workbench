@@ -12,10 +12,6 @@ let flCalendar = []
 document.addEventListener('keydown', (e)=> {
   if( e.altKey==true  &&  e.keyCode==74 ) {
     e.preventDefault();
-    if ( rqrJumpToDatePanel_isInitiallyPositioned == false ) { 
-      rqrJumpToDatePanel.reposition('center')
-      rqrJumpToDatePanel_isInitiallyPositioned = true;
-    }
     if (event.srcElement.localName == 'textarea') {
       KeyboardLib.pressEsc()
       setTimeout( ()=> {
@@ -31,6 +27,10 @@ document.addEventListener('keydown', (e)=> {
 
 //Toggles the date picker display
 const jumpToDate = () =>	{
+  if ( rqrJumpToDatePanel_isInitiallyPositioned == false ) { 
+    rqrJumpToDatePanel.reposition('center')
+    rqrJumpToDatePanel_isInitiallyPositioned = true;
+  }  
   let jump = document.querySelector('#rqrJumpToDatePanel')
   let jInput = document.querySelector('#jumptoDateInput')
 
@@ -50,7 +50,7 @@ const jumpToDate = () =>	{
   KeyboardLib.pressDownKey()
 }
 
-const jumpToDateFromButton = ()=> {
+const jumpToDateFromButton = (e)=> {
     KeyboardLib.pressEsc()
     setTimeout( ()=> {
       jumpToDate()            
@@ -84,6 +84,9 @@ const loadJumpToDatePicker = ()=> {
     contentSize: {
         width:  365,
         height: 345
+    },
+    resizeit: {
+        disable: true
     },
     closeOnEscape: true,
     position: {
