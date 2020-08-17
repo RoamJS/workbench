@@ -27,10 +27,15 @@ document.addEventListener('keydown', (e)=> {
 
 //Toggles the date picker display
 const jumpToDate = () =>	{
-  if ( rqrJumpToDatePanel_isInitiallyPositioned == false ) { 
-    rqrJumpToDatePanel.reposition('center')
+//  if ( rqrJumpToDatePanel_isInitiallyPositioned == false ) { 
+    rqrJumpToDatePanel.reposition({ 
+      my: 'right-top',
+      at: 'right-top',
+      offsetX: -10, 
+      offsetY: 45 
+    })
     rqrJumpToDatePanel_isInitiallyPositioned = true;
-  }  
+//  }  
   let jump = document.querySelector('#rqrJumpToDatePanel')
   let jInput = document.querySelector('#jumptoDateInput')
 
@@ -51,10 +56,13 @@ const jumpToDate = () =>	{
 }
 
 const jumpToDateFromButton = (e)=> {
+  let jump = document.querySelector('#rqrJumpToDatePanel') 
+  if( jump.style.visibility=='hidden' || jump.style.visibility=='') {
     KeyboardLib.pressEsc()
     setTimeout( ()=> {
       jumpToDate()            
-    },100 )
+    },100 )    
+  }
 }
 
 //Initialization for Date picker
