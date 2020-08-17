@@ -194,7 +194,6 @@ window.getTemplate = function(name) {
      * skipFirstPrefix: no prefix, needed for block embeds and references
      * stop: doesn't resolve children, needed for block reference resolution
      */
-    console.log(name)
     function resolveNode(id, level, trail, resolve, skipFirstPrefix, stop) {
         var level = level || 0; // for indentation
         var trail = Object.assign({}, trail); // to avoid loops
