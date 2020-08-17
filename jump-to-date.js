@@ -2,12 +2,9 @@
 // INFO: Provides a quick way to jump between daily notes pages using a calendar
 // Datepicker based on: https://flatpickr.js.org/
 
-
 let rqrJumpToDatePanel = ''
-let rqrJumpToDatePanel_isInitiallyPositioned = false
 let flCalendar = []
  
-
 //Assign shortcut key to this feature to ALT+SHIFT+J
 document.addEventListener('keydown', (e)=> {
   if( e.altKey==true  &&  e.keyCode==74 ) {
@@ -24,18 +21,15 @@ document.addEventListener('keydown', (e)=> {
   }
 })
 
-
 //Toggles the date picker display
 const jumpToDate = () =>	{
-//  if ( rqrJumpToDatePanel_isInitiallyPositioned == false ) { 
     rqrJumpToDatePanel.reposition({ 
       my: 'right-top',
       at: 'right-top',
       offsetX: -10, 
       offsetY: 45 
     })
-    rqrJumpToDatePanel_isInitiallyPositioned = true;
-//  }  
+
   let jump = document.querySelector('#rqrJumpToDatePanel')
   let jInput = document.querySelector('#jumptoDateInput')
 

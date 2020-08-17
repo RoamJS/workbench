@@ -1,11 +1,10 @@
 // Thanks Bro! gracefully borrowed  from: https://github.com/palashkaria/roam-modifiers
-/* globals isMobile,toastr  */
+/* globals isMobile,toastr, Cookies  */
 
 
 document.addEventListener('keydown', (e)=> {
   if( e.ctrlKey==true  &&  e.key=='L' ) {
     e.preventDefault();
-    console.log('L')
     setRoamLivePreview_IsEnabled(  !getRoamLivePreview_IsEnabled() )
     
     let msg = ''
@@ -20,15 +19,14 @@ document.addEventListener('keydown', (e)=> {
 
 
 const getRoamLivePreview_IsEnabled = ()=>{
-  if( Cookies.get('RoamLivePreview_IsEnabled') === 'false' ) {
-    return false
-  } else {
+  if( Cookies.get('RoamLivePreview_IsEnabled') === 'true' ) {
     return true
+  } else {
+    return false
   }
 }
 
 const setRoamLivePreview_IsEnabled = (val)=>{
-  console.log(val)
   if(val == true) {
     Cookies.set('RoamLivePreview_IsEnabled', 'true') 
   } else {
@@ -162,10 +160,17 @@ const setRoamLivePreview_IsEnabled = (val)=>{
         // if( e.ctrlKey == false ) { return }
         if( getRoamLivePreview_IsEnabled() == false) { return }
         const target = e.target;
-        const isPageRef = target.classList.contains('rm-page-ref');
-        const isPageRefTag = target.classList.contains('rm-page-ref-tag');
+        let isPageRef = target.classList.contains('rm-page-ref');
+        let isPageRefTag = target.classList.contains('rm-page-ref-tag');
+        let text = isPageRefTag ? target.innerText.slice(1) : target.innerText;
+        if (isPageRef == false && target.classList.contains('rm-alias-page') ) {
+          console.log(target)
+          isPageRef = true
+          text = target.title.replace('page: ','') 
+        }
+//        console.log(text.toString())
+
         // remove '#' for page tags
-        const text = isPageRefTag ? target.innerText.slice(1) : target.innerText;
         if (isPageRef) {
           hoveredElement = target;
           const url = getPageUrlByName(text);

@@ -72,18 +72,12 @@ rqrQuickReferencePanel = jsPanel.create({
 document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden"
 
 rqrQuickReferencePanel.options.onbeforeclose.push(function() {
-  console.log( rqrQuickReferencePanel.status )
   document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden"
   if (rqrQuickReferencePanel.status == 'minimized') {
     rqrQuickReferencePanel.normalize()
   }
   return false;
 });
-
-// rqrQuickReferencePanel.options.onstatuschange.push(function(panel, status) {
-//     console.log(status)
-//     // do whatever needs to be done ...
-// });
 
 	let eventMethodRQR = window.addEventListener
 			? "addEventListener"
