@@ -35,10 +35,6 @@ rqrQuickReferencePanel = jsPanel.create({
     'custom-maximize', 
     'bp3-button bp3-minimal bp3-small bp3-icon-cross'
   ],
-  onwindowresize: true,
-  // maximizedMargin: 10,
-  // syncMargins: true,
-
   contentSize: {
     width:  590,
     height: 405
@@ -49,6 +45,7 @@ rqrQuickReferencePanel = jsPanel.create({
   theme: 'light',
   contentOverflow: 'hidden',
   content: '<iframe src="https://roam-quickref.glitch.me/" id="iframeRqrQuickReferencePanel" style="width: 100%; height: 100%;"></iframe>',
+  onwindowresize: true,
   dragit: {
     containment: 10,
     snap: {
