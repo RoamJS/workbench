@@ -80,7 +80,7 @@ const loadJumpToDatePicker = ()=> {
     document.querySelector('.roam-topbar .flex-h-box').appendChild(jump)
     
   } catch(e) {
-    console.log('could not add toolbar buton - see module jump-to-date.js')
+    console.log('could not add toolbar buton - see module jump-to-date.js ')
     console.log(e)
   }
   
