@@ -166,3 +166,9 @@
   position:   relative; 
   border:     0px solid;
 }
+
+
+
+.jsPanel-headerbar {
+  height:28px;
+}
