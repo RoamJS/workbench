@@ -7,7 +7,8 @@ document.addEventListener('keydown', (e)=> {
   if( e.ctrlKey==true  &&  e.key=='H' ) {
     e.preventDefault();
     if ( rqrQuickReferencePanel_isInitiallyPositioned == false ) { 
-      rqrQuickReferencePanel.reposition('center')
+      // rqrQuickReferencePanel.reposition({ my: 'right-bottom', at: 'right-bottom', offsetX: -10, offsetY: -40 } )
+      // rqrQuickReferencePanel.reposition( 'right-bottom' )
       rqrQuickReferencePanel_isInitiallyPositioned = true;
     }
     if ( document.querySelector('#rqrQuickReferencePanel').style.visibility == "hidden"  ) {
@@ -21,35 +22,54 @@ document.addEventListener('keydown', (e)=> {
 })
 
 rqrQuickReferencePanel = jsPanel.create({
-    id: 'rqrQuickReferencePanel',
-    headerControls: {
-        maximize: 'remove'
-    },
-    borderRadius: '.8rem',
-    headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:200px;">Quick Reference</div>',
-     iconfont: [
-       'bp3-button bp3-minimal bp3-small bp3-icon-small-minus', 
-       'bp3-button bp3-minimal bp3-small bp3-icon-chevron-down',  
-       'bp3-button bp3-minimal bp3-small bp3-icon-chevron-up', 
-       'custom-maximize', 
-       'bp3-button bp3-minimal bp3-small bp3-icon-cross'
-     ],
-   contentSize: {
-        width:  590,
-        height: 405
-    },
-    resizeit: {
-        disable: true
-    },
-    theme: 'light',
-    contentOverflow: 'hidden',
-    content: '<iframe src="https://roam-quickref.glitch.me/" id="iframeRqrQuickReferencePanel" style="width: 100%; height: 100%;"></iframe>',
-    position: {
-      my: 'left-top',
-      at: 'left-top',
-      offsetX: 10000,
-      offsetY: 69
+  id: 'rqrQuickReferencePanel',
+  headerControls: {
+    maximize: 'remove'
+  },
+  // borderRadius: '.8rem',
+  headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:200px;">Quick Reference</div>',
+  iconfont: [
+    'bp3-button bp3-minimal bp3-small bp3-icon-small-minus', 
+    'bp3-button bp3-minimal bp3-small bp3-icon-chevron-down',  
+    'bp3-button bp3-minimal bp3-small bp3-icon-chevron-up', 
+    'custom-maximize', 
+    'bp3-button bp3-minimal bp3-small bp3-icon-cross'
+  ],
+  onwindowresize: true,
+  // maximizedMargin: 10,
+  // syncMargins: true,
+
+  contentSize: {
+    width:  590,
+    height: 405
+  },
+  resizeit: {
+    disable: true
+  },
+  theme: 'light',
+  contentOverflow: 'hidden',
+  content: '<iframe src="https://roam-quickref.glitch.me/" id="iframeRqrQuickReferencePanel" style="width: 100%; height: 100%;"></iframe>',
+  dragit: {
+    containment: 10,
+    snap: {
+      containment: true,
+      repositionOnSnap: true
     }
+  },
+  position: {
+    my: 'right-bottom',
+    at: 'right-bottom',
+    offsetX: -10, 
+    offsetY: -10 
+  }
+  
+  // position: { my: }
+  // position: {
+  //   my: 'left-top',
+  //   at: 'left-top',
+  //   offsetX: 10000,
+  //   offsetY: 69
+  // }
 })
 
 document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden"
