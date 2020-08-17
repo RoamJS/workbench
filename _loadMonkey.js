@@ -108,7 +108,7 @@ setTimeout(function(){
   // Dont display in iframe
   if( window === window.parent ) {
     setTimeout(()=>{
-      displayStartup(1000)      
+      displayStartup(3000)      
     },5000)
   }
 }, 1000);

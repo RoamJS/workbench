@@ -1,5 +1,22 @@
 // Thanks Bro! gracefully borrowed  from: https://github.com/palashkaria/roam-modifiers
-/* globals isMobile  */
+/* globals isMobile,toastr  */
+
+
+document.addEventListener('keydown', (e)=> {
+  if( e.ctrlKey==true  &&  e.key=='L' ) {
+    e.preventDefault();
+    console.log('L')
+    setRoamLivePreview_IsEnabled(  !getRoamLivePreview_IsEnabled() )
+    
+    let msg = ''
+    if(getRoamLivePreview_IsEnabled()==true) {
+      msg = 'ENABLED'
+    } else {
+      msg = 'Disabled'      
+    }  
+    toastr.success(msg, 'Live Preview', { timeOut: 5000, "preventDuplicates": true , "newestOnTop": true} )
+    }
+})
 
 
 const getRoamLivePreview_IsEnabled = ()=>{
@@ -140,9 +157,9 @@ const setRoamLivePreview_IsEnabled = (val)=>{
       let popupTimeout = null;
       let popper = null;
       const previewIframe = createPreviewIframe();
-
+      
       document.addEventListener('mouseover', (e) => {
-        if( e.ctrlKey == false ) { return }
+        // if( e.ctrlKey == false ) { return }
         if( getRoamLivePreview_IsEnabled() == false) { return }
         const target = e.target;
         const isPageRef = target.classList.contains('rm-page-ref');

@@ -116,7 +116,7 @@ const loadJumpToDatePicker = ()=> {
       rqrJumpToDatePanel.close()
       let inPut =  document.getElementById('find-or-create-input')
       inPut.focus()
-      setEmptyNodeValue(inPut, getRoamDate(dateStr))
+      setEmptyNodeValue(inPut, getRoamDate(selectedDates[0]))
       setTimeout(()=>{
         KeyboardLib.pressEnter()
       },250)             
