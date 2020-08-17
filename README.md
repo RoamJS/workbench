@@ -10,6 +10,7 @@ For more information, go to this page:
 - **commonFunctions.js** - few functions used in various files
 - **keyevents.js** - uses hotkeys library for providing keyboard shortcuts [git.io/hotkeys.js](https://git.io/hotkeys.js)
 - **dailynotespopup.js** - use hotkey to open up a preview window of your roam DB, defaulting to todays page
+- **jump-to-date.js** - makes it easy to move between daily notes pages
 - **dateprocess.js** - handles natural language date rocessing
 - **roam-live-preview.js** - popup window showing live preview of a hyperlink
 - **templacepoc.js** - template engine   https://gist.github.com/thesved/79371d0c1dd34b6750c846368b323113

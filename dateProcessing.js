@@ -30,7 +30,6 @@ const nthDate = d => {
 }
 
 const getRoamDate = dateString => {
-  console.log('get roam date ' + dateString)
   const d = new Date(dateString);
   const year = d.getFullYear();
   const date = d.getDate();

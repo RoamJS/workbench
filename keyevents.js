@@ -7,8 +7,8 @@ testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForD
 const displayStartup = (delayTime) => { 
     toastr.success(`
     <table>
-      <tr><td>ALT+SHIFT+ H</td><td>&nbsp</td><td>Monkey Help</td></tr>
-      <tr><td>CTRL+SHIFT+H</td><td>&nbsp</td><td>Roam Help </td></tr>
+      <tr><td>Alt-Shift-H </td><td>&nbsp</td><td>Monkey Help</td></tr>
+      <tr><td>Ctrl+Shift+H</td><td>&nbsp</td><td>Roam Help </td></tr>
     </table>
     `.trim(), 'RoamMonkey Starting', { timeOut: delayTime} )
 
@@ -17,19 +17,20 @@ const displayStartup = (delayTime) => {
 const displayHelp = (delayTime) => { 
     toastr.success(`
     <table>
-      <tr><td>ALT+SHIFT+ H</td><td>&nbsp</td><td>Monkey Help</td></tr>
-      <tr><td>CTRL+SHIFT+H</td><td>&nbsp</td><td>Roam Help </td></tr>
-      <tr><td>ALT+SHIFT+ D</td><td>&nbsp</td><td>Convert to Date  </td></tr>
-      <tr><td>ALT+SHIFT+ J</td><td>&nbsp</td><td>Jump to Date     </td></tr>
-      <tr><td>ALT+SHIFT+ /</td><td>&nbsp</td><td>Open side bar    </td></tr>
-      <tr><td>ALT+SHIFT+ ,</td><td>&nbsp</td><td>Daily popup </td></tr>
-      <tr><td>ALT+SHIFT+ .</td><td>&nbsp</td><td>Lookup           </td></tr>
-      <tr><td>ALT+SHIFT+ A</td><td>&nbsp</td><td>TODO #na         </td></tr>
-      <tr><td>ALT+SHIFT+ W</td><td>&nbsp</td><td>TODO #weekend    </td></tr>
-      <tr><td>ALT+SHIFT+ T</td><td>&nbsp</td><td>Strikeout text   </td></tr>
-      <tr><td>ALT+ m      </td><td>&nbsp</td><td>Markdown (simple)</td></tr>
+      <tr><td>Alt-Shift-H</td><td>&nbsp</td><td>Monkey Help</td></tr>
+      <tr><td>Ctrl-Shift-H</td><td>&nbsp</td><td>Roam Help </td></tr>
+      <tr><td>Alt-Shift-D</td><td>&nbsp</td><td>Convert to Date  </td></tr>
+      <tr><td>Alt-Shift-J</td><td>&nbsp</td><td>Jump to Date     </td></tr>
+      <tr><td>Alt-Shift-/</td><td>&nbsp</td><td>Open side bar    </td></tr>
+      <tr><td>Alt-Shift-,</td><td>&nbsp</td><td>Daily popup </td></tr>
+      <tr><td>Alt-Shift-.</td><td>&nbsp</td><td>Lookup           </td></tr>
+      <tr><td>Alt-Shift-A</td><td>&nbsp</td><td>TODO #na         </td></tr>
+      <tr><td>Alt-Shift-W</td><td>&nbsp</td><td>TODO #weekend    </td></tr>
+      <tr><td>Alt-Shift-T</td><td>&nbsp</td><td>Strikeout text   </td></tr>
+      <tr><td>Alt-m      </td><td>&nbsp</td><td>Markdown (simple)</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td><td>&nbsp            </td></tr>
-      <tr><td>Hover mouse </td><td>&nbsp</td><td>show live<br/> preview of link</td></tr>
+      <tr><td>Hover mouse </td><td>&nbsp</td><td>Live Preview   </td></tr>
+      <tr><td>Ctrl-Shift-L</td><td>&nbsp</td><td>Toggle Live Preview<br/> on/off</td></tr>
     </table>
     `.trim(), 'RoamMonkey Help', { timeOut: delayTime, "preventDuplicates": true , "newestOnTop": true} )
 
