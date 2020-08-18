@@ -1,4 +1,4 @@
-/* globals jsPanel, KeyboardLib, flatpickr, setEmptyNodeValue */
+/* globals jsPanel, KeyboardLib, flatpickr, setEmptyNodeValue, getRoamDate, chrono */
 // INFO: Provides a quick way to jump between daily notes pages using a calendar
 // Datepicker based on: https://flatpickr.js.org/
 
@@ -19,7 +19,56 @@ document.addEventListener('keydown', (e)=> {
       jumpToDate()    
     }
   }
+
+  if( e.ctrlKey==true  &&  e.keyCode==188 ) {
+    e.preventDefault();
+    if (event.srcElement.localName == 'textarea') {
+      KeyboardLib.pressEsc()
+      setTimeout( ()=> {
+        KeyboardLib.pressEsc()
+        moveForwardToDate(false)
+      },300 )
+    } else {
+        moveForwardToDate(false)
+    }
+  }
+  
+  if( e.ctrlKey==true  &&  e.keyCode==190 ) {
+    e.preventDefault();
+    if (event.srcElement.localName == 'textarea') {
+      KeyboardLib.pressEsc()
+      setTimeout( ()=> {
+        KeyboardLib.pressEsc()
+        moveForwardToDate(true)
+      },300 )
+    } else {
+      moveForwardToDate(true)
+    }
+  }
+  
 })
+
+const baseUrl = () => {
+  // https://roamresearch.com/#/app/roam-toolkit/page/03-24-2020
+  const url = new URL(window.location.href);
+  const parts = url.hash.split('/');
+
+  url.hash = parts.slice(0, 3).join('/');
+  return url;
+};
+
+const moveForwardToDate = (bForward)=> {
+  let jumpDate = chrono.parseDate( document.querySelector('.rm-title-display').innerText )
+  if( jumpDate!=null) { 
+    if ( bForward ) {
+      jumpDate.setDate(jumpDate.getDate()+1)
+    } else {
+      jumpDate.setDate(jumpDate.getDate()-1)
+    }
+    navigateUIToDate(jumpDate)
+//    toastr.success(jumpDate.toString(), 'Date Jump', { timeOut: 2000,   "preventDuplicates": true , "newestOnTop": true} )
+  }  
+}
 
 //Toggles the date picker display
 const jumpToDate = () =>	{
@@ -57,6 +106,15 @@ const jumpToDateFromButton = (e)=> {
       jumpToDate()            
     },100 )    
   }
+}
+
+const navigateUIToDate = (destinationDate)=> {
+  let inPut =  document.getElementById('find-or-create-input')
+  inPut.focus()
+  setEmptyNodeValue( inPut, getRoamDate( destinationDate ) )
+  setTimeout(()=>{
+    KeyboardLib.pressEnter()
+  },250)             
 }
 
 //Initialization for Date picker
@@ -115,13 +173,8 @@ const loadJumpToDatePicker = ()=> {
   flCalendar = document.querySelector("#jumptoDateInput")._flatpickr;
   
   flCalendar.config.onValueUpdate.push( function(selectedDates, dateStr, instance) {
-      rqrJumpToDatePanel.close()
-      let inPut =  document.getElementById('find-or-create-input')
-      inPut.focus()
-      setEmptyNodeValue(inPut, getRoamDate(selectedDates[0]))
-      setTimeout(()=>{
-        KeyboardLib.pressEnter()
-      },250)             
+    rqrJumpToDatePanel.close()
+    navigateUIToDate(selectedDates[0])
   })
   
   flCalendar.config.onClose.push( function(selectedDates, dateStr, instance) {

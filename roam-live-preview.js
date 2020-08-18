@@ -150,6 +150,7 @@ const setRoamLivePreview_IsEnabled = (val)=>{
       }
       return iframe;
     };
+        
     const enableLivePreview = () => {
       let hoveredElement = null;
       let popupTimeout = null;
@@ -160,16 +161,24 @@ const setRoamLivePreview_IsEnabled = (val)=>{
         // if( e.ctrlKey == false ) { return }
         if( getRoamLivePreview_IsEnabled() == false) { return }
         const target = e.target;
+
         let isPageRef = target.classList.contains('rm-page-ref');
         let isPageRefTag = target.classList.contains('rm-page-ref-tag');
+        
         let text = isPageRefTag ? target.innerText.slice(1) : target.innerText;
+
         if (isPageRef == false && target.classList.contains('rm-alias-page') ) {
-          console.log(target)
           isPageRef = true
           text = target.title.replace('page: ','') 
         }
-//        console.log(text.toString())
 
+        // console.log( isPageRef , isPageRefTag , target.classList.length)
+        if ( !isPageRef  && !isPageRefTag && target.classList.length == 0 && target.parentNode.classList.contains('rm-page-ref') ) {
+          isPageRef = true
+          text = target.innerText 
+        }
+
+        
         // remove '#' for page tags
         if (isPageRef) {
           hoveredElement = target;
