@@ -7,8 +7,6 @@ document.addEventListener('keydown', (e)=> {
   if( e.ctrlKey==true  &&  e.key=='H' ) {
     e.preventDefault();
     if ( rqrQuickReferencePanel_isInitiallyPositioned == false ) { 
-      // rqrQuickReferencePanel.reposition({ my: 'right-bottom', at: 'right-bottom', offsetX: -10, offsetY: -40 } )
-      // rqrQuickReferencePanel.reposition( 'right-bottom' )
       rqrQuickReferencePanel_isInitiallyPositioned = true;
     }
     if ( document.querySelector('#rqrQuickReferencePanel').style.visibility == "hidden"  ) {
@@ -27,7 +25,7 @@ rqrQuickReferencePanel = jsPanel.create({
     maximize: 'remove'
   },
   // borderRadius: '.8rem',
-  headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:200px;">Quick Reference</div>',
+  headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:200px;color:black !important;">Quick Reference</div>',
   iconfont: [
     'bp3-button bp3-minimal bp3-small bp3-icon-small-minus', 
     'bp3-button bp3-minimal bp3-small bp3-icon-chevron-down',  
@@ -59,15 +57,7 @@ rqrQuickReferencePanel = jsPanel.create({
     offsetX: -10, 
     offsetY: -10 
   }
-  
-  // position: { my: }
-  // position: {
-  //   my: 'left-top',
-  //   at: 'left-top',
-  //   offsetX: 10000,
-  //   offsetY: 69
-  // }
-})
+  })
 
 document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden"
 

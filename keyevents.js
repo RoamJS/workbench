@@ -20,8 +20,10 @@ const displayHelp = (delayTime) => {
       <tr><td>Alt-Shift-H</td><td>&nbsp</td><td>Monkey Help</td></tr>
       <tr><td>Ctrl-Shift-H</td><td>&nbsp</td><td>Roam Help </td></tr>
       <tr><td>Alt-Shift-D</td><td>&nbsp</td><td>Convert to Date  </td></tr>
-      <tr><td>Alt-Shift-J</td><td>&nbsp</td><td>Jump to Date     </td></tr>
-      <tr><td>Alt-Shift-/</td><td>&nbsp</td><td>Open side bar    </td></tr>
+      <tr><td>Ctrl-Shift-J</td><td>&nbsp</td><td>Jump to Date     </td></tr>
+      <tr><td>Alt-Shift-.</td><td>&nbsp</td><td>Next Day's Note</td></tr>
+      <tr><td>Ctrl-Shift-,</td><td>&nbsp</td><td>Previous Day's Note</td></tr>
+      <tr><td>Alt-Shift-/</td><td>&nbsp</td><td>Open side bar</td></tr>
       <tr><td>Alt-Shift-,</td><td>&nbsp</td><td>Daily popup </td></tr>
       <tr><td>Alt-Shift-.</td><td>&nbsp</td><td>Lookup           </td></tr>
       <tr><td>Alt-Shift-A</td><td>&nbsp</td><td>TODO #na         </td></tr>
