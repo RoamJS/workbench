@@ -1,28 +1,41 @@
-/* global hotkeys,toggleDailyNotes, typeaheadDisplayTextArea,typeaheadDisplayOtherAreas, 
-testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForDates, toastr, jumpToDate */
+/* global hotkeys,toggleDailyNotes, typeaheadDisplayTextArea,typeaheadDisplayOtherAreas, iziToast,
+testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForDates, jumpToDate */
 
 //based on the libary https://wangchujiang.com/hotkeys/
 
-
 const displayStartup = (delayTime) => { 
-    toastr.success(`
+  iziToast.show({
+    message: `
+    <b>RoamMonkey Starting</b>
     <table>
       <tr><td>Alt-Shift-H </td><td>&nbsp</td><td>Monkey Help</td></tr>
       <tr><td>Ctrl+Shift+H</td><td>&nbsp</td><td>Roam Help </td></tr>
     </table>
-    `.trim(), 'RoamMonkey Starting', { timeOut: delayTime} )
-
+  `.trim(),
+    theme: 'dark',
+    progressBar: true,
+    animateInside: true,
+    close: false,
+    timeout: delayTime,
+    closeOnClick: true,
+    displayMode: 2
+  });  
 }
 
 const displayHelp = (delayTime) => { 
-    toastr.success(`
+   iziToast.destroy(); 
+   iziToast.show({
+      message: `
+    <b>RoamMonkey Help</b>
     <table>
       <tr><td>Alt-Shift-H</td><td>&nbsp</td><td>Monkey Help</td></tr>
       <tr><td>Ctrl-Shift-H</td><td>&nbsp</td><td>Roam Help </td></tr>
       <tr><td>Alt-Shift-D</td><td>&nbsp</td><td>Convert to Date  </td></tr>
-      <tr><td>Ctrl-Shift-J</td><td>&nbsp</td><td>Jump to Date     </td></tr>
-      <tr><td>Alt-Shift-.</td><td>&nbsp</td><td>Next Day's Note</td></tr>
+      <tr><td>Alt-Shift-J</td><td>&nbsp</td><td>Jump to Date     </td></tr>
+      <tr><td>Ctrl-Shift-.</td><td>&nbsp</td><td>Next Day's Note</td></tr>
       <tr><td>Ctrl-Shift-,</td><td>&nbsp</td><td>Previous Day's Note</td></tr>
+      <tr><td>Ctrl-Alt-Home</td><td>&nbsp</td><td>Jump to first block in page</td></tr>
+      <tr><td>Ctrl-Alt-End</td><td>&nbsp</td><td>Jump to last block in page</td></tr>
       <tr><td>Alt-Shift-/</td><td>&nbsp</td><td>Open side bar</td></tr>
       <tr><td>Alt-Shift-,</td><td>&nbsp</td><td>Daily popup </td></tr>
       <tr><td>Alt-Shift-.</td><td>&nbsp</td><td>Lookup           </td></tr>
@@ -34,9 +47,18 @@ const displayHelp = (delayTime) => {
       <tr><td>Hover mouse </td><td>&nbsp</td><td>Live Preview   </td></tr>
       <tr><td>Ctrl-Shift-L</td><td>&nbsp</td><td>Toggle Live Preview<br/> on/off</td></tr>
     </table>
-    `.trim(), 'RoamMonkey Help', { timeOut: delayTime, "preventDuplicates": true , "newestOnTop": true} )
-
+    `.trim(),
+      theme: 'dark',
+      progressBar: true,
+      animateInside: true,
+      close: false,
+      timeout: delayTime,
+      closeOnClick: true,
+      displayMode: 2
+    });
+  
 }
+
 
 
 //CONFIGURE SHORTCUT KEYS for use in the application
@@ -45,26 +67,8 @@ const loadKeyEvents = () => {
   // HELP notification
   hotkeys('alt+shift+h', function(event, handler) {
     event.preventDefault()
-    displayHelp(20000)
+    displayHelp(10000)
   });
-  
-  //   // In a textarea  process text with natural language recognition. Using library from:
-  // // https://github.com/wanasit/chrono
-  // hotkeys('alt+shift+j', function(event, handler) {
-  //   event.preventDefault()
-  //   if (event.srcElement.localName == "textarea") {
-  //     KeyboardLib.pressEsc()
-  //     setTimeout( ()=> {
-  //       KeyboardLib.pressEsc()
-  //       jumpToDate()            
-  //     },300 )
-  //   } else {
-  //     jumpToDate()    
-  //   }
-  // });
-  
-
-  
   
   hotkeys('alt+shift+/', function(event, handler) {
     event.preventDefault()
@@ -85,15 +89,11 @@ const loadKeyEvents = () => {
     }
   });
   
-
     //alt+.  - in a textarea will pull up the search box
   hotkeys('alt+shift+,', function(event, handler) {
     event.preventDefault()
-      toggleDailyNotes()      
-    
+      toggleDailyNotes()          
   });
-  
-
   
   //alt+.  - in a textarea will pull up the search box
   hotkeys('alt+shift+.', function(event, handler) {
@@ -157,4 +157,38 @@ const loadKeyEvents = () => {
     )
     return true;
   }
+  
+  //https://stackoverflow.com/questions/40091000/simulate-click-event-on-react-element
+  const mouseClickEvents = ['mousedown', 'click', 'mouseup'];
+  const simulateMouseClick = (element)=> {
+    mouseClickEvents.forEach(mouseEventType =>
+      element.dispatchEvent(
+        new MouseEvent(mouseEventType, { view: window, bubbles: true, cancelable: true, buttons: 1
+        })
+      )
+    )
+  }
+  
+  const getArticleOfCurrentPage = ()=> {
+    var rootOfBlocks = document.getElementsByClassName("roam-log-page")[0]
+    var articleContent = null
+      //first attempts to grab the content for the default home apge
+    if(rootOfBlocks) {
+       articleContent = rootOfBlocks.childNodes[1].getElementsByClassName('rm-block-text')
+    } else {
+      // if failed, try to attempt content for the current page (which has a different structure than default page)
+      rootOfBlocks = document.getElementsByClassName("roam-article")[0]
+      articleContent = rootOfBlocks.childNodes[0].getElementsByClassName('rm-block-text')
+    }
+    return articleContent
+  }
+
+  document.addEventListener('keydown', (e)=> {
+    if( e.ctrlKey==true  && e.altKey==true  && ( e.key=='End' || e.key=='Home' ) ) {
+      e.preventDefault();
+      var articleContent = getArticleOfCurrentPage()
+      e.key=='End' ? simulateMouseClick(articleContent[ articleContent.length-1 ]) : simulateMouseClick(articleContent[0])
+    }
+  })
+  
 }

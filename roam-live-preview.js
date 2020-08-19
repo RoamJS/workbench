@@ -1,5 +1,5 @@
 // Thanks Bro! gracefully borrowed  from: https://github.com/palashkaria/roam-modifiers
-/* globals isMobile,toastr, Cookies  */
+/* globals , Cookies  */
 
 
 document.addEventListener('keydown', (e)=> {
@@ -9,12 +9,22 @@ document.addEventListener('keydown', (e)=> {
     
     let msg = ''
     if(getRoamLivePreview_IsEnabled()==true) {
-      msg = 'ENABLED'
+      msg = 'E N A B L E D'
     } else {
       msg = 'Disabled'      
     }  
-    toastr.success(msg, 'Live Preview', { timeOut: 5000, "preventDuplicates": true , "newestOnTop": true} )
-    }
+    iziToast.destroy();
+    iziToast.show({
+      message: 'Live Preview<br/><b>' + msg + '</b>' ,
+      theme: 'dark',
+      progressBar: true,
+      animateInside: true,
+      close: false,
+      timeout: 5000,
+      closeOnClick: true,
+      displayMode: 2
+    })
+  }
 })
 
 
@@ -37,7 +47,7 @@ const setRoamLivePreview_IsEnabled = (val)=>{
 
 (function () {
   //Modification for roammonkey
-  if( isMobile.any != true &&  window === window.parent  ){
+  if( window === window.parent  ){
 
     'use strict';
     const runInPageContext = (method, ...args) => {

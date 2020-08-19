@@ -1,4 +1,4 @@
-/* global  loadKeyEvents, toastr, loadTypeAhead, displayHelp, displayStartup, loadJumpToDatePicker */
+/* global  loadKeyEvents, loadTypeAhead, displayHelp, displayStartup, jumpToDateComponent, rmQuickRefenceSystem */
 
 
 // Function to dynamically add a new JS script to the current site 
@@ -51,18 +51,17 @@ const URLScriptServer =  document.currentScript.src.replace('_loadMonkey.js','')
 addScriptToPage( 'JQUERY',          'https://code.jquery.com/jquery-3.5.1.min.js'                                )
 addScriptToPage( 'JSCOOKIE',        'https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js'            )
 addScriptToPage( 'HOTKEYJS',        'https://unpkg.com/hotkeys-js/dist/hotkeys.min.js'                           )
+addScriptToPage( 'iziToast',        'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js'   )
+   addCSSToPage( 'cssiziToast',     'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css' )
 addScriptToPage( 'TYPEAHEAD',       'https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js' )
 addScriptToPage( 'TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js'                                )
-   addCSSToPage( 'TOASTCSS',         URLScriptServer + 'toastr.css'                                              )
-addScriptToPage( 'TOASTR',          'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js'   )
 addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.6/dist/chrono.min.js'          )
-addScriptToPage( 'ISMOBILE',        'https://cdn.jsdelivr.net/npm/ismobilejs@1/dist/isMobile.min.js'             )
+//addScriptToPage( 'ISMOBILE',        'https://cdn.jsdelivr.net/npm/ismobilejs@1/dist/isMobile.min.js'           )
 addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'                                     )
    addCSSToPage( 'cssFlatpckr',     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'              )
    addCSSToPage( 'cssFlatpckrThme', 'https://npmcdn.com/flatpickr/dist/themes/airbnb.css'                        )
-addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.js'               )
-   addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.css'              )
-
+addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.js'          )
+   addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.css'         )
 
 //load all custom files 
    addCSSToPage( 'myCSS',           URLScriptServer + 'styleRM.css'           )
@@ -83,35 +82,17 @@ addScriptToPage( 'myJUMPTODATE',    URLScriptServer + 'jump-to-date.js'       )
 // and then let the monkey dance, that is to say,
 // begin initializing the environment with all the cool tools
 setTimeout(function(){
-  loadKeyEvents()
-  loadTypeAhead()
-  loadJumpToDatePicker()
-  
-  toastr.options = {
-    "closeButton": true,
-    "debug": false,
-    "newestOnTop": true,
-    "progressBar": true,
-    "positionClass": "toast-bottom-right",
-    "preventDuplicates": false,
-    "onclick": null,
-    "showDuration": "300",
-    "hideDuration": "1000",
-    "timeOut": "600000",
-    "extendedTimeOut": "1000",
-    "showEasing": "swing",
-    "hideEasing": "linear",
-    "showMethod": "fadeIn",
-    "hideMethod": "fadeOut"
-  }
-  
+
   // Dont display in iframe
   if( window === window.parent ) {
-    setTimeout(()=>{
-      displayStartup(3000)      
-    },5000)
+      displayStartup(5000)  
   }
-}, 1000);
+  loadKeyEvents()
+  loadTypeAhead()
+  jumpToDateComponent.initialize()
+  rmQuickRefenceSystem.initialize()
+  
+}, 3000);
 
 
 
