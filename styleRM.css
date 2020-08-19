@@ -167,8 +167,12 @@
   border:     0px solid;
 }
 
-
-
 .jsPanel-headerbar {
-  height:28px;
+  height:           32px;
+  background-color: #565c70;
+  color:            white !important;
+}
+
+.jsPanel-btn > span::before  {
+  color: white !important;
 }
