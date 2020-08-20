@@ -46,7 +46,7 @@ const setRoamLivePreview_IsEnabled = (val)=>{
 
 
 (function () {
-  //Modification for roammonkey
+  //Modification for roam42
   if( window === window.parent  ){
 
     'use strict';

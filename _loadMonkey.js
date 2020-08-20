@@ -1,11 +1,16 @@
 /* global  loadKeyEvents, loadTypeAhead, displayHelp, displayStartup, jumpToDateComponent, rmQuickRefenceSystem */
 
+const ignoredFeatures = typeof window.ignoredFeatures !== 'undefined' ? window.ignoredFeatures : []; 
 
 // Function to dynamically add a new JS script to the current site 
 function addScriptToPage(tagId, scriptToLoad) {
   //Delete any existing reference added earlier to this script
   var old = document.getElementById(tagId) 
   if(old){ old.remove()}
+
+  if(ignoredFeatures && ignoredFeatures.indexOf(tagId) > -1) {
+    return;
+  }
 
   var s = document.createElement('script')
     s.type  = 'text/javascript'
@@ -21,6 +26,10 @@ function addModuleToPage(tagId, scriptToLoad) {
   var old = document.getElementById(tagId) 
   if(old){ old.remove()}
 
+  if(ignoredFeatures && ignoredFeatures.indexOf(tagId) > -1) {
+    return;
+  }
+
   var s = document.createElement('script')
     s.type  = 'module'
     s.src   = scriptToLoad
@@ -35,6 +44,10 @@ function addCSSToPage(tagId, cssToAdd) {
   var old = document.getElementById(tagId) 
   if(old){ old.remove()}
 
+  if(ignoredFeatures && ignoredFeatures.indexOf(tagId) > -1) {
+    return;
+  }
+  
   var cssLink = document.createElement('link')
     cssLink.type  = 'text/css' 
     cssLink.rel   = 'stylesheet';  
@@ -56,7 +69,6 @@ addScriptToPage( 'iziToast',        'https://cdnjs.cloudflare.com/ajax/libs/izit
 addScriptToPage( 'TYPEAHEAD',       'https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js' )
 addScriptToPage( 'TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js'                                )
 addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.6/dist/chrono.min.js'          )
-//addScriptToPage( 'ISMOBILE',        'https://cdn.jsdelivr.net/npm/ismobilejs@1/dist/isMobile.min.js'           )
 addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'                                     )
    addCSSToPage( 'cssFlatpckr',     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'              )
    addCSSToPage( 'cssFlatpckrThme', 'https://npmcdn.com/flatpickr/dist/themes/airbnb.css'                        )
@@ -64,22 +76,22 @@ addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.
    addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.css'         )
 
 //load all custom files 
-   addCSSToPage( 'myCSS',           URLScriptServer + 'styleRM.css'           )
-addScriptToPage( 'myCOMMONFUNCT',   URLScriptServer + 'commonFunctions.js'    )
-addScriptToPage( 'myRQR',           URLScriptServer + 'quick-reference.js'    )
-addScriptToPage( 'myTURNDOWN',      URLScriptServer + 'turndownservice.js'    )
-addScriptToPage( 'myDATEPROCESS',   URLScriptServer + 'dateProcessing.js'     )
-addScriptToPage( 'myKEYEVENTS',     URLScriptServer + 'keyevents.js'          )
-addScriptToPage( 'myTYPEAHEADDATA', URLScriptServer + 'typeaheadData.js'      )
-addScriptToPage( 'myTYPEAHEADUI',   URLScriptServer + 'typeaheadUI.js'        )
-addScriptToPage( 'myROAMLIVE',      URLScriptServer + 'roam-live-preview.js'  )
-addScriptToPage( 'myDailyNote',     URLScriptServer + 'dailynotespopup.js'    )
-addScriptToPage( 'mytemplatepoc',   URLScriptServer + 'templatepoc.js'        )
-addScriptToPage( 'myJUMPTODATE',    URLScriptServer + 'jump-to-date.js'       )
+   addCSSToPage( 'styleRM',           URLScriptServer + 'styleRM.css'           )
+addScriptToPage( 'commonFunctions',   URLScriptServer + 'commonFunctions.js'    )
+addScriptToPage( 'quickReference',               URLScriptServer + 'quick-reference.js'    )
+addScriptToPage( 'turnDown',          URLScriptServer + 'turndownservice.js'    )
+addScriptToPage( 'dateProcessing',    URLScriptServer + 'dateProcessing.js'     )
+addScriptToPage( 'keyEvents',         URLScriptServer + 'keyevents.js'          )
+addScriptToPage( 'typeAheadData',     URLScriptServer + 'typeaheadData.js'      )
+addScriptToPage( 'lookupUI',          URLScriptServer + 'typeaheadUI.js'        )
+addScriptToPage( 'livePreview',       URLScriptServer + 'roam-live-preview.js'  )
+addScriptToPage( 'dailyNote',         URLScriptServer + 'dailynotespopup.js'    )
+addScriptToPage( 'templatePoc',       URLScriptServer + 'templatepoc.js'        )
+addScriptToPage( 'jumpToDate',        URLScriptServer + 'jump-to-date.js'       )
 
 
 // Give the libraries a few seconds to get comfy in their new home 
-// and then let the monkey dance, that is to say,
+// and then let the extension dance, that is to say,
 // begin initializing the environment with all the cool tools
 setTimeout(function(){
 
@@ -88,9 +100,9 @@ setTimeout(function(){
       displayStartup(5000)  
   }
   loadKeyEvents()
-  loadTypeAhead()
-  jumpToDateComponent.initialize()
-  rmQuickRefenceSystem.initialize()
+  try { loadTypeAhead()                   } catch(e) {}
+  try { jumpToDateComponent.initialize()  } catch(e) {}
+  try { rmQuickRefenceSystem.initialize() } catch(e) {}
   
 }, 3000);
 

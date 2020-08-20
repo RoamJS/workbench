@@ -124,7 +124,7 @@ var jumpToDateComponent = {
         }
       }
 
-      if( e.ctrlKey==true  &&  e.keyCode==188 ) {
+      if( e.ctrlKey==true  && e.shiftKey==true &&  e.keyCode==188 ) {
         e.preventDefault();
         if (event.srcElement.localName == 'textarea') {
           KeyboardLib.pressEsc()
@@ -137,7 +137,7 @@ var jumpToDateComponent = {
         }
       }
 
-      if( e.ctrlKey==true  &&  e.keyCode==190 ) {
+      if( e.ctrlKey==true && e.shiftKey==true &&  e.keyCode==190 ) {
         e.preventDefault();
         if (event.srcElement.localName == 'textarea') {
           KeyboardLib.pressEsc()
