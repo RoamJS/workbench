@@ -1,11 +1,16 @@
 /* global  loadKeyEvents, loadTypeAhead, displayHelp, displayStartup, jumpToDateComponent, rmQuickRefenceSystem */
 
+const ignoredFeatures = typeof window.ignoredFeatures !== 'undefined' ? window.ignoredFeatures : []; 
 
 // Function to dynamically add a new JS script to the current site 
 function addScriptToPage(tagId, scriptToLoad) {
   //Delete any existing reference added earlier to this script
   var old = document.getElementById(tagId) 
   if(old){ old.remove()}
+
+  if(ignoredFeatures && ignoredFeatures.indexOf(tagId) > -1) {
+    return;
+  }
 
   var s = document.createElement('script')
     s.type  = 'text/javascript'
