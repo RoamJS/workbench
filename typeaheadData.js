@@ -13,7 +13,18 @@ var typeaheadResult = d => {
 } 
 
 var displayDataInToast = d => { 
-  toastr.info(d.definition,   `${d.word} (${d.type})`)   
+  let display = `<b>${d.word}</b><br/> ${d.definition}`
+  iziToast.show({
+    message:  display,
+    progressBar: true,
+    animateInside: true,
+    close: true,
+    maxWidth:250,
+    timeout: 60000,
+    closeOnClick: true,
+    displayMode: 2
+  });  
+  
 }
 
 var insertDataIntoNode = (currentTextArea, d) => {
