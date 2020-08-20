@@ -8,8 +8,8 @@ const displayStartup = (delayTime) => {
     message: `
     <b>RoamMonkey Starting</b>
     <table>
-      <tr><td>Alt-Shift-H </td><td>&nbsp</td><td>Monkey Help</td></tr>
-      <tr><td>Ctrl+Shift+H</td><td>&nbsp</td><td>Roam Help </td></tr>
+      <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Monkey Help</td></tr>
+      <tr><td>Ctrl–Shift–H</td><td>&nbsp</td><td>Roam Help </td></tr>
     </table>
   `.trim(),
     theme: 'dark',
@@ -28,24 +28,24 @@ const displayHelp = (delayTime) => {
       message: `
     <b>RoamMonkey Help</b>
     <table>
-      <tr><td>Alt-Shift-H</td><td>&nbsp</td><td>Monkey Help</td></tr>
-      <tr><td>Ctrl-Shift-H</td><td>&nbsp</td><td>Roam Help </td></tr>
-      <tr><td>Alt-Shift-D</td><td>&nbsp</td><td>Convert to Date  </td></tr>
-      <tr><td>Alt-Shift-J</td><td>&nbsp</td><td>Jump to Date     </td></tr>
-      <tr><td>Ctrl-Shift-.</td><td>&nbsp</td><td>Next Day's Note</td></tr>
-      <tr><td>Ctrl-Shift-,</td><td>&nbsp</td><td>Previous Day's Note</td></tr>
-      <tr><td>Ctrl-Alt-Home</td><td>&nbsp</td><td>Jump to first block in page</td></tr>
-      <tr><td>Ctrl-Alt-End</td><td>&nbsp</td><td>Jump to last block in page</td></tr>
-      <tr><td>Alt-Shift-/</td><td>&nbsp</td><td>Open side bar</td></tr>
-      <tr><td>Alt-Shift-,</td><td>&nbsp</td><td>Daily popup </td></tr>
-      <tr><td>Alt-Shift-.</td><td>&nbsp</td><td>Lookup           </td></tr>
-      <tr><td>Alt-Shift-A</td><td>&nbsp</td><td>TODO #na         </td></tr>
-      <tr><td>Alt-Shift-W</td><td>&nbsp</td><td>TODO #weekend    </td></tr>
-      <tr><td>Alt-Shift-T</td><td>&nbsp</td><td>Strikeout text   </td></tr>
-      <tr><td>Alt-m      </td><td>&nbsp</td><td>Markdown (simple)</td></tr>
-      <tr><td>&nbsp       </td><td>&nbsp</td><td>&nbsp            </td></tr>
-      <tr><td>Hover mouse </td><td>&nbsp</td><td>Live Preview   </td></tr>
-      <tr><td>Ctrl-Shift-L</td><td>&nbsp</td><td>Toggle Live Preview<br/> on/off</td></tr>
+      <tr><td>Alt–Shift–H</td><td>&nbsp</td> <td>Monkey Help</td></tr>
+      <tr><td>Ctrl–Shift–H</td><td>&nbsp</td><td>Roam Help </td></tr>
+      <tr><td>Alt–Shift–D</td><td>&nbsp</td> <td>Convert to Date  </td></tr>
+      <tr><td>Alt–Shift–J</td><td>&nbsp</td> <td>Jump to Date     </td></tr>
+      <tr><td>Ctrl–Shift–.</td><td>&nbsp</td><td>Next Day's Note</td></tr>
+      <tr><td>Ctrl–Shift–,</td><td>&nbsp</td><td>Previous Day's Note</td></tr>
+      <tr><td>Alt–j</td><td>&nbsp</td>       <td>Jump to first block in page</td></tr>
+      <tr><td>Alt–k</td><td>&nbsp</td>        <td>Jump to last block in page</td></tr>
+      <tr><td>Alt–Shift–/</td><td>&nbsp</td>  <td>Open side bar</td></tr>
+      <tr><td>Alt–Shift–,</td><td>&nbsp</td>  <td>Daily popup </td></tr>
+      <tr><td>Alt–Shift–.</td><td>&nbsp</td>  <td>Lookup           </td></tr>
+      <tr><td>Alt–Shift–A</td><td>&nbsp</td>  <td>TODO #na         </td></tr>
+      <tr><td>Alt–Shift–W</td><td>&nbsp</td>  <td>TODO #weekend    </td></tr>
+      <tr><td>Alt–Shift–T</td><td>&nbsp</td>  <td>Strikeout text   </td></tr>
+      <tr><td>Alt–m      </td><td>&nbsp</td>  <td>Markdown (simple)</td></tr>
+      <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp            </td></tr>
+      <tr><td>Hover mouse </td><td>&nbsp</td> <td>Live Preview   </td></tr>
+      <tr><td>Ctrl–Shift–L</td><td>&nbsp</td> <td>Toggle Live Preview<br/> on/off</td></tr>
     </table>
     `.trim(),
       theme: 'dark',
@@ -184,10 +184,11 @@ const loadKeyEvents = () => {
   }
 
   document.addEventListener('keydown', (e)=> {
-    if( e.ctrlKey==true  && e.altKey==true  && ( e.key=='End' || e.key=='Home' ) ) {
+    // ∆˚ added for smart keyboard support  
+    if( e.altKey==true  && ( e.key=='j' || e.key=='k' || e.key=='∆' || e.key=='˚' ) ) {
       e.preventDefault();
       var articleContent = getArticleOfCurrentPage()
-      e.key=='End' ? simulateMouseClick(articleContent[ articleContent.length-1 ]) : simulateMouseClick(articleContent[0])
+      e.key=='k' || e.key=='˚' ? simulateMouseClick(articleContent[ articleContent.length-1 ]) : simulateMouseClick(articleContent[0])
     }
   })
   
