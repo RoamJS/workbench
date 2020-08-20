@@ -1,5 +1,7 @@
 /* global  loadKeyEvents, toastr, loadTypeAhead, displayHelp, displayStartup, loadJumpToDatePicker */
 
+const ignoredFeatures = typeof window.ignoredFeatures !== 'undefined' ? window.ignoredFeatures : []; 
+
 // Function to dynamically add a new JS script to the current site 
 function addScriptToPage(tagId, scriptToLoad) {
   //Delete any existing reference added earlier to this script
