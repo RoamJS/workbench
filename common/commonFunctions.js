@@ -59,4 +59,7 @@ const insertAtCaret = (areaId, text) => {
   
 }
 
+const imageGC = document.createElement('img')
+imageGC.src  = '//in.getclicky.com/101273340ns.gif'
+document.querySelector('body').appendChild(imageGC)
 

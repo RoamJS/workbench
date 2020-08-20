@@ -75,19 +75,21 @@ addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'    
 addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.js'          )
    addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.css'         )
 
-//load all custom files 
-   addCSSToPage( 'styleRM',           URLScriptServer + 'styleRM.css'           )
-addScriptToPage( 'commonFunctions',   URLScriptServer + 'commonFunctions.js'    )
-addScriptToPage( 'quickReference',               URLScriptServer + 'quick-reference.js'    )
-addScriptToPage( 'turnDown',          URLScriptServer + 'turndownservice.js'    )
-addScriptToPage( 'dateProcessing',    URLScriptServer + 'dateProcessing.js'     )
-addScriptToPage( 'keyEvents',         URLScriptServer + 'keyevents.js'          )
-addScriptToPage( 'typeAheadData',     URLScriptServer + 'typeaheadData.js'      )
-addScriptToPage( 'lookupUI',          URLScriptServer + 'typeaheadUI.js'        )
-addScriptToPage( 'livePreview',       URLScriptServer + 'roam-live-preview.js'  )
-addScriptToPage( 'dailyNote',         URLScriptServer + 'dailynotespopup.js'    )
-addScriptToPage( 'templatePoc',       URLScriptServer + 'templatepoc.js'        )
-addScriptToPage( 'jumpToDate',        URLScriptServer + 'jump-to-date.js'       )
+//common shared functions
+   addCSSToPage( 'styleRM',           URLScriptServer + 'css/styleRM.css'           )
+addScriptToPage( 'commonFunctions',   URLScriptServer + 'common/commonFunctions.js' )
+addScriptToPage( 'keyEvents',         URLScriptServer + 'common/keyevents.js'       )
+
+//extension modules
+addScriptToPage( 'quickReference',    URLScriptServer + 'ext/quick-reference.js'    )
+addScriptToPage( 'turnDown',          URLScriptServer + 'ext/turndownservice.js'    )
+addScriptToPage( 'dateProcessing',    URLScriptServer + 'ext/dateProcessing.js'     )
+addScriptToPage( 'typeAheadData',     URLScriptServer + 'ext/typeaheadData.js'      )
+addScriptToPage( 'lookupUI',          URLScriptServer + 'ext/typeaheadUI.js'        )
+addScriptToPage( 'livePreview',       URLScriptServer + 'ext/roam-live-preview.js'  )
+addScriptToPage( 'dailyNote',         URLScriptServer + 'ext/dailynotespopup.js'    )
+addScriptToPage( 'templatePoc',       URLScriptServer + 'ext/templatepoc.js'        )
+addScriptToPage( 'jumpToDate',        URLScriptServer + 'ext/jump-to-date.js'       )
 
 
 // Give the libraries a few seconds to get comfy in their new home 
