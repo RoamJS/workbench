@@ -110,7 +110,7 @@ var jumpToDateComponent = {
 
   initialize()  {
     document.addEventListener('keydown', (e)=> {
-      if( e.altKey==true  &&  e.keyCode==74 ) {
+      if( e.altKey==true  && e.shiftKey==true  && e.keyCode==74 ) {
         e.preventDefault();
         console.log(e.keyCode)
         if (event.srcElement.localName == 'textarea') {
