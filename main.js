@@ -59,7 +59,7 @@ function addCSSToPage(tagId, cssToAdd) {
 }
 
 
-const URLScriptServer =  document.currentScript.src.replace('_loadMonkey.js','')
+const URLScriptServer =  document.currentScript.src.replace('main.js','')
 
 //load all 3rd party libraries 
 addScriptToPage( 'JQUERY',          'https://code.jquery.com/jquery-3.5.1.min.js'                                )
