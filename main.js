@@ -95,7 +95,6 @@ addScriptToPage( 'jumpToDate',        URLScriptServer + 'ext/jump-to-date.js'   
 
 
 
-
 // Give the libraries a few seconds to get comfy in their new home 
 // and then let the extension dance, that is to say,
 // begin initializing the environment with all the cool tools
