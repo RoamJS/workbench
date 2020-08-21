@@ -80,7 +80,7 @@ addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.
    addCSSToPage( 'styleRM',           URLScriptServer + 'css/styleRM.css'           )
 addScriptToPage( 'commonFunctions',   URLScriptServer + 'common/commonFunctions.js' )
 addScriptToPage( 'keyEvents',         URLScriptServer + 'common/keyevents.js'       )
-addScriptToPage( 'message-startup',   URLScriptServer + 'message-startup.js'       )
+addScriptToPage( 'message-startup',   URLScriptServer + 'message-s.js'       )
 
 //extension modules
 addScriptToPage( 'quickReference',    URLScriptServer + 'ext/quick-reference.js'    )
