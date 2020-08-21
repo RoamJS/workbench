@@ -1,6 +1,6 @@
 /* global  loadKeyEvents, loadTypeAhead, displayHelp, displayStartup, jumpToDateComponent, rmQuickRefenceSystem, iziToast */
 
-const ignoredFeatures = typeof window.ignoredFeatures !== 'undefined' ? window.ignoredFeatures : []; 
+const disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : []; 
 
 
 // Function to dynamically add a new JS script to the current site 
@@ -9,7 +9,7 @@ function addScriptToPage(tagId, scriptToLoad) {
   var old = document.getElementById(tagId) 
   if(old){ old.remove()}
 
-  if(ignoredFeatures && ignoredFeatures.indexOf(tagId) > -1) {
+  if(disabledFeatures && disabledFeatures.indexOf(tagId) > -1) {
     return;
   }
 
@@ -27,7 +27,7 @@ function addModuleToPage(tagId, scriptToLoad) {
   var old = document.getElementById(tagId) 
   if(old){ old.remove()}
 
-  if(ignoredFeatures && ignoredFeatures.indexOf(tagId) > -1) {
+  if(disabledFeatures && disabledFeatures.indexOf(tagId) > -1) {
     return;
   }
 
@@ -45,7 +45,7 @@ function addCSSToPage(tagId, cssToAdd) {
   var old = document.getElementById(tagId) 
   if(old){ old.remove()}
 
-  if(ignoredFeatures && ignoredFeatures.indexOf(tagId) > -1) {
+  if(disabledFeatures && disabledFeatures.indexOf(tagId) > -1) {
     return;
   }
   
@@ -77,22 +77,21 @@ addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.
    addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.css'         )
 
 //common shared functions
-   addCSSToPage( 'styleRM',           URLScriptServer + 'css/styleRM.css'           )
-addScriptToPage( 'commonFunctions',   URLScriptServer + 'common/commonFunctions.js' )
-addScriptToPage( 'keyEvents',         URLScriptServer + 'common/keyevents.js'       )
-addScriptToPage( 'message-startup',   URLScriptServer + 'message-startup.js'       )
+   addCSSToPage( 'styleRM',         URLScriptServer + 'css/styleRM.css'           )
+addScriptToPage( 'commonFunctions', URLScriptServer + 'common/commonFunctions.js' )
+addScriptToPage( 'keyEvents',       URLScriptServer + 'common/keyevents.js'       )
+addScriptToPage( 'message-startup', URLScriptServer + 'message-s.js'       )
 
 //extension modules
-addScriptToPage( 'quickReference',    URLScriptServer + 'ext/quick-reference.js'    )
-addScriptToPage( 'turnDown',          URLScriptServer + 'ext/turndownservice.js'    )
-addScriptToPage( 'dateProcessing',    URLScriptServer + 'ext/dateProcessing.js'     )
-addScriptToPage( 'typeAheadData',     URLScriptServer + 'ext/typeaheadData.js'      )
-addScriptToPage( 'lookupUI',          URLScriptServer + 'ext/typeaheadUI.js'        )
-addScriptToPage( 'livePreview',       URLScriptServer + 'ext/roam-live-preview.js'  )
-addScriptToPage( 'dailyNote',         URLScriptServer + 'ext/dailynotespopup.js'    )
-addScriptToPage( 'templatePoc',       URLScriptServer + 'ext/templatepoc.js'        )
-addScriptToPage( 'jumpToDate',        URLScriptServer + 'ext/jump-to-date.js'       )
-
+addScriptToPage( 'quickReference',  URLScriptServer + 'ext/quick-reference.js'    )
+addScriptToPage( 'turnDown',        URLScriptServer + 'ext/turndownservice.js'    )
+addScriptToPage( 'dateProcessing',  URLScriptServer + 'ext/dateProcessing.js'     )
+addScriptToPage( 'typeAheadData',   URLScriptServer + 'ext/typeaheadData.js'      )
+addScriptToPage( 'lookupUI',        URLScriptServer + 'ext/typeaheadUI.js'        )
+addScriptToPage( 'livePreview',     URLScriptServer + 'ext/roam-live-preview.js'  )
+addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/dailynotespopup.js'    )
+addScriptToPage( 'templatePoc',     URLScriptServer + 'ext/templatepoc.js'        )
+addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/jump-to-date.js'       )
 
 
 
