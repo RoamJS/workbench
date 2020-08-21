@@ -16,9 +16,9 @@ const displayStartup = (delayTime) => {
     theme: 'dark',
     progressBar: true,
     animateInside: true,
-    close: false,
-    timeout: delayTime,
-    closeOnClick: true,
-    displayMode: 2
+    close: false,  
+    timeout: delayTime,  
+    closeOnClick: true,  
+    displayMode: 2  
   });  
 }
