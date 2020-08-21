@@ -1,4 +1,4 @@
-/* iziToast */
+/* globals iziToast */
 
 
 const displayStartup = (delayTime) => { 
