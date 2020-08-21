@@ -1,6 +1,7 @@
-/* global  loadKeyEvents, loadTypeAhead, displayHelp, displayStartup, jumpToDateComponent, rmQuickRefenceSystem */
+/* global  loadKeyEvents, loadTypeAhead, displayHelp, displayStartup, jumpToDateComponent, rmQuickRefenceSystem, iziToast */
 
 const ignoredFeatures = typeof window.ignoredFeatures !== 'undefined' ? window.ignoredFeatures : []; 
+
 
 // Function to dynamically add a new JS script to the current site 
 function addScriptToPage(tagId, scriptToLoad) {
@@ -79,6 +80,7 @@ addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.
    addCSSToPage( 'styleRM',           URLScriptServer + 'css/styleRM.css'           )
 addScriptToPage( 'commonFunctions',   URLScriptServer + 'common/commonFunctions.js' )
 addScriptToPage( 'keyEvents',         URLScriptServer + 'common/keyevents.js'       )
+addScriptToPage( 'message-startup',   URLScriptServer + 'message-startup.js'       )
 
 //extension modules
 addScriptToPage( 'quickReference',    URLScriptServer + 'ext/quick-reference.js'    )
@@ -90,6 +92,8 @@ addScriptToPage( 'livePreview',       URLScriptServer + 'ext/roam-live-preview.j
 addScriptToPage( 'dailyNote',         URLScriptServer + 'ext/dailynotespopup.js'    )
 addScriptToPage( 'templatePoc',       URLScriptServer + 'ext/templatepoc.js'        )
 addScriptToPage( 'jumpToDate',        URLScriptServer + 'ext/jump-to-date.js'       )
+
+
 
 
 // Give the libraries a few seconds to get comfy in their new home 

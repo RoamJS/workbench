@@ -3,25 +3,6 @@ testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForD
 
 //based on the libary https://wangchujiang.com/hotkeys/
 
-const displayStartup = (delayTime) => { 
-  iziToast.show({
-    message: `
-    <b>Roam42 Starting . . .</b>
-    <p></p>
-    <table>
-      <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Roam42 Help</td></tr>
-      <tr><td>Ctrl–Shift–H</td><td>&nbsp</td><td>Quick Reference</td></tr>
-    </table>
-  `.trim(),
-    theme: 'dark',
-    progressBar: true,
-    animateInside: true,
-    close: false,
-    timeout: delayTime,
-    closeOnClick: true,
-    displayMode: 2
-  });  
-}
 
 const displayHelp = (delayTime) => { 
    iziToast.destroy(); 
