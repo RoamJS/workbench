@@ -58,10 +58,3 @@ const insertAtCaret = (areaId, text) => {
     }, 100)
   
 }
-
-if( window === window.parent  ){
-  const imageGC = document.createElement('img')
-  imageGC.src  = '//in.getclicky.com/101273340ns.gif'
-  document.querySelector('body').appendChild(imageGC)
-}
-

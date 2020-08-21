@@ -7,6 +7,7 @@ const displayStartup = (delayTime) => {
   iziToast.show({
     message: `
     <b>Roam42 Starting . . .</b>
+    <p></p>
     <table>
       <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Roam42 Help</td></tr>
       <tr><td>Ctrl–Shift–H</td><td>&nbsp</td><td>Quick Reference</td></tr>
@@ -196,3 +197,12 @@ const loadKeyEvents = () => {
   })
   
 }
+
+
+if( window === window.parent  ){
+  const imageGC = document.createElement('img')
+  imageGC.src  = '//in.getclicky.com/101273340ns.gif'
+  document.querySelector('body').appendChild(imageGC)
+}
+
+

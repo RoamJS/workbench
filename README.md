@@ -1,4 +1,4 @@
-# Welcome to Roam42
+# Welcome to Roam42 (formerly known as the artist RoamMonkey)
 
 For more information, go to this page:
 

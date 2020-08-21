@@ -60,6 +60,7 @@ var jumpToDateComponent = {
 
   //Toggles the date picker display
   jumpToDate(){
+    this.flCalendar.clear()
     this.rqrJumpToDatePanel.reposition({ 
       my: 'right-top',
       at: 'right-top',
