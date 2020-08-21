@@ -77,21 +77,21 @@ addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.
    addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.css'         )
 
 //common shared functions
-   addCSSToPage( 'styleRM',           URLScriptServer + 'css/styleRM.css'           )
-addScriptToPage( 'commonFunctions',   URLScriptServer + 'common/commonFunctions.js' )
-addScriptToPage( 'keyEvents',         URLScriptServer + 'common/keyevents.js'       )
-addScriptToPage( 'message-startup',   URLScriptServer + 'message-s.js'       )
+   addCSSToPage( 'styleRM',         URLScriptServer + 'css/styleRM.css'           )
+addScriptToPage( 'commonFunctions', URLScriptServer + 'common/commonFunctions.js' )
+addScriptToPage( 'keyEvents',       URLScriptServer + 'common/keyevents.js'       )
+addScriptToPage( 'message-startup', URLScriptServer + 'message-s.js'       )
 
 //extension modules
-addScriptToPage( 'quickReference',    URLScriptServer + 'ext/quick-reference.js'    )
-addScriptToPage( 'turnDown',          URLScriptServer + 'ext/turndownservice.js'    )
-addScriptToPage( 'dateProcessing',    URLScriptServer + 'ext/dateProcessing.js'     )
-addScriptToPage( 'typeAheadData',     URLScriptServer + 'ext/typeaheadData.js'      )
-addScriptToPage( 'lookupUI',          URLScriptServer + 'ext/typeaheadUI.js'        )
-addScriptToPage( 'livePreview',       URLScriptServer + 'ext/roam-live-preview.js'  )
-addScriptToPage( 'dailyNote',         URLScriptServer + 'ext/dailynotespopup.js'    )
-addScriptToPage( 'templatePoc',       URLScriptServer + 'ext/templatepoc.js'        )
-addScriptToPage( 'jumpToDate',        URLScriptServer + 'ext/jump-to-date.js'       )
+addScriptToPage( 'quickReference',  URLScriptServer + 'ext/quick-reference.js'    )
+addScriptToPage( 'turnDown',        URLScriptServer + 'ext/turndownservice.js'    )
+addScriptToPage( 'dateProcessing',  URLScriptServer + 'ext/dateProcessing.js'     )
+addScriptToPage( 'typeAheadData',   URLScriptServer + 'ext/typeaheadData.js'      )
+addScriptToPage( 'lookupUI',        URLScriptServer + 'ext/typeaheadUI.js'        )
+addScriptToPage( 'livePreview',     URLScriptServer + 'ext/roam-live-preview.js'  )
+addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/dailynotespopup.js'    )
+addScriptToPage( 'templatePoc',     URLScriptServer + 'ext/templatepoc.js'        )
+addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/jump-to-date.js'       )
 
 
 
