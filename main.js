@@ -1,6 +1,6 @@
 /* global  loadKeyEvents, loadTypeAhead, displayHelp, displayStartup, jumpToDateComponent, rmQuickRefenceSystem, iziToast */
 
-const ignoredFeatures = typeof window.ignoredFeatures !== 'undefined' ? window.ignoredFeatures : []; 
+const disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : []; 
 
 
 // Function to dynamically add a new JS script to the current site 
@@ -9,7 +9,7 @@ function addScriptToPage(tagId, scriptToLoad) {
   var old = document.getElementById(tagId) 
   if(old){ old.remove()}
 
-  if(ignoredFeatures && ignoredFeatures.indexOf(tagId) > -1) {
+  if(disabledFeatures && disabledFeatures.indexOf(tagId) > -1) {
     return;
   }
 
@@ -27,7 +27,7 @@ function addModuleToPage(tagId, scriptToLoad) {
   var old = document.getElementById(tagId) 
   if(old){ old.remove()}
 
-  if(ignoredFeatures && ignoredFeatures.indexOf(tagId) > -1) {
+  if(disabledFeatures && disabledFeatures.indexOf(tagId) > -1) {
     return;
   }
 
@@ -45,7 +45,7 @@ function addCSSToPage(tagId, cssToAdd) {
   var old = document.getElementById(tagId) 
   if(old){ old.remove()}
 
-  if(ignoredFeatures && ignoredFeatures.indexOf(tagId) > -1) {
+  if(disabledFeatures && disabledFeatures.indexOf(tagId) > -1) {
     return;
   }
   
