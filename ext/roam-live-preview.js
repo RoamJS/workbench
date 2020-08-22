@@ -1,7 +1,6 @@
 // Thanks Bro! gracefully borrowed  from: https://github.com/palashkaria/roam-modifiers
 /* globals , Cookies  */
 
-
 document.addEventListener('keydown', (e)=> {
   if( e.ctrlKey==true  &&  e.key=='L' ) {
     e.preventDefault();
@@ -46,7 +45,7 @@ const setRoamLivePreview_IsEnabled = (val)=>{
 
 
 (function () {
-  //Modification for roam42
+  
   if( window === window.parent  ){
 
     'use strict';

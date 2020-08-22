@@ -1,4 +1,4 @@
-/* global  loadKeyEvents, loadTypeAhead, displayHelp, displayStartup, jumpToDateComponent, rmQuickRefenceSystem, iziToast */
+/* global  loadKeyEvents, loadTypeAhead, displayHelp, displayStartup, jumpToDateComponent, rmQuickRefenceSystem, iziToast, device */
 
 const disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : []; 
 
@@ -75,6 +75,8 @@ addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'    
    addCSSToPage( 'cssFlatpckrThme', 'https://npmcdn.com/flatpickr/dist/themes/airbnb.css'                        )
 addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.js'          )
    addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.css'         )
+addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/current-device.min.js'                 )
+
 
 //common shared functions
    addCSSToPage( 'styleRM',         URLScriptServer + 'css/styleRM.css'           )
@@ -88,11 +90,8 @@ addScriptToPage( 'turnDown',        URLScriptServer + 'ext/turndownservice.js'  
 addScriptToPage( 'dateProcessing',  URLScriptServer + 'ext/dateProcessing.js'     )
 addScriptToPage( 'typeAheadData',   URLScriptServer + 'ext/typeaheadData.js'      )
 addScriptToPage( 'lookupUI',        URLScriptServer + 'ext/typeaheadUI.js'        )
-addScriptToPage( 'livePreview',     URLScriptServer + 'ext/roam-live-preview.js'  )
-addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/dailynotespopup.js'    )
 addScriptToPage( 'templatePoc',     URLScriptServer + 'ext/templatepoc.js'        )
 addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/jump-to-date.js'       )
-
 
 
 // Give the libraries a few seconds to get comfy in their new home 
@@ -100,6 +99,11 @@ addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/jump-to-date.js'     
 // begin initializing the environment with all the cool tools
 setTimeout(function(){
 
+  if ( device.mobile() == false ) { 
+    addScriptToPage( 'livePreview',     URLScriptServer + 'ext/roam-live-preview.js'  )
+    addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/dailynotespopup.js'    )
+  }
+  
   // Dont display in iframe
   if( window === window.parent ) {
       displayStartup(5000)  
