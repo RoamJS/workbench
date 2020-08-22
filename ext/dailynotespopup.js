@@ -18,7 +18,7 @@ if( window === window.parent ) {
       </div>
    </div>
   `.trim() )  
-  }
+}
 
 function initializeIframe() {
   if( window.initialized == false ) {
@@ -44,13 +44,15 @@ function initializeIframe() {
     `)
 
   } 
-
 } 
 
 function closeDailyNotePopup(){
   parent.focus()
-  window.parent.document.getElementById('dnapopup').style.visibility = 'hidden'
-    
+  let dn = window.parent.document.getElementById('dnapopup')
+  dn.style.right = '12500px' 
+  dn.style.left =  '12000px'
+  dn.style.visibility = 'hidden'
+  window.dnaVisible = false
 }
 
 function toggleDailyNotes() {
