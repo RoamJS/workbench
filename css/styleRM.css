@@ -8,8 +8,10 @@
   visibility:hidden;
   position:absolute;
   height:40%;
-  right: calc((100% - 720px) / 2);
-  left: calc((100% - 720px) / 2);
+/*   right: calc((100% - 720px) / 2);
+  left: calc((100% - 720px) / 2); */
+  left: 12000px;
+  right: 12500px;
   top:55%;
   z-index:1000;
   background-color: grey;
