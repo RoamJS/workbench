@@ -40,7 +40,7 @@ function initializeIframe() {
     iframe.contentDocument.head.appendChild(style)
 
     iframe.contentWindow.document.body.insertAdjacentHTML('beforeend',`
-    <div style="position:absolute; top:10px; right:10px; z-index:1000;" class="bp3-icon-cross" onclick="closeDailyNotePopup()"></div>
+    <div style="position:absolute; top:10px; left:20px; z-index:1000;" class="bp3-button bp3-minimal bp3-small bp3-icon-cross" onclick="closeDailyNotePopup()"></div>
     `)
 
   } 
@@ -55,13 +55,17 @@ function closeDailyNotePopup(){
 
 function toggleDailyNotes() {
   initializeIframe()
-
     if( window === window.parent ) {
+      let dn = document.getElementById('dnapopup')
       if(window.dnaVisible==false) {
-        document.getElementById('dnapopup').style.visibility = 'visible'
+        dn.style.right = 'calc((100% - 720px) / 2)' 
+        dn.style.left =  'calc((100% - 720px) / 2)'
+        dn.style.visibility = 'visible'
         window.dnaVisible = true
       } else {
-        document.getElementById('dnapopup').style.visibility = 'hidden'
+        dn.style.right = '12500px' 
+        dn.style.left =  '12000px'
+        dn.style.visibility = 'hidden'
         window.dnaVisible = false
       }
     } else {
