@@ -1,5 +1,5 @@
 // Thanks Bro! gracefully borrowed  from: https://github.com/palashkaria/roam-modifiers
-/* globals , Cookies  */
+/* globals , Cookies , iziToast */
 
 document.addEventListener('keydown', (e)=> {
   if( e.ctrlKey==true  &&  e.key=='L' ) {
@@ -164,6 +164,7 @@ const setRoamLivePreview_IsEnabled = (val)=>{
       let hoveredElement = null;
       let popupTimeout = null;
       let popper = null;
+      let externalUrl = false
       const previewIframe = createPreviewIframe();
       
       document.addEventListener('mouseover', (e) => {
@@ -180,13 +181,17 @@ const setRoamLivePreview_IsEnabled = (val)=>{
           isPageRef = true
           text = target.title.replace('page: ','') 
         }
-
+        if (isPageRef == false && target.classList.contains('rm-ref-page-view-title') ) {
+          isPageRef = true
+          text = target.innerText
+        }
+        
         // console.log( isPageRef , isPageRefTag , target.classList.length)
         if ( !isPageRef  && !isPageRefTag && target.classList.length == 0 && target.parentNode.classList.contains('rm-page-ref') ) {
           isPageRef = true
-          text = target.innerText 
+          text = target.innerText
+          target = e.target
         }
-
         
         // remove '#' for page tags
         if (isPageRef) {
@@ -231,6 +236,7 @@ const setRoamLivePreview_IsEnabled = (val)=>{
         }
       });
       document.addEventListener('mouseout', (e) => {
+
         const target = e.target;
         const relatedTarget = e.relatedTarget;
         const iframe = document.getElementById('roam-toolkit-preview-iframe');
@@ -268,7 +274,7 @@ const setRoamLivePreview_IsEnabled = (val)=>{
     };
     var remoteScript = document.createElement('script');
     remoteScript.src =
-      'https://unpkg.com/@popperjs/core@2/dist/umd/popper.js?ts=' + +new Date();
+      'https://unpkg.com/@popperjs/core@2'
     remoteScript.onload = enableLivePreview;
     document.body.appendChild(remoteScript);
   }

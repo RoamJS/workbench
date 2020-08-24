@@ -1,4 +1,4 @@
-/* globals chrono */
+/* globals chrono,hotkeys,kbMapDateProcessing, setEmptyNodeValue */
 
 const monthsDateProcessing = [
   'January',
