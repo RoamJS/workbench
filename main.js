@@ -1,63 +1,25 @@
-/* global  loadKeyEvents, loadTypeAhead, displayHelp, displayStartup, jumpToDateComponent, rmQuickRefenceSystem, iziToast, device */
+/* global  loadKeyEvents, loadTypeAhead, jumpToDateComponent, rmQuickRefenceSystem, device, displayStartup */
 
 const disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : []; 
 
-
-// Function to dynamically add a new JS script to the current site 
-function addScriptToPage(tagId, scriptToLoad) {
-  //Delete any existing reference added earlier to this script
-  var old = document.getElementById(tagId) 
-  if(old){ old.remove()}
-
-  if(disabledFeatures && disabledFeatures.indexOf(tagId) > -1) {
-    return;
-  }
-
-  var s = document.createElement('script')
-    s.type  = 'text/javascript'
-    s.src   = scriptToLoad
-    s.id    = tagId
-    s.async = false
-    document.getElementsByTagName('head')[0].appendChild(s)
+function addScriptToPage(tagId, script) {
+  addElementToPage(Object.assign(document.createElement('script'),{src:script}) , tagId, 'text/javascript')
 }
 
-// Function to dynamically add a new JS script to the current site 
-function addModuleToPage(tagId, scriptToLoad) {
-  //Delete any existing reference added earlier to this script
-  var old = document.getElementById(tagId) 
-  if(old){ old.remove()}
-
-  if(disabledFeatures && disabledFeatures.indexOf(tagId) > -1) {
-    return;
-  }
-
-  var s = document.createElement('script')
-    s.type  = 'module'
-    s.src   = scriptToLoad
-    s.id    = tagId
-    s.async = false
-    document.getElementsByTagName('head')[0].appendChild(s)
+function addModuleToPage(tagId, script) {
+  addElementToPage(Object.assign(document.createElement('script'),{src:script}) , tagId, 'module')
 }
 
-// Function to dynamically add a new CSS File to the current site 
 function addCSSToPage(tagId, cssToAdd) {
-  //Delete any existing reference added earlier to this script
-  var old = document.getElementById(tagId) 
-  if(old){ old.remove()}
-
-  if(disabledFeatures && disabledFeatures.indexOf(tagId) > -1) {
-    return;
-  }
-  
-  var cssLink = document.createElement('link')
-    cssLink.type  = 'text/css' 
-    cssLink.rel   = 'stylesheet';  
-    cssLink.href  = cssToAdd
-    cssLink.id    = tagId
-    cssLink.async = false
-    document.getElementsByTagName('head')[0].appendChild(cssLink)
+  addElementToPage(Object.assign(document.createElement('link'),{href:cssToAdd, rel: 'stylesheet'} ) , tagId, 'text/css')
 }
 
+function addElementToPage(element, tagId, typeT ) {
+  try { document.getElementById(tagId).remove() } catch(e){}  //Delete any existing reference
+  if(disabledFeatures && disabledFeatures.indexOf(tagId) > -1) { return } //Exit if disabled
+  Object.assign(element, { type:typeT, async:false, tagId:tagId } )
+  document.getElementsByTagName('head')[0].appendChild(element)  
+}
 
 const URLScriptServer =  document.currentScript.src.replace('main.js','')
 
@@ -69,20 +31,19 @@ addScriptToPage( 'iziToast',        'https://cdnjs.cloudflare.com/ajax/libs/izit
    addCSSToPage( 'cssiziToast',     'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css' )
 addScriptToPage( 'TYPEAHEAD',       'https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js' )
 addScriptToPage( 'TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js'                                )
-addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.6/dist/chrono.min.js'          )
+addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.8/dist/chrono.min.js'          )
 addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'                                     )
    addCSSToPage( 'cssFlatpckr',     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'              )
-   addCSSToPage( 'cssFlatpckrThme', 'https://npmcdn.com/flatpickr/dist/themes/airbnb.css'                        )
+   addCSSToPage( 'cssFlatpckrThme',  URLScriptServer + 'css/airbnb.css'                        )
 addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.js'          )
    addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.css'         )
 addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/current-device.min.js'                 )
-
 
 //common shared functions
    addCSSToPage( 'styleRM',         URLScriptServer + 'css/styleRM.css'           )
 addScriptToPage( 'commonFunctions', URLScriptServer + 'common/commonFunctions.js' )
 addScriptToPage( 'keyEvents',       URLScriptServer + 'common/keyevents.js'       )
-addScriptToPage( 'message-startup', URLScriptServer + 'message-s.js'       )
+addScriptToPage( 'message-startup', URLScriptServer + 'messages.js'       )
 
 //extension modules
 addScriptToPage( 'quickReference',  URLScriptServer + 'ext/quick-reference.js'    )
@@ -93,13 +54,13 @@ addScriptToPage( 'lookupUI',        URLScriptServer + 'ext/typeaheadUI.js'      
 addScriptToPage( 'templatePoc',     URLScriptServer + 'ext/templatepoc.js'        )
 addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/jump-to-date.js'       )
 
-
 // Give the libraries a few seconds to get comfy in their new home 
 // and then let the extension dance, that is to say,
 // begin initializing the environment with all the cool tools
 setTimeout(function(){
 
   if ( device.mobile() == false ) { 
+    //these tools don't work well on mobile device
     addScriptToPage( 'livePreview',     URLScriptServer + 'ext/roam-live-preview.js'  )
     addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/dailynotespopup.js'    )
   }
