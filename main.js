@@ -57,24 +57,26 @@ addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/jump-to-date.js'     
 // Give the libraries a few seconds to get comfy in their new home 
 // and then let the extension dance, that is to say,
 // begin initializing the environment with all the cool tools
-setTimeout(function(){
+setTimeout(()=>{
 
-  if ( device.mobile() == false ) { 
-    //these tools don't work well on mobile device
-    addScriptToPage( 'livePreview',     URLScriptServer + 'ext/roam-live-preview.js'  )
-    addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/dailynotespopup.js'    )
-  }
-  
-  // Dont display in iframe
+    // Dont display in iframe
   if( window === window.parent ) {
-      displayStartup(5000)  
+      displayStartup(6000)  
   }
-  loadKeyEvents()
-  try { loadTypeAhead()                   } catch(e) {}
-  try { jumpToDateComponent.initialize()  } catch(e) {}
-  try { rmQuickRefenceSystem.initialize() } catch(e) {}
   
-}, 3000);
+  setTimeout(()=>{
+    if ( device.mobile() == false ) { 
+      //these tools don't work well on mobile device
+      addScriptToPage( 'livePreview',     URLScriptServer + 'ext/roam-live-preview.js'  )
+      addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/dailynotespopup.js'    )
+    }
+    loadKeyEvents()
+    try { loadTypeAhead()                   } catch(e) {}
+    try { jumpToDateComponent.initialize()  } catch(e) {}
+    try { rmQuickRefenceSystem.initialize() } catch(e) {}
+  }, 2000)
+  
+}, 5000);
 
 
 
