@@ -93,5 +93,4 @@ if( window === window.parent ) {
 
   } //rmQuickRefenceSystem
 
-
-  }
+}
