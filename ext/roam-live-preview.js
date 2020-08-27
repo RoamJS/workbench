@@ -170,13 +170,13 @@ const setRoamLivePreview_IsEnabled = (val)=>{
       document.addEventListener('mouseover', (e) => {
         // if( e.ctrlKey == false ) { return }
         if( getRoamLivePreview_IsEnabled() == false) { return }
-        const target = e.target;
+        var target = e.target;
 
         let isPageRef = target.classList.contains('rm-page-ref');
         let isPageRefTag = target.classList.contains('rm-page-ref-tag');
         
         let text = isPageRefTag ? target.innerText.slice(1) : target.innerText;
-
+        
         if (isPageRef == false && target.classList.contains('rm-alias-page') ) {
           isPageRef = true
           text = target.title.replace('page: ','') 

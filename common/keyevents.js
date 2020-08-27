@@ -1,5 +1,5 @@
-/* global hotkeys,toggleDailyNotes, typeaheadDisplayTextArea,typeaheadDisplayOtherAreas, iziToast,
-testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForDates, jumpToDate , displayHelp*/
+/* global hotkeys,toggleDailyNotes, typeaheadDisplayTextArea,typeaheadDisplayOtherAreas, iziToast, simulateMouseClick
+testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForDates, jumpToDate , displayHelp, getArticleOfCurrentPage*/
 //based on the libary https://wangchujiang.com/hotkeys/
 
 //CONFIGURE SHORTCUT KEYS for use in the application
@@ -25,6 +25,23 @@ const loadKeyEvents = () => {
         document.getElementsByClassName("bp3-icon-more")[0].click()
         document.getElementsByClassName("bp3-text-overflow-ellipsis bp3-fill")[0].click()      
     } catch(e) {console.log(e)}
+  });
+  
+  
+  hotkeys('alt+shift+\\', function(event, handler) {
+    event.preventDefault()
+    var event = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+    try {
+      //try to open menu
+      document.getElementsByClassName("bp3-icon-menu")[0].dispatchEvent(event)
+      setTimeout(()=>{
+        document.getElementsByClassName("bp3-icon-menu-open")[0].click()
+      },200)
+    } catch(e) {
+    // if fails, menu open, so need to close it
+      document.getElementsByClassName("bp3-icon-menu-closed")[0].click()
+      document.getElementsByClassName("roam-article")[0].dispatchEvent(event)
+    }     
   });
   
   hotkeys('alt+shift+d', function(event, handler) {
@@ -90,36 +107,10 @@ const loadKeyEvents = () => {
   });
   
 
-  
-  //https://stackoverflow.com/questions/40091000/simulate-click-event-on-react-element
-  const mouseClickEvents = ['mousedown', 'click', 'mouseup'];
-  const simulateMouseClick = (element)=> {
-    mouseClickEvents.forEach(mouseEventType =>
-      element.dispatchEvent(
-        new MouseEvent(mouseEventType, { view: window, bubbles: true, cancelable: true, buttons: 1
-        })
-      )
-    )
-  }
-  
-  const getArticleOfCurrentPage = ()=> {
-    var rootOfBlocks = document.getElementsByClassName("roam-log-page")[0]
-    var articleContent = null
-      //first attempts to grab the content for the default home apge
-    if(rootOfBlocks) {
-       articleContent = rootOfBlocks.childNodes[1].getElementsByClassName('rm-block-text')
-    } else {
-      // if failed, try to attempt content for the current page (which has a different structure than default page)
-      rootOfBlocks = document.getElementsByClassName("roam-article")[0]
-      articleContent = rootOfBlocks.childNodes[0].getElementsByClassName('rm-block-text')
-    }
-    return articleContent
-  }
-  
   hotkeys('alt+j, alt+k, alt+∆, alt+˚', function(event, handler) {
     event.preventDefault()
     var articleContent = getArticleOfCurrentPage()
     event.key=='k' || event.key=='˚' ? simulateMouseClick(articleContent[ articleContent.length-1 ]) : simulateMouseClick(articleContent[0])
-  });
-    
+  });  
+
 }

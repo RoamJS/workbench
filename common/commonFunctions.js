@@ -1,3 +1,28 @@
+  //https://stackoverflow.com/questions/40091000/simulate-click-event-on-react-element
+const mouseClickEvents = ['mousedown', 'click', 'mouseup'];
+const simulateMouseClick = (element)=> {
+  mouseClickEvents.forEach(mouseEventType =>
+    element.dispatchEvent(
+      new MouseEvent(mouseEventType, { view: window, bubbles: true, cancelable: true, buttons: 1
+      })
+    )
+  )
+}
+
+const getArticleOfCurrentPage = ()=> {
+  var rootOfBlocks = document.getElementsByClassName("roam-log-page")[0]
+  var articleContent = null
+    //first attempts to grab the content for the default home apge
+  if(rootOfBlocks) {
+     articleContent = rootOfBlocks.childNodes[1].getElementsByClassName('rm-block-text')
+  } else {
+    // if failed, try to attempt content for the current page (which has a different structure than default page)
+    rootOfBlocks = document.getElementsByClassName("roam-article")[0]
+    articleContent = rootOfBlocks.childNodes[0].getElementsByClassName('rm-block-text')
+  }
+  return articleContent
+}
+
 // updates an empty text area with a new value. This function does some additional work
 // because the textarea in roam is managed by React component, and it wasn't being triggered to 
 // update when inserting a value

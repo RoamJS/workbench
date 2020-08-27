@@ -10,7 +10,7 @@ const displayStartup = (delayTime) => {
       <tr><td>Ctrl–Shift–H</td><td>&nbsp</td><td>Quick Reference</td></tr>
     </table>
     <p></p>
-    <div style='font-size:7pt'>marvin.2020-08-25</div>
+    <div style='font-size:7pt'>marvin.2020-08-27b</div>
   `.trim(),
     theme: 'dark',
     progressBar: true,
@@ -41,7 +41,8 @@ const displayHelp = (delayTime) => {
       <tr><td>Hover mouse </td><td>&nbsp</td> <td>Live Preview</td></tr>
       <tr><td>Ctrl–Shift–L</td><td>&nbsp</td> <td>Toggle Live Preview<br/> on/off</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
-      <tr><td>Alt–Shift–/</td><td>&nbsp</td>  <td>Open side bar</td></tr>
+      <tr><td>Alt–Shift–\\</td><td>&nbsp</td>  <td>Open left side bar</td></tr>
+      <tr><td>Alt–Shift–/</td><td>&nbsp</td>  <td>Open right side bar</td></tr>
       <tr><td>Alt–Shift–,</td><td>&nbsp</td>  <td>Daily popup </td></tr>
       <tr><td>Alt–Shift–.</td><td>&nbsp</td>  <td>Dictionary Lookup</td></tr>
       <tr><td>Alt–m      </td><td>&nbsp</td>  <td>Markdown (simple)</td></tr>
