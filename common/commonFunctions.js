@@ -9,6 +9,37 @@ const simulateMouseClick = (element)=> {
   )
 }
 
+const mouseClickEventsRight = ['contextmenu'];
+const simulateMouseClickRight = (element)=> {
+  mouseClickEventsRight.forEach(mouseEventType =>
+    element.dispatchEvent(
+      new MouseEvent(mouseEventType, { view: window, bubbles: true, cancelable: true, buttons: 1
+      })
+    )
+  )
+}
+
+//grabs the selection information of a ext area
+const saveLocationParametersOfTextArea = element => {
+  return {
+    id:         element.id,
+    selStart:   element.selectionStart,
+    selEnd:     element.selectionEnd
+  }
+}
+
+//activates a block and sets its selection area
+const restoreLocationParametersOfTexArea = locationFacts => {
+  setTimeout(()=>{
+    simulateMouseClick( document.getElementById(locationFacts.id) )
+    setTimeout(()=>{
+      document.getElementById(locationFacts.id).selectionStart = locationFacts.selStart
+      document.getElementById(locationFacts.id).selectionEnd = locationFacts.selEnd
+    },100)
+  },100)
+}
+
+
 const getArticleOfCurrentPage = ()=> {
   var rootOfBlocks = document.getElementsByClassName("roam-log-page")[0]
   var articleContent = null

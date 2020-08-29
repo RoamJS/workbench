@@ -1,5 +1,18 @@
 /* globals iziToast */
 
+const displayMessage = (sMessage, delayTime) => { 
+  iziToast.show({
+    message: sMessage,
+    theme: 'dark',
+    progressBar: true,
+    animateInside: true,
+    close: false,  
+    timeout: delayTime,  
+    closeOnClick: true,  
+    displayMode: 2  
+  });  
+}
+
 const displayStartup = (delayTime) => { 
   iziToast.show({
     message: `
@@ -7,6 +20,7 @@ const displayStartup = (delayTime) => {
     <p></p>
     <table>
       <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Roam42 Help</td></tr>
+      <tr><td>Meta–J H </td><td>&nbsp</td><td>Roam42 Jump Nav help</td></tr>
       <tr><td>Ctrl–Shift–H</td><td>&nbsp</td><td>Quick Reference</td></tr>
     </table>
     <p></p>
@@ -25,8 +39,9 @@ const displayStartup = (delayTime) => {
 const displayHelp = (delayTime) => { 
    iziToast.destroy(); 
    iziToast.show({
-      message: `
-    <b>Roam42 Help</b><p></p>
+    message: `
+    <b>Roam42 Help</b>
+    <br/>
     <table>
       <tr><td>Ctrl–Shift–H</td><td>&nbsp</td> <td>Roam Quick Reference</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
@@ -35,8 +50,7 @@ const displayHelp = (delayTime) => {
       <tr><td>Ctrl–Shift–.</td><td>&nbsp</td> <td>Next Day's Note</td></tr>
       <tr><td>Ctrl–Shift–,</td><td>&nbsp</td> <td>Previous Day's Note</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
-      <tr><td>Alt–j</td><td>&nbsp</td>        <td>Jump to first block in page</td></tr>
-      <tr><td>Alt–k</td><td>&nbsp</td>        <td>Jump to last block in page</td></tr>
+      <tr><td>Ctrl–J H</td><td>&nbsp</td>        <td>Jump Drive help</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
       <tr><td>Hover mouse </td><td>&nbsp</td> <td>Live Preview</td></tr>
       <tr><td>Ctrl–Shift–L</td><td>&nbsp</td> <td>Toggle Live Preview<br/> on/off</td></tr>
@@ -60,5 +74,4 @@ const displayHelp = (delayTime) => {
       closeOnClick: true,
       displayMode: 2
     });
-  
 }
