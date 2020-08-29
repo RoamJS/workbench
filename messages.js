@@ -24,7 +24,7 @@ const displayStartup = (delayTime) => {
       <tr><td>Ctrl–Shift–H</td><td>&nbsp</td><td>Quick Reference</td></tr>
     </table>
     <p></p>
-    <div style='font-size:7pt'>marvin.2020-08-27b</div>
+    <div style='font-size:7pt'>marvin.2020-08-29 Infinite Improbability Drive</div>
   `.trim(),
     theme: 'dark',
     progressBar: true,
@@ -52,8 +52,9 @@ const displayHelp = (delayTime) => {
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
       <tr><td>Ctrl–J H</td><td>&nbsp</td>        <td>Jump Drive help</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
+      <tr><td>Ctrl–Shift–L</td><td>&nbsp</td> <td>Toggle Live Preview on/off</td></tr>
+      <tr><td>&nbsp       </td><td>&nbsp</td> <td>(Ctrl+L, Alt+L)</td></tr>
       <tr><td>Hover mouse </td><td>&nbsp</td> <td>Live Preview</td></tr>
-      <tr><td>Ctrl–Shift–L</td><td>&nbsp</td> <td>Toggle Live Preview<br/> on/off</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
       <tr><td>Alt–Shift–\\</td><td>&nbsp</td>  <td>Open left side bar</td></tr>
       <tr><td>Alt–Shift–/</td><td>&nbsp</td>  <td>Open right side bar</td></tr>

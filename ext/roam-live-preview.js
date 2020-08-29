@@ -2,7 +2,7 @@
 /* globals , Cookies , iziToast */
 
 document.addEventListener('keydown', (e)=> {
-  if( e.ctrlKey==true  &&  e.key=='L' ) {
+  if( e.ctrlKey==true  &&  e.key=='L' || e.altKey==true  &&  e.key=='l' || e.ctrlKey==true  &&  e.key=='l' ) {
     e.preventDefault();
     setRoamLivePreview_IsEnabled(  !getRoamLivePreview_IsEnabled() )
     
