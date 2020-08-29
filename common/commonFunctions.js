@@ -19,6 +19,17 @@ const simulateMouseClickRight = (element)=> {
   )
 }
 
+const mouseOverEvents = ['mouseover'];
+const simulateMouseOver = (element)=> {
+  mouseOverEvents.forEach(mouseEventType =>
+    element.dispatchEvent(
+      new MouseEvent(mouseEventType, { view: window, bubbles: true, cancelable: true, buttons: 1
+      })
+    )
+  )
+}
+
+
 //grabs the selection information of a ext area
 const saveLocationParametersOfTextArea = element => {
   return {

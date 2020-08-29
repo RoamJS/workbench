@@ -1,16 +1,19 @@
 /* globals   Mousetrap ,iziToast, getArticleOfCurrentPage, simulateMouseClick,simulateMouseClickRight,
-            saveLocationParametersOfTextArea, restoreLocationParametersOfTexArea, KeyboardLib   */
+            saveLocationParametersOfTextArea, restoreLocationParametersOfTexArea, KeyboardLib, simulateMouseOver   */
+
 const loadJumpNav = () => {
  Mousetrap.prototype.stopCallback = function () { return false }
   Mousetrap.bind([
-        // block: expand, collapse, ref 
-        'ctrl+j e', 'ctrl+j c', 'ctrl+j r',             'meta+j e', 'meta+j c', 'meta+j r',               'alt+j e', 'alt+j c', 'alt+j r',   
+        // block: expand, collapse, ref, add action
+        'ctrl+j e', 'ctrl+j c', 'ctrl+j r', 'ctrl+j a', 'meta+j e', 'meta+j c', 'meta+j r', 'meta+j a',   'alt+j e', 'alt+j c', 'alt+j r', 'alt+j a',   
         // block align left,center, right, justify
         'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4', 'meta+j 1', 'meta+j 2', 'meta+j 3', 'meta+j 4',   'alt+j 1', 'alt+j 2', 'alt+j 3', 'alt+j 4',  
         // page: first node last node
         'ctrl+j t', 'ctrl+j b', 'ctrl+ t',              'meta+j t', 'meta+j b', 'meta+ t',                'alt+j t', 'alt+j b', 'alt+ t',          
         // page: expand/collapse open in side
         'ctrl+j x', 'ctrl+j l', 'ctrl+j o',             'meta+j x', 'meta+j l', 'meta+j o',               'alt+j x', 'alt+j l', 'alt+j o',
+        // page: toggle linked references, unlinked references
+        'ctrl+j i', 'ctrl+j u',                         'meta+j i', 'meta+j u',                           'alt+j i', 'alt+j u',
         // help for javigation
         'ctrl+j h',                                     'meta+j h',                                       'alt+j h'                  
       ], (event, handler)=> { 
@@ -29,9 +32,9 @@ const loadJumpNav = () => {
           // },100)
           return false
         }    
-
+    
         // BLOCKS: fun with blocks
-        if(['ctrl+j e', 'ctrl+j c', 'ctrl+j r',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4' ].includes(handler)) {
+        if(['ctrl+j e', 'ctrl+j c', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4' ].includes(handler)) {
           var locFacts = saveLocationParametersOfTextArea(event.target)
           var parentControlNode = ''
           if( document.getElementById(locFacts.id).parentNode.parentNode.tagName == 'DIV') {
@@ -45,7 +48,7 @@ const loadJumpNav = () => {
             switch(handler)  {
               case 'ctrl+j e': // expand block
                 document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click()
-              restoreLocationParametersOfTexArea(locFacts)
+                restoreLocationParametersOfTexArea(locFacts)
                 break
               case 'ctrl+j c':      // collapse block
                 document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click()                    
@@ -54,6 +57,12 @@ const loadJumpNav = () => {
               case 'ctrl+j r':      // copy block ref
                 simulateMouseClick( document.querySelector('.bp3-popover-content > div> ul').childNodes[0].childNodes[0] )            
                 restoreLocationParametersOfTexArea(locFacts)
+                break
+              case 'ctrl+j a':      // add reaction
+                setTimeout(()=>{
+                  simulateMouseOver(document.querySelector('.bp3-popover-content > div> ul').childNodes[5].childNodes[0].childNodes[0] )
+                },50)
+                return false
                 break
               case 'ctrl+j 1':     // left allign block
                 simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[0] )
@@ -78,7 +87,7 @@ const loadJumpNav = () => {
         }
 
         // PAGE: Paging all Hitchhikers
-        if(['ctrl+j x', 'ctrl+j l', 'ctrl+j o',  ].includes(handler)) {
+        if(['ctrl+j x', 'ctrl+j l', 'ctrl+j o'  ].includes(handler)) {
           var locFacts =  (event.srcElement.localName == "textarea")  ? saveLocationParametersOfTextArea(event.target) : ''
           simulateMouseClickRight(document.querySelector('.rm-title-display'))
           setTimeout(()=>{
@@ -101,6 +110,22 @@ const loadJumpNav = () => {
           },100)
           return false
         }
+
+        // PAGE: toggle linked and unlinked references
+        if(['ctrl+j i', 'ctrl+j u',  ].includes(handler)) {
+            switch(handler) {
+              case 'ctrl+j i':
+                document.querySelector('.rm-reference-container .rm-caret').click()
+                document.querySelector('.rm-reference-container .rm-caret').scrollIntoView()
+                break;          
+              case 'ctrl+j u':
+                document.querySelector('.rm-reference-main > div > div:nth-child(2) > div > span > span').click()
+                document.querySelector('.rm-reference-main > div > div:nth-child(2) > div > span > span').scrollIntoView()
+                break;          
+            }
+          return false
+        }
+
         if(handler=='ctrl+j h' ) { displayJumpNavHelp() }
       // } catch(e) {console.log(e)}
       return false
@@ -110,39 +135,29 @@ const loadJumpNav = () => {
   const displayJumpNavHelp = ()=> { 
    iziToast.destroy(); 
    iziToast.show({
-      title: 'Roam42: Jump Nav',
+      title: 'Roam42 Jump Nav Commands',
       message: `
-      <br/>
-      <b>Activate (Meta-J)</b><br>
-      <br/>
-      &nbsp;&nbsp;Step 1:&nbsp;press Meta-J (Ctrl Alt CMD)<br/>
-      &nbsp;&nbsp;Step 2:&nbsp;release Meta-J keys <br/>
-      &nbsp;&nbsp;Step 3:&nbsp;quickly press command key <br/>
-      <br/>
-      <b>Page navigation commands</b><br/>
-      <br/>
-      &nbsp;&nbsp;T&nbsp;Top of page<br/>
-      &nbsp;&nbsp;B&nbsp;Bottom of page<br/>
-      &nbsp;&nbsp;X&nbsp;Expand all<br/>
-      &nbsp;&nbsp;L&nbsp;Collapse all<br/>
-      &nbsp;&nbsp;O&nbsp;Open this page in side bar<br/>
-      <br/>
+<br/>
+<pre style="max-width:260px">
+<b>Page</b>
+ T Top of page
+ B Bottom of page
+ X Expand all
+ L Collapse all
+ I Toggle Linked refs
+ U Toggle Unlinked refs
+ O Open this page in side bar
 
-      <b>Block navigation commands</b><br/>
-      <br/>
-      &nbsp;&nbsp;E&nbsp;Expand all<br/>
-      &nbsp;&nbsp;C&nbsp;Collapse all<br/>
-      &nbsp;&nbsp;R&nbsp;Copy block ref<br/>
-      <br/>
-
-
-      <b>Block formatting commands</b><br/>
-      <br/>
-      &nbsp;&nbsp;1&nbsp;Align left<br/>
-      &nbsp;&nbsp;2&nbsp;Center align<br/>
-      &nbsp;&nbsp;3&nbsp;Align right<br/>
-      &nbsp;&nbsp;4&nbsp;Justify<br/>
-
+<b>Blocks</b>
+ R Copy block ref
+ E Expand all
+ C Collapse all
+ 1 Align left
+ 2 Center align  
+ 3 Align right
+ 4 Justify
+ A Reaction
+</pre>
       `.trim(),
       theme: 'dark',
       progressBar: true,

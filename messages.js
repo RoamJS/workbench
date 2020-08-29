@@ -52,8 +52,8 @@ const displayHelp = (delayTime) => {
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
       <tr><td>Ctrl–J H</td><td>&nbsp</td>        <td>Jump Drive help</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
-      <tr><td>Ctrl–Shift–L</td><td>&nbsp</td> <td>Toggle Live Preview on/off</td></tr>
-      <tr><td>&nbsp       </td><td>&nbsp</td> <td>(Ctrl+L, Alt+L)</td></tr>
+      <tr><td>Ctrl+Shift+L</td><td>&nbsp</td> <td>Toggle Live Preview on/off</td></tr>
+      <tr><td>&nbsp       </td><td>&nbsp</td> <td>(Alt+L)</td></tr>
       <tr><td>Hover mouse </td><td>&nbsp</td> <td>Live Preview</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
       <tr><td>Alt–Shift–\\</td><td>&nbsp</td>  <td>Open left side bar</td></tr>
