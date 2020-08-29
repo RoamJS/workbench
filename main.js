@@ -1,4 +1,4 @@
-/* global  loadKeyEvents, loadTypeAhead, jumpToDateComponent, rmQuickRefenceSystem, device, displayStartup */
+/* global  loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent, rmQuickRefenceSystem, device, displayStartup */
 
 const disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : []; 
 
@@ -27,6 +27,7 @@ const URLScriptServer =  document.currentScript.src.replace('main.js','')
 addScriptToPage( 'JQUERY',          'https://code.jquery.com/jquery-3.5.1.min.js'                                )
 addScriptToPage( 'JSCOOKIE',        'https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js'            )
 addScriptToPage( 'HOTKEYJS',        'https://unpkg.com/hotkeys-js/dist/hotkeys.min.js'                           )
+addScriptToPage( 'MOUSETRAP',       'https://cdn.jsdelivr.net/npm/mousetrap@1.6.5/mousetrap.min.js'              )
 addScriptToPage( 'iziToast',        'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js'   )
    addCSSToPage( 'cssiziToast',     'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css' )
 addScriptToPage( 'TYPEAHEAD',       'https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js' )
@@ -34,7 +35,7 @@ addScriptToPage( 'TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js
 addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.8/dist/chrono.min.js'          )
 addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'                                     )
    addCSSToPage( 'cssFlatpckr',     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'              )
-   addCSSToPage( 'cssFlatpckrThme',  URLScriptServer + 'css/airbnb.css'                        )
+   addCSSToPage( 'cssFlatpckrThme',  URLScriptServer + 'css/airbnb.css'                                          )
 addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.js'          )
    addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.css'         )
 addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/current-device.min.js'                 )
@@ -43,7 +44,8 @@ addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/curren
    addCSSToPage( 'styleRM',         URLScriptServer + 'css/styleRM.css'           )
 addScriptToPage( 'commonFunctions', URLScriptServer + 'common/commonFunctions.js' )
 addScriptToPage( 'keyEvents',       URLScriptServer + 'common/keyevents.js'       )
-addScriptToPage( 'message-startup', URLScriptServer + 'messages.js'       )
+addScriptToPage( 'jumpNav'  ,       URLScriptServer + 'ext/jump-nav.js'         )
+addScriptToPage( 'message-startup', URLScriptServer + 'messages.js'               )
 
 //extension modules
 addScriptToPage( 'quickReference',  URLScriptServer + 'ext/quick-reference.js'    )
@@ -71,7 +73,8 @@ setTimeout(()=>{
       addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/dailynotespopup.js'    )
     }
     loadKeyEvents()
-    try { loadTypeAhead()                   } catch(e) {}
+    loadJumpNav();
+    try { loadTypeAhead();     } catch(e) {}
     try { jumpToDateComponent.initialize()  } catch(e) {}
     try { rmQuickRefenceSystem.initialize() } catch(e) {}
   }, 2000)

@@ -107,10 +107,10 @@ const loadKeyEvents = () => {
   });
   
 
-  hotkeys('alt+j, alt+k, alt+∆, alt+˚', function(event, handler) {
-    event.preventDefault()
-    var articleContent = getArticleOfCurrentPage()
-    event.key=='k' || event.key=='˚' ? simulateMouseClick(articleContent[ articleContent.length-1 ]) : simulateMouseClick(articleContent[0])
-  });  
+  // hotkeys('alt+j, alt+k, alt+∆, alt+˚', function(event, handler) {
+  //   event.preventDefault()
+  //   var articleContent = getArticleOfCurrentPage()
+  //   event.key=='k' || event.key=='˚' ? simulateMouseClick(articleContent[ articleContent.length-1 ]) : simulateMouseClick(articleContent[0])
+  // });  
 
 }
