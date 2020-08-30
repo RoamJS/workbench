@@ -167,7 +167,7 @@ var jumpToDateComponent = {
       console.log(e)
     }
 
-    // Cereate floating control
+    // Create floating control
     this.rqrJumpToDatePanel = jsPanel.create({
       id: 'rqrJumpToDatePanel',
       header: false,
