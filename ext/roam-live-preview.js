@@ -174,9 +174,15 @@ const setRoamLivePreview_IsEnabled = (val)=>{
 
         let isPageRef = target.classList.contains('rm-page-ref');
         let isPageRefTag = target.classList.contains('rm-page-ref-tag');
-        
+        let isPageRefNameSpace = target.classList.contains('rm-page-ref-namespace-color');
+
         let text = isPageRefTag ? target.innerText.slice(1) : target.innerText;
-        
+ 
+        if ( isPageRefNameSpace ) {
+          isPageRef = true
+          text = target.parentElement.getAttribute('data-link-title')
+        }
+
         if (isPageRef == false && target.classList.contains('rm-alias-page') ) {
           isPageRef = true
           text = target.title.replace('page: ','') 
@@ -185,14 +191,13 @@ const setRoamLivePreview_IsEnabled = (val)=>{
           isPageRef = true
           text = target.innerText
         }
-        
         // console.log( isPageRef , isPageRefTag , target.classList.length)
         if ( !isPageRef  && !isPageRefTag && target.classList.length == 0 && target.parentNode.classList.contains('rm-page-ref') ) {
           isPageRef = true
           text = target.innerText
           target = e.target
         }
-        
+
         // remove '#' for page tags
         if (isPageRef) {
           hoveredElement = target;

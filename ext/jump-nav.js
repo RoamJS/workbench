@@ -5,13 +5,13 @@ const loadJumpNav = () => {
  Mousetrap.prototype.stopCallback = function () { return false }
   Mousetrap.bind([
         // block: expand, collapse, ref, add action
-        'ctrl+j e', 'ctrl+j c', 'ctrl+j r', 'ctrl+j a', 'meta+j e', 'meta+j c', 'meta+j r', 'meta+j a',   'alt+j e', 'alt+j c', 'alt+j r', 'alt+j a',   
+        'ctrl+j x', 'ctrl+j l', 'ctrl+j r', 'ctrl+j a', 'meta+j x', 'meta+j l', 'meta+j r', 'meta+j a',   'alt+j x', 'alt+j l', 'alt+j r', 'alt+j a',   
         // block align left,center, right, justify
         'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4', 'meta+j 1', 'meta+j 2', 'meta+j 3', 'meta+j 4',   'alt+j 1', 'alt+j 2', 'alt+j 3', 'alt+j 4',  
         // page: first node last node
         'ctrl+j t', 'ctrl+j b', 'ctrl+ t',              'meta+j t', 'meta+j b', 'meta+ t',                'alt+j t', 'alt+j b', 'alt+ t',          
         // page: expand/collapse open in side
-        'ctrl+j x', 'ctrl+j l', 'ctrl+j o',             'meta+j x', 'meta+j l', 'meta+j o',               'alt+j x', 'alt+j l', 'alt+j o',
+        'ctrl+j e', 'ctrl+j c', 'ctrl+j o',             'meta+j e', 'meta+j c', 'meta+j o',               'alt+j e', 'alt+j c', 'alt+j o',
         // page: toggle linked references, unlinked references
         'ctrl+j i', 'ctrl+j u',                         'meta+j i', 'meta+j u',                           'alt+j i', 'alt+j u',
         // help for javigation
@@ -34,7 +34,7 @@ const loadJumpNav = () => {
         }    
     
         // BLOCKS: fun with blocks
-        if(['ctrl+j e', 'ctrl+j c', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4' ].includes(handler)) {
+        if(['ctrl+j x', 'ctrl+j l', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4' ].includes(handler)) {
           var locFacts = saveLocationParametersOfTextArea(event.target)
           var parentControlNode = ''
           if( document.getElementById(locFacts.id).parentNode.parentNode.tagName == 'DIV') {
@@ -46,11 +46,11 @@ const loadJumpNav = () => {
           simulateMouseClickRight(parentControlNode.previousSibling.childNodes[1])
           setTimeout(()=>{
             switch(handler)  {
-              case 'ctrl+j e': // expand block
+              case 'ctrl+j x': // expand block
                 document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click()
                 restoreLocationParametersOfTexArea(locFacts)
                 break
-              case 'ctrl+j c':      // collapse block
+              case 'ctrl+j l':      // collapse block
                 document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click()                    
                 restoreLocationParametersOfTexArea(locFacts)
                 break
@@ -87,15 +87,15 @@ const loadJumpNav = () => {
         }
 
         // PAGE: Paging all Hitchhikers
-        if(['ctrl+j x', 'ctrl+j l', 'ctrl+j o'  ].includes(handler)) {
+        if(['ctrl+j e', 'ctrl+j c', 'ctrl+j o'  ].includes(handler)) {
           var locFacts =  (event.srcElement.localName == "textarea")  ? saveLocationParametersOfTextArea(event.target) : ''
           simulateMouseClickRight(document.querySelector('.rm-title-display'))
           setTimeout(()=>{
             switch(handler) {
-              case 'ctrl+j x':
+              case 'ctrl+j e':
                 document.querySelector('.bp3-popover-content > div> ul').childNodes[2].childNodes[0].click()
                 break;
-              case 'ctrl+j l':
+              case 'ctrl+j c':
                 document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click()
                 break;          
               case 'ctrl+j o':
@@ -142,16 +142,16 @@ const loadJumpNav = () => {
 <b>Page</b>
  T Top of page
  B Bottom of page
- X Expand all
- L Collapse all
+ E Expand all
+ C Collapse all
  I Toggle Linked refs
  U Toggle Unlinked refs
  O Open this page in side bar
 
 <b>Blocks</b>
  R Copy block ref
- E Expand all
- C Collapse all
+ X Expand all
+ L Collapse all
  1 Align left
  2 Center align  
  3 Align right
