@@ -131,7 +131,8 @@ const setRoamLivePreview_IsEnabled = (val)=>{
       iframe.style.border = '0';
       iframe.style.boxShadow = '0 0 4px 5px rgba(0, 0, 0, 0.2)';
       iframe.style.borderRadius = '4px';
-      iframe.id = 'roam-toolkit-preview-iframe';
+      iframe.id = 'roam42-live-preview-iframe';
+            var style = document.createElement('style')
 
       const styleNode = document.createElement('style');
       styleNode.innerHTML = `
@@ -208,8 +209,8 @@ const setRoamLivePreview_IsEnabled = (val)=>{
             document.querySelector(`[src="${pageUrl}"]`).style.opacity === '1';
           if ((!isAdded(url) || !isVisible(url)) && previewIframe) {
             previewIframe.src = url;
-            previewIframe.style.height = '500px';
-            previewIframe.style.width = '500px';
+            previewIframe.style.height = typeof roam42LivePreview !== 'undefined' ? roam42LivePreview.height : '500px' 
+            previewIframe.style.width =  typeof roam42LivePreview !== 'undefined' ? roam42LivePreview.width : '500px' 
             previewIframe.style.pointerEvents = 'none';
           }
           if (!popupTimeout) {
@@ -244,7 +245,7 @@ const setRoamLivePreview_IsEnabled = (val)=>{
 
         const target = e.target;
         const relatedTarget = e.relatedTarget;
-        const iframe = document.getElementById('roam-toolkit-preview-iframe');
+        const iframe = document.getElementById('roam42-live-preview-iframe');
         if (
           (hoveredElement === target && relatedTarget !== iframe) ||
           (target === iframe && relatedTarget !== hoveredElement) ||
