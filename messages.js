@@ -24,7 +24,7 @@ const displayStartup = (delayTime) => {
       <tr><td>Ctrl–Shift–H</td><td>&nbsp</td><td>Quick Reference</td></tr>
     </table>
     <p></p>
-    <div style='font-size:7pt'>marvin.2020-08-29 Infinite Improbability Drive</div>
+    <div style='font-size:7pt'>Infinite Improbability Drive.2020-08-30</div>
   `.trim(),
     theme: 'dark',
     progressBar: true,
