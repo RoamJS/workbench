@@ -209,12 +209,12 @@ const setRoamLivePreview_IsEnabled = (val)=>{
             document.querySelector(`[src="${pageUrl}"]`).style.opacity === '1';
           if ((!isAdded(url) || !isVisible(url)) && previewIframe) {
             previewIframe.src = url;
-            previewIframe.style.height = typeof roam42LivePreview !== 'undefined' ? roam42LivePreview.height : '500px' 
-            previewIframe.style.width =  typeof roam42LivePreview !== 'undefined' ? roam42LivePreview.width : '500px' 
             previewIframe.style.pointerEvents = 'none';
+            previewIframe.style.height = window.roam42LivePreview.height == undefined  ? '500px' : window.roam42LivePreview.height
+            previewIframe.style.width  = window.roam42LivePreview.width  == undefined  ? '500px' : window.roam42LivePreview.width
           }
           if (!popupTimeout) {
-         //   popupTimeout = window.setTimeout(() => {
+           popupTimeout = window.setTimeout(() => {
               if (previewIframe) {
                 previewIframe.style.opacity = '1';
                 previewIframe.style.pointerEvents = 'all';
@@ -237,7 +237,7 @@ const setRoamLivePreview_IsEnabled = (val)=>{
                   ],
                 });
               }
-           // }, 100);
+           }, window.roam42LivePreview.delay == undefined ? 200 : window.roam42LivePreview.delay)
           }
         }
       });
