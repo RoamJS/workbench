@@ -71,6 +71,7 @@ setTimeout(()=>{
       //these tools don't work well on mobile device
       addScriptToPage( 'livePreview',     URLScriptServer + 'ext/roam-live-preview.js'  )
       addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/dailynotespopup.js'    )
+      addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/daily-notes-popup2.js'    )
     }
     loadKeyEvents()
     loadJumpNav();
