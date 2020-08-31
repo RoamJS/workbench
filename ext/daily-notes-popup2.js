@@ -32,7 +32,7 @@ var dailyNotesPopup2 =  {
         id: this.idPanelDNP,
         header: 'auto-show-hide',
         headerControls: { smallify: 'remove', maximize: 'remove' },        
-        content: '<div><iframe src="' + this.baseUrlRoamDb + '" id="iframePanelDNP" style="width: 100%; height: 100%;border:0px solid white"></iframe></div>',
+        content: '<iframe src="' + this.baseUrlRoamDb + '" id="iframePanelDNP" style="width: 100%; height: 100%;border:0px solid white"></iframe>',
         headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:200px;color:white !important;padding-top:2px;">Daily Notes</div>',
         iconfont: [
           'bp3-button bp3-minimal bp3-small bp3-icon-small-minus', 
