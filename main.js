@@ -36,8 +36,9 @@ addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.
 addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'                                     )
    addCSSToPage( 'cssFlatpckr',     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'              )
    addCSSToPage( 'cssFlatpckrThme',  URLScriptServer + 'css/airbnb.css'                                          )
-addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.js'          )
-   addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.css'         )
+addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.min.js'      )
+addScriptToPage( 'jsJsPanelLayout', 'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/extensions/layout/jspanel.layout.min.js'          )
+   addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.min.css'     )
 addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/current-device.min.js'                 )
 
 //common shared functions
