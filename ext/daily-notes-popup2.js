@@ -1,4 +1,4 @@
-/* globals jsPanel, Mousetrap    */
+/* globals jsPanel, Mousetrap, Cookies    */
 
 console.log('Loading daily-notes-popup2.js')
 //addScriptToPage( 'dailyNotePopup2', URLScriptServer + 'ext/daily-notes-popup2.js')
@@ -24,6 +24,7 @@ var dailyNotesPopup2 =  {
       });              
       return 
     }     
+    
     this.baseUrlRoamDb = `https://roamresearch.com/#/app/${window.location.href.replace('https://roamresearch.com/#/app/','').split('/')[0]}`
     if(this.initializedDNP == false) 
     {
@@ -42,16 +43,44 @@ var dailyNotesPopup2 =  {
           'bp3-button bp3-minimal bp3-small bp3-icon-cross'
           ],
         onwindowresize: true,
-        resizeit: { minWidth: 400, minHeight: 200, },
+        resizeit: {  minWidth: 400, minHeight: 200, },
         panelSize: '650 300',
         position: { my: 'center-bottom', at: 'center-bottom', offsetX: -10, offsetY: -10 },
         dragit: {
           containment: 10,
           snap: { containment: true, repositionOnSnap: true }
         },        
-        boxShadow: 4
+        boxShadow: 4,
       })
       document.querySelector('#'+this.idPanelDNP).style.visibility="hidden"
+      
+      //persit UI changes
+      document.addEventListener('jspanelresizestop', (event)=>{
+        console.log(event.detail)
+        if(event.detail=='jsPanelDNP'){
+          Cookies.set('DNP_Parameters_Dimensions', JSON.stringify(this.panelDNP.currentData))
+          console.log(Cookies.get('DNP_Parameters_Dimensions'))
+        }      
+      }, false)
+      document.addEventListener('jspaneldragstop',   (event)=>{
+        console.log(event)
+        if(event.detail=='jsPanelDNP'){
+          console.log(event.detail)
+          Cookies.set('DNP_Parameters_Position',   JSON.stringify(this.panelDNP.options.position))
+          console.log(Cookies.get('DNP_Parameters_Position' ))        
+        }
+      }, false)
+      
+      // setTimeout(()=>{
+      //   const loc = Cookies.get('DNP_Parameters')
+      //   const pnl = document.querySelector('#jsPanelDNP')
+      //   console.log('tieout')
+      //   console.log(loc );
+      //   pnl.style.top    = loc.top
+      //   pnl.style.left   = loc.left
+      //   pnl.style.height = loc.height
+      //   pnl.style.width  = loc.width
+      // },4000);
       
       //close hides the window
       this.panelDNP.options.onbeforeclose.push( ()=> {
@@ -61,6 +90,16 @@ var dailyNotesPopup2 =  {
         }
         return false;
       });
+      
+      const getDNP_parameters = ()=>{
+        if( Cookies.get('DNP_Parameters') ) {
+          return JSON.parse( Cookies.get('DNP_Parameters') )
+        } else {
+          return false
+        }
+      }
+
+ 
 
       //customize the internal view
       setTimeout( ()=> {
@@ -80,6 +119,7 @@ var dailyNotesPopup2 =  {
               `;
         iframe.contentDocument.head.appendChild(style)
       },3000)
+      
       //add keyboard mapping
       setTimeout( ()=> {
         Mousetrap.unbind(this.shortcut);
@@ -99,7 +139,6 @@ var dailyNotesPopup2 =  {
     }
   },
 }
-
 
 //load feature code
 Mousetrap.unbind('alt+shift+4');

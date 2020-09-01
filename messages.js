@@ -24,7 +24,7 @@ const displayStartup = (delayTime) => {
       <tr><td>Ctrl–Shift–H</td><td>&nbsp</td><td>Quick Reference</td></tr>
     </table>
     <p></p>
-    <div style='font-size:7pt'>Infinite Improbability Drive.2020-08-30</div>
+    <div style='font-size:7pt'>Infinite Improbability Drive.2020-09-01</div>
   `.trim(),
     theme: 'dark',
     progressBar: true,
@@ -50,7 +50,8 @@ const displayHelp = (delayTime) => {
       <tr><td>Ctrl–Shift–.</td><td>&nbsp</td> <td>Next Day's Note</td></tr>
       <tr><td>Ctrl–Shift–,</td><td>&nbsp</td> <td>Previous Day's Note</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
-      <tr><td>Ctrl–J H</td><td>&nbsp</td>        <td>Jump Drive help</td></tr>
+      <tr><td>Meta–J H</td><td>&nbsp</td>     <td>Jump Drive help</td></tr>
+      <tr><td></td>        <td>&nbsp</td>     <td>or Ctrl-J H or Alt-J H</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
       <tr><td>Ctrl+Shift+L</td><td>&nbsp</td> <td>Toggle Live Preview on/off</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>(Alt+L)</td></tr>
