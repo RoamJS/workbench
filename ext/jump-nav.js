@@ -14,12 +14,14 @@ const loadJumpNav = () => {
         'ctrl+j e', 'ctrl+j c', 'ctrl+j o',             'meta+j e', 'meta+j c', 'meta+j o',               'alt+j e', 'alt+j c', 'alt+j o',
         // page: toggle linked references, unlinked references
         'ctrl+j i', 'ctrl+j u',                         'meta+j i', 'meta+j u',                           'alt+j i', 'alt+j u',
+        // page: Expand All/Collapse all in linked references, unlinked references
+        'ctrl+j d', 'ctrl+j p',                     'meta+j d','meta+j p',                        'alt+j d', 'alt+j p',
         // help for javigation
         'ctrl+j h',                                     'meta+j h',                                       'alt+j h'                  
       ], (event, handler)=> { 
       handler = handler.replace('meta','ctrl')
       handler = handler.replace('alt', 'ctrl')
-    
+
      //GOTO top/bottom of page
       if(['ctrl+j t', 'ctrl+j b'].includes(handler)) {
         // var articleContent = getArticleOfCurrentPage()
@@ -109,6 +111,26 @@ const loadJumpNav = () => {
         return false
       }
 
+    // PAGE: toggle linked and unlinked references
+      if(['ctrl+j d', 'ctrl+j p',  ].includes(handler)) {
+          switch(handler) {
+            case 'ctrl+j d':
+              document.querySelectorAll('.rm-reference-item  .simple-bullet-outer').forEach( (element)=>{
+                simulateMouseClickRight(element)
+                document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click()
+              })
+              break;          
+            case 'ctrl+j p':
+              document.querySelectorAll('.rm-reference-item  .simple-bullet-outer').forEach( (element)=>{
+                simulateMouseClickRight(element)
+                document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click()
+              })
+              break;          
+          }
+        return false
+      }
+
+    
       // PAGE: toggle linked and unlinked references
       if(['ctrl+j i', 'ctrl+j u',  ].includes(handler)) {
           switch(handler) {
@@ -145,6 +167,8 @@ const loadJumpNav = () => {
  C Collapse all
  I Toggle Linked refs
  U Toggle Unlinked refs
+ D Expand in Linked/unlinked 
+ P Collapse in Linked/unlinked 
  O Open this page in side bar
 
 <b>Blocks</b>
