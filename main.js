@@ -1,12 +1,6 @@
 /* global  loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent, rmQuickRefenceSystem, device, displayStartup */
 
 const disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : [];
-const extraRoam42Features = typeof window.extraRoam42Features !== 'undefined' ? window.extraRoam42Features : [];
-const extraFeatures = extraRoam42Features === 'all' ? [
-  "https://roam.davidvargas.me/master/google-calendar.js",
-  "https://roam.davidvargas.me/master/emojis.js"
-  // Developers in the Roam JS ecosystem could add their roam scripts here!
-] : extraRoam42Features;
 
 function addScriptToPage(tagId, script) {
   addElementToPage(Object.assign(document.createElement('script'),{src:script}) , tagId, 'text/javascript')
@@ -62,8 +56,7 @@ addScriptToPage( 'typeAheadData',   URLScriptServer + 'ext/typeaheadData.js'    
 addScriptToPage( 'lookupUI',        URLScriptServer + 'ext/typeaheadUI.js'        )
 addScriptToPage( 'templatePoc',     URLScriptServer + 'ext/templatepoc.js'        )
 addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/jump-to-date.js'       )
-
-extraFeatures.forEach((s, i) => addScriptToPage(`extra-roam42-feature-${i}`, s));
+addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/load-extra-features.js')
 
 // Give the libraries a few seconds to get comfy in their new home 
 // and then let the extension dance, that is to say,
