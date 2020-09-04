@@ -56,7 +56,7 @@ addScriptToPage( 'typeAheadData',   URLScriptServer + 'ext/typeaheadData.js'    
 addScriptToPage( 'lookupUI',        URLScriptServer + 'ext/typeaheadUI.js'        )
 addScriptToPage( 'templatePoc',     URLScriptServer + 'ext/templatepoc.js'        )
 addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/jump-to-date.js'       )
-addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/load-extra-features.js')
+addScriptToPage( 'loadExtraFeatures', URLScriptServer + 'ext/load-extra-features.js')
 
 // Give the libraries a few seconds to get comfy in their new home 
 // and then let the extension dance, that is to say,
