@@ -16,7 +16,7 @@ const displayMessage = (sMessage, delayTime) => {
 const displayStartup = (delayTime) => { 
   iziToast.show({
     message: `
-    <b>Roam42 Starting . . .</b>
+    <b>Roam42 Starting . . .   </b>   
     <p></p>
     <table>
       <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Roam42 Help</td></tr>
@@ -24,7 +24,7 @@ const displayStartup = (delayTime) => {
       <tr><td>Ctrl–Shift–H</td><td>&nbsp</td><td>Quick Reference</td></tr>
     </table>
     <p></p>
-    <div style='font-size:7pt'>Infinite Improbability Drive.2020-09-01</div>
+    <div style='font-size:7pt'>Infinite Improbability Drive.2020-09-05</div>
   `.trim(),
     theme: 'dark',
     progressBar: true,
@@ -56,6 +56,9 @@ const displayHelp = (delayTime) => {
       <tr><td>Ctrl+Shift+L</td><td>&nbsp</td> <td>Toggle Live Preview on/off</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>(Alt+L)</td></tr>
       <tr><td>Hover mouse </td><td>&nbsp</td> <td>Live Preview</td></tr>
+      <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
+      <tr><td>Ctrl-space    </td><td>&nbsp</td> <td>Autocomplete-search in</td></tr>
+      <tr><td>&nbsp       </td><td>&nbsp</td> <td>search bar/ block lookup</td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td></tr>
       <tr><td>Alt–Shift–\\</td><td>&nbsp</td>  <td>Open left side bar</td></tr>
       <tr><td>Alt–Shift–/</td><td>&nbsp</td>  <td>Open right side bar</td></tr>
