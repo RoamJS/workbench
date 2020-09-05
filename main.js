@@ -1,6 +1,6 @@
 /* global  loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent, rmQuickRefenceSystem, device, displayStartup */
 
-const disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : []; 
+const disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : [];
 
 function addScriptToPage(tagId, script) {
   addElementToPage(Object.assign(document.createElement('script'),{src:script}) , tagId, 'text/javascript')
@@ -56,6 +56,7 @@ addScriptToPage( 'typeAheadData',   URLScriptServer + 'ext/typeaheadData.js'    
 addScriptToPage( 'lookupUI',        URLScriptServer + 'ext/typeaheadUI.js'        )
 addScriptToPage( 'templatePoc',     URLScriptServer + 'ext/templatepoc.js'        )
 addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/jump-to-date.js'       )
+addScriptToPage( 'loadExtraFeatures', URLScriptServer + 'ext/load-extra-features.js')
 
 // Give the libraries a few seconds to get comfy in their new home 
 // and then let the extension dance, that is to say,
