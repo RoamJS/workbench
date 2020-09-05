@@ -1,5 +1,5 @@
 /* global hotkeys,toggleDailyNotes, typeaheadDisplayTextArea,typeaheadDisplayOtherAreas, iziToast, simulateMouseClick
-testingScript, TurndownService , turndownPage, setEmptyNodeValue , parseTextForDates, jumpToDate , displayHelp, getArticleOfCurrentPage*/
+testingScript, Mousetrap, TurndownService , turndownPage, setEmptyNodeValue , parseTextForDates, jumpToDate , displayHelp, getArticleOfCurrentPage*/
 //based on the libary https://wangchujiang.com/hotkeys/
 
 //CONFIGURE SHORTCUT KEYS for use in the application
@@ -27,6 +27,25 @@ const loadKeyEvents = () => {
     } catch(e) {console.log(e)}
   });
   
+  Mousetrap(document.getElementById("find-or-create-input")).bind(['tab', 'ctrl+space'],()=>{
+    setTimeout(()=>{
+      simulateMouseClick ( document.querySelectorAll('.rm-search-title')[1] )
+    },200)
+    return false
+  })
+  
+  Mousetrap(document.getElementById("textarea.rm-block-input")).bind('ctrl+space',()=>{
+    if(document.querySelector(".bp3-elevation-3")){
+      setTimeout(()=>{
+        if( document.querySelector('.rm-autocomplete-result').parentElement.childElementCount > 1) {
+          document.querySelector(".bp3-elevation-3").childNodes[1].click()          
+        } else {
+          document.querySelector(".bp3-elevation-3").childNodes[0].click()  
+        }
+      },200)
+    }
+    return false
+  })
   
   hotkeys('alt+shift+\\', function(event, handler) {
     event.preventDefault()
