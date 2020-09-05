@@ -16,7 +16,7 @@ const displayMessage = (sMessage, delayTime) => {
 const displayStartup = (delayTime) => { 
   iziToast.show({
     message: `
-    <b>Roam42 Starting . . .</b>
+    <b>Roam42 Starting . . .   </b>   
     <p></p>
     <table>
       <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Roam42 Help</td></tr>
