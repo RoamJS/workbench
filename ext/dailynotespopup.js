@@ -1,5 +1,7 @@
 /* globals iziToast */
 
+/* VERSION 1 - no longer used */
+
 // only run this code if not already in iframe
 if( window === window.parent ) {
   var baseUrlRoamDb = `https://roamresearch.com/#/app/${window.location.href.replace('https://roamresearch.com/#/app/','').split('/')[0]}` 

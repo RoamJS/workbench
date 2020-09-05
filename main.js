@@ -71,14 +71,17 @@ setTimeout(()=>{
     if ( device.mobile() == false ) { 
       //these tools don't work well on mobile device
       addScriptToPage( 'livePreview',     URLScriptServer + 'ext/roam-live-preview.js'  )
-      addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/dailynotespopup.js'    )
+      // addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/dailynotespopup.js'    )
       addScriptToPage( 'dailyNote',       URLScriptServer + 'ext/daily-notes-popup2.js'    )
     }
-    loadKeyEvents()
-    loadJumpNav();
-    try { loadTypeAhead();     } catch(e) {}
-    try { jumpToDateComponent.initialize()  } catch(e) {}
-    try { rmQuickRefenceSystem.initialize() } catch(e) {}
+    setTimeout(()=>{
+      loadKeyEvents()
+      loadJumpNav();
+      try { loadTypeAhead();     } catch(e) {}
+      try { jumpToDateComponent.initialize()  } catch(e) {}
+      try { rmQuickRefenceSystem.initialize() } catch(e) {}
+      try { dailyNotesPopup2.initialize() } catch(e) {}
+    }, 1000)      
   }, 2000)
   
 }, 5000);
