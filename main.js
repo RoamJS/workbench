@@ -1,6 +1,7 @@
-/* global  loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent, rmQuickRefenceSystem, device, displayStartup */
+/* global  loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent, 
+           rmQuickRefenceSystem, device, displayStartup, dailyNotesPopup2 */
 
-const disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : []; 
+const disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : [];
 
 function addScriptToPage(tagId, script) {
   addElementToPage(Object.assign(document.createElement('script'),{src:script}) , tagId, 'text/javascript')
@@ -42,20 +43,21 @@ addScriptToPage( 'jsJsPanelLayout', 'https://cdn.jsdelivr.net/npm/jspanel4@4.11.
 addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/current-device.min.js'                 )
 
 //common shared functions
-   addCSSToPage( 'styleRM',         URLScriptServer + 'css/styleRM.css'           )
-addScriptToPage( 'commonFunctions', URLScriptServer + 'common/commonFunctions.js' )
-addScriptToPage( 'keyEvents',       URLScriptServer + 'common/keyevents.js'       )
-addScriptToPage( 'jumpNav'  ,       URLScriptServer + 'ext/jump-nav.js'         )
-addScriptToPage( 'message-startup', URLScriptServer + 'messages.js'               )
+   addCSSToPage( 'styleRM',           URLScriptServer + 'css/styleRM.css'           )
+addScriptToPage( 'commonFunctions',   URLScriptServer + 'common/commonFunctions.js' )
+addScriptToPage( 'keyEvents',         URLScriptServer + 'common/keyevents.js'       )
+addScriptToPage( 'jumpNav'  ,         URLScriptServer + 'ext/jump-nav.js'         )
+addScriptToPage( 'message-startup',   URLScriptServer + 'messages.js'               )
 
 //extension modules
-addScriptToPage( 'quickReference',  URLScriptServer + 'ext/quick-reference.js'    )
-addScriptToPage( 'turnDown',        URLScriptServer + 'ext/turndownservice.js'    )
-addScriptToPage( 'dateProcessing',  URLScriptServer + 'ext/dateProcessing.js'     )
-addScriptToPage( 'typeAheadData',   URLScriptServer + 'ext/typeaheadData.js'      )
-addScriptToPage( 'lookupUI',        URLScriptServer + 'ext/typeaheadUI.js'        )
-addScriptToPage( 'templatePoc',     URLScriptServer + 'ext/templatepoc.js'        )
-addScriptToPage( 'jumpToDate',      URLScriptServer + 'ext/jump-to-date.js'       )
+addScriptToPage( 'quickReference',    URLScriptServer + 'ext/quick-reference.js'    )
+addScriptToPage( 'turnDown',          URLScriptServer + 'ext/turndownservice.js'    )
+addScriptToPage( 'dateProcessing',    URLScriptServer + 'ext/dateProcessing.js'     )
+addScriptToPage( 'typeAheadData',     URLScriptServer + 'ext/typeaheadData.js'      )
+addScriptToPage( 'lookupUI',          URLScriptServer + 'ext/typeaheadUI.js'        )
+addScriptToPage( 'templatePoc',       URLScriptServer + 'ext/templatepoc.js'        )
+addScriptToPage( 'jumpToDate',        URLScriptServer + 'ext/jump-to-date.js'       )
+addScriptToPage( 'loadExtraFeatures', URLScriptServer + 'ext/load-extra-features.js')
 
 // Give the libraries a few seconds to get comfy in their new home 
 // and then let the extension dance, that is to say,

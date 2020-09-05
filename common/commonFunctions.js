@@ -29,7 +29,6 @@ const simulateMouseOver = (element)=> {
   )
 }
 
-
 //grabs the selection information of a ext area
 const saveLocationParametersOfTextArea = element => {
   return {
