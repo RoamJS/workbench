@@ -52,10 +52,10 @@ const loadKeyEvents = () => {
     }
   });
   
-  hotkeys('alt+shift+,', function(event, handler) {
-    event.preventDefault()
-      toggleDailyNotes()          
-  });
+  // hotkeys('alt+shift+,', function(event, handler) {
+  //   event.preventDefault()
+  //     toggleDailyNotes()          
+  // });
   
   hotkeys('alt+shift+.', function(event, handler) {
     event.preventDefault()
