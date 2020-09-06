@@ -18,23 +18,15 @@ const loadKeyEvents = () => {
     event.preventDefault()
     displayHelp(10000)
   });
-  
-  hotkeys('alt+shift+/', function(event, handler) {
-    event.preventDefault()
-    try {
-        document.getElementsByClassName("bp3-icon-more")[0].click()
-        document.getElementsByClassName("bp3-text-overflow-ellipsis bp3-fill")[0].click()      
-    } catch(e) {console.log(e)}
-  });
-  
-  Mousetrap(document.getElementById("find-or-create-input")).bind(['tab', 'ctrl+space'],()=>{
+
+  Mousetrap(document.getElementById("find-or-create-input")).bind('shift+space',()=>{
     setTimeout(()=>{
       simulateMouseClick ( document.querySelectorAll('.rm-search-title')[1] )
     },200)
     return false
   })
   
-  Mousetrap(document.getElementById("textarea.rm-block-input")).bind('ctrl+space',()=>{
+  Mousetrap(document.getElementById("textarea.rm-block-input")).bind('shift+space',()=>{
     if(document.querySelector(".bp3-elevation-3")){
       setTimeout(()=>{
         if( document.querySelector('.rm-autocomplete-result').parentElement.childElementCount > 1) {
@@ -46,22 +38,18 @@ const loadKeyEvents = () => {
     }
     return false
   })
+
+//   hotkeys('alt+shift+/', function(event, handler) {
+//     event.preventDefault()
+//     console.log('alt+shift+/')
+//     sidebarRightToggle()
+//   });
   
-  hotkeys('alt+shift+\\', function(event, handler) {
-    event.preventDefault()
-    var event = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
-    try {
-      //try to open menu
-      document.getElementsByClassName("bp3-icon-menu")[0].dispatchEvent(event)
-      setTimeout(()=>{
-        document.getElementsByClassName("bp3-icon-menu-open")[0].click()
-      },200)
-    } catch(e) {
-    // if fails, menu open, so need to close it
-      document.getElementsByClassName("bp3-icon-menu-closed")[0].click()
-      document.getElementsByClassName("roam-article")[0].dispatchEvent(event)
-    }     
-  });
+  
+//   hotkeys('alt+shift+\\', function(event, handler) {
+//     event.preventDefault()
+//     sidebarLeftToggle() 
+//   });
   
   hotkeys('alt+shift+d', function(event, handler) {
     event.preventDefault()
@@ -70,11 +58,6 @@ const loadKeyEvents = () => {
       setEmptyNodeValue(document.getElementById(event.srcElement.id), processText )
     }
   });
-  
-  // hotkeys('alt+shift+,', function(event, handler) {
-  //   event.preventDefault()
-  //     toggleDailyNotes()          
-  // });
   
   hotkeys('alt+shift+.', function(event, handler) {
     event.preventDefault()
