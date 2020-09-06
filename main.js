@@ -46,7 +46,7 @@ addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/curren
    addCSSToPage( 'styleRM',           URLScriptServer + 'css/styleRM.css'           )
 addScriptToPage( 'commonFunctions',   URLScriptServer + 'common/commonFunctions.js' )
 addScriptToPage( 'keyEvents',         URLScriptServer + 'common/keyevents.js'       )
-addScriptToPage( 'jumpNav'  ,         URLScriptServer + 'ext/jump-nav.js'         )
+addScriptToPage( 'jumpNav'  ,         URLScriptServer + 'ext/jump-nav.js'           )
 addScriptToPage( 'message-startup',   URLScriptServer + 'messages.js'               )
 
 //extension modules
@@ -57,6 +57,7 @@ addScriptToPage( 'typeAheadData',     URLScriptServer + 'ext/typeaheadData.js'  
 addScriptToPage( 'lookupUI',          URLScriptServer + 'ext/typeaheadUI.js'        )
 addScriptToPage( 'templatePoc',       URLScriptServer + 'ext/templatepoc.js'        )
 addScriptToPage( 'jumpToDate',        URLScriptServer + 'ext/jump-to-date.js'       )
+addScriptToPage( 'roamNavigator',     URLScriptServer + 'ext/roam-navigator.js'     )
 addScriptToPage( 'loadExtraFeatures', URLScriptServer + 'ext/load-extra-features.js')
 
 // Give the libraries a few seconds to get comfy in their new home 

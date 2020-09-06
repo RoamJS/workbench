@@ -1,4 +1,29 @@
-  //https://stackoverflow.com/questions/40091000/simulate-click-event-on-react-element
+
+const sidebarRightToggle = ()=>{
+  try {
+      document.getElementsByClassName("bp3-icon-more")[0].click()
+      document.getElementsByClassName("bp3-text-overflow-ellipsis bp3-fill")[0].click()      
+  } catch(e) {console.log(e)}    
+}
+
+const sidebarLeftToggle = ()=> {
+  var event = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+  try {
+    //try to open menu
+    document.getElementsByClassName("bp3-icon-menu-closed")[0].click()
+    simulateMouseOver(document.getElementsByClassName("roam-article")[0]) //.dispatchEvent(event)
+  } catch(e) {
+    try {
+      document.getElementsByClassName("bp3-icon-menu")[0].dispatchEvent(event)
+    } catch(e) {} //if on ipad, the above command fails, so go to next step
+    setTimeout(()=>{
+      document.getElementsByClassName("bp3-icon-menu-open")[0].click()
+    },100)
+  }     
+}
+
+
+//https://stackoverflow.com/questions/40091000/simulate-click-event-on-react-element
 const mouseClickEvents = ['mousedown', 'click', 'mouseup'];
 const simulateMouseClick = (element)=> {
   mouseClickEvents.forEach(mouseEventType =>
