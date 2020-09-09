@@ -8,7 +8,7 @@
 
   // Key to start navigation.  Alt + this key will also trigger
   // navigation.
-  const START_NAVIGATE_KEY = ['g', '©'];  //ROAM42 MOD
+  const START_NAVIGATE_KEY = ['g', '©', 'G'];  //ROAM42 MOD
 
   // Key sequence to navigate to daily notes.
   const DAILY_NOTES_KEY = 'g';

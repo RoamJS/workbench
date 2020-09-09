@@ -61,6 +61,7 @@ var jumpToDateComponent = {
   //Toggles the date picker display
   jumpToDate(){
     this.flCalendar.clear()
+    this.flCalendar.setDate(new Date())    
     this.rqrJumpToDatePanel.reposition({ 
       my: 'right-top',
       at: 'right-top',
@@ -94,15 +95,22 @@ var jumpToDateComponent = {
       setTimeout( ()=>{
         this.jumpToDate()  
       }, 100 )    
+    } else {
+      jump.style.visibility=='hidden' //close Jump to date
     }
   }, //jumpToDateFromButton
 
   navigateUIToDate(destinationDate) {
+    
     let inPut =  document.getElementById('find-or-create-input')
     inPut.focus()
     setEmptyNodeValue( inPut, getRoamDate( destinationDate ) )
     setTimeout(()=>{
-      KeyboardLib.pressEnter()
+      if(hotkeys.isPressed('shift')==true) {
+        KeyboardLib.simulateKey(13,100,{  shiftKey:true})        
+      } else {
+        KeyboardLib.pressEnter()
+      }
       setTimeout(()=>{
         setEmptyNodeValue( inPut,'' )
       },250)             
@@ -206,6 +214,7 @@ var jumpToDateComponent = {
 
     this.flCalendar.config.onValueUpdate.push( (selectedDates, dateStr, instance)=> {
       instance.close()
+      console.log(instance)
       this.navigateUIToDate(selectedDates[0])
     })
 
