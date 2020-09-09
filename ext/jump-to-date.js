@@ -1,4 +1,4 @@
-/* globals jsPanel, KeyboardLib, flatpickr, setEmptyNodeValue, getRoamDate, chrono, iziToast */
+/* globals jsPanel, KeyboardLib, flatpickr, setEmptyNodeValue, getRoamDate, chrono, iziToast, tippy */
 // INFO: Provides a quick way to jump between daily notes pages using a calendar
 // Datepicker based on: https://flatpickr.js.org/
 
@@ -39,7 +39,7 @@ var jumpToDateComponent = {
         jumpDate.setDate(jumpDate.getDate()-1)
         directionTip='bounceInLeft'
       }
-      this.navigateUIToDate(jumpDate)
+      this.navigateUIToDate(jumpDate, false)
     }  
     
     iziToast.destroy();
@@ -100,13 +100,13 @@ var jumpToDateComponent = {
     }
   }, //jumpToDateFromButton
 
-  navigateUIToDate(destinationDate) {
+  navigateUIToDate(destinationDate, useShiftKey) {
     
     let inPut =  document.getElementById('find-or-create-input')
     inPut.focus()
     setEmptyNodeValue( inPut, getRoamDate( destinationDate ) )
     setTimeout(()=>{
-      if(hotkeys.isPressed('shift')==true) {
+      if(hotkeys.isPressed('shift')==true && useShiftKey==true) {
         KeyboardLib.simulateKey(13,100,{  shiftKey:true})        
       } else {
         KeyboardLib.pressEnter()
@@ -114,7 +114,7 @@ var jumpToDateComponent = {
       setTimeout(()=>{
         setEmptyNodeValue( inPut,'' )
       },250)             
-    },250)             
+    },400)             
   }, //navigateUIToDate
 
   initialize()  {
@@ -162,6 +162,7 @@ var jumpToDateComponent = {
  // Create ROAM button
     try {
       var jump = document.createElement("div")
+        jump.id='roam42-button-jumptodate'
         jump.className = 'bp3-button bp3-minimal bp3-small bp3-icon-pivot'
         jump.setAttribute('style','position:relative;left:2px')
         jump.onclick = ()=>{ this.jumpToDateFromButton()}  
@@ -174,6 +175,12 @@ var jumpToDateComponent = {
       console.log('could not add toolbar buton - see module jump-to-date.js ')
       console.log(e)
     }
+    
+    tippy('#roam42-button-jumptodate', {
+      content: "Jump to Date<sup>42</sup>",
+      allowHTML: true,
+      theme: 'light-border',
+    });
 
     // Create floating control
     this.rqrJumpToDatePanel = jsPanel.create({
@@ -208,14 +215,14 @@ var jumpToDateComponent = {
       return false;
     })
 
-    flatpickr("#jumptoDateInput", { dateFormat: "Y-m-d", weekNumbers: true })
-
+    flatpickr("#jumptoDateInput", { dateFormat: "Y-m-d", weekNumbers: true, locale:{firstDayOfWeek:1} })
+    
     this.flCalendar = document.querySelector("#jumptoDateInput")._flatpickr;
 
     this.flCalendar.config.onValueUpdate.push( (selectedDates, dateStr, instance)=> {
       instance.close()
       console.log(instance)
-      this.navigateUIToDate(selectedDates[0])
+      this.navigateUIToDate(selectedDates[0],true)
     })
 
     this.flCalendar.config.onClose.push( (selectedDates, dateStr, instance)=> {

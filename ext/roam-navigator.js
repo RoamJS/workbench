@@ -1026,13 +1026,13 @@
         }
       });
       return true;
-    } else if (ev.key === SCROLL_UP_KEY) {
+    } else if (ev.key === SCROLL_UP_KEY && document.querySelector('#rqrJumpToDatePanel').style.visibility=='hidden') { //ROAM42 MOD
       // Up arrow to scroll up a little bit.
       withContainerToScroll((container) => {
         container.scrollBy(0, -40);
       });
       return true;
-    } else if (ev.key === SCROLL_DOWN_KEY) {
+    } else if (ev.key === SCROLL_DOWN_KEY && document.querySelector('#rqrJumpToDatePanel').style.visibility=='hidden') { //ROAM42 MOD
       // Down arrow to scroll down a little bit.
       withContainerToScroll((container) => {
         container.scrollBy(0, 40);

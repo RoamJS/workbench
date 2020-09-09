@@ -41,6 +41,9 @@ addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.
 addScriptToPage( 'jsJsPanelLayout', 'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/extensions/layout/jspanel.layout.min.js'          )
    addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.min.css'     )
 addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/current-device.min.js'                 )
+addScriptToPage( 'popperjs',        'https://unpkg.com/@popperjs/core@2'                                         )
+addScriptToPage( 'tippyjs',         'https://unpkg.com/tippy.js@6'                                               )
+   addCSSToPage( 'cssTippyjs',      'https://unpkg.com/tippy.js@6/themes/light-border.css'     )
 
 //common shared functions
    addCSSToPage( 'styleRM',           URLScriptServer + 'css/styleRM.css'           )
