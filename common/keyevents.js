@@ -30,26 +30,15 @@ const loadKeyEvents = () => {
     if(document.querySelector(".bp3-elevation-3")){
       setTimeout(()=>{
         if( document.querySelector('.rm-autocomplete-result').parentElement.childElementCount > 1) {
-          document.querySelector(".bp3-elevation-3").childNodes[1].click()          
+          document.querySelector(".bp3-elevation-3").childNodes[1].click()        
         } else {
           document.querySelector(".bp3-elevation-3").childNodes[0].click()  
         }
+        setTimeout(()=> document.execCommand("insertText",false," "),100)
       },200)
     }
     return false
   })
-
-//   hotkeys('alt+shift+/', function(event, handler) {
-//     event.preventDefault()
-//     console.log('alt+shift+/')
-//     sidebarRightToggle()
-//   });
-  
-  
-//   hotkeys('alt+shift+\\', function(event, handler) {
-//     event.preventDefault()
-//     sidebarLeftToggle() 
-//   });
   
   hotkeys('alt+shift+d', function(event, handler) {
     event.preventDefault()
