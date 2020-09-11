@@ -23,6 +23,7 @@ function addElementToPage(element, tagId, typeT ) {
 }
 
 const URLScriptServer =  document.currentScript.src.replace('main.js','')
+const logo2HC = 'https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2F42logo-2hc.png?v=1599851355892'
 
 //load all 3rd party libraries 
 addScriptToPage( 'JQUERY',          'https://code.jquery.com/jquery-3.5.1.min.js'                                )

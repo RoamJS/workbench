@@ -1,4 +1,6 @@
 'use strict';
+
+  
 {
   // Set to true to enable debug logging.
   const DEBUG = false;
@@ -45,6 +47,53 @@
     }
   }
 
+  const getRoamNavigator_IsEnabled = ()=>{
+    if( Cookies.get('RoamNavigator_IsEnabled') === 'true' ) {
+      return true
+    } else {
+      return false
+    }
+  }
+  window.getRoamNavigator_IsEnabled = getRoamNavigator_IsEnabled
+
+  const setRoamNavigator_IsEnabled = (val)=>{
+    if(val == true) {
+      Cookies.set('RoamNavigator_IsEnabled', 'true') 
+    } else {
+      Cookies.set('RoamNavigator_IsEnabled', 'false')     
+    }
+  }
+
+  let roamNavigatorEnabled = getRoamNavigator_IsEnabled()  
+  
+  const roamNavigatorStatusToast = ()=> {
+    var status = getRoamNavigator_IsEnabled()
+    iziToast.show({
+      timeout: 20000,
+      theme: 'dark',
+      title: 'Deep Jump Navigation',
+      message: 'Status:',
+      position: 'bottomRight', 
+      progressBarColor: 'rgb(0, 255, 184)',
+      buttons: [
+      ['<button>Enabled</button>', function (instance, toast) {
+          setRoamNavigator_IsEnabled(true)
+          roamNavigatorEnabled = true
+          instance.hide({transitionOut: 'fadeOutUp'}, toast, 'buttonName');
+      }, status], 
+      ['<button>Disabled</button>', function (instance, toast) {
+          setRoamNavigator_IsEnabled(false)
+          roamNavigatorEnabled = false
+          instance.hide({transitionOut: 'fadeOutDown'}, toast, 'buttonName');
+      }, !status], 
+      ]
+    })
+  }
+  
+  window.roamNavigatorStatusToast = roamNavigatorStatusToast
+
+  //Roam42: End
+  
   // Set to true to activate navigation mode when body is focused.
   const ACTIVATE_ON_NO_FOCUS =
         readSetting('activate-on-no-focus', false);
@@ -101,6 +150,8 @@
         sidebarLeftToggle(); 
         return
       }
+      
+      if (!roamNavigatorEnabled) { return }  //navigator disabled, don't go further
       
       if (ev.ctrlKey ||
           (ev.altKey && (isNavigating() || START_NAVIGATE_KEY.includes(ev.key)==false))  ) {
