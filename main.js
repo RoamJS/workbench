@@ -38,7 +38,6 @@ addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'    
    addCSSToPage( 'cssFlatpckr',     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'              )
    addCSSToPage( 'cssFlatpckrThme',  URLScriptServer + 'css/airbnb.css'                                          )
 addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.min.js'      )
-addScriptToPage( 'jsJsPanelLayout', 'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/extensions/layout/jspanel.layout.min.js'          )
    addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.min.css'     )
 addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/current-device.min.js'                 )
 addScriptToPage( 'popperjs',        'https://unpkg.com/@popperjs/core@2'                                         )
@@ -53,6 +52,7 @@ addScriptToPage( 'jumpNav'  ,         URLScriptServer + 'ext/jump-nav.js'       
 addScriptToPage( 'message-startup',   URLScriptServer + 'messages.js'               )
 
 //extension modules
+addScriptToPage( 'roam42Tester',      URLScriptServer + 'ext/roam42-tester.js'    )
 addScriptToPage( 'quickReference',    URLScriptServer + 'ext/quick-reference.js'    )
 addScriptToPage( 'turnDown',          URLScriptServer + 'ext/turndownservice.js'    )
 addScriptToPage( 'dateProcessing',    URLScriptServer + 'ext/dateProcessing.js'     )

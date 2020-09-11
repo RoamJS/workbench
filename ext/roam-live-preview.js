@@ -26,6 +26,9 @@ document.addEventListener('keydown', (e)=> {
   }
 })
 
+const livePreviewStatus = ()=> {
+  roam42Test()
+}
 
 const getRoamLivePreview_IsEnabled = ()=>{
   if( Cookies.get('RoamLivePreview_IsEnabled') === 'true' ) {
@@ -43,6 +46,29 @@ const setRoamLivePreview_IsEnabled = (val)=>{
   }
 }
 
+function livePreviewStatusToast() {
+  var status = getRoamLivePreview_IsEnabled()
+  iziToast.show({
+    timeout: 20000,
+    theme: 'dark',
+    title: 'Live preview',
+    message: 'Status:',
+    position: 'bottomRight', 
+    progressBarColor: 'rgb(0, 255, 184)',
+    buttons: [
+    ['<button>Enabled</button>', function (instance, toast) {
+        console.log("enable");
+        setRoamLivePreview_IsEnabled(true)
+        instance.hide({transitionOut: 'fadeOutUp'}, toast, 'buttonName');
+    }, status], 
+    ['<button>Disabled</button>', function (instance, toast) {
+        console.log("disable");
+        setRoamLivePreview_IsEnabled(false)
+        instance.hide({transitionOut: 'fadeOutDown'}, toast, 'buttonName');
+    }, !status], 
+    ]
+  })
+}
 
 (function () {
   
