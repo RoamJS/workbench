@@ -138,19 +138,19 @@ var dailyNotesPopup2 =  {
 
 }
 
-//load feature code
-Mousetrap.unbind('alt+shift+4');
-Mousetrap.unbind('alt+shift+5');
-Mousetrap.bind('alt+shift+4', ()=>{
-  try {  
-    document.querySelector("#jsPanelDNP").remove() 
-    document.querySelector("#dnpFrameWrapper").remove() 
-  } catch(e) {}
-  addScriptToPage( 'dailyNotePopup2', URLScriptServer + 'ext/daily-notes-popup2.js')
-  setTimeout( ()=>{
-    this.dailyNotesPopup2.initialize()
-  }, 500)
-  return false
-});
+// //load feature code
+// Mousetrap.unbind('alt+shift+4');
+// Mousetrap.unbind('alt+shift+5');
+// Mousetrap.bind('alt+shift+4', ()=>{
+//   try {  
+//     document.querySelector("#jsPanelDNP").remove() 
+//     document.querySelector("#dnpFrameWrapper").remove() 
+//   } catch(e) {}
+//   addScriptToPage( 'dailyNotePopup2', URLScriptServer + 'ext/daily-notes-popup2.js')
+//   setTimeout( ()=>{
+//     this.dailyNotesPopup2.initialize()
+//   }, 500)
+//   return false
+// });
 
 
