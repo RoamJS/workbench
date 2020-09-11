@@ -159,6 +159,9 @@ const loadJumpNav = () => {
       title: 'Roam42 Jump Nav Commands',
       message: `
 <br/>
+<div style="position:fixed;top:10px;left:205px;z-index:1000;">
+  <img width="50px" src="${logo2HC}"></img>
+</div>
 <pre style="max-width:260px">
 <b>Page</b>
  T Top of page
