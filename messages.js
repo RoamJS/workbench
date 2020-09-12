@@ -16,17 +16,13 @@ const displayMessage = (sMessage, delayTime) => {
 const displayStartup = (delayTime) => { 
   iziToast.show({
     message: `
-    <div style="position:fixed;top:-12px;left:205px;z-index:1000;">
-      <img width="40px" src="${logo2HC}"></img>
+    <div style="position:absolute;top:-75px;right:-15px;z-index:1000;">
+      <img width="50px" src="${logo2HC}"></img>
     </div>
     <b>Roam42 Starting . . .   </b>   
-    <p></p>
     <table>
-      <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Roam42 Help</td></tr>
-      <tr><td>Meta–J H </td><td>&nbsp</td><td>Roam42 Jump Nav help</td></tr>
-      <tr><td>Ctrl–Shift–H</td><td>&nbsp</td><td>Quick Reference</td></tr>
+      <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Help</td></tr>
     </table>
-    <p></p>
     <div style='font-size:7pt'>Infinite Improbability Drive.2020-09-11b</div>
   `.trim(),
     theme: 'dark',
@@ -43,7 +39,7 @@ const displayHelp = (delayTime) => {
    iziToast.destroy(); 
    iziToast.show({
     message: `
-    <div style="position:fixed;top:-28px;left:250px;z-index:1000;">
+    <div style="position:absolute;top:-95px;right:-15px;z-index:1000;">
       <img width="70px" src="${logo2HC}"></img>
     </div>
     <b>Roam42 Help</b>
