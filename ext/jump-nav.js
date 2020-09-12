@@ -158,10 +158,10 @@ const loadJumpNav = () => {
    iziToast.show({
       title: 'Roam42 Jump Nav Commands',
       message: `
-<br/>
-<div style="position:fixed;top:10px;left:205px;z-index:1000;">
-  <img width="50px" src="${logo2HC}"></img>
+<div style="position:absolute;top:-110px;right:-15px;z-index:1000;">
+  <img width="70px" src="${logo2HC}"></img>
 </div>
+<br/>
 <pre style="max-width:260px">
 <b>Page</b>
  T Top of page
