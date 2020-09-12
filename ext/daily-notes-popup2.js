@@ -82,9 +82,10 @@ var dailyNotesPopup2 =  {
       var style = document.createElement('style')
 
       style.textContent = ` 
-          .bp3-icon-more, .bp3-icon-menu, .bp3-icon-menu-open, .bp3-icon-graph, #buffer, .roam-sidebar-container {
+/*          .bp3-icon-more, .bp3-icon-menu, .bp3-icon-menu-open, .bp3-icon-graph, #buffer, .roam-sidebar-container {
              display: none !important;
           }
+*/
           .roam-article {
             padding: 3px 20px 20px !important;
           }

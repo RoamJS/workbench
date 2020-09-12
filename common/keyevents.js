@@ -14,10 +14,10 @@ const loadKeyEvents = () => {
     return true;
   }
   
-  hotkeys('alt+shift+h', function(event, handler) {
-    event.preventDefault()
-    displayHelp(10000)
-  });
+  // hotkeys('alt+shift+h', function(event, handler) {
+  //   event.preventDefault()
+  //   displayHelp(10000)
+  // });
 
   Mousetrap(document.getElementById("find-or-create-input")).bind('shift+space',()=>{
     setTimeout(()=>{
