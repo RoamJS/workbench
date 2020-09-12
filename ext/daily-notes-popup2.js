@@ -86,6 +86,9 @@ var dailyNotesPopup2 =  {
              display: none !important;
           }
 */
+          #buffer{
+             display: none !important;
+          }
           .roam-article {
             padding: 3px 20px 20px !important;
           }
@@ -95,8 +98,12 @@ var dailyNotesPopup2 =  {
             font-size:24px;
         }
       `;
+      try {
+        iframe.contentDocument.getElementsByClassName("bp3-icon-menu-closed")[0].click()
+        simulateMouseOver(iframe.contentDocument.document.getElementsByClassName("roam-article")[0]) 
+      } catch(e) {} //if on ipad, the above command fails, so go to next step      
       iframe.contentDocument.head.appendChild(style)
-    },3000)
+    },12000)
  
   },
 
@@ -138,20 +145,3 @@ var dailyNotesPopup2 =  {
   },
 
 }
-
-// //load feature code
-// Mousetrap.unbind('alt+shift+4');
-// Mousetrap.unbind('alt+shift+5');
-// Mousetrap.bind('alt+shift+4', ()=>{
-//   try {  
-//     document.querySelector("#jsPanelDNP").remove() 
-//     document.querySelector("#dnpFrameWrapper").remove() 
-//   } catch(e) {}
-//   addScriptToPage( 'dailyNotePopup2', URLScriptServer + 'ext/daily-notes-popup2.js')
-//   setTimeout( ()=>{
-//     this.dailyNotesPopup2.initialize()
-//   }, 500)
-//   return false
-// });
-
-
