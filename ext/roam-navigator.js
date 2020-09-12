@@ -139,15 +139,21 @@
       // if (ev.ctrlKey ||
       //     (ev.altKey && (isNavigating() || ev.key !== START_NAVIGATE_KEY))) {
       if (ev.altKey && ev.shiftKey &&  ev.code=='Slash' ) { 
-        ev.stopImmediatePropagation();
-        ev.preventDefault();
-        sidebarRightToggle(); 
+        ev.stopImmediatePropagation()
+        ev.preventDefault()
+        sidebarRightToggle()
         return
       }
       if (ev.altKey && ev.shiftKey && (ev.code=='Backslash' || ev.key=='«') ) { 
-        ev.stopImmediatePropagation();
-        ev.preventDefault();        
-        sidebarLeftToggle(); 
+        ev.stopImmediatePropagation()
+        ev.preventDefault()        
+        sidebarLeftToggle()
+        return
+      }
+      if (ev.altKey && ev.shiftKey && ev.code=='KeyH' ) { 
+        ev.stopImmediatePropagation()
+        ev.preventDefault()        
+        displayHelp(10000) 
         return
       }
       
@@ -221,7 +227,7 @@
       debug('DOM mutation. blockHighlighted = ', blockHighlighted,
           'blockWasHighlighted = ', blockWasHighlighted);
       if (isNavigating()) {
-        if (ACTIVATE_ON_NO_FOCUS &&
+        if (ACTIVATE_ON_NO_FOCUS && roamNavigatorEnabled &&
             blockHighlighted &&
             document.activeElement === document.body) {
           handleFocusIn();
@@ -229,7 +235,7 @@
           setupNavigate(false);
           registerScrollHandlers();
         }
-      } else if (ACTIVATE_ON_NO_FOCUS &&
+      } else if (ACTIVATE_ON_NO_FOCUS && roamNavigatorEnabled &&
                  !blockHighlighted &&
                  blockWasHighlighted &&
                  document.activeElement === document.body) {
@@ -246,7 +252,7 @@
     });
 
     // Watch for DOM changes, to know when to re-render tips.
-    if (ACTIVATE_ON_NO_FOCUS) {
+    if (ACTIVATE_ON_NO_FOCUS && roamNavigatorEnabled) {
       document.addEventListener('focusout', (ev) => {
         if (getInputTarget(ev) && document.activeElement === document.body) {
           handleFocusOut();
