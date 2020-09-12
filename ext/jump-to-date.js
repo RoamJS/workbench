@@ -101,21 +101,21 @@ var jumpToDateComponent = {
   }, //jumpToDateFromButton
 
   navigateUIToDate(destinationDate, useShiftKey) {
-      KeyboardLib.simulateKey(16) //this fixes some bug with shift    
-      let inPut =  document.getElementById('find-or-create-input')
-      inPut.focus()
-      setEmptyNodeValue( inPut, getRoamDate( destinationDate ) )
-      setTimeout(()=>{
-        if(hotkeys.isPressed('shift')==true && useShiftKey==true) {
+    KeyboardLib.simulateKey(16) //this fixes some bug with shift    
+    let inPut =  document.getElementById('find-or-create-input')
+    inPut.focus()
+    setEmptyNodeValue( inPut, getRoamDate( destinationDate ) )
+    setTimeout(()=>{
+      if(hotkeys.isPressed('shift')==true && useShiftKey==true) {
           KeyboardLib.simulateKey(13,100,{  shiftKey:true})   
           KeyboardLib.simulateKey(16,500)
       } else {
-          KeyboardLib.pressEnter()
-        }
-        setTimeout(()=>{
-          setEmptyNodeValue( inPut,'' )
-        },250)             
-      },400)      
+        KeyboardLib.pressEnter()
+      }
+      setTimeout(()=>{
+        setEmptyNodeValue( inPut,'' )
+      },250)             
+    },400)      
   }, //navigateUIToDate
 
   initialize()  {
@@ -222,8 +222,6 @@ var jumpToDateComponent = {
 
     this.flCalendar.config.onValueUpdate.push( (selectedDates, dateStr, instance)=> {
       instance.close()
-              console.log(' a ispressed ' + hotkeys.isPressed('shift'))
-
       this.navigateUIToDate(selectedDates[0],true)
     })
 
