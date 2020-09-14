@@ -63,6 +63,7 @@ addScriptToPage( 'templatePoc',       URLScriptServer + 'ext/templatepoc.js'    
 addScriptToPage( 'jumpToDate',        URLScriptServer + 'ext/jump-to-date.js'       )
 addScriptToPage( 'roamNavigator',     URLScriptServer + 'ext/roam-navigator.js'     )
 addScriptToPage( 'loadExtraFeatures', URLScriptServer + 'ext/load-extra-features.js')
+addScriptToPage( 'autocomplete',      URLScriptServer + 'ext/auto-complete.js')
 
 // Give the libraries a few seconds to get comfy in their new home 
 // and then let the extension dance, that is to say,
@@ -83,6 +84,7 @@ setTimeout(()=>{
     }
     setTimeout(()=>{
       loadKeyEvents()
+      loadAutoComplete()
       loadJumpNav();
       try { loadTypeAhead();     } catch(e) {}
       try { jumpToDateComponent.initialize()  } catch(e) {}
