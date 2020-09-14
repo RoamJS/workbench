@@ -193,7 +193,7 @@ function livePreviewStatusToast() {
         // if( e.ctrlKey == false ) { return }
         if( getRoamLivePreview_IsEnabled() == false) { return }
         var target = e.target;
-
+        
         let isPageRef = target.classList.contains('rm-page-ref');
         let isPageRefTag = target.classList.contains('rm-page-ref-tag');
         let isPageRefNameSpace = target.classList.contains('rm-page-ref-namespace-color');
@@ -220,6 +220,11 @@ function livePreviewStatusToast() {
           target = e.target
         }
 
+        if ( isPageRef == false && target.style.cursor == 'pointer' && target.parentNode.classList.contains('level2') ) {
+          isPageRef = true
+          text = target.text
+        }
+        
         // remove '#' for page tags
         if (isPageRef) {
           hoveredElement = target;
