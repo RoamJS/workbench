@@ -89,17 +89,23 @@ const loadJumpNav = () => {
       // PAGE: Paging all Hitchhikers
       if(['ctrl+j e', 'ctrl+j c', 'ctrl+j o'  ].includes(handler)) {
         var locFacts =  (event.srcElement.localName == "textarea")  ? saveLocationParametersOfTextArea(event.target) : ''
-        simulateMouseClickRight(document.querySelector('.rm-title-display'))
+        var zoomedView = 0  // 0 if page is not zoomed, 1 if zoomed
+        try {
+          simulateMouseClickRight(document.querySelector('.rm-title-display'))          
+        } catch(e) {
+          simulateMouseClickRight(document.querySelectorAll('.simple-bullet-outer')[0])
+          zoomedView = 1  
+        }
         setTimeout(()=>{
           switch(handler) {
             case 'ctrl+j e':
-              document.querySelector('.bp3-popover-content > div> ul').childNodes[2].childNodes[0].click()
+              document.querySelector('.bp3-popover-content > div> ul').childNodes[2+zoomedView].childNodes[0].click()
               break;
             case 'ctrl+j c':
-              document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click()
+              document.querySelector('.bp3-popover-content > div> ul').childNodes[3+zoomedView].childNodes[0].click()
               break;          
             case 'ctrl+j o':
-              document.querySelector('.bp3-popover-content > div> ul').childNodes[1].childNodes[0].click()
+              document.querySelector('.bp3-popover-content > div> ul').childNodes[1+zoomedView].childNodes[0].click()
               break;          
           }
           if(locFacts!='') {

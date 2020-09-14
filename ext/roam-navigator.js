@@ -267,7 +267,7 @@
 
     // Activate on startup, once the DOM is sufficiently populated.
     if (ACTIVATE_ON_STARTUP) {
-      persistentlyFind(() => getUniqueClass(document, 'roam-sidebar-container'),
+       persistentlyFind(() => getById('right-sidebar'),
           navigate);
     }
   }
@@ -658,6 +658,9 @@
             // Link in linked references
             el = parent;
             uid = link.innerText;
+          } else if (matchingClass('rm-alias')(link)) {
+            el = link;
+            uid = link.innerText;            
           } else {
             const hrefAttr = link.attributes['href'];
             if (hrefAttr) {

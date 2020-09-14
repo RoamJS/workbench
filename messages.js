@@ -64,7 +64,8 @@ const displayHelp = (delayTime) => {
       ${getRoamLivePreview_IsEnabled() ? '' : '<tr><td>&nbsp       </td><td>&nbsp</td> <td>(Disabled)</td><td></td></tr>'}
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                <td></td></tr>
 
-      <tr><td>Shift-space    </td><td>&nbsp</td> <td>Autocomplete-search in</td><td></td></tr>
+      <tr><td>Shift-space    </td><td>&nbsp</td> <td>Autocomplete-search in</td><td class="bp3-button bp3-minimal bp3-icon-settings" onclick="roamNavigatorStatusToast()"></td></tr>
+      
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>search bar/ block lookup </td><td></td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                    <td></td></tr>
       <tr><td>Alt–Shift–\\</td><td>&nbsp</td>  <td>Open left side bar</td>      <td></td> </tr>
