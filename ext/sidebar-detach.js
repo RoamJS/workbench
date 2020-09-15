@@ -59,7 +59,7 @@ function sbDetach() {
 // // interact('#roam-right-sidebar-content > div')
  // $("#roam-right-sidebar-content > div").draggable()
   
-  smoothDnD(document.querySelector("#right-sidebar"));
+  // smoothDnD(document.querySelector("#right-sidebar"));
 }
 
 
@@ -69,7 +69,7 @@ Mousetrap.bind('alt+shift+5', ()=>{
   console.log('alt+shift+5 triggered')
   try {  
   } catch(e) {}  
-  addScriptToPage( 'interactJS',    'https://unpkg.com/smooth-dnd@0.12.1/dist/index.js'         )
+  // addScriptToPage( 'interactJS',    'https://unpkg.com/smooth-dnd@0.12.1/dist/index.js'         )
   addScriptToPage( 'roam42Tester',  'https://roamhacker-lab.glitch.me/ext/sidebar-detach.js'    )
   setTimeout( ()=>{
     roam42Test()
