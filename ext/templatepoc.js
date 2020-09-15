@@ -71,8 +71,6 @@ window._templateHook = async function(e) {
     var elem = e.target
     if (elem.nodeName != 'TEXTAREA' || e.data != ':') return;
 
-    console.log('ok', elem.value, elem);
-
     // nativeValueSetter to bypass
     var nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
 
@@ -90,8 +88,6 @@ window._templateHook = async function(e) {
 
         tmp = replace_variables(tmp)
 
-        console.log('template:', v, tmp);
-
         // remove first 
         tmp = tmp.replace(/^\s*- /, '').split("\n");
 
@@ -102,7 +98,6 @@ window._templateHook = async function(e) {
          // handle heading
             heading = (line.match(/^\s*- (#*) /) || ['', ''])[1].length;
             if (heading > 0) {
-              console.log('heading:', heading, line.match(/^\s*- (#*) /));
               KeyboardLib.changeHeading(heading);
             }
 
@@ -141,7 +136,6 @@ window._templateHook = async function(e) {
 
             // handle tabs
             tab = line.match(/^\s*/)[0].length / 2 - tab; // tab difference
-            console.log('tab:', tab);
             if (tab > 0) {
                 for (var i = 0; i < tab; i++) {
                     await KeyboardLib.pressTab()
@@ -156,7 +150,6 @@ window._templateHook = async function(e) {
             // handle heading
             heading = (line.match(/^\s*- (#*) /) || ['', ''])[1].length;
             if (heading > 0) {
-              console.log('heading:', heading, line.match(/^\s*- (#*) /));
               KeyboardLib.changeHeading(heading);
             }
 
