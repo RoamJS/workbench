@@ -23,7 +23,7 @@ const displayStartup = (delayTime) => {
     <table>
       <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Help</td></tr>
     </table>
-    <div style='font-size:7pt'>Trillian.2020-09-14</div>
+    <div style='font-size:7pt'>Trillian.2020-09-15</div>
   `.trim(),
     theme: 'dark',
     progressBar: true,
