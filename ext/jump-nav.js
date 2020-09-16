@@ -1,5 +1,7 @@
-/* globals   Mousetrap ,iziToast, getArticleOfCurrentPage, simulateMouseClick,simulateMouseClickRight,
-            saveLocationParametersOfTextArea, restoreLocationParametersOfTexArea, KeyboardLib, simulateMouseOver   */
+/* globals  logo2HC, Mousetrap ,iziToast, getArticleOfCurrentPage, simulateMouseClick,simulateMouseClickRight,
+            saveLocationParametersOfTextArea, restoreLocationParametersOfTexArea, KeyboardLib, simulateMouseOver   
+            sidebarRightToggle, sidebarLeftToggle, sidebarLeftToggle, sidebarRightToggle  
+*/
 
 const loadJumpNav = () => {
  Mousetrap.prototype.stopCallback = function () { return false }
@@ -17,7 +19,9 @@ const loadJumpNav = () => {
         // page: Expand All/Collapse all in linked references, unlinked references
         'ctrl+j d', 'ctrl+j p',                     'meta+j d','meta+j p',                        'alt+j d', 'alt+j p',
         // help for javigation
-        'ctrl+j h',                                     'meta+j h',                                       'alt+j h'                  
+         'ctrl+j h','ctrl+j q',                      'meta+j h', 'meta+j q',                   'alt+j h'  ,'alt+j q',        
+        // Side bars
+        'ctrl+j n','ctrl+j m',                      'meta+j n', 'meta+j m',                   'alt+j n', 'alt+j m',    
       ], (event, handler)=> { 
       handler = handler.replace('meta','ctrl')
       handler = handler.replace('alt', 'ctrl')
@@ -152,7 +156,11 @@ const loadJumpNav = () => {
         return false
       }
 
+      if(handler=='ctrl+j q' ) { displayHelp() }
       if(handler=='ctrl+j h' ) { displayJumpNavHelp() }
+
+      if(handler=='ctrl+j n' ) { sidebarLeftToggle() }
+      if(handler=='ctrl+j m' ) { sidebarRightToggle() }
 
       return false
     
@@ -189,6 +197,12 @@ const loadJumpNav = () => {
  3 Align right
  4 Justify
  A Reaction
+
+<b>Others</b>
+ n Toggle left sidebar
+ m Toggle right sidebar
+ q Roam42 Help
+
 </pre>
       `.trim(),
       theme: 'dark',

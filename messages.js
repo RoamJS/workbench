@@ -1,4 +1,6 @@
-/* globals iziToast */
+/*   globals iziToast, getRoamNavigator_IsEnabled, logo2HC, 
+     getRoamLivePreview_IsEnabled, getAutoComplete_IsEnabled 
+*/
 
 const displayMessage = (sMessage, delayTime) => { 
   iziToast.show({
@@ -23,7 +25,7 @@ const displayStartup = (delayTime) => {
     <table>
       <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Help</td></tr>
     </table>
-    <div style='font-size:7pt'>Trillian.2020-09-15</div>
+    <div style='font-size:7pt'>Trillian.2020-09-16a</div>
   `.trim(),
     theme: 'dark',
     progressBar: true,
@@ -64,9 +66,9 @@ const displayHelp = (delayTime) => {
       ${getRoamLivePreview_IsEnabled() ? '' : '<tr><td>&nbsp       </td><td>&nbsp</td> <td>(Disabled)</td><td></td></tr>'}
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                <td></td></tr>
 
-      <tr><td>Shift-space    </td><td>&nbsp</td> <td>Autocomplete-search in</td><td></td></tr>
+      <tr><td>Shift-space    </td><td>&nbsp</td> <td>Autocomplete blocks/search bar</td><td class="bp3-button bp3-minimal bp3-icon-settings" onclick="autoCompleteStatusToast()"></td></tr>
+      ${getAutoComplete_IsEnabled() ? '' : '<tr><td>&nbsp       </td><td>&nbsp</td> <td>(Disabled)</td><td></td></tr>'}
       
-      <tr><td>&nbsp       </td><td>&nbsp</td> <td>search bar/ block lookup </td><td></td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                    <td></td></tr>
       <tr><td>Alt–Shift–\\</td><td>&nbsp</td>  <td>Open left side bar</td>      <td></td> </tr>
       <tr><td>Alt–Shift–/</td><td>&nbsp</td>  <td>Open right side bar</td>      <td></td></tr>
