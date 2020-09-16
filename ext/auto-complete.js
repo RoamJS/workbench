@@ -60,7 +60,6 @@ const autoCompleteStatusToast = ()=> {
   })  
 }
 
-
 const loadAutoComplete = ()=> {
   if(getAutoComplete_IsEnabled() == true ) {
     Mousetrap(document.getElementById("find-or-create-input")).bind('shift+space',()=>{
@@ -85,4 +84,3 @@ const loadAutoComplete = ()=> {
     })
   }
 }
-
