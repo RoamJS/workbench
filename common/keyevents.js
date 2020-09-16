@@ -24,11 +24,7 @@ const loadKeyEvents = () => {
   
   hotkeys('alt+shift+.', function(event, handler) {
     event.preventDefault()
-      if(event.srcElement.localName=='textarea') {
-        typeaheadDisplayTextArea(event.srcElement.id)
-      } else {
-        typeaheadDisplayOtherAreas()
-      }
+    typeAheadLookup()
   });
   
   hotkeys('alt+shift+a', function(event, handler) {

@@ -9,6 +9,14 @@
 
 var currentTextArea=''
 
+const typeAheadLookup = ()=> {
+  if(event.srcElement.localName=='textarea') {
+    typeaheadDisplayTextArea(event.srcElement.id)
+  } else {
+    typeaheadDisplayOtherAreas()
+  }      
+}
+
 // This function displays the search ui
 // Called by keyevents.js based on defined keystrokes. 
 const typeaheadDisplayTextArea = srcElementId =>	{
