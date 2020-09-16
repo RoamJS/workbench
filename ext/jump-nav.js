@@ -171,7 +171,6 @@ const loadJumpNav = () => {
     
     })
 
-
   const displayJumpNavHelp = ()=> { 
    iziToast.destroy(); 
    iziToast.show({
@@ -222,4 +221,4 @@ const loadJumpNav = () => {
       displayMode: 2
     });
   }
-}
+} 
