@@ -16,8 +16,8 @@ const loadJumpNav = () => {
         'ctrl+j e', 'ctrl+j c', 'ctrl+j o',             'meta+j e', 'meta+j c', 'meta+j o',               'alt+j e', 'alt+j c', 'alt+j o',
         // page: toggle linked references, unlinked references
         'ctrl+j i', 'ctrl+j u',                         'meta+j i', 'meta+j u',                           'alt+j i', 'alt+j u',
-        // page: Expand All/Collapse all in linked references, unlinked references
-        'ctrl+j d', 'ctrl+j p',                     'meta+j d','meta+j p',                        'alt+j d', 'alt+j p',
+        // page: Expand All/Collapse parents or children  in linked references, unlinked references
+        'ctrl+j f', 'ctrl+j d', 'ctrl+j p',             'meta+j f', 'meta+j d', 'meta+j p',               'alt+j f', 'alt+j d', 'alt+j p',
         // help for javigation
          'ctrl+j h','ctrl+j q',                      'meta+j h', 'meta+j q',                   'alt+j h'  ,'alt+j q',        
         // Side bars
@@ -123,9 +123,14 @@ const loadJumpNav = () => {
         return false
       }
 
-    // PAGE: toggle linked and unlinked references
-      if(['ctrl+j d', 'ctrl+j p',  ].includes(handler)) {
+    // PAGE: expand childern of linked and unlinked references
+      if(['ctrl+j f', 'ctrl+j d', 'ctrl+j p',  ].includes(handler)) {
           switch(handler) {
+            case 'ctrl+j f': //toggle parents
+              document.querySelectorAll('.rm-title-arrow-wrapper .bp3-icon-caret-down').forEach( (element)=>{
+                simulateMouseClick(element)
+              })
+              break;          
             case 'ctrl+j d':
               document.querySelectorAll('.rm-reference-item  .simple-bullet-outer').forEach( (element)=>{
                 simulateMouseClickRight(element)
@@ -186,11 +191,14 @@ const loadJumpNav = () => {
  B Bottom of page
  E Expand all
  C Collapse all
+ O Open this page in side bar
+
+<b>Linked/Unlinked Refs</b>
  I Toggle Linked refs
  U Toggle Unlinked refs
- D Expand in Linked/unlinked 
- P Collapse in Linked/unlinked 
- O Open this page in side bar
+ F Toggle Parents (page level) 
+ D Expand children  
+ P Collapse children  
 
 <b>Blocks</b>
  R Copy block ref
