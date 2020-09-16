@@ -22,6 +22,8 @@ const loadJumpNav = () => {
          'ctrl+j h','ctrl+j q',                      'meta+j h', 'meta+j q',                   'alt+j h'  ,'alt+j q',        
         // Side bars
         'ctrl+j n','ctrl+j m',                      'meta+j n', 'meta+j m',                   'alt+j n', 'alt+j m',    
+        // daily notes and lookup
+        'ctrl+j ,','ctrl+j .',                      'meta+j ,', 'meta+j .',                   'alt+j ,', 'alt+j .',    
       ], (event, handler)=> { 
       handler = handler.replace('meta','ctrl')
       handler = handler.replace('alt', 'ctrl')
@@ -162,6 +164,9 @@ const loadJumpNav = () => {
       if(handler=='ctrl+j n' ) { sidebarLeftToggle() }
       if(handler=='ctrl+j m' ) { sidebarRightToggle() }
 
+      if(handler=='ctrl+j ,' ) { dailyNotesPopup2.toggleVisible() }
+      if(handler=='ctrl+j .' ) { typeAheadLookup() }
+    
       return false
     
     })
@@ -202,6 +207,8 @@ const loadJumpNav = () => {
  n Toggle left sidebar
  m Toggle right sidebar
  q Roam42 Help
+ , Daily Notes Popup
+ . Dictionary
 
 </pre>
       `.trim(),

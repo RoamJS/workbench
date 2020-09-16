@@ -2,8 +2,6 @@
 
 // THIS IS AN EXPERIMENT. Still not working, and not stable
 
-console.log('sidebar-panel.js loading')
-
 
 function roam42Test() {
   sbDetach()
@@ -63,18 +61,18 @@ function sbDetach() {
 }
 
 
-//load feature code
-Mousetrap.unbind('alt+shift+5');
-Mousetrap.bind('alt+shift+5', ()=>{
-  console.log('alt+shift+5 triggered')
-  try {  
-  } catch(e) {}  
-  // addScriptToPage( 'interactJS',    'https://unpkg.com/smooth-dnd@0.12.1/dist/index.js'         )
-  addScriptToPage( 'roam42Tester',  'https://roamhacker-lab.glitch.me/ext/sidebar-detach.js'    )
-  setTimeout( ()=>{
-    roam42Test()
-  }, 300)
-  return false
-})
+// //load feature code
+// Mousetrap.unbind('alt+shift+5');
+// Mousetrap.bind('alt+shift+5', ()=>{
+//   console.log('alt+shift+5 triggered')
+//   try {  
+//   } catch(e) {}  
+//   // addScriptToPage( 'interactJS',    'https://unpkg.com/smooth-dnd@0.12.1/dist/index.js'         )
+//   addScriptToPage( 'roam42Tester',  'https://roamhacker-lab.glitch.me/ext/sidebar-detach.js'    )
+//   setTimeout( ()=>{
+//     roam42Test()
+//   }, 300)
+//   return false
+// })
 
 
