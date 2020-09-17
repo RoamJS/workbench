@@ -7,7 +7,7 @@ const loadJumpNav = () => {
  Mousetrap.prototype.stopCallback = function () { return false }
   Mousetrap.bind([
         // block: expand, collapse, ref, add action
-        'ctrl+j x', 'ctrl+j l', 'ctrl+j r', 'ctrl+j a', 'meta+j x', 'meta+j l', 'meta+j r', 'meta+j a',   'alt+j x', 'alt+j l', 'alt+j r', 'alt+j a',   
+        'ctrl+j x', 'ctrl+j l', 'ctrl+j r', 'ctrl+j s', 'ctrl+j a', 'meta+j x', 'meta+j l', 'meta+j s', 'meta+j r', 'meta+j a',   'alt+j x', 'alt+j l', 'alt+j s', 'alt+j r', 'alt+j a',   
         // block align left,center, right, justify
         'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4', 'meta+j 1', 'meta+j 2', 'meta+j 3', 'meta+j 4',   'alt+j 1', 'alt+j 2', 'alt+j 3', 'alt+j 4',  
         // page: first node last node
@@ -40,7 +40,7 @@ const loadJumpNav = () => {
       }    
 
       // BLOCKS: fun with blocks
-      if(['ctrl+j x', 'ctrl+j l', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4' ].includes(handler)) {
+      if(['ctrl+j x', 'ctrl+j l', 'ctrl+j s', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4' ].includes(handler)) {
         var locFacts = saveLocationParametersOfTextArea(event.target)
         var parentControlNode = ''
         if( document.getElementById(locFacts.id).parentNode.parentNode.tagName == 'DIV') {
@@ -59,6 +59,12 @@ const loadJumpNav = () => {
             case 'ctrl+j l':      // collapse block
               document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click()                    
               restoreLocationParametersOfTexArea(locFacts)
+              break
+            case 'ctrl+j s':      // copy block ref as ref
+              simulateMouseClick( document.querySelector('.bp3-popover-content > div> ul').childNodes[0].childNodes[0] )            
+              restoreLocationParametersOfTexArea(locFacts)
+              navigator.clipboard.readText().then(clipText =>  navigator.clipboard.writeText(`[*](${clipText})` )
+              );
               break
             case 'ctrl+j r':      // copy block ref
               simulateMouseClick( document.querySelector('.bp3-popover-content > div> ul').childNodes[0].childNodes[0] )            
@@ -202,6 +208,7 @@ const loadJumpNav = () => {
 
 <b>Blocks</b>
  R Copy block ref
+ S Copy block ref as alias
  X Expand all
  L Collapse all
  1 Align left

@@ -2,6 +2,8 @@
      getRoamLivePreview_IsEnabled, getAutoComplete_IsEnabled 
 */
 
+const roam42BuildID = 'Trillian.2020-09-17'
+
 const displayMessage = (sMessage, delayTime) => { 
   iziToast.show({
     message: sMessage,
@@ -25,7 +27,7 @@ const displayStartup = (delayTime) => {
     <table>
       <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Help</td></tr>
     </table>
-    <div style='font-size:7pt'>Trillian.2020-09-16b</div>
+    <div style='font-size:7pt'>${roam42BuildID}</div>
   `.trim(),
     theme: 'dark',
     progressBar: true,
@@ -80,6 +82,7 @@ const displayHelp = (delayTime) => {
       <tr><td>Alt–Shift–W</td><td>&nbsp</td>  <td>TODO #weekend</td>            <td></td></tr>
       <tr><td>Alt–Shift–T</td><td>&nbsp</td>  <td>Strikeout text</td>           <td></td></tr>
     </table>
+    <div style='font-size:7pt'>${roam42BuildID}</div>
     `.trim(),
       theme: 'dark',
       progressBar: true,
