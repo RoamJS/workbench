@@ -13,7 +13,7 @@ const loadJumpNav = () => {
         // page: first node last node
         'ctrl+j t', 'ctrl+j b', 'ctrl+ t',              'meta+j t', 'meta+j b', 'meta+ t',                'alt+j t', 'alt+j b', 'alt+ t',          
         // page: expand/collapse open in side
-        'ctrl+j e', 'ctrl+j c', 'ctrl+j o',             'meta+j e', 'meta+j c', 'meta+j o',               'alt+j e', 'alt+j c', 'alt+j o',
+        'ctrl+j e', 'ctrl+j c', 'ctrl+j o','ctrl+j y', 'meta+j e', 'meta+j c', 'meta+j o', 'meta+j y',    'alt+j e', 'alt+j c', 'alt+j o', 'alt+j y',
         // page: toggle linked references, unlinked references
         'ctrl+j i', 'ctrl+j u',                         'meta+j i', 'meta+j u',                           'alt+j i', 'alt+j u',
         // page: Expand All/Collapse parents or children  in linked references, unlinked references
@@ -99,7 +99,7 @@ const loadJumpNav = () => {
       }
 
       // PAGE: Paging all Hitchhikers
-      if(['ctrl+j e', 'ctrl+j c', 'ctrl+j o'  ].includes(handler)) {
+      if(['ctrl+j e', 'ctrl+j c', 'ctrl+j o'].includes(handler)) {
         var locFacts =  (event.srcElement.localName == "textarea")  ? saveLocationParametersOfTextArea(event.target) : ''
         var zoomedView = 0  // 0 if page is not zoomed, 1 if zoomed
         try {
@@ -129,6 +129,20 @@ const loadJumpNav = () => {
         return false
       }
 
+      // PAGE: Query    
+      if(['ctrl+j y' ].includes(handler)) {
+        console.log(handler)
+          switch(handler) {
+            case 'ctrl+j y': //toggle parents
+              document.querySelectorAll('.rm-query-title .bp3-icon-caret-down').forEach( (element)=>{
+                simulateMouseClick(element)
+              })
+              break;            
+          }
+        return false
+      }
+    
+    
     // PAGE: expand childern of linked and unlinked references
       if(['ctrl+j f', 'ctrl+j d', 'ctrl+j p',  ].includes(handler)) {
           switch(handler) {
@@ -193,37 +207,35 @@ const loadJumpNav = () => {
 <br/>
 <pre style="max-width:260px">
 <b>Page</b>
- T Top of page
- B Bottom of page
- E Expand all
- C Collapse all
- O Open this page in side bar
-
+ t Top of page
+ b Bottom of page
+ e Expand all
+ c Collapse all
+ o Open this page in side bar
 <b>Linked/Unlinked Refs</b>
- I Toggle Linked refs
- U Toggle Unlinked refs
- F Toggle Parents (page level) 
- D Expand children  
- P Collapse children  
-
+ i Toggle Linked refs
+ u Toggle Unlinked refs
+ f Toggle Parents (page level) 
+ d Expand children  
+ p Collapse children  
 <b>Blocks</b>
- R Copy block ref
- S Copy block ref as alias
- X Expand all
- L Collapse all
+ r Copy block ref
+ s Copy block ref as alias
+ x Expand all
+ l Collapse all
  1 Align left
  2 Center align  
  3 Align right
  4 Justify
- A Reaction
-
+ a Reaction
+<b>Queries</b>
+ y Toggle Queries
 <b>Others</b>
  n Toggle left sidebar
  m Toggle right sidebar
  q Roam42 Help
  , Daily Notes Popup
  . Dictionary
-
 </pre>
       `.trim(),
       theme: 'dark',
