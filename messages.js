@@ -2,7 +2,7 @@
      getRoamLivePreview_IsEnabled, getAutoComplete_IsEnabled 
 */
 
-const roam42BuildID = 'Trillian.2020-09-17'
+const roam42BuildID = 'Trillian.2020-09-18'
 
 const displayMessage = (sMessage, delayTime) => { 
   iziToast.show({
@@ -57,13 +57,13 @@ const displayHelp = (delayTime) => {
       <tr><td>Ctrl–Shift–.</td><td>&nbsp</td> <td>Next Day's Note</td>     <td></td></tr>
       <tr><td>Ctrl–Shift–,</td><td>&nbsp</td> <td>Previous Day's Note</td> <td></td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>               <td></td></tr>
-      <tr><td>Meta–J H</td><td>&nbsp</td>     <td>Jump Nav help</td>       <td></td></tr>
-      <tr><td></td>        <td>&nbsp</td>     <td>or Ctrl-J H or Alt-J H</td><td></td></tr>
-      <tr><td>Alt–G</td><td>&nbsp</td>     <td>Deep jump nav</td><td class="bp3-button bp3-minimal bp3-icon-settings" onclick="roamNavigatorStatusToast()"></td></tr>
+      <tr><td>Meta–j h</td><td>&nbsp</td>     <td>Jump Nav help</td>       <td></td></tr>
+      <tr><td></td>        <td>&nbsp</td>     <td>or Ctrl-j h or Alt-j h</td><td></td></tr>
+      <tr><td>Alt–g</td><td>&nbsp</td>     <td>Deep jump nav</td><td class="bp3-button bp3-minimal bp3-icon-settings" onclick="roamNavigatorStatusToast()"></td></tr>
       ${getRoamNavigator_IsEnabled() ? '' : '<tr><td>&nbsp       </td><td>&nbsp</td> <td>(Disabled)</td><td></td></tr>'}
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                <td></td></tr>
   
-      <tr><td>Ctrl+Shift+L</td><td>&nbsp</td> <td>Toggle Live Preview (Alt+L)</td><td class="bp3-button bp3-minimal bp3-icon-settings" onclick="livePreviewStatusToast()"></td></tr>
+      <tr><td>Ctrl+Shift+l</td><td>&nbsp</td> <td>Toggle Live Preview (Alt+L)</td><td class="bp3-button bp3-minimal bp3-icon-settings" onclick="livePreviewStatusToast()"></td></tr>
       <tr><td>Hover mouse </td><td>&nbsp</td> <td>Live Preview</td>         <td></td></tr>
       ${getRoamLivePreview_IsEnabled() ? '' : '<tr><td>&nbsp       </td><td>&nbsp</td> <td>(Disabled)</td><td></td></tr>'}
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                <td></td></tr>
@@ -78,9 +78,9 @@ const displayHelp = (delayTime) => {
       <tr><td>Alt–Shift–.</td><td>&nbsp</td>  <td>Dictionary Lookup</td>        <td></td></tr>
       <tr><td>Alt–m      </td><td>&nbsp</td>  <td>Markdown (simple)</td>        <td></td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                    <td></td></tr>
-      <tr><td>Alt–Shift–A</td><td>&nbsp</td>  <td>TODO #na</td>                 <td></td></tr>
-      <tr><td>Alt–Shift–W</td><td>&nbsp</td>  <td>TODO #weekend</td>            <td></td></tr>
-      <tr><td>Alt–Shift–T</td><td>&nbsp</td>  <td>Strikeout text</td>           <td></td></tr>
+      <tr><td>Alt–Shift–a</td><td>&nbsp</td>  <td>TODO #na</td>                 <td></td></tr>
+      <tr><td>Alt–Shift–w</td><td>&nbsp</td>  <td>TODO #weekend</td>            <td></td></tr>
+      <tr><td>Alt–Shift–t</td><td>&nbsp</td>  <td>Strikeout text</td>           <td></td></tr>
     </table>
     <div style='font-size:7pt'>${roam42BuildID}</div>
     `.trim(),
