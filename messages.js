@@ -2,7 +2,7 @@
      getRoamLivePreview_IsEnabled, getAutoComplete_IsEnabled 
 */
 
-const roam42BuildID = 'Trillian.2020-09-18'
+const roam42BuildID = 'Trillian.2020-09-19'
 
 const displayMessage = (sMessage, delayTime) => { 
   iziToast.show({
