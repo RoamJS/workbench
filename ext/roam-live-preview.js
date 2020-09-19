@@ -181,14 +181,38 @@ function livePreviewStatusToast() {
       }
       return iframe;
     };
+    
+      function generateGetBoundingClientRect(x = 0, y = 0) {
+        return () => ({
+          width: 0,
+          height: 0,
+          top: y,
+          right: x,
+          bottom: y,
+          left: x,
+        });
+      }
+
+      const virtualElement = {
+        getBoundingClientRect: generateGetBoundingClientRect(),
+      };
+
+      document.addEventListener('mousemove', ({ clientX: x, clientY: y }) => {
+        virtualElement.getBoundingClientRect = generateGetBoundingClientRect(x, y);
+      });
         
     const enableLivePreview = () => {
       let hoveredElement = null;
       let popupTimeout = null;
       let popper = null;
       let externalUrl = false
+      let specialDelayMouseOut = false   //used to control the mouseout event in some scenarios
       const previewIframe = createPreviewIframe();
-      
+      var delayTimer = 300;
+      if(window.roam42LivePreview) {
+        delayTimer = window.roam42LivePreview.delay == undefined ? delayTimer : window.roam42LivePreview.delay
+      }
+
       document.addEventListener('mouseover', (e) => {
         // if( e.ctrlKey == false ) { return }
         if( getRoamLivePreview_IsEnabled() == false) { return }
@@ -212,6 +236,8 @@ function livePreviewStatusToast() {
         if (isPageRef == false && target.classList.contains('rm-ref-page-view-title') ) {
           isPageRef = true
           text = target.innerText
+          specialDelayMouseOut = true
+          setTimeout(()=> specialDelayMouseOut = false, delayTimer+100)          
         }
         // console.log( isPageRef , isPageRefTag , target.classList.length)
         if ( !isPageRef  && !isPageRefTag && target.classList.length == 0 && target.parentNode.classList.contains('rm-page-ref') ) {
@@ -225,10 +251,30 @@ function livePreviewStatusToast() {
           text = target.text
         }
         
+        //preview BLOCK references
+        var pageIsBlock = false
+        if ( isPageRef == false && target.classList.contains('rm-block-ref') ) {
+          pageIsBlock = true
+          let block = target.closest('.roam-block').id
+          console.log(block)
+          let bId = block.substring( block.length -9)
+          console.log(bId)
+          var q = `[:find ?bstring :in $ ?buid :where [?e :block/uid ?buid][?e :block/string ?bstring] ]`
+          var results = window.roamAlphaAPI.q(q, bId)
+          var refNumberInBlock = Array.from(document.querySelectorAll(`#${block} .rm-block-ref`)).indexOf(target)
+          isPageRef = true
+          console.log('results')
+          console.log(results)
+          text = results[0].toString().match(/\(\((.*?)\)\)/g)[refNumberInBlock]    //results[0][0].refs[refNumberInBlock].uid
+          text = text.replace('((','').replace('))','')
+          specialDelayMouseOut = true
+          setTimeout(()=> specialDelayMouseOut = false, delayTimer+100)
+        }
+        
         // remove '#' for page tags
         if (isPageRef) {
           hoveredElement = target;
-          const url = getPageUrlByName(text);
+          const url = pageIsBlock == true ? getPageUrl(text) : getPageUrlByName(text)
           const isAdded = (pageUrl) =>
             !!document.querySelector(`[src="${pageUrl}"]`);
           const isVisible = (pageUrl) =>
@@ -236,11 +282,9 @@ function livePreviewStatusToast() {
           if ((!isAdded(url) || !isVisible(url)) && previewIframe) {
             previewIframe.src = url;
             previewIframe.style.pointerEvents = 'none';
-            var delayTimer = 200;
             if(window.roam42LivePreview) {
               previewIframe.style.height = window.roam42LivePreview.height == undefined  ? '500px' : window.roam42LivePreview.height
               previewIframe.style.width  = window.roam42LivePreview.width  == undefined  ? '500px' : window.roam42LivePreview.width
-              delayTimer = window.roam42LivePreview.delay == undefined ? 200 : window.roam42LivePreview.delay
             } else {
               previewIframe.style.height = '500px'
               previewIframe.style.width  = '500px'
@@ -252,7 +296,8 @@ function livePreviewStatusToast() {
                 previewIframe.style.opacity = '1';
                 previewIframe.style.pointerEvents = 'all';
 
-                popper = window.Popper.createPopper(target, previewIframe, {
+                // popper = window.Popper.createPopper(target, previewIframe, {
+                popper = window.Popper.createPopper( virtualElement, previewIframe, {
                   placement: 'right',
                   modifiers: [
                     {
@@ -275,7 +320,10 @@ function livePreviewStatusToast() {
         }
       });
       document.addEventListener('mouseout', (e) => {
-
+        if(specialDelayMouseOut){
+          hoveredElement = null
+          return
+        }
         const target = e.target;
         const relatedTarget = e.relatedTarget;
         const iframe = document.getElementById('roam42-live-preview-iframe');

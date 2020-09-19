@@ -147,3 +147,4 @@ const insertAtCaret = (areaId, text) => {
       txtarea.scrollTop = scrollPos
     }, 100)
 }
+
