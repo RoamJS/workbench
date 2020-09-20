@@ -53,7 +53,7 @@ addScriptToPage( 'jumpNav'  ,         URLScriptServer + 'ext/jump-nav.js'       
 addScriptToPage( 'message-startup',   URLScriptServer + 'messages.js'               )
 
 //extension modules
-addScriptToPage( 'roam42Tester',      URLScriptServer + 'ext/roam42-tester.js'    )
+//addScriptToPage( 'roam42Tester',      URLScriptServer + 'ext/roam42-tester.js'    )
 addScriptToPage( 'quickReference',    URLScriptServer + 'ext/quick-reference.js'    )
 addScriptToPage( 'turnDown',          URLScriptServer + 'ext/turndownservice.js'    )
 addScriptToPage( 'dateProcessing',    URLScriptServer + 'ext/dateProcessing.js'     )

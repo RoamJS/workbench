@@ -198,7 +198,7 @@ function livePreviewStatusToast() {
       };
 
       document.addEventListener('mousemove', ({ clientX: x, clientY: y }) => {
-        virtualElement.getBoundingClientRect = generateGetBoundingClientRect(x, y);
+        virtualElement.getBoundingClientRect = generateGetBoundingClientRect(x+8, y);
       });
         
     const enableLivePreview = () => {
@@ -250,10 +250,16 @@ function livePreviewStatusToast() {
           isPageRef = true
           text = target.text
         }
-        
+
+        if ( isPageRef == false  && target.classList.contains('bp3-text-overflow-ellipsis') && target.firstChild.classList.contains('rm-pages-title-text') ) {
+          isPageRef = true
+          text = target.firstChild.text
+          target = e.target.parentElement
+        }
+
         //preview BLOCK references
         var pageIsBlock = false
-        if ( isPageRef == false && target.classList.contains('rm-block-ref') ) {
+        if ( isPageRef == false && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
           pageIsBlock = true
           let block = target.closest('.roam-block').id
           console.log(block)
@@ -261,18 +267,29 @@ function livePreviewStatusToast() {
           console.log(bId)
           var q = `[:find ?bstring :in $ ?buid :where [?e :block/uid ?buid][?e :block/string ?bstring] ]`
           var results = window.roamAlphaAPI.q(q, bId)
-          var refNumberInBlock = Array.from(document.querySelectorAll(`#${block} .rm-block-ref`)).indexOf(target)
+          // var refNumberInBlock = Array.from(document.querySelectorAll(`#${block} .rm-block-ref`)).indexOf(target)
+          var refNumberInBlock = Array.from(target.closest('.roam-block').querySelectorAll(`.rm-block-ref`)).indexOf(target)
+          if(refNumberInBlock<0){refNumberInBlock=0}
+          console.log('refNumberInBlock',  refNumberInBlock)
           isPageRef = true
           console.log('results')
           console.log(results)
-          text = results[0].toString().match(/\(\((.*?)\)\)/g)[refNumberInBlock]    //results[0][0].refs[refNumberInBlock].uid
-          text = text.replace('((','').replace('))','')
+          console.log(results[0].toString())
+          text = results[0].toString()
+          console.log(text)
+          text = text.match(/\(\((.*?)\)\)/g)    //results[0][0].refs[refNumberInBlock].uid
+          console.log(text)
+          text = text[refNumberInBlock]
+          console.log(text)
+          text = text.replaceAll('(','').replaceAll(')','')
+          console.log(text)
           specialDelayMouseOut = true
           setTimeout(()=> specialDelayMouseOut = false, delayTimer+100)
         }
         
         // remove '#' for page tags
         if (isPageRef) {
+          console.log('start reder')
           hoveredElement = target;
           const url = pageIsBlock == true ? getPageUrl(text) : getPageUrlByName(text)
           const isAdded = (pageUrl) =>

@@ -1,4 +1,4 @@
-console.log('init tester')
+//console.log('init tester')
 function roam42Test(){
 navigator.clipboard.readText().then(clipText => 
   navigator.clipboard.writeText(`[*](${clipText})`)
