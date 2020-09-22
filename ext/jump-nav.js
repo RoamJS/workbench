@@ -197,8 +197,9 @@ const loadJumpNav = () => {
     })
 
   const displayJumpNavHelp = ()=> { 
-   iziToast.destroy(); 
-   iziToast.show({
+   try{ 
+    iziToast.destroy(); 
+    iziToast.show({
       title: 'Roam42 Jump Nav Commands',
       message: `
 <div style="position:absolute;top:-110px;right:-15px;z-index:1000;">
@@ -237,15 +238,16 @@ const loadJumpNav = () => {
  , Daily Notes Popup
  . Dictionary
 </pre>
-      `.trim(),
-      theme: 'dark',
-      progressBar: true,
-      animateInside: true,
-      close: false,
-      timeout: 30000,
-      closeOnClick: true,
-      maxWidth: '300px',
-      displayMode: 2
-    });
+        `.trim(),
+        theme: 'dark',
+        progressBar: true,
+        animateInside: true,
+        close: false,
+        timeout: 30000,
+        closeOnClick: true,
+        maxWidth: '300px',
+        displayMode: 2
+      });
+    } catch(e) {}    
   }
 } 

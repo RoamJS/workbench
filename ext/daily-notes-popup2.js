@@ -15,7 +15,7 @@ var dailyNotesPopup2 =  {
       return false
     });              
 
-    if( window != window.parent ) { return }
+    // if( window != window.parent ) { return }
 
     var baseUrlRoamDb = `https://roamresearch.com/#/app/${window.location.href.replace('https://roamresearch.com/#/app/','').split('/')[0]}`
     this.panelDNP = jsPanel.create({

@@ -2,7 +2,16 @@
      getRoamLivePreview_IsEnabled, getAutoComplete_IsEnabled 
 */
 
-const roam42BuildID = 'Trillian.2020-09-20'
+const roam42BuildID = 'Trillian.2020-09-22'
+
+document.addEventListener('keydown', (ev)=> {
+  if (ev.altKey && ev.shiftKey && ev.code=='KeyH' ) { 
+    ev.stopImmediatePropagation()
+    ev.preventDefault()        
+    displayHelp(10000) 
+    return
+  }
+})
 
 const displayMessage = (sMessage, delayTime) => { 
   iziToast.show({

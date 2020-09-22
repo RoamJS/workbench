@@ -4,8 +4,8 @@
 // creates a very simply markdown file based on the current view
 
 
-
 function turndownPage() {
+  
   var turndownService = new TurndownService({
     blankReplacement: function() {
       return '';

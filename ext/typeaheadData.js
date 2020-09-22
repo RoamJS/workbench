@@ -2,6 +2,7 @@
 
 //this is a test API based on the wordnet DB. This illustrates calling into a REST API
 
+
 var typeaheadQueryURL = 'https://wordnet.glitch.me/query?search=%QUERY'
 var typeaheadDisplayField = 'word'
 
