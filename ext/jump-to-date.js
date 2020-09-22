@@ -1,4 +1,6 @@
-/* globals jsPanel, KeyboardLib, flatpickr, setEmptyNodeValue, getRoamDate, chrono, iziToast, tippy */
+/* globals jsPanel, KeyboardLib, flatpickr, setEmptyNodeValue, getRoamDate, 
+           chrono, iziToast, tippy, shiftKeyDownTracker 
+*/
 // INFO: Provides a quick way to jump between daily notes pages using a calendar
 // Datepicker based on: https://flatpickr.js.org/
 
@@ -41,25 +43,28 @@ var jumpToDateComponent = {
       }
       this.navigateUIToDate(jumpDate, false)
     }  
-    
-    iziToast.destroy();
-    iziToast.show({
-      message: this.getWeekDay(jumpDate),
-      theme: 'dark',
-      transitionIn: directionTip,
-      position: 'center',
-      icon: 'bp3-button bp3-minimal bp3-icon-pivot',
-      progressBar: true,
-      animateInside: false,
-      close: false,
-      timeout: 1500,
-      closeOnClick: true,
-      displayMode: 2
-    });
+
+    try {
+      iziToast.destroy();
+      iziToast.show({
+        message: this.getWeekDay(jumpDate),
+        theme: 'dark',
+        transitionIn: directionTip,
+        position: 'center',
+        icon: 'bp3-button bp3-minimal bp3-icon-pivot',
+        progressBar: true,
+        animateInside: false,
+        close: false,
+        timeout: 1500,
+        closeOnClick: true,
+        displayMode: 2
+      })      
+    } catch(e) {}
   },
 
   //Toggles the date picker display
   jumpToDate(){
+    KeyboardLib.simulateKey(16) //this fixes some bug with shift    
     this.flCalendar.clear()
     this.flCalendar.setDate(new Date())    
     this.rqrJumpToDatePanel.reposition({ 
@@ -86,13 +91,15 @@ var jumpToDateComponent = {
     jInput.style.visibility='visible'
     jInput.focus()
     KeyboardLib.pressDownKey()
+    KeyboardLib.simulateKey(16) //this fixes some bug with shift        
   }, //jumpToDate
 
   jumpToDateFromButton() {
     let jump = document.querySelector('#rqrJumpToDatePanel') 
     if( jump.style.visibility=='hidden' || jump.style.visibility=='') {
-      KeyboardLib.pressEsc()
+//      KeyboardLib.pressEsc()
       setTimeout( ()=>{
+        KeyboardLib.pressEsc()
         this.jumpToDate()  
       }, 100 )    
     } else {
@@ -101,14 +108,16 @@ var jumpToDateComponent = {
   }, //jumpToDateFromButton
 
   navigateUIToDate(destinationDate, useShiftKey) {
-    KeyboardLib.simulateKey(16) //this fixes some bug with shift    
+     // KeyboardLib.simulateKey(16) //this fixes some bug with shift    
     let inPut =  document.getElementById('find-or-create-input')
     inPut.focus()
     setEmptyNodeValue( inPut, getRoamDate( destinationDate ) )
     setTimeout(()=>{
-      if(hotkeys.isPressed('shift')==true && useShiftKey==true) {
-          KeyboardLib.simulateKey(13,100,{  shiftKey:true})   
-          KeyboardLib.simulateKey(16,500)
+    //   if(hotkeys.isPressed('shift')==true && useShiftKey==true) {
+      console.log('shiftKeyDownTracker: ' + shiftKeyDownTracker)
+     if(shiftKeyDownTracker==true ) {
+             KeyboardLib.simulateKey(13,100,{  shiftKey:true})   
+        //  KeyboardLib.simulateKey(16,500)
       } else {
         KeyboardLib.pressEnter()
       }
@@ -177,11 +186,13 @@ var jumpToDateComponent = {
       console.log(e)
     }
     
-    tippy('#roam42-button-jumptodate', {
-      content: "Jump to Date<sup>42</sup>",
-      allowHTML: true,
-      theme: 'light-border',
-    });
+    if( window === window.parent  ){
+      tippy('#roam42-button-jumptodate', {
+        content: "Jump to Date<sup>42</sup>",
+        allowHTML: true,
+        theme: 'light-border',
+      });
+    }
 
     // Create floating control
     this.rqrJumpToDatePanel = jsPanel.create({

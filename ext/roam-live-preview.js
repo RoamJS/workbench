@@ -115,7 +115,6 @@ function livePreviewStatusToast() {
       return getBlockById(results[0][0]);
     };
     const baseUrl = () => {
-      // https://roamresearch.com/#/app/roam-toolkit/page/03-24-2020
       const url = new URL(window.location.href);
       const parts = url.hash.split('/');
 
@@ -130,12 +129,13 @@ function livePreviewStatusToast() {
       return getPageUrl(page[':block/uid']);
     };
     const getPageUrl = (uid) => {
-      return baseUrl().toString() + '/' + uid;
+      return baseUrl().toString() + '/' + uid ;
     };
 
     const createPreviewIframe = () => {
       const iframe = document.createElement('iframe');
-      const url = getPageUrl('search');
+      // const url = getPageUrl('search');
+      const url = baseUrl().toString().replace('/page','')
       const isAdded = (pageUrl) => !!document.querySelector(`[src="${pageUrl}"]`);
       if (isAdded(url)) {
         return;
@@ -162,6 +162,7 @@ function livePreviewStatusToast() {
               }
               .roam-body-main {
                   top: 0px !important;
+                  left; 0px !important;
               }
               #buffer {
                   display: none !important;
@@ -198,7 +199,7 @@ function livePreviewStatusToast() {
       };
 
       document.addEventListener('mousemove', ({ clientX: x, clientY: y }) => {
-        virtualElement.getBoundingClientRect = generateGetBoundingClientRect(x+8, y);
+        virtualElement.getBoundingClientRect = generateGetBoundingClientRect(x+5, y);
       });
         
     const enableLivePreview = () => {
@@ -207,8 +208,9 @@ function livePreviewStatusToast() {
       let popper = null;
       let externalUrl = false
       let specialDelayMouseOut = false   //used to control the mouseout event in some scenarios
+      let specialDelayTimeOutAmount = 200
       const previewIframe = createPreviewIframe();
-      var delayTimer = 300;
+      var delayTimer = 100;
       if(window.roam42LivePreview) {
         delayTimer = window.roam42LivePreview.delay == undefined ? delayTimer : window.roam42LivePreview.delay
       }
@@ -237,7 +239,7 @@ function livePreviewStatusToast() {
           isPageRef = true
           text = target.innerText
           specialDelayMouseOut = true
-          setTimeout(()=> specialDelayMouseOut = false, delayTimer+100)          
+          setTimeout(()=> specialDelayMouseOut = false, delayTimer+specialDelayTimeOutAmount)          
         }
         // console.log( isPageRef , isPageRefTag , target.classList.length)
         if ( !isPageRef  && !isPageRefTag && target.classList.length == 0 && target.parentNode.classList.contains('rm-page-ref') ) {
@@ -251,45 +253,47 @@ function livePreviewStatusToast() {
           text = target.text
         }
 
-        if ( isPageRef == false  && target.classList.contains('bp3-text-overflow-ellipsis') && target.firstChild.classList.contains('rm-pages-title-text') ) {
-          isPageRef = true
-          text = target.firstChild.text
-          target = e.target.parentElement
-        }
-
+        try{
+          if ( isPageRef == false  && target.classList.contains('bp3-text-overflow-ellipsis') && target.firstChild.classList.contains('rm-pages-title-text') ) {
+            isPageRef = true
+            text = target.firstChild.text
+            target = e.target.parentElement
+          }
+        } catch(e) {}
+        
         //preview BLOCK references
         var pageIsBlock = false
         if ( isPageRef == false && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
           pageIsBlock = true
           let block = target.closest('.roam-block').id
-          console.log(block)
+          // console.log(block)
           let bId = block.substring( block.length -9)
-          console.log(bId)
+          // console.log(bId)
           var q = `[:find ?bstring :in $ ?buid :where [?e :block/uid ?buid][?e :block/string ?bstring] ]`
           var results = window.roamAlphaAPI.q(q, bId)
           // var refNumberInBlock = Array.from(document.querySelectorAll(`#${block} .rm-block-ref`)).indexOf(target)
           var refNumberInBlock = Array.from(target.closest('.roam-block').querySelectorAll(`.rm-block-ref`)).indexOf(target)
           if(refNumberInBlock<0){refNumberInBlock=0}
-          console.log('refNumberInBlock',  refNumberInBlock)
+          // console.log('refNumberInBlock',  refNumberInBlock)
           isPageRef = true
-          console.log('results')
-          console.log(results)
-          console.log(results[0].toString())
+          // console.log('results')
+          // console.log(results)
+          // console.log(results[0].toString())
           text = results[0].toString()
-          console.log(text)
+          // console.log(text)
           text = text.match(/\(\((.*?)\)\)/g)    //results[0][0].refs[refNumberInBlock].uid
-          console.log(text)
+          // console.log(text)
           text = text[refNumberInBlock]
-          console.log(text)
+          // console.log(text)
           text = text.replaceAll('(','').replaceAll(')','')
-          console.log(text)
+          // console.log(text)
           specialDelayMouseOut = true
-          setTimeout(()=> specialDelayMouseOut = false, delayTimer+100)
+          setTimeout(()=> specialDelayMouseOut = false, delayTimer+specialDelayTimeOutAmount)
         }
         
         // remove '#' for page tags
         if (isPageRef) {
-          console.log('start reder')
+          // console.log('start reder')
           hoveredElement = target;
           const url = pageIsBlock == true ? getPageUrl(text) : getPageUrlByName(text)
           const isAdded = (pageUrl) =>
@@ -376,11 +380,11 @@ function livePreviewStatusToast() {
         }
       });
     };
-    // var remoteScript = document.createElement('script');
-    // remoteScript.src =
-    //   'https://unpkg.com/@popperjs/core@2'
-    // remoteScript.onload = enableLivePreview;
-    // document.body.appendChild(remoteScript);
+    var remoteScript = document.createElement('script');
+    remoteScript.src =
+      'https://unpkg.com/@popperjs/core@2'
+    remoteScript.onload = enableLivePreview;
+    document.body.appendChild(remoteScript);
     enableLivePreview()
   }
 })();
