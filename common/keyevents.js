@@ -1,18 +1,27 @@
-/* global sidebarRightToggle, sidebarLeftToggle, parseTextForDates, setEmptyNodeValue, typeAheadLookup, turndownPage */
+/* global sidebarRightToggle, sidebarLeftToggle, parseTextForDates, setEmptyNodeValue, typeAheadLookup, turndownPage 
+  keyboardHandlerMessages, keyboardHandlerLivePreview, dailyNotesPopup2, jumpToDateComponent, rmQuickRefenceSystem
+*/
 
 var shiftKeyDownTracker = false
 
 //CONFIGURE SHORTCUT KEYS for use in the application
 const loadKeyEvents = () => {
-  
+
   document.addEventListener('keydown', (ev)=> {
     shiftKeyDownTracker = ev.shiftKey
   })
 
   document.addEventListener('keydown', (ev)=> {
-   // console.log('alt: ' + ev.altKey  + '  shift: ' + ev.shiftKey + '  ctrl: ' + ev.ctrlKey + '   code: ' + ev.code)
+    
+    //console.log('alt: ' + ev.altKey  + '  shift: ' + ev.shiftKey + '  ctrl: ' + ev.ctrlKey + '   code: ' + ev.code)
     
     shiftKeyDownTracker = ev.shiftKey  //this is used in other modules for tracking shift state
+  
+    try { if( keyboardHandlerMessages(ev)              ) {return} } catch(e){}
+    try { if( keyboardHandlerLivePreview(ev)           ) {return} } catch(e){}
+    try { if( dailyNotesPopup2.keyboardHandler(ev)     ) {return} } catch(e){}
+    try { if( jumpToDateComponent.keyboardHandler(ev ) ) {return} } catch(e){}
+    try { if( rmQuickRefenceSystem.keyboardHandler(ev) ) {return} } catch(e){}
     
     //Open right side bar 
     if (ev.altKey && ev.shiftKey &&  ev.code=='Slash' ) { 
@@ -92,6 +101,7 @@ const loadKeyEvents = () => {
       turndownPage()    
       return
     }
+    
     
   }) // End of Keydown listener
   

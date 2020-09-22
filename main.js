@@ -1,5 +1,7 @@
 /* global  loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent, 
-           rmQuickRefenceSystem, device, displayStartup, dailyNotesPopup2 */
+           rmQuickRefenceSystem, device, displayStartup, dailyNotesPopup2,
+           loadAutoComplete
+*/
 
 const disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : [];
 
@@ -42,11 +44,11 @@ if( window === window.parent  ){
  addScriptToPage( 'TYPEAHEAD',       'https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js' )
  addScriptToPage( 'TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js'                                )
  addScriptToPage( 'popperjs',        'https://unpkg.com/@popperjs/core@2'                        )
-addScriptToPage( 'tippyjs',         'https://unpkg.com/tippy.js@6'                                               )
-   addCSSToPage( 'cssTippyjs',      'https://unpkg.com/tippy.js@6/themes/light-border.css'     )  
-addScriptToPage( 'iziToast',        'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js'   )
-   addCSSToPage( 'cssiziToast',     'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css' )
-addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/current-device.min.js'                 )
+ addScriptToPage( 'tippyjs',         'https://unpkg.com/tippy.js@6'                                               )
+    addCSSToPage( 'cssTippyjs',      'https://unpkg.com/tippy.js@6/themes/light-border.css'     )  
+ addScriptToPage( 'iziToast',        'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js'   )
+    addCSSToPage( 'cssiziToast',     'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css' )
+ addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/current-device.min.js'                 )
 }
 
 //common shared functions
@@ -59,6 +61,7 @@ addScriptToPage( 'message-startup',   URLScriptServer + 'messages.js'           
 //extension modules
 //addScriptToPage( 'roam42Tester',      URLScriptServer + 'ext/roam42-tester.js'    )
 addScriptToPage( 'dateProcessing',    URLScriptServer + 'ext/dateProcessing.js'     )
+addScriptToPage( 'templatePoc',       URLScriptServer + 'common/r42kb_lib.js'       )
 addScriptToPage( 'templatePoc',       URLScriptServer + 'ext/templatepoc.js'        )
 addScriptToPage( 'jumpToDate',        URLScriptServer + 'ext/jump-to-date.js'       )
 addScriptToPage( 'autocomplete',      URLScriptServer + 'ext/auto-complete.js')
@@ -82,7 +85,7 @@ setTimeout(()=>{
   if( window === window.parent ) {
       displayStartup(6000)  
   }
-  
+
   setTimeout(()=>{
     try {
       if ( device.mobile() == false && window === window.parent  ) { 
@@ -100,7 +103,5 @@ setTimeout(()=>{
       try { dailyNotesPopup2.initialize() } catch(e) {}
     }, 1000)      
   }, 2000)
-  
+
 }, 5000);
-
-
