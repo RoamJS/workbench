@@ -1,11 +1,10 @@
 // Thanks Bro! gracefully borrowed  from: https://github.com/palashkaria/roam-modifiers
 /* globals , Cookies , iziToast */
 
-document.addEventListener('keydown', (e)=> {
-  if( e.ctrlKey==true  &&  e.key=='L' || e.altKey==true  &&  e.key=='l' ) {
-    e.preventDefault();
+const keyboardHandlerLivePreview = ev => {
+  if( ev.ctrlKey==true  &&  ev.key=='L' || ev.altKey==true  &&  ev.key=='l' ) {
+    ev.preventDefault();
     setRoamLivePreview_IsEnabled(  !getRoamLivePreview_IsEnabled() )
-    
     let msg = ''
     if(getRoamLivePreview_IsEnabled()==true) {
       msg = 'E N A B L E D'
@@ -23,9 +22,9 @@ document.addEventListener('keydown', (e)=> {
       closeOnClick: true,
       displayMode: 2
     })
+    return true
   }
-})
-
+}
 
 const getRoamLivePreview_IsEnabled = ()=>{
   if( Cookies.get('RoamLivePreview_IsEnabled') === 'true' ) {

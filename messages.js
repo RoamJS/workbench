@@ -4,14 +4,18 @@
 
 const roam42BuildID = 'Trillian.2020-09-22'
 
-document.addEventListener('keydown', (ev)=> {
+// document.addEventListener('keydown', (ev)=> {
+const keyboardHandlerMessages = ev => {
   if (ev.altKey && ev.shiftKey && ev.code=='KeyH' ) { 
     ev.stopImmediatePropagation()
     ev.preventDefault()        
     displayHelp(10000) 
-    return
+    return true
   }
-})
+}
+// })
+
+
 
 const displayMessage = (sMessage, delayTime) => { 
   iziToast.show({
@@ -83,7 +87,7 @@ const displayHelp = (delayTime) => {
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                    <td></td></tr>
       <tr><td>Alt–Shift–\\</td><td>&nbsp</td>  <td>Open left side bar</td>      <td></td> </tr>
       <tr><td>Alt–Shift–/</td><td>&nbsp</td>  <td>Open right side bar</td>      <td></td></tr>
-      <tr><td>Alt–Shift–,</td><td>&nbsp</td>  <td>Daily popup </td>             <td class="bp3-button bp3-minimal bp3-icon-settings" onclick="dailyNotePoupStatusToast()"></td></tr>
+      <tr><td>Alt–Shift–,</td><td>&nbsp</td>  <td>Daily popup </td>             <td></td></tr>
       <tr><td>Alt–Shift–.</td><td>&nbsp</td>  <td>Dictionary Lookup</td>        <td></td></tr>
       <tr><td>Alt–m      </td><td>&nbsp</td>  <td>Markdown (simple)</td>        <td></td></tr>
       <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                    <td></td></tr>

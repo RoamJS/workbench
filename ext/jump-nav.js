@@ -1,5 +1,5 @@
 /* globals  logo2HC, Mousetrap ,iziToast, getArticleOfCurrentPage, simulateMouseClick,simulateMouseClickRight,
-            saveLocationParametersOfTextArea, restoreLocationParametersOfTexArea, KeyboardLib, simulateMouseOver   
+            saveLocationParametersOfTextArea, restoreLocationParametersOfTexArea, roam42KeyboardLib, simulateMouseOver   
             sidebarRightToggle, sidebarLeftToggle, sidebarLeftToggle, sidebarRightToggle  
 */
 
@@ -78,19 +78,19 @@ const loadJumpNav = () => {
               break
             case 'ctrl+j 1':     // left allign block
               simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[0] )
-              KeyboardLib.pressEsc()
+              roam42KeyboardLib.pressEsc()
               break
             case 'ctrl+j 2':     // center allign block
               simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[1] )
-              KeyboardLib.pressEsc()
+              roam42KeyboardLib.pressEsc()
               break
             case 'ctrl+j 3':     // right allign block
               simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[2] )
-              KeyboardLib.pressEsc()
+              roam42KeyboardLib.pressEsc()
               break
             case 'ctrl+j 4':     // justify allign block
               simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[3] )
-              KeyboardLib.pressEsc()
+              roam42KeyboardLib.pressEsc()
               break
           }
           restoreLocationParametersOfTexArea(locFacts)        

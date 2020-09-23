@@ -3,19 +3,17 @@
 var dailyNotesPopup2 =  {
   panelDNP:             undefined,
   idPanelDNP:           'jsPanelDNP',
-  shortcut:             'alt+shift+,',
   
-  initialize() {
-    //inside popup - configure to hide window, then exit rest of initializer
-    Mousetrap.unbind(this.shortcut);
-    Mousetrap.bind(this.shortcut, ()=>{
+  keyboardHandler(ev) {
+    if (ev.altKey && ev.shiftKey &&  ev.code=='Comma' ) { 
       if( window != window.parent ) { 
         window.parent.document.querySelector('#'+this.idPanelDNP).style.visibility = 'hidden'
       } else { this.toggleVisible() }
       return false
-    });              
-
-    // if( window != window.parent ) { return }
+    }
+  },
+    
+  initialize() {
 
     var baseUrlRoamDb = `https://roamresearch.com/#/app/${window.location.href.replace('https://roamresearch.com/#/app/','').split('/')[0]}`
     this.panelDNP = jsPanel.create({
@@ -142,6 +140,6 @@ var dailyNotesPopup2 =  {
       dailyNotesPopup2.panelDNP.style.visibility = 'hidden'
       parent.focus()
     }
-  },
+  }
 
 }

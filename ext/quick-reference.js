@@ -6,23 +6,25 @@ if( window === window.parent ) {
 
     rqrQuickReferencePanel: '',
     rqrQuickReferencePanel_isInitiallyPositioned: false,
+    
+    keyboardHandler(ev) {
+      if( ev.ctrlKey==true  &&  ev.key=='H' ) {
+        ev.preventDefault();
+        if ( this.rqrQuickReferencePanel_isInitiallyPositioned == false ) { 
+          this.rqrQuickReferencePanel_isInitiallyPositioned = true;
+        }
+        if ( document.querySelector('#rqrQuickReferencePanel').style.visibility == "hidden"  ) {
+            document.querySelector('#rqrQuickReferencePanel').style.visibility="visible"
+            var iframe = document.getElementById("iframeRqrQuickReferencePanel")
+            iframe.focus()
+        } else {
+            document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden"
+        }
+      }
+      return true
+    },
 
     initialize() {
-      document.addEventListener('keydown', (e)=> {
-        if( e.ctrlKey==true  &&  e.key=='H' ) {
-          e.preventDefault();
-          if ( this.rqrQuickReferencePanel_isInitiallyPositioned == false ) { 
-            this.rqrQuickReferencePanel_isInitiallyPositioned = true;
-          }
-          if ( document.querySelector('#rqrQuickReferencePanel').style.visibility == "hidden"  ) {
-              document.querySelector('#rqrQuickReferencePanel').style.visibility="visible"
-              var iframe = document.getElementById("iframeRqrQuickReferencePanel")
-              iframe.focus()
-          } else {
-              document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden"
-          }
-        }
-      })
 
       this.rqrQuickReferencePanel = jsPanel.create({
         id: 'rqrQuickReferencePanel',

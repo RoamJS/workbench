@@ -1,4 +1,4 @@
-/* globals jsPanel, KeyboardLib, flatpickr, setEmptyNodeValue, getRoamDate, 
+/* globals jsPanel, roam42KeyboardLib, flatpickr, setEmptyNodeValue, getRoamDate, 
            chrono, iziToast, tippy, shiftKeyDownTracker 
 */
 // INFO: Provides a quick way to jump between daily notes pages using a calendar
@@ -9,6 +9,51 @@ var jumpToDateComponent = {
   rqrJumpToDatePanel: '',
   flCalendar: [],
 
+  keyboardHandler(ev) {    
+    if( ev.altKey==true  && ev.shiftKey==true  && ev.code=='KeyJ' ) {
+      ev.preventDefault()
+      if (event.srcElement.localName == 'textarea') {
+        roam42KeyboardLib.pressEsc()
+        setTimeout( ()=> {
+          roam42KeyboardLib.pressEsc()
+          this.jumpToDate()            
+        },300 )
+      } else {
+        this.jumpToDate()    
+      }
+      return true
+    }
+
+    if( ev.ctrlKey==true  && ev.shiftKey==true &&  ev.code=='Comma' ) {
+      ev.preventDefault()
+      if (event.srcElement.localName == 'textarea') {
+        roam42KeyboardLib.pressEsc()
+        setTimeout( ()=> {
+          roam42KeyboardLib.pressEsc()
+          this.moveForwardToDate(false)
+        },300 )
+      } else {
+          this.moveForwardToDate(false)
+      }
+      return true
+    }
+
+    if( ev.ctrlKey==true && ev.shiftKey==true &&  ev.code=='Period' ) {
+      ev.preventDefault()
+      if (event.srcElement.localName == 'textarea') {
+        roam42KeyboardLib.pressEsc()
+        setTimeout( ()=> {
+          roam42KeyboardLib.pressEsc()
+          this.moveForwardToDate(true)
+        },300 )
+      } else {
+        this.moveForwardToDate(true)
+      }
+      return true
+    }
+  }, // addEventListener
+  
+  
   baseUrl() {
     // https://roamresearch.com/#/app/roam-toolkit/page/03-24-2020
     const url = new URL(window.location.href);
@@ -64,7 +109,7 @@ var jumpToDateComponent = {
 
   //Toggles the date picker display
   jumpToDate(){
-    KeyboardLib.simulateKey(16) //this fixes some bug with shift    
+    roam42KeyboardLib.simulateKey(16) //this fixes some bug with shift    
     this.flCalendar.clear()
     this.flCalendar.setDate(new Date())    
     this.rqrJumpToDatePanel.reposition({ 
@@ -90,8 +135,8 @@ var jumpToDateComponent = {
     jInput.placeholder = 'Jump to date'
     jInput.style.visibility='visible'
     jInput.focus()
-    KeyboardLib.pressDownKey()
-    KeyboardLib.simulateKey(16) //this fixes some bug with shift        
+    roam42KeyboardLib.pressDownKey()
+    roam42KeyboardLib.simulateKey(16) //this fixes some bug with shift        
   }, //jumpToDate
 
   jumpToDateFromButton() {
@@ -99,7 +144,7 @@ var jumpToDateComponent = {
     if( jump.style.visibility=='hidden' || jump.style.visibility=='') {
 //      KeyboardLib.pressEsc()
       setTimeout( ()=>{
-        KeyboardLib.pressEsc()
+        roam42KeyboardLib.pressEsc()
         this.jumpToDate()  
       }, 100 )    
     } else {
@@ -108,18 +153,14 @@ var jumpToDateComponent = {
   }, //jumpToDateFromButton
 
   navigateUIToDate(destinationDate, useShiftKey) {
-     // KeyboardLib.simulateKey(16) //this fixes some bug with shift    
     let inPut =  document.getElementById('find-or-create-input')
     inPut.focus()
     setEmptyNodeValue( inPut, getRoamDate( destinationDate ) )
     setTimeout(()=>{
-    //   if(hotkeys.isPressed('shift')==true && useShiftKey==true) {
-      console.log('shiftKeyDownTracker: ' + shiftKeyDownTracker)
-     if(shiftKeyDownTracker==true ) {
-             KeyboardLib.simulateKey(13,100,{  shiftKey:true})   
-        //  KeyboardLib.simulateKey(16,500)
+     if(shiftKeyDownTracker==true && useShiftKey==true ) {
+        roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true})   
       } else {
-        KeyboardLib.pressEnter()
+        roam42KeyboardLib.pressEnter()
       }
       setTimeout(()=>{
         setEmptyNodeValue( inPut,'' )
@@ -128,48 +169,8 @@ var jumpToDateComponent = {
   }, //navigateUIToDate
 
   initialize()  {
-    document.addEventListener('keydown', (e)=> {
-      if( e.altKey==true  && e.shiftKey==true  && e.keyCode==74 ) {
-        e.preventDefault();
-        if (event.srcElement.localName == 'textarea') {
-          KeyboardLib.pressEsc()
-          setTimeout( ()=> {
-            KeyboardLib.pressEsc()
-            this.jumpToDate()            
-          },300 )
-        } else {
-          this.jumpToDate()    
-        }
-      }
 
-      if( e.ctrlKey==true  && e.shiftKey==true &&  e.keyCode==188 ) {
-        e.preventDefault();
-        if (event.srcElement.localName == 'textarea') {
-          KeyboardLib.pressEsc()
-          setTimeout( ()=> {
-            KeyboardLib.pressEsc()
-            this.moveForwardToDate(false)
-          },300 )
-        } else {
-            this.moveForwardToDate(false)
-        }
-      }
-
-      if( e.ctrlKey==true && e.shiftKey==true &&  e.keyCode==190 ) {
-        e.preventDefault();
-        if (event.srcElement.localName == 'textarea') {
-          KeyboardLib.pressEsc()
-          setTimeout( ()=> {
-            KeyboardLib.pressEsc()
-            this.moveForwardToDate(true)
-          },300 )
-        } else {
-          this.moveForwardToDate(true)
-        }
-      }
-    }) // addEventListener
-
- // Create ROAM button
+ // Create ROAM42  button
     try {
       var jump = document.createElement("div")
         jump.id='roam42-button-jumptodate'
