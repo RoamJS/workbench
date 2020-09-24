@@ -1,6 +1,6 @@
 /* globals  logo2HC, Mousetrap ,iziToast, getArticleOfCurrentPage, simulateMouseClick,simulateMouseClickRight,
             saveLocationParametersOfTextArea, restoreLocationParametersOfTexArea, roam42KeyboardLib, simulateMouseOver   
-            sidebarRightToggle, sidebarLeftToggle, sidebarLeftToggle, sidebarRightToggle  
+            sidebarRightToggle, sidebarLeftToggle, sidebarLeftToggle, sidebarRightToggle, blockInsertAbove, blockInsertBelow, blockDelete
 */
 
 const loadJumpNav = () => {
@@ -8,6 +8,9 @@ const loadJumpNav = () => {
   Mousetrap.bind([
         // block: expand, collapse, ref, add action
         'ctrl+j x', 'ctrl+j l', 'ctrl+j r', 'ctrl+j s', 'ctrl+j a', 'meta+j x', 'meta+j l', 'meta+j s', 'meta+j r', 'meta+j a',   'alt+j x', 'alt+j l', 'alt+j s', 'alt+j r', 'alt+j a',   
+        //move up one line, move down one line insert above (k), insert below(j), delete block (d)
+        'ctrl+j ctrl+j', 'ctrl+j ctrl+k',                'meta+j meta+j', 'meta+j meta+k',               'alt+j alt+j', 'alt+j alt+k',
+        'ctrl+j k', 'ctrl+j j', 'ctrl+j d',             'meta+j k', 'meta+j j', 'meta+j d',               'alt+j k', 'alt+j j', 'alt+j d',    
         // block align left,center, right, justify
         'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4', 'meta+j 1', 'meta+j 2', 'meta+j 3', 'meta+j 4',   'alt+j 1', 'alt+j 2', 'alt+j 3', 'alt+j 4',  
         // page: first node last node
@@ -25,9 +28,9 @@ const loadJumpNav = () => {
         // daily notes and lookup
         'ctrl+j ,','ctrl+j .',                      'meta+j ,', 'meta+j .',                   'alt+j ,', 'alt+j .',    
       ], (event, handler)=> { 
-      handler = handler.replace('meta','ctrl')
-      handler = handler.replace('alt', 'ctrl')
-
+      handler = handler.replaceAll('meta','ctrl')
+      handler = handler.replaceAll('alt', 'ctrl')
+    
      //GOTO top/bottom of page
       if(['ctrl+j t', 'ctrl+j b'].includes(handler)) {
           var articleContent = getArticleOfCurrentPage();
@@ -35,6 +38,27 @@ const loadJumpNav = () => {
         return false
       }    
 
+      if(['ctrl+j ctrl+j', 'ctrl+j ctrl+k', 'ctrl+j k', 'ctrl+j j', 'ctrl+j d'].includes(handler)) {
+          switch(handler)  {
+            case 'ctrl+j ctrl+j':  //down arrow
+              roam42KeyboardLib.simulateKey(40) 
+              break              
+            case 'ctrl+j ctrl+k': //up arrow
+              roam42KeyboardLib.simulateKey(38) //up arrow
+              break
+            case 'ctrl+j k': // Insert block above
+              blockInsertAbove(event.srcElement);
+              break
+            case 'ctrl+j j': // Insert block below
+              blockInsertBelow(event.srcElement);
+              break
+            case 'ctrl+j d': // Insert delete block
+              blockDelete(event.srcElement);
+              break
+          }
+        return false
+      } 
+    
       // BLOCKS: fun with blocks
       if(['ctrl+j x', 'ctrl+j l', 'ctrl+j s', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4' ].includes(handler)) {
         var locFacts = saveLocationParametersOfTextArea(event.target);
@@ -206,23 +230,19 @@ const loadJumpNav = () => {
 <b>Page</b>
  t Top of page
  b Bottom of page
- e Expand all
- c Collapse all
+ e Expand all / c Collapse all
  o Open this page in side bar
 <b>Linked/Unlinked Refs</b>
  i Toggle Linked refs
  u Toggle Unlinked refs
  f Toggle Parents (page level) 
- d Expand children  
- p Collapse children  
+ d Expand children / p Collapse  
 <b>Blocks</b>
- r Copy block ref
- s Copy block ref as alias
- x Expand all
- l Collapse all
- 1 Align left
- 2 Center align  
- 3 Align right
+ r Copy block ref / s As alias
+ x Expand all / l Collapse all
+ k Insert block above / j below
+ d Delete block
+ 1 Align left / 2 Center/ 3 right
  4 Justify
  a Reaction
 <b>Queries</b>

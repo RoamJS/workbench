@@ -1,4 +1,4 @@
-
+/* globals roam42KeyboardLib    */
 const sidebarRightToggle = ()=>{
   try {
       document.getElementsByClassName("bp3-icon-more")[0].click();
@@ -139,3 +139,29 @@ const insertAtCaret = (areaId, text) => {
     }, 100);
 }
 
+
+function blockDelete(block) {
+  if (block.localName == "textarea") {
+    roam42KeyboardLib.pressEsc().then(() => roam42KeyboardLib.pressBackspace())
+  }
+}
+
+function blockInsertBelow(block){
+  //Block is the HTMLElement of the currently selected block  
+  if (block.localName == "textarea") {
+    block.selectionStart = block.value.length;
+    block.selectionEnd   = block.value.length;
+    roam42KeyboardLib.pressEnter()      
+  }
+}
+
+function blockInsertAbove(block){
+  //Block is the HTMLElement of the currently selected block  
+  if (block.localName == "textarea") {
+    var blockEmpty =  block.value.length>0 ? false : true;
+    block.selectionStart =0;
+    block.selectionEnd = 0;
+    roam42KeyboardLib.pressEnter()      
+    if(blockEmpty){setTimeout(()=>{ roam42KeyboardLib.simulateKey(38) },50) };  //up arrow
+  }
+}
