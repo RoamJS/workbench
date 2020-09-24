@@ -3,16 +3,7 @@
 var dailyNotesPopup2 =  {
   panelDNP:             undefined,
   idPanelDNP:           'jsPanelDNP',
-  
-  keyboardHandler(ev) {
-    if (ev.altKey && ev.shiftKey &&  ev.code=='Comma' ) { 
-      if( window != window.parent ) { 
-        window.parent.document.querySelector('#'+this.idPanelDNP).style.visibility = 'hidden';
-      } else { this.toggleVisible(); }
-      return true
-    }
-  },
-    
+      
   initialize() {
 
     var baseUrlRoamDb = `https://roamresearch.com/#/app/${window.location.href.replace('https://roamresearch.com/#/app/','').split('/')[0]}`;
