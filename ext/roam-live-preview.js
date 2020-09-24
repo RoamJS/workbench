@@ -252,11 +252,12 @@ function livePreviewStatusToast() {
           text = target.text
         }
 
+        // "All Pages" - page
         try{
           if ( isPageRef == false  && target.classList.contains('bp3-text-overflow-ellipsis') && target.firstChild.classList.contains('rm-pages-title-text') ) {
             isPageRef = true
-            text = target.firstChild.text
-            target = e.target.parentElement
+            text = target.firstChild.text  //firstChild.text
+            target = target.parentElement
           }
         } catch(e) {}
         
@@ -265,34 +266,22 @@ function livePreviewStatusToast() {
         if ( isPageRef == false && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
           pageIsBlock = true
           let block = target.closest('.roam-block').id
-          // console.log(block)
           let bId = block.substring( block.length -9)
-          // console.log(bId)
           var q = `[:find ?bstring :in $ ?buid :where [?e :block/uid ?buid][?e :block/string ?bstring] ]`
           var results = window.roamAlphaAPI.q(q, bId)
-          // var refNumberInBlock = Array.from(document.querySelectorAll(`#${block} .rm-block-ref`)).indexOf(target)
           var refNumberInBlock = Array.from(target.closest('.roam-block').querySelectorAll(`.rm-block-ref`)).indexOf(target)
           if(refNumberInBlock<0){refNumberInBlock=0}
-          // console.log('refNumberInBlock',  refNumberInBlock)
           isPageRef = true
-          // console.log('results')
-          // console.log(results)
-          // console.log(results[0].toString())
           text = results[0].toString()
-          // console.log(text)
           text = text.match(/\(\((.*?)\)\)/g)    //results[0][0].refs[refNumberInBlock].uid
-          // console.log(text)
           text = text[refNumberInBlock]
-          // console.log(text)
           text = text.replaceAll('(','').replaceAll(')','')
-          // console.log(text)
           specialDelayMouseOut = true
           setTimeout(()=> specialDelayMouseOut = false, delayTimer+specialDelayTimeOutAmount)
         }
         
         // remove '#' for page tags
         if (isPageRef) {
-          // console.log('start reder')
           hoveredElement = target;
           const url = pageIsBlock == true ? getPageUrl(text) : getPageUrlByName(text)
           const isAdded = (pageUrl) =>

@@ -64,7 +64,7 @@ const parseTextForDates = (str) => {
              element.tags.ZHTimeExpressionParser === true   ) {
             roamDate = format_time(element.start.date());
           if(element.end) {
-            roamDate = `${roamDate} - ${format_time(element.end.date())}`
+            roamDate = `${roamDate} - ${format_time(element.end.date())}`;
           }
         }
       } catch (err) {}
@@ -78,7 +78,7 @@ const parseTextForDates = (str) => {
           element.tags.ENMonthNameLittleEndianParser === true ||
           element.tags.length === undefined
         ) {
-          roamDate = `[[${getRoamDate(element.start.date())}]] ${roamDate}`
+          roamDate = `[[${getRoamDate(element.start.date())}]] ${roamDate}`;
         }
       } catch (err) {}
       str = str.replace(element.text, roamDate);

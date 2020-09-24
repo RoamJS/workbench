@@ -8,20 +8,20 @@ if( window === window.parent ) {
     rqrQuickReferencePanel_isInitiallyPositioned: false,
     
     keyboardHandler(ev) {
-      if( ev.ctrlKey==true  &&  ev.key=='H' ) {
+      if( ev.ctrlKey==true  && ev.shiftKey==true  && ev.code=='KeyH' ) {
         ev.preventDefault();
         if ( this.rqrQuickReferencePanel_isInitiallyPositioned == false ) { 
           this.rqrQuickReferencePanel_isInitiallyPositioned = true;
         }
         if ( document.querySelector('#rqrQuickReferencePanel').style.visibility == "hidden"  ) {
-            document.querySelector('#rqrQuickReferencePanel').style.visibility="visible"
-            var iframe = document.getElementById("iframeRqrQuickReferencePanel")
-            iframe.focus()
+            document.querySelector('#rqrQuickReferencePanel').style.visibility="visible";
+            var iframe = document.getElementById("iframeRqrQuickReferencePanel");
+            iframe.focus();
         } else {
-            document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden"
+            document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden";
         }
+        return true
       }
-      return true
     },
 
     initialize() {

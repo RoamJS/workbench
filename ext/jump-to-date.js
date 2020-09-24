@@ -11,43 +11,43 @@ var jumpToDateComponent = {
 
   keyboardHandler(ev) {    
     if( ev.altKey==true  && ev.shiftKey==true  && ev.code=='KeyJ' ) {
-      ev.preventDefault()
+      ev.preventDefault();
       if (event.srcElement.localName == 'textarea') {
-        roam42KeyboardLib.pressEsc()
+        roam42KeyboardLib.pressEsc();
         setTimeout( ()=> {
-          roam42KeyboardLib.pressEsc()
-          this.jumpToDate()            
+          roam42KeyboardLib.pressEsc();
+          this.jumpToDate();            
         },300 )
       } else {
-        this.jumpToDate()    
+        this.jumpToDate();    
       }
-      return true
+      return true;
     }
 
     if( ev.ctrlKey==true  && ev.shiftKey==true &&  ev.code=='Comma' ) {
-      ev.preventDefault()
+      ev.preventDefault();
       if (event.srcElement.localName == 'textarea') {
-        roam42KeyboardLib.pressEsc()
+        roam42KeyboardLib.pressEsc();
         setTimeout( ()=> {
-          roam42KeyboardLib.pressEsc()
-          this.moveForwardToDate(false)
+          roam42KeyboardLib.pressEsc();
+          this.moveForwardToDate(false);
         },300 )
       } else {
-          this.moveForwardToDate(false)
+          this.moveForwardToDate(false);
       }
-      return true
+      return true;
     }
 
     if( ev.ctrlKey==true && ev.shiftKey==true &&  ev.code=='Period' ) {
-      ev.preventDefault()
+      ev.preventDefault();
       if (event.srcElement.localName == 'textarea') {
-        roam42KeyboardLib.pressEsc()
+        roam42KeyboardLib.pressEsc();
         setTimeout( ()=> {
-          roam42KeyboardLib.pressEsc()
-          this.moveForwardToDate(true)
-        },300 )
+          roam42KeyboardLib.pressEsc();
+          this.moveForwardToDate(true);
+        },300 );
       } else {
-        this.moveForwardToDate(true)
+        this.moveForwardToDate(true);
       }
       return true
     }
@@ -75,18 +75,18 @@ var jumpToDateComponent = {
   },
   
   moveForwardToDate(bForward){
-    let jumpDate = chrono.parseDate( document.querySelector('.rm-title-display').innerText )
-    let directionTip =''
-    let calIcon =''
+    let jumpDate = chrono.parseDate( document.querySelector('.rm-title-display').innerText );
+    let directionTip ='';
+    let calIcon ='';
     if( jumpDate!=null) { 
       if ( bForward ) {
-        jumpDate.setDate(jumpDate.getDate()+1)
-        directionTip='bounceInRight'
+        jumpDate.setDate(jumpDate.getDate()+1);
+        directionTip='bounceInRight';
       } else {
-        jumpDate.setDate(jumpDate.getDate()-1)
-        directionTip='bounceInLeft'
+        jumpDate.setDate(jumpDate.getDate()-1);
+        directionTip='bounceInLeft';
       }
-      this.navigateUIToDate(jumpDate, false)
+      this.navigateUIToDate(jumpDate, false);
     }  
 
     try {
@@ -103,88 +103,87 @@ var jumpToDateComponent = {
         timeout: 1500,
         closeOnClick: true,
         displayMode: 2
-      })      
+      });      
     } catch(e) {}
   },
 
   //Toggles the date picker display
   jumpToDate(){
-    roam42KeyboardLib.simulateKey(16) //this fixes some bug with shift    
-    this.flCalendar.clear()
-    this.flCalendar.setDate(new Date())    
+    roam42KeyboardLib.simulateKey(16); //this fixes some bug with shift    
+    this.flCalendar.clear();
+    this.flCalendar.setDate(new Date());    
     this.rqrJumpToDatePanel.reposition({ 
       my: 'right-top',
       at: 'right-top',
       offsetX: -10, 
       offsetY: 45 
-    })
+    });
 
-    var jump = document.querySelector('#rqrJumpToDatePanel')
-    var jInput = document.querySelector('#jumptoDateInput')
+    var jump = document.querySelector('#rqrJumpToDatePanel');
+    var jInput = document.querySelector('#jumptoDateInput');
 
     if ( jump.style.visibility == 'hidden' | jump.style.visibility == ''  ) {
-        jump.style.visibility='visible'
-        jInput.style.visibility='visible'  
+        jump.style.visibility='visible';
+        jInput.style.visibility='visible';  
     } else {
         this.flCalendar.close()
-        jump.style.visibility='hidden'
-        jInput.style.visibility='hidden'  
+        jump.style.visibility='hidden';
+        jInput.style.visibility='hidden';  
         return
     }    
 
-    jInput.placeholder = 'Jump to date'
-    jInput.style.visibility='visible'
-    jInput.focus()
-    roam42KeyboardLib.pressDownKey()
-    roam42KeyboardLib.simulateKey(16) //this fixes some bug with shift        
+    jInput.placeholder = 'Jump to date';
+    jInput.style.visibility='visible';
+    jInput.focus();
+    roam42KeyboardLib.pressDownKey();
+    roam42KeyboardLib.simulateKey(16); //this fixes some bug with shift        
   }, //jumpToDate
 
   jumpToDateFromButton() {
-    let jump = document.querySelector('#rqrJumpToDatePanel') 
+    let jump = document.querySelector('#rqrJumpToDatePanel');
     if( jump.style.visibility=='hidden' || jump.style.visibility=='') {
-//      KeyboardLib.pressEsc()
       setTimeout( ()=>{
-        roam42KeyboardLib.pressEsc()
-        this.jumpToDate()  
+        roam42KeyboardLib.pressEsc();
+        this.jumpToDate();
       }, 100 )    
     } else {
-      jump.style.visibility=='hidden' //close Jump to date
+      jump.style.visibility=='hidden'; //close Jump to date
     }
   }, //jumpToDateFromButton
 
   navigateUIToDate(destinationDate, useShiftKey) {
-    let inPut =  document.getElementById('find-or-create-input')
-    inPut.focus()
-    setEmptyNodeValue( inPut, getRoamDate( destinationDate ) )
+    let inPut =  document.getElementById('find-or-create-input');
+    inPut.focus();
+    setEmptyNodeValue( inPut, getRoamDate( destinationDate ) );
     setTimeout(()=>{
      if(shiftKeyDownTracker==true && useShiftKey==true ) {
-        roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true})   
+        roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});   
       } else {
-        roam42KeyboardLib.pressEnter()
+        roam42KeyboardLib.pressEnter();
       }
       setTimeout(()=>{
-        setEmptyNodeValue( inPut,'' )
-      },250)             
-    },400)      
+        setEmptyNodeValue( inPut,'' );
+      },250);             
+    },400);   
   }, //navigateUIToDate
 
   initialize()  {
 
  // Create ROAM42  button
     try {
-      var jump = document.createElement("div")
-        jump.id='roam42-button-jumptodate'
-        jump.className = 'bp3-button bp3-minimal bp3-small bp3-icon-pivot'
-        jump.setAttribute('style','position:relative;left:2px')
-        jump.onclick = ()=>{ this.jumpToDateFromButton()}  
-      var spacer = document.createElement("div")
-        spacer.setAttribute('style','flex: 0 0 3px')    
-      document.querySelector('.roam-topbar .flex-h-box').appendChild(spacer)
-      document.querySelector('.roam-topbar .flex-h-box').appendChild(jump)
+      var jump = document.createElement("div");
+        jump.id='roam42-button-jumptodate';
+        jump.className = 'bp3-button bp3-minimal bp3-small bp3-icon-pivot';
+        jump.setAttribute('style','position:relative;left:2px');
+        jump.onclick = ()=>{ this.jumpToDateFromButton()};  
+      var spacer = document.createElement("div");
+        spacer.setAttribute('style','flex: 0 0 3px');    
+      document.querySelector('.roam-topbar .flex-h-box').appendChild(spacer);
+      document.querySelector('.roam-topbar .flex-h-box').appendChild(jump);
 
     } catch(e) {
-      console.log('could not add toolbar buton - see module jump-to-date.js ')
-      console.log(e)
+      console.log('could not add toolbar buton - see module jump-to-date.js ');
+      console.log(e);
     }
     
     if( window === window.parent  ){
@@ -220,28 +219,28 @@ var jumpToDateComponent = {
           <input id="jumptoDateInput" type="text" placeholder=""></input>
         </div>
         `.trim()
-    })
+    });
 
     this.rqrJumpToDatePanel.options.onbeforeclose.push(function() {
-      document.querySelector('#rqrJumpToDatePanel').style.visibility='hidden'
-      document.querySelector('#jumptoDateInput').style.visibility='hidden'
+      document.querySelector('#rqrJumpToDatePanel').style.visibility='hidden';
+      document.querySelector('#jumptoDateInput').style.visibility='hidden';
       return false;
-    })
+    });
 
-    flatpickr("#jumptoDateInput", { dateFormat: "Y-m-d", weekNumbers: true, locale:{firstDayOfWeek:1} })
+    flatpickr("#jumptoDateInput", { dateFormat: "Y-m-d", weekNumbers: true, locale:{firstDayOfWeek:1} });
     
     this.flCalendar = document.querySelector("#jumptoDateInput")._flatpickr;
 
     this.flCalendar.config.onValueUpdate.push( (selectedDates, dateStr, instance)=> {
-      instance.close()
-      this.navigateUIToDate(selectedDates[0],true)
+      instance.close();
+      this.navigateUIToDate(selectedDates[0],true);
     })
 
     this.flCalendar.config.onClose.push( (selectedDates, dateStr, instance)=> {
-      this.rqrJumpToDatePanel.close()
+      this.rqrJumpToDatePanel.close();
       setTimeout( ()=>{
-        this.flCalendar.clear()
-      },500)
+        this.flCalendar.clear();
+      },500);
     })
                               
     

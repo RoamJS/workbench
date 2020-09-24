@@ -5,14 +5,14 @@ const getAutoComplete_IsEnabled = ()=>{
     return false
   } else {
     return true
-  }
+  };
 }
 
 const setAutoComplete_IsEnabled = (val)=>{
   if(val == true) {
-    Cookies.set('AutoComplete_IsEnabled', 'true') 
+    Cookies.set('AutoComplete_IsEnabled', 'true'); 
   } else {
-    Cookies.set('AutoComplete_IsEnabled', 'false')     
+    Cookies.set('AutoComplete_IsEnabled', 'false');     
   }
 }
 
@@ -57,15 +57,15 @@ const autoCompleteStatusToast = ()=> {
         },500)
     }, !status], 
     ]
-  })  
+  });  
 }
 
-const loadAutoComplete = ()=> {
+const loadAutoComplete = ()=> {  
   if(getAutoComplete_IsEnabled() == true ) {
     Mousetrap(document.getElementById("find-or-create-input")).bind('shift+space',()=>{
       setTimeout(()=>{
-        simulateMouseClick ( document.querySelectorAll('.rm-search-title')[1] )
-      },200)
+        simulateMouseClick ( document.querySelectorAll('.rm-search-title')[1] );
+      },200);
       return false
     })
 
@@ -73,11 +73,11 @@ const loadAutoComplete = ()=> {
       if(document.querySelector(".bp3-elevation-3")){
         setTimeout(()=>{
           if( document.querySelector('.rm-autocomplete-result').parentElement.childElementCount > 1) {
-            document.querySelector(".bp3-elevation-3").childNodes[1].click()        
+            document.querySelector(".bp3-elevation-3").childNodes[1].click();        
           } else {
-            document.querySelector(".bp3-elevation-3").childNodes[0].click()  
+            document.querySelector(".bp3-elevation-3").childNodes[0].click();  
           }
-          setTimeout(()=> document.execCommand("insertText",false," "),100)
+          setTimeout(()=> document.execCommand("insertText",false," "),100);
         },200)
         return false
       }

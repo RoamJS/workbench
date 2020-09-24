@@ -9,57 +9,57 @@ const loadKeyEvents = () => {
 
   document.addEventListener('keydown', (ev)=> {
     shiftKeyDownTracker = ev.shiftKey
-  })
+  });
 
   document.addEventListener('keydown', (ev)=> {
     
     //console.log('alt: ' + ev.altKey  + '  shift: ' + ev.shiftKey + '  ctrl: ' + ev.ctrlKey + '   code: ' + ev.code)
     
-    shiftKeyDownTracker = ev.shiftKey  //this is used in other modules for tracking shift state
+    shiftKeyDownTracker = ev.shiftKey;  //this is used in other modules for tracking shift state
   
-    try { if( keyboardHandlerMessages(ev)              ) {return} } catch(e){}
-    try { if( keyboardHandlerLivePreview(ev)           ) {return} } catch(e){}
-    try { if( dailyNotesPopup2.keyboardHandler(ev)     ) {return} } catch(e){}
-    try { if( jumpToDateComponent.keyboardHandler(ev ) ) {return} } catch(e){}
-    try { if( rmQuickRefenceSystem.keyboardHandler(ev) ) {return} } catch(e){}
-    
+    try { if( keyboardHandlerMessages(ev)              ) {return} } catch(e){};
+    try { if( keyboardHandlerLivePreview(ev)           ) {return} } catch(e){};
+    try { if( dailyNotesPopup2.keyboardHandler(ev)     ) {return} } catch(e){};
+    try { if( jumpToDateComponent.keyboardHandler(ev ) ) {return} } catch(e){};
+    try { if( rmQuickRefenceSystem.keyboardHandler(ev) ) {return} } catch(e){};
+
     //Open right side bar 
     if (ev.altKey && ev.shiftKey &&  ev.code=='Slash' ) { 
-      ev.preventDefault()
-      sidebarRightToggle()
+      ev.preventDefault();
+      sidebarRightToggle();
       return
     }
     
     //open left side bar
     if (ev.altKey && ev.shiftKey && (ev.code=='Backslash' || ev.key=='«') ) { 
-      ev.preventDefault()        
-      sidebarLeftToggle()
+      ev.preventDefault();      
+      sidebarLeftToggle();
       return
     }  
     
     //Date NLP
     if (ev.altKey && ev.shiftKey &&  ev.code=='KeyD'  ) {  
-      event.preventDefault()
+      event.preventDefault();
       if (event.srcElement.localName == "textarea") {
-        var processText = parseTextForDates( event.target.value )
-        setEmptyNodeValue(document.getElementById(event.srcElement.id), processText )
+        var processText = parseTextForDates( event.target.value );
+        setEmptyNodeValue(document.getElementById(event.srcElement.id), processText );
       }
       return
     }
   
     //Dictonary Lookup
     if (ev.altKey && ev.shiftKey &&  (ev.code=='Period' || ev.key=='˘')  ) { 
-      event.preventDefault()
-      typeAheadLookup()
+      event.preventDefault();
+      typeAheadLookup();
       return
     }
 
     //insert todo #na
     if (ev.altKey && ev.shiftKey && ev.code=='KeyA'  ) {     
-      event.preventDefault()
+      event.preventDefault();
       if (event.srcElement.localName == "textarea") {
         if (document.queryCommandSupported("insertText")) {
-            setEmptyNodeValue(document.getElementById(event.srcElement.id),  "{{[[TODO]]}} #na  " + event.srcElement.innerHTML )
+            setEmptyNodeValue(document.getElementById(event.srcElement.id),  "{{[[TODO]]}} #na  " + event.srcElement.innerHTML );
         }
       }
       return
@@ -67,10 +67,10 @@ const loadKeyEvents = () => {
 
     //insert todo #weekend    
     if (ev.altKey && ev.shiftKey && ev.code=='KeyW'  ) {  
-      event.preventDefault()
+      event.preventDefault();
       if (event.srcElement.localName == "textarea") {
         if (document.queryCommandSupported("insertText")) {
-            setEmptyNodeValue(document.getElementById(event.srcElement.id),  "{{[[TODO]]}} #weekend  " + event.srcElement.innerHTML )
+            setEmptyNodeValue(document.getElementById(event.srcElement.id),  "{{[[TODO]]}} #weekend  " + event.srcElement.innerHTML );
         }
       }
       return
@@ -78,17 +78,17 @@ const loadKeyEvents = () => {
     
     //do a strikeout    
     if (ev.altKey && ev.shiftKey && ev.code=='KeyT'  ) {  
-      event.preventDefault()
+      event.preventDefault();
       if (event.srcElement.localName == 'textarea') {
         if (document.queryCommandSupported("insertText")) {
           if (window.getSelection().toString() == "") {
-            setEmptyNodeValue(document.getElementById(event.srcElement.id), "~~" + event.srcElement.innerHTML + "~~")
+            setEmptyNodeValue(document.getElementById(event.srcElement.id), "~~" + event.srcElement.innerHTML + "~~");
           } else {
             document.execCommand(
               "insertText",
               false,
               "~~" + window.getSelection().toString() + "~~"
-            )
+            );
           }
         }
       }
@@ -97,13 +97,13 @@ const loadKeyEvents = () => {
 
     //simple markdown
     if (ev.altKey && ev.shiftKey==false &&  ev.code=='KeyM'  ) {  
-      event.preventDefault()
-      turndownPage()    
+      event.preventDefault();
+      turndownPage();
       return
     }
     
     
-  }) // End of Keydown listener
+  }); // End of Keydown listener
   
 }  
   
