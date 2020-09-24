@@ -11,24 +11,24 @@ var currentTextArea=''
 
 const typeAheadLookup = ()=> {
   if(event.srcElement.localName=='textarea') {
-    typeaheadDisplayTextArea(event.srcElement.id)
+    typeaheadDisplayTextArea(event.srcElement.id);
   } else {
-    typeaheadDisplayOtherAreas()
+    typeaheadDisplayOtherAreas();
   }      
 }
 
 // This function displays the search ui
 // Called by keyevents.js based on defined keystrokes. 
 const typeaheadDisplayTextArea = srcElementId =>	{
-    currentTextArea = srcElementId 
-    $('#rmSearch').show()
-    $('#rmSearchBox').focus()
+    currentTextArea = srcElementId ;
+    $('#rmSearch').show();
+    $('#rmSearchBox').focus();
 }
 
 const typeaheadDisplayOtherAreas = () =>	{
-    currentTextArea = 'OTHERAREAS' 
-    $('#rmSearch').show()
-    $('#rmSearchBox').focus()
+    currentTextArea = 'OTHERAREAS';
+    $('#rmSearch').show();
+    $('#rmSearchBox').focus();
 }
 
 var loadTypeAhead = () =>  {
@@ -36,7 +36,7 @@ var loadTypeAhead = () =>  {
     <div id="rmSearch">
       <input class="typeahead" id="rmSearchBox" type="text" placeholder="search"></input>
     </div>
-  `.trim() )
+  `.trim() );
 
 	$('#rmSearch .typeahead').typeahead(null, {
 	  name: 'mySearch', 
@@ -50,7 +50,7 @@ var loadTypeAhead = () =>  {
                 }
     }),
 	  templates: { suggestion: function(d) {  return typeaheadResult(d) }} //defined in typeaheadData.js   
-	})
+	});
 
 	$('.typeahead').bind('typeahead:select', function(ev, data) {
         if( currentTextArea == 'OTHERAREAS' ) { 
@@ -58,11 +58,11 @@ var loadTypeAhead = () =>  {
         } else { 
           insertDataIntoNode(currentTextArea, data)
         }
-  })
+  });
 
 	$('.typeahead').bind('typeahead:close', function(ev, data) {
       $('.typeahead').typeahead('val', '')
       $('#rmSearch').hide()      
-	})
+	});
 
 }

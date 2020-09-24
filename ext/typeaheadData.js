@@ -29,5 +29,5 @@ var displayDataInToast = d => {
 }
 
 var insertDataIntoNode = (currentTextArea, d) => {
-  insertAtCaret(currentTextArea, `**${d.word}** (${d.type})\n ${d.definition}` )
+  insertAtCaret(currentTextArea, `**${d.word}** (${d.type})\n ${d.definition}` );
 }

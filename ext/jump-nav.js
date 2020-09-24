@@ -30,66 +30,62 @@ const loadJumpNav = () => {
 
      //GOTO top/bottom of page
       if(['ctrl+j t', 'ctrl+j b'].includes(handler)) {
-        // var articleContent = getArticleOfCurrentPage()
-        // handler=='ctrl+j b' || handler=='˚' ? simulateMouseClick(articleContent[ articleContent.length-1 ]) : simulateMouseClick(articleContent[0])        
-        // setTimeout(()=>{
-          var articleContent = getArticleOfCurrentPage()
-          handler=='ctrl+j b' || handler=='˚' ? simulateMouseClick(articleContent[ articleContent.length-1 ]) : simulateMouseClick(articleContent[0])        
-        // },100)
+          var articleContent = getArticleOfCurrentPage();
+          handler=='ctrl+j b' || handler=='˚' ? simulateMouseClick(articleContent[ articleContent.length-1 ]) : simulateMouseClick(articleContent[0]);        
         return false
       }    
 
       // BLOCKS: fun with blocks
       if(['ctrl+j x', 'ctrl+j l', 'ctrl+j s', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4' ].includes(handler)) {
-        var locFacts = saveLocationParametersOfTextArea(event.target)
-        var parentControlNode = ''
+        var locFacts = saveLocationParametersOfTextArea(event.target);
+        var parentControlNode = '';
         if( document.getElementById(locFacts.id).parentNode.parentNode.tagName == 'DIV') {
-          parentControlNode =  document.getElementById(locFacts.id).parentNode  
+          parentControlNode =  document.getElementById(locFacts.id).parentNode;  
         } else {
           //climb up higher one node in chain
-          parentControlNode =  document.getElementById(locFacts.id).parentNode.parentNode  
+          parentControlNode =  document.getElementById(locFacts.id).parentNode.parentNode;  
         }
-        simulateMouseClickRight(parentControlNode.previousSibling.childNodes[1])
+        simulateMouseClickRight(parentControlNode.previousSibling.childNodes[1]);
         setTimeout(()=>{
           switch(handler)  {
             case 'ctrl+j x': // expand block
-              document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click()
-              restoreLocationParametersOfTexArea(locFacts)
+              document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click();
+              restoreLocationParametersOfTexArea(locFacts);
               break
             case 'ctrl+j l':      // collapse block
-              document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click()                    
-              restoreLocationParametersOfTexArea(locFacts)
+              document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click();                    
+              restoreLocationParametersOfTexArea(locFacts);
               break
             case 'ctrl+j s':      // copy block ref as ref
-              simulateMouseClick( document.querySelector('.bp3-popover-content > div> ul').childNodes[0].childNodes[0] )            
-              restoreLocationParametersOfTexArea(locFacts)
+              simulateMouseClick( document.querySelector('.bp3-popover-content > div> ul').childNodes[0].childNodes[0] );           
+              restoreLocationParametersOfTexArea(locFacts);
               navigator.clipboard.readText().then(clipText =>  navigator.clipboard.writeText(`[*](${clipText})` )
               );
               break
             case 'ctrl+j r':      // copy block ref
-              simulateMouseClick( document.querySelector('.bp3-popover-content > div> ul').childNodes[0].childNodes[0] )            
-              restoreLocationParametersOfTexArea(locFacts)
+              simulateMouseClick( document.querySelector('.bp3-popover-content > div> ul').childNodes[0].childNodes[0] );            
+              restoreLocationParametersOfTexArea(locFacts);
               break
             case 'ctrl+j a':      // add reaction
               setTimeout(()=>{
-                simulateMouseOver(document.querySelector('.bp3-popover-content > div> ul').childNodes[5].childNodes[0].childNodes[0] )
+                simulateMouseOver(document.querySelector('.bp3-popover-content > div> ul').childNodes[5].childNodes[0].childNodes[0] );
               },50)
               return false
               break
             case 'ctrl+j 1':     // left allign block
-              simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[0] )
-              roam42KeyboardLib.pressEsc()
+              simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[0] );
+              roam42KeyboardLib.pressEsc();
               break
             case 'ctrl+j 2':     // center allign block
-              simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[1] )
-              roam42KeyboardLib.pressEsc()
+              simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[1] );
+              roam42KeyboardLib.pressEsc();
               break
             case 'ctrl+j 3':     // right allign block
-              simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[2] )
-              roam42KeyboardLib.pressEsc()
+              simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[2] );
+              roam42KeyboardLib.pressEsc();
               break
             case 'ctrl+j 4':     // justify allign block
-              simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[3] )
+              simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[3] );
               roam42KeyboardLib.pressEsc()
               break
           }
@@ -103,26 +99,26 @@ const loadJumpNav = () => {
         var locFacts =  (event.srcElement.localName == "textarea")  ? saveLocationParametersOfTextArea(event.target) : ''
         var zoomedView = 0  // 0 if page is not zoomed, 1 if zoomed
         try {
-          simulateMouseClickRight(document.querySelector('.rm-title-display'))          
+          simulateMouseClickRight(document.querySelector('.rm-title-display'));          
         } catch(e) {
-          simulateMouseClickRight(document.querySelectorAll('.simple-bullet-outer')[0])
-          zoomedView = 1  
+          simulateMouseClickRight(document.querySelectorAll('.simple-bullet-outer')[0]);
+          zoomedView = 1;  
         }
         setTimeout(()=>{
           switch(handler) {
             case 'ctrl+j e':
-              document.querySelector('.bp3-popover-content > div> ul').childNodes[2+zoomedView].childNodes[0].click()
+              document.querySelector('.bp3-popover-content > div> ul').childNodes[2+zoomedView].childNodes[0].click();
               break;
             case 'ctrl+j c':
-              document.querySelector('.bp3-popover-content > div> ul').childNodes[3+zoomedView].childNodes[0].click()
+              document.querySelector('.bp3-popover-content > div> ul').childNodes[3+zoomedView].childNodes[0].click();
               break;          
             case 'ctrl+j o':
-              document.querySelector('.bp3-popover-content > div> ul').childNodes[1+zoomedView].childNodes[0].click()
+              document.querySelector('.bp3-popover-content > div> ul').childNodes[1+zoomedView].childNodes[0].click();
               break;          
           }
           if(locFacts!='') {
             setTimeout(()=>{
-              restoreLocationParametersOfTexArea(locFacts)
+              restoreLocationParametersOfTexArea(locFacts);
             },400)
           }
         },100)
@@ -135,8 +131,8 @@ const loadJumpNav = () => {
           switch(handler) {
             case 'ctrl+j y': //toggle parents
               document.querySelectorAll('.rm-query-title .bp3-icon-caret-down').forEach( (element)=>{
-                simulateMouseClick(element)
-              })
+                simulateMouseClick(element);
+              });
               break;            
           }
         return false
@@ -148,19 +144,19 @@ const loadJumpNav = () => {
           switch(handler) {
             case 'ctrl+j f': //toggle parents
               document.querySelectorAll('.rm-title-arrow-wrapper .bp3-icon-caret-down').forEach( (element)=>{
-                simulateMouseClick(element)
+                simulateMouseClick(element);
               })
               break;          
             case 'ctrl+j d':
               document.querySelectorAll('.rm-reference-item  .simple-bullet-outer').forEach( (element)=>{
-                simulateMouseClickRight(element)
-                document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click()
+                simulateMouseClickRight(element);
+                document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click();
               })
               break;          
             case 'ctrl+j p':
               document.querySelectorAll('.rm-reference-item  .simple-bullet-outer').forEach( (element)=>{
-                simulateMouseClickRight(element)
-                document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click()
+                simulateMouseClickRight(element);
+                document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click();
               })
               break;          
           }
@@ -172,25 +168,25 @@ const loadJumpNav = () => {
       if(['ctrl+j i', 'ctrl+j u',  ].includes(handler)) {
           switch(handler) {
             case 'ctrl+j i':
-              document.querySelector('.rm-reference-container .rm-caret').click()
-              document.querySelector('.rm-reference-container .rm-caret').scrollIntoView()
+              document.querySelector('.rm-reference-container .rm-caret').click();
+              document.querySelector('.rm-reference-container .rm-caret').scrollIntoView();
               break;          
             case 'ctrl+j u':
-              document.querySelector('.rm-reference-main > div > div:nth-child(2) > div > span > span').click()
-              document.querySelector('.rm-reference-main > div > div:nth-child(2) > div > span > span').scrollIntoView()
+              document.querySelector('.rm-reference-main > div > div:nth-child(2) > div > span > span').click();
+              document.querySelector('.rm-reference-main > div > div:nth-child(2) > div > span > span').scrollIntoView();
               break;          
           }
         return false
       }
 
-      if(handler=='ctrl+j q' ) { displayHelp() }
-      if(handler=='ctrl+j h' ) { displayJumpNavHelp() }
+      if(handler=='ctrl+j q' ) { displayHelp() };
+      if(handler=='ctrl+j h' ) { displayJumpNavHelp() };
 
-      if(handler=='ctrl+j n' ) { sidebarLeftToggle() }
-      if(handler=='ctrl+j m' ) { sidebarRightToggle() }
+      if(handler=='ctrl+j n' ) { sidebarLeftToggle() };
+      if(handler=='ctrl+j m' ) { sidebarRightToggle() };
 
-      if(handler=='ctrl+j ,' ) { dailyNotesPopup2.toggleVisible() }
-      if(handler=='ctrl+j .' ) { typeAheadLookup() }
+      if(handler=='ctrl+j ,' ) { dailyNotesPopup2.toggleVisible() };
+      if(handler=='ctrl+j .' ) { typeAheadLookup() };
     
       return false
     
@@ -249,5 +245,5 @@ const loadJumpNav = () => {
         displayMode: 2
       });
     } catch(e) {}    
-  }
+  };
 } 
