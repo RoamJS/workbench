@@ -19,10 +19,9 @@ const loadKeyEvents = () => {
   
     try { if( keyboardHandlerMessages(ev)              ) {return} } catch(e){};
     try { if( keyboardHandlerLivePreview(ev)           ) {return} } catch(e){};
-    try { if( dailyNotesPopup2.keyboardHandler(ev)     ) {return} } catch(e){};
     try { if( jumpToDateComponent.keyboardHandler(ev ) ) {return} } catch(e){};
     try { if( rmQuickRefenceSystem.keyboardHandler(ev) ) {return} } catch(e){};
-
+    
     //Open right side bar 
     if (ev.altKey && ev.shiftKey &&  ev.code=='Slash' ) { 
       ev.preventDefault();
@@ -54,6 +53,18 @@ const loadKeyEvents = () => {
       return
     }
 
+    // Daily notes page
+    if (ev.altKey && ev.shiftKey &&  (ev.key=='¯' || ev.code=='Comma')  ) { 
+      event.preventDefault();
+      if( window != window.parent ) { 
+        window.parent.document.querySelector('#jsPanelDNP').style.visibility = 'hidden';
+        window.parent.document.focus()
+      } else { 
+        dailyNotesPopup2.toggleVisible(); 
+      }
+      return
+    }    
+    
     //insert todo #na
     if (ev.altKey && ev.shiftKey && ev.code=='KeyA'  ) {     
       event.preventDefault();

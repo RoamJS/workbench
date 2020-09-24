@@ -162,6 +162,6 @@ function blockInsertAbove(block){
     block.selectionStart =0;
     block.selectionEnd = 0;
     roam42KeyboardLib.pressEnter()      
-    if(blockEmpty){setTimeout(()=>{ roam42KeyboardLib.simulateKey(38) },50) };  //up arrow
+//    if(blockEmpty){setTimeout(()=>{ roam42KeyboardLib.simulateKey(38) },250) };  //up arrow
   }
 }

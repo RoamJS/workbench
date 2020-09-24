@@ -2,7 +2,7 @@
      getRoamLivePreview_IsEnabled, getAutoComplete_IsEnabled 
 */
 
-const roam42BuildID = 'Trillian.2020-09-22'
+const roam42BuildID = 'Trillian.2020-09-24c'
 
 // document.addEventListener('keydown', (ev)=> {
 const keyboardHandlerMessages = ev => {
