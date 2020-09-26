@@ -198,7 +198,7 @@ function livePreviewStatusToast() {
       };
 
       document.addEventListener('mousemove', ({ clientX: x, clientY: y }) => {
-        virtualElement.getBoundingClientRect = generateGetBoundingClientRect(x+5, y);
+        virtualElement.getBoundingClientRect = generateGetBoundingClientRect(x-4, y);
       });
         
     const enableLivePreview = () => {
