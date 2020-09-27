@@ -1,24 +1,38 @@
 // Thanks Bro! gracefully borrowed  from: https://github.com/palashkaria/roam-modifiers
 /* globals , Cookies , iziToast */
 
+// Live preview has 3 states:
+// 1 = preview page links 
+// 2 = preview page links & blocks
+// 0 = live preview off
+
+let roam42LivePreviewState = 0 //off by default
+
 const keyboardHandlerLivePreview = ev => {
   if( ev.ctrlKey==true  &&  ev.key=='L' || ev.altKey==true  &&  ev.key=='l' ) {
     ev.preventDefault();
-    setRoamLivePreview_IsEnabled(  !getRoamLivePreview_IsEnabled() )
+
+    toggleRoamLivePreviewState();
     let msg = ''
-    if(getRoamLivePreview_IsEnabled()==true) {
-      msg = 'E N A B L E D'
-    } else {
-      msg = 'Disabled'      
-    }  
+    switch (getRoamLivePreviewState()) {
+      case 1:
+        msg = 'Enabled'
+        break;
+      case 2:
+        msg = 'Enabled with block refs'
+        break;
+      default:
+        msg = 'Disabled'
+        break;
+    }
     iziToast.destroy();
     iziToast.show({
       message: 'Live Preview<br/><b>' + msg + '</b>' ,
       theme: 'dark',
       progressBar: true,
-      animateInside: true,
+      animateInside: false,
       close: false,
-      timeout: 5000,
+      timeout: 3000,
       closeOnClick: true,
       displayMode: 2
     })
@@ -26,24 +40,39 @@ const keyboardHandlerLivePreview = ev => {
   }
 }
 
-const getRoamLivePreview_IsEnabled = ()=>{
-  if( Cookies.get('RoamLivePreview_IsEnabled') === 'true' ) {
-    return true
-  } else {
-    return false
+const getRoamLivePreviewState = ()=>{
+  switch (Cookies.get('RoamLivePreview_IsEnabled')) {
+    case '1':
+      return 1;
+    case '2':
+      return 2;
+    default:
+      return 0;
   }
 }
 
-const setRoamLivePreview_IsEnabled = (val)=>{
-  if(val == true) {
-    Cookies.set('RoamLivePreview_IsEnabled', 'true') 
-  } else {
-    Cookies.set('RoamLivePreview_IsEnabled', 'false')     
+const toggleRoamLivePreviewState = ()=>{
+  switch (getRoamLivePreviewState()) {
+    case 1:
+      setRoamLivePreviewState(2);
+      break;
+    case 2:
+      setRoamLivePreviewState(0);
+      break;
+    default:
+      setRoamLivePreviewState(1);
+      break;
   }
+}
+
+
+const setRoamLivePreviewState = (val)=>{
+  Cookies.set('RoamLivePreview_IsEnabled', val) 
+  roam42LivePreviewState = val
 }
 
 function livePreviewStatusToast() {
-  var status = getRoamLivePreview_IsEnabled()
+  var status = getRoamLivePreviewState()
   iziToast.show({
     timeout: 20000,
     theme: 'dark',
@@ -53,15 +82,20 @@ function livePreviewStatusToast() {
     progressBarColor: 'rgb(0, 255, 184)',
     buttons: [
     ['<button>Enabled</button>', function (instance, toast) {
-        setRoamLivePreview_IsEnabled(true)
+        setRoamLivePreviewState(1);
         instance.hide({transitionOut: 'fadeOutUp'}, toast, 'buttonName');
-    }, status], 
-    ['<button>Disabled</button>', function (instance, toast) {
-        setRoamLivePreview_IsEnabled(false)
+    }, (status==1)], 
+    ['<button>Enabled with block refs</button>', function (instance, toast) {
+        setRoamLivePreviewState(2);
         instance.hide({transitionOut: 'fadeOutDown'}, toast, 'buttonName');
-    }, !status], 
+    }, (status==2)], 
+    ['<button>Disabled</button>', function (instance, toast) {
+        setRoamLivePreviewState(0)
+        instance.hide( {transitionOut:'fadeOutDown'}, toast, 'buttonName');
+    }, (status==0) ]       
     ]
   })
+  
 }
 
 (function () {
@@ -198,7 +232,7 @@ function livePreviewStatusToast() {
       };
 
       document.addEventListener('mousemove', ({ clientX: x, clientY: y }) => {
-        virtualElement.getBoundingClientRect = generateGetBoundingClientRect(x-4, y);
+        virtualElement.getBoundingClientRect = generateGetBoundingClientRect(x+1, y);
       });
         
     const enableLivePreview = () => {
@@ -210,13 +244,17 @@ function livePreviewStatusToast() {
       let specialDelayTimeOutAmount = 200
       const previewIframe = createPreviewIframe();
       var delayTimer = 100;
+      
+      //get configuration setting from roam/js
       if(window.roam42LivePreview) {
         delayTimer = window.roam42LivePreview.delay == undefined ? delayTimer : window.roam42LivePreview.delay
       }
+      
+      roam42LivePreviewState = getRoamLivePreviewState();  //get current state of live preview
 
       document.addEventListener('mouseover', (e) => {
         // if( e.ctrlKey == false ) { return }
-        if( getRoamLivePreview_IsEnabled() == false) { return }
+        if( roam42LivePreviewState == 0) { return }
         var target = e.target;
         
         let isPageRef = target.classList.contains('rm-page-ref');
@@ -263,7 +301,7 @@ function livePreviewStatusToast() {
         
         //preview BLOCK references
         var pageIsBlock = false
-        if ( isPageRef == false && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
+        if ( isPageRef == false && roam42LivePreviewState == 2 && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
           pageIsBlock = true
           let block = target.closest('.roam-block').id
           let bId = block.substring( block.length -9)
