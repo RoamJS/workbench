@@ -28,8 +28,8 @@ const loadJumpNav = () => {
         // daily notes and lookup
         'ctrl+j ,','ctrl+j .',                      'meta+j ,', 'meta+j .',                   'alt+j ,', 'alt+j .',    
       ], (event, handler)=> { 
-      handler = handler.replaceAll('meta','ctrl')
-      handler = handler.replaceAll('alt', 'ctrl')
+      handler = handler.replace('meta','ctrl')
+      handler = handler.replace('alt', 'ctrl')
     
      //GOTO top/bottom of page
       if(['ctrl+j t', 'ctrl+j b'].includes(handler)) {
