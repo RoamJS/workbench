@@ -74,13 +74,13 @@
         ${getRoamNavigator_IsEnabled() ? '' : '<tr><td>&nbsp       </td><td>&nbsp</td> <td>(Disabled)</td><td></td></tr>'}
         <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                <td></td></tr>
 
-        <tr><td>Ctrl+Shift+l</td><td>&nbsp</td> <td>Toggle Live Preview (Alt+L)</td><td class="bp3-button bp3-minimal bp3-icon-settings" onclick="livePreviewStatusToast()"></td></tr>
+        <tr><td>Ctrl+Shift+l</td><td>&nbsp</td> <td>Toggle Live Preview (Alt+L)</td><td class="bp3-button bp3-minimal bp3-icon-settings" onclick="roam42.livePreview.livePreviewStatusToast()"></td></tr>
         <tr><td>Hover mouse </td><td>&nbsp</td> <td>Live Preview</td>         <td></td></tr>
-        ${getRoamLivePreviewState() > 0 ? '' : '<tr><td>&nbsp       </td><td>&nbsp</td> <td>(Disabled)</td><td></td></tr>'}
+        ${roam42.livePreview.getRoamLivePreviewState() > 0 ? '' : '<tr><td>&nbsp       </td><td>&nbsp</td> <td>(Disabled)</td><td></td></tr>'}
         <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                <td></td></tr>
 
-        <tr><td>Shift-space    </td><td>&nbsp</td> <td>Autocomplete blocks/search bar</td><td class="bp3-button bp3-minimal bp3-icon-settings" onclick="autoCompleteStatusToast()"></td></tr>
-        ${getAutoComplete_IsEnabled() ? '' : '<tr><td>&nbsp       </td><td>&nbsp</td> <td>(Disabled)</td><td></td></tr>'}
+        <tr><td>Shift-space    </td><td>&nbsp</td> <td>Autocomplete blocks/search bar</td><td class="bp3-button bp3-minimal bp3-icon-settings" onclick="roam42.autocomplete.autoCompleteStatusToast()"></td></tr>
+        ${roam42.autocomplete.getAutoComplete_IsEnabled() ? '' : '<tr><td>&nbsp       </td><td>&nbsp</td> <td>(Disabled)</td><td></td></tr>'}
 
         <tr><td>&nbsp       </td><td>&nbsp</td> <td>&nbsp</td>                    <td></td></tr>
         <tr><td>Alt–Shift–\\</td><td>&nbsp</td>  <td>Open left side bar</td>      <td></td> </tr>

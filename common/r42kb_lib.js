@@ -1,4 +1,3 @@
-
 window.roam42KeyboardLib = {
     // thank you @VladyslavSitalo for the awesome Roam Toolkit, and the basis for this code
     LEFT_ARROW: 37,
@@ -127,5 +126,3 @@ window.roam42KeyboardLib = {
         })
     },
 }
-
-//window.KeyboardLib = window.roam42KeyboardLib

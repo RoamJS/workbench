@@ -1,10 +1,11 @@
-/* globals TurndownService */
+/* globals roam42, TurndownService */
 
 // Uses the javscript library from https://github.com/domchristie/turndown
 // creates a very simply markdown file based on the current view
 
 
-function turndownPage() {
+
+roam42.turndownPage = ()=> {
   
   var turndownService = new TurndownService({
     blankReplacement: function() {
