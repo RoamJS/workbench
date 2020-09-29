@@ -1,5 +1,5 @@
 /* global  loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent, 
-           rmQuickRefenceSystem, device, displayStartup, dailyNotesPopup2,
+           rmQuickRefenceSystem, device, displayStartup,
            loadAutoComplete
 */
 
@@ -8,7 +8,15 @@
   roam42                   Root
   roam42.loader            Initialization of roam42 enviroment
   roam42.help              help system
+  roam42.keyevents         global handler for keyevents (some modules have their own key handling)
+  roam42.jumpnav           jump navigation
+  roam42.quickRef          quick reference system
+  roam42.dailyNotesPopup   Dialy notes popup
+  roam42.livePreview       Live preview features
+  roam42.common            shared commands
+  roam42.dateProcessing    Date functions
   
+  roam42KeyboardLib        imported from another library. so letting it stand as its own object
 */
 
 var roam42     =  roam42 || {};
@@ -53,15 +61,15 @@ roam42.host    = document.currentScript.src.replace('main.js','');
 ( ()=>{
 
   //load all 3rd party libraries 
-  roam42.loader.addScriptToPage( 'JQUERY',          'https://code.jquery.com/jquery-3.5.1.min.js'                                );
-  roam42.loader.addScriptToPage( 'JSCOOKIE',        'https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js'            );
-  roam42.loader.addScriptToPage( 'MOUSETRAP',       'https://cdn.jsdelivr.net/npm/mousetrap@1.6.5/mousetrap.min.js'              );
-  roam42.loader.addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.8/dist/chrono.min.js'          );
-  roam42.loader.addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'                                     );
-     roam42.loader.addCSSToPage( 'cssFlatpckr',     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'              );
-     roam42.loader.addCSSToPage( 'cssFlatpckrThme',  roam42.host + 'css/airbnb.css'                                          );
-  roam42.loader.addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.min.js'      );
-     roam42.loader.addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.min.css'     );
+  roam42.loader.addScriptToPage( 'JQUERY',          'https://code.jquery.com/jquery-3.5.1.min.js'                                 );
+  roam42.loader.addScriptToPage( 'JSCOOKIE',        'https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js'             );
+  roam42.loader.addScriptToPage( 'MOUSETRAP',       'https://cdn.jsdelivr.net/npm/mousetrap@1.6.5/mousetrap.min.js'               );
+  roam42.loader.addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.8/dist/chrono.min.js'           );
+  roam42.loader.addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'                                      );
+     roam42.loader.addCSSToPage( 'cssFlatpckr',     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'               );
+     roam42.loader.addCSSToPage( 'cssFlatpckrThme',  roam42.host + 'css/airbnb.css'                                               );
+  roam42.loader.addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.min.js'       );
+     roam42.loader.addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.min.css'      );
 
   //Do not load in iframe windows
   if( window === window.parent  ){
@@ -79,23 +87,23 @@ roam42.host    = document.currentScript.src.replace('main.js','');
      roam42.loader.addCSSToPage( 'styleRM',           roam42.host + 'css/styleRM.css'           );
   roam42.loader.addScriptToPage( 'commonFunctions',   roam42.host + 'common/commonFunctions.js' );
   roam42.loader.addScriptToPage( 'keyEvents',         roam42.host + 'common/keyevents.js'       );
-  roam42.loader.addScriptToPage( 'jumpNav'  ,         roam42.host + 'ext/jump-nav.js'           );
+  roam42.loader.addScriptToPage( 'jumpNav'  ,         roam42.host + 'ext/jumpNav.js'            );
   roam42.loader.addScriptToPage( 'message-startup',   roam42.host + 'messages.js'               );
 
   //extension modules
   roam42.loader.addScriptToPage( 'dateProcessing',    roam42.host + 'ext/dateProcessing.js'     );
   roam42.loader.addScriptToPage( 'r42kb_lib',         roam42.host + 'common/r42kb_lib.js'       );
   roam42.loader.addScriptToPage( 'templatePoc',       roam42.host + 'ext/templatepoc.js'        );
-  roam42.loader.addScriptToPage( 'jumpToDate',        roam42.host + 'ext/jump-to-date.js'       );
-  roam42.loader.addScriptToPage( 'autocomplete',      roam42.host + 'ext/auto-complete.js')
+  roam42.loader.addScriptToPage( 'jumpToDate',        roam42.host + 'ext/jumpToDate.js'         );
+  roam42.loader.addScriptToPage( 'autocomplete',      roam42.host + 'ext/autoComplete.js'      );
 
   //Do not load in iframe windows
   if( window === window.parent  ){
-    roam42.loader.addScriptToPage( 'quickReference',    roam42.host + 'ext/quick-reference.js'    );
-    roam42.loader.addScriptToPage( 'turnDown',          roam42.host + 'ext/turndownservice.js'    );
-    roam42.loader.addScriptToPage( 'roamNavigator',     roam42.host + 'ext/roam-navigator.js'     );
-    roam42.loader.addScriptToPage( 'typeAheadData',     roam42.host + 'ext/typeaheadData.js'      );
-    roam42.loader.addScriptToPage( 'lookupUI',          roam42.host + 'ext/typeaheadUI.js'        );
+    roam42.loader.addScriptToPage( 'quickReference',    roam42.host + 'ext/quickRef.js'  );
+    roam42.loader.addScriptToPage( 'turnDown',          roam42.host + 'ext/turndownservice.js'  );
+    roam42.loader.addScriptToPage( 'roamNavigator',     roam42.host + 'ext/roam-navigator.js'   );
+    roam42.loader.addScriptToPage( 'lookupUI',          roam42.host + 'ext/typeaheadUI.js'      );
+    roam42.loader.addScriptToPage( 'typeAheadData',     roam42.host + 'ext/typeaheadData.js'    );
   }
 
   // Give the libraries a few seconds to get comfy in their new home 
@@ -111,18 +119,18 @@ roam42.host    = document.currentScript.src.replace('main.js','');
     setTimeout(()=>{
       try {
         if ( device.mobile() == false && window === window.parent  ) { 
-          roam42.loader.addScriptToPage( 'livePreview',     roam42.host + 'ext/roam-live-preview.js'  );
-          roam42.loader.addScriptToPage( 'dailyNote',       roam42.host + 'ext/daily-notes-popup2.js' );
+          roam42.loader.addScriptToPage( 'livePreview',     roam42.host + 'ext/livePreview.js'  );
+          roam42.loader.addScriptToPage( 'dailyNote',       roam42.host + 'ext/dailyNotesPopup.js' );
         }
       } catch(e) {}
       setTimeout(()=>{
-        loadKeyEvents();
-        loadAutoComplete();
-        loadJumpNav();
-        try { loadTypeAhead();     } catch(e){};
-        try { jumpToDateComponent.initialize();  } catch(e){};
-        try { rmQuickRefenceSystem.initialize(); } catch(e){};
-        try { dailyNotesPopup2.initialize(); } catch(e){};
+        roam42.keyevents.loadKeyEvents();
+        roam42.autocomplete.loadAutoComplete();
+        roam42.jumpnav.loadJumpNav();
+        try { roam42.typeAhead.loadTypeAhead();     } catch(e){};
+        try { roam42.jumpToDate.component.initialize();  } catch(e){};
+        try { roam42.quickRef.component.initialize(); } catch(e){};
+        try { roam42.dailyNotesPopup.component.initialize(); } catch(e){};
       }, 1000);      
     }, 2000);
   }, 5000);
