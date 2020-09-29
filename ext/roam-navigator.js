@@ -134,28 +134,7 @@
       // Ignore keystrokes pressed with modifier keys, as they might
       // be used by other extensions.
 
-// ROAM42 MOD START
-      // if (ev.ctrlKey ||
-      //     (ev.altKey && (isNavigating() || ev.key !== START_NAVIGATE_KEY))) {
-      // if (ev.altKey && ev.shiftKey &&  ev.code=='Slash' ) { 
-        //ev.stopImmediatePropagation()
-        //ev.preventDefault()
-        //sidebarRightToggle()
-        //return
-      // }
-      // if (ev.altKey && ev.shiftKey && (ev.code=='Backslash' || ev.key=='«') ) { 
-      //   //ev.stopImmediatePropagation()
-      //   //ev.preventDefault()        
-      //   //sidebarLeftToggle()
-      //   //return
-      // }
-      // if (ev.altKey && ev.shiftKey && ev.code=='KeyH' ) { 
-      //   ev.stopImmediatePropagation()
-      //   ev.preventDefault()        
-      //   displayHelp(10000) 
-      //   return
-      // }
-      
+// ROAM42 MOD START      
       if (!roamNavigatorEnabled) { return }  //navigator disabled, don't go further
       
       if (ev.ctrlKey ||

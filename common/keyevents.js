@@ -1,4 +1,4 @@
-/* global sidebarRightToggle, sidebarLeftToggle, parseTextForDates, setEmptyNodeValue, typeAheadLookup, turndownPage 
+/* global roam42, sidebarRightToggle, sidebarLeftToggle, parseTextForDates, setEmptyNodeValue, typeAheadLookup, turndownPage 
   keyboardHandlerMessages, keyboardHandlerLivePreview, dailyNotesPopup2, jumpToDateComponent, rmQuickRefenceSystem
 */
 
@@ -17,7 +17,7 @@ const loadKeyEvents = () => {
     
     shiftKeyDownTracker = ev.shiftKey;  //this is used in other modules for tracking shift state
   
-    try { if( keyboardHandlerMessages(ev)              ) {return} } catch(e){};
+    try { if( roam42.help.keyboardHandlerMessages(ev)  ) {return} } catch(e){};
     try { if( keyboardHandlerLivePreview(ev)           ) {return} } catch(e){};
     try { if( jumpToDateComponent.keyboardHandler(ev ) ) {return} } catch(e){};
     try { if( rmQuickRefenceSystem.keyboardHandler(ev) ) {return} } catch(e){};
