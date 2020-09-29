@@ -406,11 +406,6 @@ function livePreviewStatusToast() {
         }
       });
     };
-    var remoteScript = document.createElement('script');
-    remoteScript.src =
-      'https://unpkg.com/@popperjs/core@2'
-    remoteScript.onload = enableLivePreview;
-    document.body.appendChild(remoteScript);
     enableLivePreview()
   }
 })();

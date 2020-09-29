@@ -83,8 +83,7 @@ const loadJumpNav = () => {
             case 'ctrl+j s':      // copy block ref as ref
               simulateMouseClick( document.querySelector('.bp3-popover-content > div> ul').childNodes[0].childNodes[0] );           
               restoreLocationParametersOfTexArea(locFacts);
-              navigator.clipboard.readText().then(clipText =>  navigator.clipboard.writeText(`[*](${clipText})` )
-              );
+              navigator.clipboard.readText().then(clipText =>  navigator.clipboard.writeText(`[*](${clipText})` ) );
               break
             case 'ctrl+j r':      // copy block ref
               simulateMouseClick( document.querySelector('.bp3-popover-content > div> ul').childNodes[0].childNodes[0] );            
@@ -203,7 +202,7 @@ const loadJumpNav = () => {
         return false
       }
 
-      if(handler=='ctrl+j q' ) { displayHelp() };
+      if(handler=='ctrl+j q' ) { roam42.help.displayHelp() };
       if(handler=='ctrl+j h' ) { displayJumpNavHelp() };
 
       if(handler=='ctrl+j n' ) { sidebarLeftToggle() };
@@ -223,7 +222,7 @@ const loadJumpNav = () => {
       title: 'Roam42 Jump Nav Commands',
       message: `
 <div style="position:absolute;top:-110px;right:-15px;z-index:1000;">
-  <img width="70px" src="${logo2HC}"></img>
+  <img width="70px" src="${roam42.loader.logo2HC}"></img>
 </div>
 <br/>
 <pre style="max-width:260px">
