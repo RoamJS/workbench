@@ -1,4 +1,4 @@
-/* global  loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent, 
+/* global  roam42, loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent, 
            rmQuickRefenceSystem, device, displayStartup,
            loadAutoComplete
 */
@@ -19,10 +19,12 @@
   roam42KeyboardLib        imported from another library. so letting it stand as its own object
 */
 
-if( typeof roam42 == 'undefined' ) { 
+;(()=>{});
 
-  var roam42     =  roam42 || {};
-  roam42.buildID = 'Trillian.2020-09-29c';
+if( typeof window.roam42 == 'undefined' ) { 
+
+  window.roam42     =   {};
+  roam42.buildID = 'Trillian.2020-09-30';
   roam42.host    = document.currentScript.src.replace('main.js','');
 
   // roam42.loader 
