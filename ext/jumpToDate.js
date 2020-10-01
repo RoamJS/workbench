@@ -223,6 +223,7 @@
         content: `
           <div id="jumptoDatePicker">
             <input id="jumptoDateInput" type="text" placeholder=""></input>
+            <img width="1" height="1" src="//in.getclicky.com/101273547ns.gif" />
           </div>
           `.trim()
       });
