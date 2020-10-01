@@ -231,7 +231,7 @@
     <img width="70px" src="${roam42.loader.logo2HC}"></img>
   </div>
   <br/>
-  <pre style="max-width:260px">
+  <pre style="max-width:320px">
   <b>Page</b>
    t Top of page
    b Bottom of page
@@ -267,7 +267,7 @@
           close: false,
           timeout: 30000,
           closeOnClick: true,
-          maxWidth: '300px',
+          maxWidth: '320px',
           displayMode: 2
         });
       } catch(e) {}    
