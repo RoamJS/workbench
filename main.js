@@ -24,7 +24,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = 'Trillian.2020-09-30';
+  roam42.buildID = 'Trillian.2020-10-01-Be-Happy';
   roam42.host    = document.currentScript.src.replace('main.js','');
 
   // roam42.loader 
@@ -117,7 +117,7 @@ if( typeof window.roam42 == 'undefined' ) {
 
         // Dont display in iframe
       if( window === window.parent ) {
-          roam42.help.displayStartup(6000);  
+          roam42.help.displayStartup(5000);  
       }
 
       setTimeout(()=>{
@@ -137,7 +137,7 @@ if( typeof window.roam42 == 'undefined' ) {
           try { roam42.dailyNotesPopup.component.initialize(); } catch(e){};
         }, 1000);      
       }, 2000);
-    }, 5000);
+    }, 2000);
 
   })();
 
