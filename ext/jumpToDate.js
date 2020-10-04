@@ -5,7 +5,7 @@
 // Datepicker based on: https://flatpickr.js.org/
 
 
-// roam42.jumpnav 
+// roam42.jumpToDate 
 (()=>{
   
   roam42.jumpToDate = {};
@@ -18,15 +18,7 @@
     keyboardHandler(ev) {    
       if( ev.altKey==true  && ev.shiftKey==true  && ev.code=='KeyJ' ) {
         ev.preventDefault();
-        if (event.srcElement.localName == 'textarea') {
-          roam42KeyboardLib.pressEsc();
-          setTimeout( ()=> {
-            roam42KeyboardLib.pressEsc();
             this.jumpToDate();            
-          },300 )
-        } else {
-          this.jumpToDate();    
-        }
         return true;
       }
 
@@ -149,7 +141,6 @@
       let jump = document.querySelector('#rqrJumpToDatePanel');
       if( jump.style.visibility=='hidden' || jump.style.visibility=='') {
         setTimeout( ()=>{
-          roam42KeyboardLib.pressEsc();
           this.jumpToDate();
         }, 100 )    
       } else {
@@ -157,7 +148,14 @@
       }
     }, //jumpToDateFromButton
 
-    navigateUIToDate(destinationDate, useShiftKey) {
+    async navigateUIToDate(destinationDate, useShiftKey) {
+      var dDate = roam42.dateProcessing.getRoamDate( destinationDate )
+      var uid = await window.roamAlphaAPI.q("[:find ?uid :in $ ?a :where [?e :node/title ?a] [?e :block/uid ?uid]]", dDate).flat()[0]
+      //page exists, go to it
+      if(uid !=  undefined  && (useShiftKey==false || roam42.keyevents.shiftKeyDownTracker==false && useShiftKey==true) ) {
+        document.location.href= this.baseUrl() + '/page/' + uid;
+        return;
+      }
       let inPut =  document.getElementById('find-or-create-input');
       inPut.focus();
       roam42.common.setEmptyNodeValue( inPut, roam42.dateProcessing.getRoamDate( destinationDate ) );

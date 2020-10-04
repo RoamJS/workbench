@@ -24,7 +24,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = 'Trillian.2020-10-01-Be-Happy';
+  roam42.buildID = 'Trillian.2020-10-04 Be Happy';
   roam42.host    = document.currentScript.src.replace('main.js','');
 
   // roam42.loader 
@@ -137,7 +137,7 @@ if( typeof window.roam42 == 'undefined' ) {
           try { roam42.dailyNotesPopup.component.initialize(); } catch(e){};
         }, 1000);      
       }, 2000);
-    }, 2000);
+    }, 4000);
 
   })();
 
