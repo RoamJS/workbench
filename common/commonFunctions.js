@@ -1,9 +1,27 @@
-/* globals roam42KeyboardLib, roam42   */
+/* globals roam42, roam42KeyboardLib, roam42   */
 
 // roam42.common 
 (()=>{
   
   roam42.common = {};
+  
+  
+  roam42.common.navigateUiTo = (destinationPage, useShiftKey)=>{
+      let inPut =  document.getElementById('find-or-create-input');
+      inPut.focus();
+      roam42.common.setEmptyNodeValue( inPut, destinationPage );
+      setTimeout(()=>{
+       if( roam42.keyevents.shiftKeyDownTracker==true && useShiftKey==true ) {
+          roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});   
+        } else {
+          roam42KeyboardLib.pressEnter();
+        }
+        setTimeout(()=>{
+          roam42.common.setEmptyNodeValue( inPut,'' );
+        },250);             
+      },400);   
+    }
+
 
   roam42.common.sidebarRightToggle = ()=>{
     try {
@@ -27,7 +45,6 @@
       },100);
     }     
   }
-
 
   //https://stackoverflow.com/questions/40091000/simulate-click-event-on-react-element
   const mouseClickEvents = ['mousedown', 'click', 'mouseup'];
@@ -170,5 +187,5 @@
   //    if(blockEmpty){setTimeout(()=>{ roam42KeyboardLib.simulateKey(38) },250) };  //up arrow
     }
   }
-
+      
 })();  
