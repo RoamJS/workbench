@@ -190,4 +190,7 @@
   color: black !important;
 }
 
-
+.roam42-privacy-block, .roam42-privacy-block * {
+  color:      black !important;
+  background: black !important;
+}

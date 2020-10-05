@@ -15,7 +15,7 @@
   roam42.livePreview       Live preview features
   roam42.common            shared commands
   roam42.dateProcessing    Date functions
-  
+  roam42.privacyMode   
   roam42KeyboardLib        imported from another library. so letting it stand as its own object
 */
 
@@ -90,6 +90,7 @@ if( typeof window.roam42 == 'undefined' ) {
     //common shared functions
        roam42.loader.addCSSToPage( 'styleRM',           roam42.host + 'css/styleRM.css'           );
     roam42.loader.addScriptToPage( 'commonFunctions',   roam42.host + 'common/commonFunctions.js' );
+    roam42.loader.addScriptToPage( 'commonDatalog',     roam42.host + 'common/commonDatalog.js  ' );
     roam42.loader.addScriptToPage( 'keyEvents',         roam42.host + 'common/keyevents.js'       );
     roam42.loader.addScriptToPage( 'jumpNav'  ,         roam42.host + 'ext/jumpNav.js'            );
     roam42.loader.addScriptToPage( 'message-startup',   roam42.host + 'messages.js'               );
@@ -100,6 +101,7 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addScriptToPage( 'templatePoc',       roam42.host + 'ext/templatepoc.js'        );
     roam42.loader.addScriptToPage( 'jumpToDate',        roam42.host + 'ext/jumpToDate.js'         );
     roam42.loader.addScriptToPage( 'autocomplete',      roam42.host + 'ext/autoComplete.js'      );
+    roam42.loader.addScriptToPage( 'privacyMode',       roam42.host + 'ext/privacyMode.js'      );
 
     //Do not load in iframe windows
     if( window === window.parent  ){
