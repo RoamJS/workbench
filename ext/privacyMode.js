@@ -9,11 +9,29 @@
   var roamPageWithPrivacyList = 'Roam42 Privacy Mode List';
 
   roam42.privacyMode.keyboardHandler = ev => {
-    if( ev.ctrlKey==true  &&  ev.altKey==true && ev.key=='p' ) {
+    if( ev.ctrlKey && ev.altKey && ev.code=='KeyP' ) {
       ev.preventDefault();
       roam42.privacyMode.toggle();
     }
   }
+  
+  var flattenObject = function(ob) {
+    var toReturn = {};
+    for (var i in ob) {
+      if (!ob.hasOwnProperty(i)) continue;
+
+      if ((typeof ob[i]) == 'object') {
+        var flatObject = flattenObject(ob[i]);
+        for (var x in flatObject) {
+          if (!flatObject.hasOwnProperty(x)) continue;
+          toReturn[i + '.' + x] = flatObject[x];
+        }
+      } else {
+        toReturn[i] = ob[i];
+      }
+    }
+    return toReturn;
+  }; 
   
   async function getPrivateBlockDetails() {
     //get blocks from page Roam42 Privacy Mode List
@@ -22,14 +40,15 @@
             :where 
             [?e :node/title "Roam42 Privacy Mode List"]]
         `)
+    
     //loop through blocks and retrive UIDs for all [[page links]] or #tags
     if(blocksFromRoam42PrivacyModeList.length==0) {
-      roam42.common.navigateUiTo(roamPageWithPrivacyList);
       helpBannerForPrivacyMode()
     } else {
       if(blocksFromRoam42PrivacyModeList[0][0].children) {
-        for (const b of blocksFromRoam42PrivacyModeList[0][0].children) {
-          var block = b.string.trim();
+        blocksFromRoam42PrivacyModeList = flattenObject(blocksFromRoam42PrivacyModeList);        
+        for (const b in blocksFromRoam42PrivacyModeList) {
+          var block = blocksFromRoam42PrivacyModeList[b].trim();
           var hidePageTitleNameOnly = false;
           if(block.substring(0,3) == '![[' || block.substring(0,2) == '!#')  {
             // the block when added to an array will have "!! " at begining to note its a title only redaction
@@ -54,6 +73,7 @@
   }  
   
   const helpBannerForPrivacyMode = ()=> {
+    roam42.common.navigateUiTo(roamPageWithPrivacyList);    
     setTimeout(()=>{
         roam42.help.displayMessage(
           `Roam42 Privacy Mode List Page is not defined. <br/>
@@ -204,7 +224,7 @@
     try {  
       roam42.privacyMode.destroy();
     } catch(e) {}  
-    roam42.loader.addScriptToPage( 'roam42Tester',  roam42.host + '/privacyMode.js'    )
+    roam42.loader.addScriptToPage( 'roam42Tester',  roam42.host + 'ext/privacyMode.js'    )
   }
   
 })();

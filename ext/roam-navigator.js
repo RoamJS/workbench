@@ -1,6 +1,9 @@
 'use strict';
   
 {
+  
+  roam42.roamNavigator = {};
+  
   // Set to true to enable debug logging.
   const DEBUG = false;
 
@@ -74,6 +77,7 @@
       message: 'Status:',
       position: 'bottomRight', 
       progressBarColor: 'rgb(0, 255, 184)',
+      displayMode: 2,  
       buttons: [
       ['<button>Enabled</button>', function (instance, toast) {
           setRoamNavigator_IsEnabled(true)

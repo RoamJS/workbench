@@ -24,7 +24,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = 'Trillian.2020-10-05 Be Happy';
+  roam42.buildID = 'Trillian.2020-10-06 Be Happy';
   roam42.host    = document.currentScript.src.replace('main.js','');
 
   // roam42.loader 
@@ -100,8 +100,9 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addScriptToPage( 'r42kb_lib',         roam42.host + 'common/r42kb_lib.js'       );
     roam42.loader.addScriptToPage( 'templatePoc',       roam42.host + 'ext/templatepoc.js'        );
     roam42.loader.addScriptToPage( 'jumpToDate',        roam42.host + 'ext/jumpToDate.js'         );
-    roam42.loader.addScriptToPage( 'autocomplete',      roam42.host + 'ext/autoComplete.js'      );
-    roam42.loader.addScriptToPage( 'privacyMode',       roam42.host + 'ext/privacyMode.js'      );
+    roam42.loader.addScriptToPage( 'autocomplete',      roam42.host + 'ext/autoComplete.js'       );
+    roam42.loader.addScriptToPage( 'privacyMode',       roam42.host + 'ext/privacyMode.js'        );
+    roam42.loader.addScriptToPage( 'roam42Menu',        roam42.host + 'ext/roam42Menu.js'         );
 
     //Do not load in iframe windows
     if( window === window.parent  ){
@@ -137,6 +138,8 @@ if( typeof window.roam42 == 'undefined' ) {
           try { roam42.jumpToDate.component.initialize();  } catch(e){};
           try { roam42.quickRef.component.initialize(); } catch(e){};
           try { roam42.dailyNotesPopup.component.initialize(); } catch(e){};
+          try { roam42.roam42Menu.Initialize(); } catch(e){};
+          
         }, 1000);      
       }, 2000);
     }, 4000);
