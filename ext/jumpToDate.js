@@ -173,7 +173,7 @@
 
     initialize()  {
 
-   // Create ROAM42  button
+   // Create ROAM42 jump to date button
       try {
         var jump = document.createElement("div");
           jump.id='roam42-button-jumptodate';

@@ -88,15 +88,15 @@
       position: 'bottomRight', 
       progressBarColor: 'rgb(0, 255, 184)',
       buttons: [
-      ['<button>Enabled</button>', function (instance, toast) {
+      ['<button>Enable</button>', function (instance, toast) {
           roam42.livePreview.setRoamLivePreviewState(1);
           instance.hide({transitionOut: 'fadeOutUp'}, toast, 'buttonName');
       }, (status==1)], 
-      ['<button>Enabled with block refs</button>', function (instance, toast) {
+      ['<button>Enable with block refs</button>', function (instance, toast) {
           roam42.livePreview.setRoamLivePreviewState(2);
           instance.hide({transitionOut: 'fadeOutDown'}, toast, 'buttonName');
       }, (status==2)], 
-      ['<button>Disabled</button>', function (instance, toast) {
+      ['<button>Disable</button>', function (instance, toast) {
           roam42.livePreview.setRoamLivePreviewState(0)
           instance.hide( {transitionOut:'fadeOutDown'}, toast, 'buttonName');
       }, (status==0) ]       
