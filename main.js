@@ -16,7 +16,7 @@
   roam42.common            shared commands
   roam42.dateProcessing    Date functions
   roam42.privacyMode   
-  roam42KeyboardLib        imported from another library. so letting it stand as its own object
+  roam42.KeyboardLib        imported from another library. so letting it stand as its own object
 */
 
 ;(()=>{});
@@ -142,7 +142,7 @@ if( typeof window.roam42 == 'undefined' ) {
           
         }, 1000);      
       }, 2000);
-    }, 4000);
+    }, 5000);
 
   })();
 
