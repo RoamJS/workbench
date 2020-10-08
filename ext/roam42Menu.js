@@ -7,14 +7,15 @@
   roam42.roam42Menu.tippy = {};
   
   roam42.roam42Menu.Initialize = ()=> {
+    if( window != window.parent ) { 
+      return; //don't load if in a iframe
+    }
+    
     //create menu item
     var menu = document.createElement("div");
-      menu.id='roam42-menu';
-      menu.innerHTML = `<img src="https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Funnamed.png?v=1602012386463" height="26px"/>`
-      
-    
-      // menu.innerHTML = `<img src="${roam42.loader.logo2HC}" height="30px"/>`
-      menu.setAttribute('style','position:relative;left:2px');
+        menu.id='roam42-menu';
+        menu.className = 'bp3-button bp3-minimal bp3-small bp3-icon-vertical-distribution';
+        menu.setAttribute('style','position:relative;left:2px');
     var spacer = document.createElement("div");
       spacer.id="roam42-menu-spacer"
       spacer.setAttribute('style','flex: 0 0 3px');    
@@ -25,23 +26,33 @@
       allowHTML: true,
       interactive: true,
       interactiveBorder: 5,
-      theme: 'light-border',
-      arrow: true,
+      arrow: false,
       trigger: 'click',
+      position: 'auto-start',
       onShow(instance) {  instance.setContent( roam42.roam42Menu.displayMenu() ) },
+      onMount(instance) {
+        var bck = document.querySelector('#roam42-menu + div .tippy-box')
+            bck.style.width="230px";
+            bck.classList.add('bp3-popover');
+            instance.setContent( roam42.roam42Menu.displayMenu() ); //force content in for sizing
+            // bck.style.backgroundColor = 'white';
+            // bck.style.backgroundColor = getComputedStyle(document.querySelector('.bp3-menu')).backgroundColor;
+      },
     });
 
   }
+  
     
   roam42.roam42Menu.displayMenu = ()=>{
     let menu = '';
-    menu += `<div><ul class="bp3-menu">`
+    menu += `<div class="bp3-popover-content"><ul class="bp3-menu">`
     
     if( roam42.dailyNotesPopup != undefined ) {
       menu += `<li class="">
-                  <a class="bp3-menu-item bp3-popover-dismiss">
+                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.dailyNotesPopup.component.toggleVisible();">
-                      Daily Notes Popup <span style="font-size:7pt">(Alt-Shift-,)</span>
+                      <div class="bp3-button bp3-minimal bp3-small bp3-icon-timeline-events"></div>    
+                      Daily Notes <span style="font-size:7pt">(Alt-Shift-,)</span>
                     </div>
                   </a>
                 </li>`
@@ -51,6 +62,7 @@
       menu += `<li class="">
                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.typeAhead.typeAheadLookup();">
+                      <div class="bp3-button bp3-minimal bp3-small bp3-icon-manual"></div>    
                       Dictionary <span style="font-size:7pt">(Alt-Shift-.)</span>
                     </div>
                   </a>
@@ -61,60 +73,74 @@
       menu += `<li class="">
                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.privacyMode.toggle();">
+                      <div class="bp3-button bp3-minimal bp3-small bp3-icon-shield"></div>    
                       Privacy Mode <span style="font-size:7pt">(Ctrl+Alt-P)</span>
                     </div>
                   </a>
                 </li>`
     }    
     
-    menu += `<hr style="margin:0px; padding:0px">`
-    if( roam42.roamNavigator != undefined ) {
-      menu += `<li class="" >
-            <a class="bp3-menu-item bp3-popover-dismiss">
-              <div class="bp3-text-overflow-ellipsis bp3-fill" onclick=" roam42.roam42Menu.tippy[0].hide(); roamNavigatorStatusToast()">
-               Jump Nav <span style="font-size:7pt">${getRoamNavigator_IsEnabled() ? ' (Active)' : '(Disabled)'  }
-              </div>
-            </a>
-          </li>`
-    }
     
-    if( roam42.livePreview != undefined ) {
-      menu += `<li class="" >
-            <a class="bp3-menu-item bp3-popover-dismiss">
-               <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.livePreview.livePreviewStatusToast()">
-                Live Preview <span style="font-size:7pt">${roam42.livePreview.getRoamLivePreviewState() > 0 ? ' (Active)' : '(Disabled)'  }
-              </div>
-            </a>
-          </li>`
-    }
-    
-    if( roam42.autocomplete != undefined ) {
-      menu += `<li class="" >
-            <a class="bp3-menu-item bp3-popover-dismiss">
-               <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.autocomplete.autoCompleteStatusToast()">
-                Auto-complete <span style="font-size:7pt">${roam42.autocomplete.getAutoComplete_IsEnabled() > 0 ? ' (Active)' : '(Disabled)'  }
-              </div>
-            </a>
-          </li>`
-    }    
-
     menu += `<hr style="margin:0px; padding:0px">`
     
-    if( roam42.dailyNotesPopup != undefined ) {
-      menu += `<li class="">
-                  <a class="bp3-menu-item bp3-popover-dismiss">
-                    <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.help.displayHelp(10000);">
+    menu += `<li class="">
+                <a class="bp3-menu-item bp3-popover-dismiss">
+                  <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.quickRef.component.toggleQuickReference();">
+                      <div class="bp3-button bp3-minimal bp3-small bp3-icon-help"></div>    
                       Help (TBD) <span style="font-size:7pt">(Alt-Shift-H)</span>
-                    </div>
-                  </a>
-                </li>`
-    }    
+                  </div>
+                </a>
+              </li>`
 
+
+    // TOGGLE features
+    
     menu += `<hr style="margin:0px; padding:0px">`
-    menu += `<span style="padding-left:5px;font-size:5pt;margin-bottom:10px;color:ligthgrey;">${roam42.buildID}</span> `
+
+    menu += `<li style="padding-left:10px;margin-top:5px"><span style="font-size:9pt">Toggle Features On/Off:</span></li>`
+
+        if( roam42.roamNavigator != undefined ) {
+          menu += `<li class="" style="height:28px">
+                <a class="bp3-menu-item bp3-popover-dismiss">
+                  <div class="bp3-text-overflow-ellipsis bp3-fill" onclick=" roam42.roam42Menu.tippy[0].hide(); roamNavigatorStatusToast()">
+                    <span style="font-size:8pt;padding-left:15px">
+                      Deep Jump Nav <span style="font-size:7pt">${getRoamNavigator_IsEnabled() ? ' (Active)' : '(Disabled)'  }
+                    </span>
+                  </div>
+                </a>
+              </li>`
+        }
+
+        if( roam42.livePreview != undefined ) {
+          menu += `<li class="" style="height:25px">
+                <a class="bp3-menu-item bp3-popover-dismiss">
+                   <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.livePreview.livePreviewStatusToast()">
+                    <span style="font-size:8pt;padding-left:15px">
+                       Live Preview <span style="font-size:7pt">${roam42.livePreview.getRoamLivePreviewState() > 0 ? ' (Active)' : '(Disabled)'  }
+                    </span>
+                  </div>
+                </a>
+              </li>`
+        }
+
+        if( roam42.autocomplete != undefined ) {
+          menu += `<li class="" style="height:25px">
+                <a class="bp3-menu-item bp3-popover-dismiss">
+                   <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.autocomplete.autoCompleteStatusToast()">
+                    <span style="font-size:8pt;padding-left:15px">
+                       Auto-complete <span style="font-size:7pt">${roam42.autocomplete.getAutoComplete_IsEnabled() > 0 ? ' (Active)' : '(Disabled)'  }
+                    </span>
+                  </div>
+                </a>
+              </li>`
+        }    
+    
+
+    menu += `<hr style="margin:0px; margin-top:5px; padding:0px">`
+    menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;color:grey;">${roam42.buildID}</span></li>`
 
     menu += `</ul></div>`
-
+    
     return menu;
   }
   

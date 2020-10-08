@@ -17,6 +17,12 @@
       keyboardHandler(ev) {
         if( ev.ctrlKey==true  && ev.shiftKey==true  && ev.code=='KeyH' ) {
           ev.preventDefault();
+          this.toggleQuickReference()
+          return true
+        }
+      },
+      
+      toggleQuickReference() {
           if ( this.rqrQuickReferencePanel_isInitiallyPositioned == false ) { 
             this.rqrQuickReferencePanel_isInitiallyPositioned = true;
           }
@@ -26,9 +32,7 @@
               iframe.focus();
           } else {
               document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden";
-          }
-          return true
-        }
+          }        
       },
 
       initialize() {
@@ -39,7 +43,7 @@
             maximize: 'remove'
           },
           // borderRadius: '.8rem',
-          headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:200px;color:white !important;padding-top:2px;">Quick Reference</div>',
+          headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:300px;color:white !important;padding-top:2px;">Quick Reference for Roam42 and Roam</div>',
           iconfont: [
             'bp3-button bp3-minimal bp3-small bp3-icon-small-minus', 
             'bp3-button bp3-minimal bp3-small bp3-icon-chevron-down',  

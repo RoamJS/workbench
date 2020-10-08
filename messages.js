@@ -8,9 +8,10 @@
 
   roam42.help.keyboardHandlerMessages = ev => {
     if (ev.altKey && ev.shiftKey && ev.code=='KeyH' ) { 
-      ev.stopImmediatePropagation()
-      ev.preventDefault()        
-      roam42.help.displayHelp(10000) 
+      ev.stopImmediatePropagation();
+      ev.preventDefault();
+      roam42.quickRef.component.toggleQuickReference();
+      // roam42.help.displayHelp(10000) 
       return true
     }
   }
