@@ -35,8 +35,6 @@
             bck.style.width="230px";
             bck.classList.add('bp3-popover');
             instance.setContent( roam42.roam42Menu.displayMenu() ); //force content in for sizing
-            // bck.style.backgroundColor = 'white';
-            // bck.style.backgroundColor = getComputedStyle(document.querySelector('.bp3-menu')).backgroundColor;
       },
     });
 
