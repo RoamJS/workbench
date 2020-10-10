@@ -28,8 +28,14 @@
       interactiveBorder: 5,
       arrow: false,
       trigger: 'click',
-      position: 'auto-start',
-      onShow(instance) {  instance.setContent( roam42.roam42Menu.displayMenu() ) },
+      position: 'auto',
+      onShow(instance) {  
+        setTimeout(()=>{
+          var elem = document.getElementById(instance.popper.id).firstElementChild
+          if(window.innerWidth < elem.getBoundingClientRect().right ) elem.style.left = '-' + Number(elem.style.width.replace('px','')) + 'px';
+          instance.setContent( roam42.roam42Menu.displayMenu() ) 
+        },50)
+      },
       onMount(instance) {
         var bck = document.querySelector('#roam42-menu + div .tippy-box')
             bck.style.width="230px";
@@ -37,8 +43,17 @@
             instance.setContent( roam42.roam42Menu.displayMenu() ); //force content in for sizing
       },
     });
+    
+    tippy('#roam42-menu', {
+      content: `<div class="bp3-popover-content">Roam<sup>42</sup></div>`,
+      allowHTML: true,
+      arrow: false,
+      theme: 'light-border',
+    });
 
   }
+  
+  
   
     
   roam42.roam42Menu.displayMenu = ()=>{
@@ -61,7 +76,7 @@
                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.typeAhead.typeAheadLookup();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-manual"></div>    
-                      Dictionary <span style="font-size:7pt">(Alt-Shift-.)</span>
+                      Dictionary <span style="font-size:7pt">(Alt-Shift-.)
                     </div>
                   </a>
                 </li>`
@@ -71,8 +86,8 @@
       menu += `<li class="">
                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.privacyMode.toggle();">
-                      <div class="bp3-button bp3-minimal bp3-small bp3-icon-shield"></div>    
-                      Privacy Mode <span style="font-size:7pt">(Ctrl+Alt-P)</span>
+                      <div class="bp3-button bp3-minimal bp3-small bp3-icon-shield  ${roam42.privacyMode.active() ? 'bp3-intent-warning"':''}"></div>
+                        Privacy Mode <span style="font-size:7pt">(Ctrl+Alt-P)
                     </div>
                   </a>
                 </li>`
@@ -85,7 +100,7 @@
                 <a class="bp3-menu-item bp3-popover-dismiss">
                   <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.quickRef.component.toggleQuickReference();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-help"></div>    
-                      Help (TBD) <span style="font-size:7pt">(Alt-Shift-H)</span>
+                      Help (TBD) <span style="font-size:7pt">(Alt-Shift-H)
                   </div>
                 </a>
               </li>`
@@ -95,7 +110,7 @@
     
     menu += `<hr style="margin:0px; padding:0px">`
 
-    menu += `<li style="padding-left:10px;margin-top:5px"><span style="font-size:9pt">Toggle Features On/Off:</span></li>`
+    menu += `<li style="padding-left:10px;margin-top:5px;"><span style="font-size:9pt;">Toggle Features On/Off:</span></li>`
 
         if( roam42.roamNavigator != undefined ) {
           menu += `<li class="" style="height:28px">
