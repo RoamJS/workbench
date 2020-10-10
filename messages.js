@@ -11,7 +11,6 @@
       ev.stopImmediatePropagation();
       ev.preventDefault();
       roam42.quickRef.component.toggleQuickReference();
-      // roam42.help.displayHelp(10000) 
       return true
     }
   }
@@ -28,17 +27,16 @@
     displayMode: 2  
   });  
   }
+  
 
   roam42.help.displayStartup = (delayTime) => { 
     iziToast.show({
       message: `
-      <div style="position:absolute;top:-75px;right:-15px;z-index:1000;">
-        <img width="50px" src="${roam42.loader.logo2HC}"></img>
+      <div style="position:absolute;top:-55px;right:-15px;z-index:1000;">
+        <img width="30px" src="${roam42.loader.logo2HC}"></img>
       </div>
-      <b>Roam42 Starting . . .   </b>   
-      <table>
-        <tr><td>Alt–Shift–H </td><td>&nbsp</td><td>Help</td></tr>
-      </table>
+      <b>Roam<sup>42</sup> </b><br/>
+      <div style='font-size:8pt'>Alt–Shift–H</div>
       <div style='font-size:7pt'>${roam42.buildID}</div>
     `.trim(),
       theme: 'dark',

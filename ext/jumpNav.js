@@ -64,6 +64,25 @@
             }
           return false
         } 
+      
+      
+        // BLOCKS references: fun with blocks
+        if(['ctrl+j s', 'ctrl+j r'].includes(handler)) {
+          if( event.target.tagName == 'TEXTAREA') {
+            let uid = event.target.id.substring( event.target.id.length -9)
+            switch(handler)  {
+              case 'ctrl+j s':      // copy block ref as ref
+                navigator.clipboard.writeText(`[*](((${uid})))`);
+                roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied: [*](((${uid})))`)
+                break
+              case 'ctrl+j r':      // copy block ref
+                navigator.clipboard.writeText(`((${uid}))`) ;
+                roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied: ((${uid}))`)
+                break
+            }
+          }
+          return false
+        }
 
         // BLOCKS: fun with blocks
         if(['ctrl+j x', 'ctrl+j l', 'ctrl+j s', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4' ].includes(handler)) {
@@ -84,15 +103,6 @@
                 break
               case 'ctrl+j l':      // collapse block
                 document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click();                    
-                roam42.common.restoreLocationParametersOfTexArea(locFacts);
-                break
-              case 'ctrl+j s':      // copy block ref as ref
-                roam42.common.simulateMouseClick( document.querySelector('.bp3-popover-content > div> ul').childNodes[0].childNodes[0] );           
-                roam42.common.restoreLocationParametersOfTexArea(locFacts);
-                navigator.clipboard.readText().then(clipText =>  navigator.clipboard.writeText(`[*](${clipText})` ) );
-                break
-              case 'ctrl+j r':      // copy block ref
-                roam42.common.simulateMouseClick( document.querySelector('.bp3-popover-content > div> ul').childNodes[0].childNodes[0] );            
                 roam42.common.restoreLocationParametersOfTexArea(locFacts);
                 break
               case 'ctrl+j a':      // add reaction
