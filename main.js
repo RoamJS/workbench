@@ -24,7 +24,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = '2020-10-10b Transclusion is your friend';
+  roam42.buildID = '2020-10-10c';
   roam42.host    = document.currentScript.src.replace('main.js','');
 
   // roam42.loader 
