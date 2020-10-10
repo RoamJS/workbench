@@ -15,6 +15,10 @@
     }
   }
   
+  roam42.privacyMode.active = ()=> {
+    return active; 
+  }
+  
   var flattenObject = function(ob) {
     var toReturn = {};
     for (var i in ob) {
@@ -102,7 +106,7 @@
         document.querySelectorAll(' .rm-search-list-item, .rm-autocomplete-result').forEach(e=>{
           let s = e.innerText.toString()
           privacyList.forEach(i=>{
-            if( s.search('#' + i)>-1 || s.search('[[' + i + ']]')>-1 ||  i == '!! ' + s ||  s == i) {
+            if( s.indexOf('#' + i)>-1 || s.indexOf('[[' + i + ']]')>-1 ||  i == '!! ' + s ||  s == i) {
               e.classList.add('roam42-privacy-block');
             }
           })
@@ -192,7 +196,7 @@
     document.querySelectorAll(".rm-query-title, .rm-ref-page-view-title").forEach( e=>{
       let s = e.innerText.toString()
       privacyList.forEach(i=>{
-        if( s.search('[[' + i + ']]')>-1 || i == '!! ' + s   ||  s == i) {
+        if( s.indexOf('[[' + i + ']]')>-1 || i == '!! ' + s   ||  s == i) {
          e.classList.add('roam42-privacy-block');
         }
       })
