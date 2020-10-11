@@ -24,7 +24,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = '2020-10-10c';
+  roam42.buildID = '2020-10-11c';
   roam42.host    = document.currentScript.src.replace('main.js','');
 
   // roam42.loader 
@@ -119,9 +119,9 @@ if( typeof window.roam42 == 'undefined' ) {
     setTimeout(()=>{
 
         // Dont display in iframe
-      if( window === window.parent ) {
-          roam42.help.displayStartup(5000);  
-      }
+      // if( window === window.parent ) {
+      //     roam42.help.displayStartup(5000);  
+      // }
 
       setTimeout(()=>{
         try {
