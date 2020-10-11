@@ -48,21 +48,21 @@
             switch(handler)  {
               case 'ctrl+j j':  //down arrow
                 roam42KeyboardLib.simulateKey(40) 
-                break              
+                break;              
               case 'ctrl+j k': //up arrow
                 roam42KeyboardLib.simulateKey(38) //up arrow
-                break
+                break;              
               case 'ctrl+j i': // Insert block above
                 roam42.common.blockInsertAbove(event.srcElement);
-                break
+                break;              
               case 'ctrl+j u': // Insert block below
                 roam42.common.blockInsertBelow(event.srcElement);
-                break
+                break;              
               case 'ctrl+j d': //  delete block
                 roam42.common.blockDelete(event.srcElement);
-                break
+                break;              
             }
-          return false
+          return false;
         } 
       
       
@@ -73,15 +73,15 @@
             switch(handler)  {
               case 'ctrl+j s':      // copy block ref as ref
                 navigator.clipboard.writeText(`[*](((${uid})))`);
-                roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied: [*](((${uid})))`)
-                break
+                roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied: [*](((${uid})))`,2000);
+                break;              
               case 'ctrl+j r':      // copy block ref
                 navigator.clipboard.writeText(`((${uid}))`) ;
-                roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied: ((${uid}))`)
-                break
+                roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied: ((${uid}))`,2000);
+                break;              
             }
           }
-          return false
+          return false;
         }
 
         // BLOCKS: fun with blocks
@@ -100,33 +100,33 @@
               case 'ctrl+j x': // expand block
                 document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click();
                 roam42.common.restoreLocationParametersOfTexArea(locFacts);
-                break
+                break;              
               case 'ctrl+j l':      // collapse block
                 document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click();                    
                 roam42.common.restoreLocationParametersOfTexArea(locFacts);
-                break
+                break;              
               case 'ctrl+j a':      // add reaction
                 setTimeout(()=>{
                   roam42.common.simulateMouseOver(document.querySelector('.bp3-popover-content > div> ul').childNodes[5].childNodes[0].childNodes[0] );
                 },50)
                 return false
-                break
+                break;              
               case 'ctrl+j 1':     // left allign block
                 roam42.common.simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[0] );
                 roam42KeyboardLib.pressEsc();
-                break
+                break;              
               case 'ctrl+j 2':     // center allign block
                 roam42.common.simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[1] );
                 roam42KeyboardLib.pressEsc();
-                break
+                break;              
               case 'ctrl+j 3':     // right allign block
                 roam42.common.simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[2] );
                 roam42KeyboardLib.pressEsc();
-                break
+                break;              
               case 'ctrl+j 4':     // justify allign block
                 roam42.common.simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[3] );
                 roam42KeyboardLib.pressEsc()
-                break
+                break;              
             }
             roam42.common.restoreLocationParametersOfTexArea(locFacts)        
           },100)

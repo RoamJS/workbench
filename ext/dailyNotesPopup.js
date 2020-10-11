@@ -1,4 +1,4 @@
-/* globals roam42, jsPanel, Mousetrap, Cookies    */
+/* globals roam42, jsPanel, Mousetrap, Cookies , simulateMouseOver   */
 
 
 // roam42.dailyNotesPopup 
@@ -12,13 +12,12 @@
 
     initialize() {
 
-      var baseUrlRoamDb = `https://roamresearch.com/#/app/${window.location.href.replace('https://roamresearch.com/#/app/','').split('/')[0]}`;
       this.panelDNP = jsPanel.create({
         id: this.idPanelDNP,
         header: 'auto-show-hide',
         headerControls: { smallify: 'remove', maximize: 'remove' },        
         content: `<div style="position:absolute;left:1px;top:1px;right:1px;bottom:1px;">
-                  <iframe src="${baseUrlRoamDb}" id="iframePanelDNP" style="top:-1px;left:-1px;width:100%;height:100%; border:0px solid white"></iframe>
+                  <iframe src="${roam42.common.baseUrl().href.replace('page','')}" id="iframePanelDNP" style="top:-1px;left:-1px;width:100%;height:100%; border:0px solid white"></iframe>
                   </div>` ,
         headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:200px;color:white !important;padding-top:2px;">Daily Notes</div>',
         iconfont: [

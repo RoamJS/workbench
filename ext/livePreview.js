@@ -260,15 +260,26 @@
         document.addEventListener('mouseover', (e) => {
           // if( e.ctrlKey == false ) { return }
           if( roam42.livePreview.roam42LivePreviewState == 0) { return }
-          var target = e.target;
+          let pageIsBlock = false;          
+          let target = e.target;
 
-          let isPageRef = target.classList.contains('rm-page-ref');
+          let isPageRef = false; 
           let isPageRefTag = target.classList.contains('rm-page-ref-tag');
           let isPageRefNameSpace = target.classList.contains('rm-page-ref-namespace-color');
+          let text = '';
 
-          let text = isPageRefTag ? target.innerText.slice(1) : target.innerText;
-
-          if ( isPageRefNameSpace ) {
+          if ( isPageRefTag ) {                                   // # tag
+            isPageRef = true
+            text = target.innerText.replace('#','');
+          } else {
+            if(target.classList.contains('rm-page-ref')) {        //  [[ page ]]
+              isPageRef = true
+              pageIsBlock = true;
+              text = target.parentElement.getAttribute('data-link-uid');
+            }
+          }                    
+          
+          if ( isPageRef == false && isPageRefNameSpace ) {
             isPageRef = true
             text = target.parentElement.getAttribute('data-link-title')
           }
@@ -283,7 +294,7 @@
             specialDelayMouseOut = true
             setTimeout(()=> specialDelayMouseOut = false, delayTimer+specialDelayTimeOutAmount)          
           }
-          // console.log( isPageRef , isPageRefTag , target.classList.length)
+
           if ( !isPageRef  && !isPageRefTag && target.classList.length == 0 && target.parentNode.classList.contains('rm-page-ref') ) {
             isPageRef = true
             text = target.innerText
@@ -304,8 +315,9 @@
             }
           } catch(e) {}
 
+          
+          
           //preview BLOCK references
-          var pageIsBlock = false
           if ( isPageRef == false && roam42.livePreview.roam42LivePreviewState == 2 && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
             pageIsBlock = true
             let block = target.closest('.roam-block').id
@@ -332,7 +344,7 @@
             const isVisible = (pageUrl) =>
               document.querySelector(`[src="${pageUrl}"]`).style.opacity === '1';
             if ((!isAdded(url) || !isVisible(url)) && previewIframe) {
-              previewIframe.src = url;
+              setTimeout(()=> {previewIframe.src  = url}, 100)              
               previewIframe.style.pointerEvents = 'none';
               if(window.roam42LivePreview) {
                 previewIframe.style.height = window.roam42LivePreview.height == undefined  ? '500px' : window.roam42LivePreview.height
@@ -343,31 +355,31 @@
               }
              }
             if (!popupTimeout) {
-             popupTimeout = window.setTimeout(() => {
-                if (previewIframe) {
-                  previewIframe.style.opacity = '1';
-                  previewIframe.style.pointerEvents = 'all';
+              popupTimeout = window.setTimeout(() => {
+              if (previewIframe) {
+                previewIframe.style.opacity = '1';
+                previewIframe.style.pointerEvents = 'all';
 
-                  // popper = window.Popper.createPopper(target, previewIframe, {
-                  popper = window.Popper.createPopper( virtualElement, previewIframe, {
-                    placement: 'right',
-                    modifiers: [
-                      {
-                        name: 'preventOverflow',
-                        options: {
-                          padding: { top: 48 },
-                        },
+                // popper = window.Popper.createPopper(target, previewIframe, {
+                popper = window.Popper.createPopper( virtualElement, previewIframe, {
+                  placement: 'right',
+                  modifiers: [
+                    {
+                      name: 'preventOverflow',
+                      options: {
+                        padding: { top: 48 },
                       },
-                      {
-                        name: 'flip',
-                        options: {
-                          boundary: document.querySelector('#app'),
-                        },
+                    },
+                    {
+                      name: 'flip',
+                      options: {
+                        boundary: document.querySelector('#app'),
                       },
-                    ],
-                  });
-                }
-             }, delayTimer)
+                    },
+                  ],
+                });
+              }
+            }, delayTimer + 100)
             }
           }
         });

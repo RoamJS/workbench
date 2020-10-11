@@ -5,6 +5,13 @@
   
   roam42.common = {};
   
+  roam42.common.baseUrl = () => {
+    const url = new URL(window.location.href);
+    const parts = url.hash.split('/');
+    url.hash = parts.slice(0, 3).concat(['page']).join('/');
+    return url;
+  };
+  
   
   roam42.common.navigateUiTo = (destinationPage, useShiftKey)=>{
       let inPut =  document.getElementById('find-or-create-input');
