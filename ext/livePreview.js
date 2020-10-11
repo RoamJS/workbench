@@ -267,74 +267,83 @@
           let isPageRefTag = target.classList.contains('rm-page-ref-tag');
           let isPageRefNameSpace = target.classList.contains('rm-page-ref-namespace-color');
           let text = '';
+          
 
           if ( isPageRefTag ) {                                   // # tag
-            isPageRef = true
+            isPageRef = true;
             text = target.innerText.replace('#','');
           } else {
             if(target.classList.contains('rm-page-ref')) {        //  [[ page ]]
-              isPageRef = true
+              isPageRef = true;
               pageIsBlock = true;
               text = target.parentElement.getAttribute('data-link-uid');
             }
-          }                    
+          }
+         
+          //finds odd scenario like: [[[[book]]/smart notes]]
+          if( isPageRef == false && target.classList.length==0 && 
+               target.parentElement.classList.contains('rm-page-ref') && 
+               target.parentElement.parentElement.hasAttribute('data-link-uid')  ){
+              isPageRef = true;
+              pageIsBlock = true;
+              text = target.parentElement.parentElement.getAttribute('data-link-uid')
+          }          
+          
           
           if ( isPageRef == false && isPageRefNameSpace ) {
-            isPageRef = true
+            isPageRef = true;
             text = target.parentElement.getAttribute('data-link-title')
           }
 
           if (isPageRef == false && target.classList.contains('rm-alias-page') ) {
-            isPageRef = true
+            isPageRef = true;
             text = target.title.replace('page: ','') 
           }
           if (isPageRef == false && target.classList.contains('rm-ref-page-view-title') ) {
-            isPageRef = true
+            isPageRef = true;
             text = target.innerText
             specialDelayMouseOut = true
             setTimeout(()=> specialDelayMouseOut = false, delayTimer+specialDelayTimeOutAmount)          
           }
 
           if ( !isPageRef  && !isPageRefTag && target.classList.length == 0 && target.parentNode.classList.contains('rm-page-ref') ) {
-            isPageRef = true
-            text = target.innerText
-            target = e.target
+            isPageRef = true;
+            text = target.innerText;
+            target = e.target;
           }
 
           if ( isPageRef == false && target.style.cursor == 'pointer' && target.parentNode.classList.contains('level2') ) {
-            isPageRef = true
-            text = target.text
+            isPageRef = true;
+            text = target.text;
           }
 
           // "All Pages" - page
           try{
             if ( isPageRef == false  && target.classList.contains('bp3-text-overflow-ellipsis') && target.firstChild.classList.contains('rm-pages-title-text') ) {
               isPageRef = true
-              text = target.firstChild.text  //firstChild.text
-              target = target.parentElement
+              text = target.firstChild.text;  //firstChild.text
+              target = target.parentElement;
             }
           } catch(e) {}
-
-          
           
           //preview BLOCK references
           if ( isPageRef == false && roam42.livePreview.roam42LivePreviewState == 2 && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
-            pageIsBlock = true
-            let block = target.closest('.roam-block').id
-            let bId = block.substring( block.length -9)
-            var q = `[:find ?bstring :in $ ?buid :where [?e :block/uid ?buid][?e :block/string ?bstring] ]`
-            var results = window.roamAlphaAPI.q(q, bId)
-            var refNumberInBlock = Array.from(target.closest('.roam-block').querySelectorAll(`.rm-block-ref`)).indexOf(target)
-            if(refNumberInBlock<0){refNumberInBlock=0}
-            isPageRef = true
-            text = results[0].toString()
-            text = text.match(/\(\((.*?)\)\)/g)    //results[0][0].refs[refNumberInBlock].uid
-            text = text[refNumberInBlock]
-            text = text.replaceAll('(','').replaceAll(')','')
-            specialDelayMouseOut = true
-            setTimeout(()=> specialDelayMouseOut = false, delayTimer+specialDelayTimeOutAmount)
+            pageIsBlock = true;
+            let block = target.closest('.roam-block').id;
+            let bId = block.substring( block.length -9);
+            var q = `[:find ?bstring :in $ ?buid :where [?e :block/uid ?buid][?e :block/string ?bstring] ]`;
+            var results = window.roamAlphaAPI.q(q, bId);
+            var refNumberInBlock = Array.from(target.closest('.roam-block').querySelectorAll(`.rm-block-ref`)).indexOf(target);
+            if(refNumberInBlock<0){refNumberInBlock=0};
+            isPageRef = true;
+            text = results[0].toString();
+            text = text.match(/\(\((.*?)\)\)/g) ;   //results[0][0].refs[refNumberInBlock].uid
+            text = text[refNumberInBlock];
+            text = text.replaceAll('(','').replaceAll(')','');
+            specialDelayMouseOut = true;
+            setTimeout(()=> specialDelayMouseOut = false, delayTimer+specialDelayTimeOutAmount);
           }
-
+ 
           // remove '#' for page tags
           if (isPageRef) {
             hoveredElement = target;
