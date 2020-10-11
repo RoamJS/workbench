@@ -50,15 +50,12 @@
       arrow: false,
       theme: 'light-border',
     });
-
-  }
-  
-  
-  
+    
+  } 
     
   roam42.roam42Menu.displayMenu = ()=>{
     let menu = '';
-    menu += `<div class="bp3-popover-content"><ul class="bp3-menu">`
+    menu += `<div class="bp3-popover-content"><ul class="bp3-menu">`;
     
     if( roam42.dailyNotesPopup != undefined ) {
       menu += `<li class="">
@@ -68,7 +65,7 @@
                       Daily Notes <span style="font-size:7pt">(Alt-Shift-,)</span>
                     </div>
                   </a>
-                </li>`
+                </li>`;
     }
     
     if( roam42.turndownPage != undefined ) {
@@ -79,7 +76,7 @@
                       Dictionary <span style="font-size:7pt">(Alt-Shift-.)
                     </div>
                   </a>
-                </li>`
+                </li>`;
     }    
     
     if( roam42.privacyMode  != undefined ) {
@@ -87,10 +84,11 @@
                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.privacyMode.toggle();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-shield  ${roam42.privacyMode.active() ? 'bp3-intent-warning"':''}"></div>
-                        Privacy Mode <span style="font-size:7pt">(Ctrl+Alt-P)
+                        Privacy Mode <span style="font-size:7pt">(Ctrl+Alt-P)<br/>
+                        <div style="font-size:7pt;position:relative;left:27px;top:-5px;padding-bottom:0px"><em>(Experimental)</em></div>
                     </div>
                   </a>
-                </li>`
+                </li>`;
     }    
     
     
@@ -100,10 +98,10 @@
                 <a class="bp3-menu-item bp3-popover-dismiss">
                   <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.quickRef.component.toggleQuickReference();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-help"></div>    
-                      Help (TBD) <span style="font-size:7pt">(Alt-Shift-H)
+                      Help <span style="font-size:7pt">(Alt-Shift-H)
                   </div>
                 </a>
-              </li>`
+              </li>`;
 
 
     // TOGGLE features
@@ -121,7 +119,7 @@
                     </span>
                   </div>
                 </a>
-              </li>`
+              </li>`;
         }
 
         if( roam42.livePreview != undefined ) {
@@ -133,7 +131,7 @@
                     </span>
                   </div>
                 </a>
-              </li>`
+              </li>`;
         }
 
         if( roam42.autocomplete != undefined ) {
@@ -145,12 +143,12 @@
                     </span>
                   </div>
                 </a>
-              </li>`
+              </li>`;
         }    
     
 
-    menu += `<hr style="margin:0px; margin-top:5px; padding:0px">`
-    menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;color:grey;">${roam42.buildID}</span></li>`
+    menu += `<hr style="margin:0px; margin-top:5px; padding:0px">`;
+    menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;color:grey;">${roam42.buildID}</span></li>`;
 
     menu += `</ul></div>`
     

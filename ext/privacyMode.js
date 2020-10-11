@@ -9,6 +9,7 @@
   var roamPageWithPrivacyList = 'Roam42 Privacy Mode List';
 
   roam42.privacyMode.keyboardHandler = ev => {
+    if( window != window.parent ) {  return; }
     if( ev.ctrlKey && ev.altKey && ev.code=='KeyP' ) {
       ev.preventDefault();
       roam42.privacyMode.toggle();
@@ -116,7 +117,7 @@
     
     if( privacyList.includes( pageName ) ) { 
       //if page is specified for redaction, redact just the ENTIRE PAGE
-      document.querySelector('.roam-article').classList.add('roam42-privacy-block');
+      document.querySelector('.roam-article > div').classList.add('roam42-privacy-block');
     } else if  ( privacyList.includes( '!! ' + pageName ) ) { 
       //if page name only is specified for redaction (with "!! " in beginning, redact just the PAGE TITLE
       document.querySelector('.rm-title-display').parentElement.classList.add('roam42-privacy-block');
@@ -221,8 +222,20 @@
   } 
   
   roam42.privacyMode.toggle = ()=>{
-    active ? roam42.privacyMode.destroy() : roam42.privacyMode.observe();
+      roam42.privacyMode.toggleChildIframes();
+      document.getElementById('roam42-live-preview-iframe').contentWindow.roam42.privacyMode.toggleChildIframes();
+      document.getElementById('iframePanelDNP').contentWindow.roam42.privacyMode.toggleChildIframes();
   }
+  
+  roam42.privacyMode.toggleChildIframes = ()=> {
+    if(active) {
+      //deactivate
+      roam42.privacyMode.destroy() ;
+    } else {
+      //activate
+      roam42.privacyMode.observe();
+    }     
+  } 
 
   roam42.privacyMode.testingReload = ()=>{
     try {  
