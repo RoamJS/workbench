@@ -84,7 +84,7 @@
                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.privacyMode.toggle();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-shield  ${roam42.privacyMode.active() ? 'bp3-intent-warning"':''}"></div>
-                        Privacy Mode <span style="font-size:7pt">(Ctrl+Alt-P)<br/>
+                        Privacy Mode <span style="font-size:7pt">(Ctrl+Alt-P)</span><br/>
                         <div style="font-size:7pt;position:relative;left:27px;top:-5px;padding-bottom:0px"><em>(Experimental)</em></div>
                     </div>
                   </a>
@@ -98,7 +98,16 @@
                 <a class="bp3-menu-item bp3-popover-dismiss">
                   <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.quickRef.component.toggleQuickReference();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-help"></div>    
-                      Help <span style="font-size:7pt">(Alt-Shift-H)
+                      Help <span style="font-size:7pt">(Alt-Shift-H)</span>
+                  </div>
+                </a>
+              </li>`;
+
+    menu += `<li class="">
+                <a class="bp3-menu-item bp3-popover-dismiss">
+                  <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.tutorials.show();">
+                      <div class="bp3-button bp3-minimal bp3-small bp3-icon-learning"></div>    
+                      Tutorials 
                   </div>
                 </a>
               </li>`;
