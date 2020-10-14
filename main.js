@@ -24,7 +24,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = '2020-10-12a';
+  roam42.buildID = '2020-10-14a';
   roam42.host    = document.currentScript.src.replace('main.js','');
 
   // roam42.loader 
