@@ -94,7 +94,7 @@
     try { pageName = document.querySelector('.rm-title-display').innerText  } catch(e) {}
     
     //don't mark up page used for defining privacy list
-    if( pageName == roamPageWithPrivacyList ) { return }
+   // if( pageName == roamPageWithPrivacyList ) { return }
 
     try{
       document.querySelectorAll('.rm-search-title').forEach(e=>{
@@ -197,11 +197,39 @@
     document.querySelectorAll(".rm-query-title, .rm-ref-page-view-title").forEach( e=>{
       let s = e.innerText.toString()
       privacyList.forEach(i=>{
-        if( s.indexOf('[[' + i + ']]')>-1 || i == '!! ' + s   ||  s == i) {
+        if( i.indexOf('!! ')>-1 &&  s.indexOf('[[' + i.replace('!! ','') + ']]')>-1 ) { 
+          if( !e.hasAttribute('modifiedPrivacyMode')) {
+            e.setAttribute('modifiedPrivacyMode',true);
+            e.innerHTML= e.innerHTML.replace('[['+ i.replace('!! ','')  +']]', '<span class="roam42-privacy-block">[['+ i.replace('!! ','')  +']]</span>' );
+          }
+        }  else if( s.indexOf('[[' + i + ']]')>-1 || s == i.replace('!! ','')  || s == i) {
          e.classList.add('roam42-privacy-block');
-        }
+        }         
       })
     })
+    
+    // Process Query  
+    document.querySelectorAll(".rm-query").forEach( e=>{
+      let s = e.childNodes;
+      e.childNodes.forEach(n=>{
+        if(n.nodeType==Node.TEXT_NODE) { //text node type
+          let s = n.textContent
+          privacyList.forEach(i=>{
+            if( i.indexOf('!! ')>-1 &&  s.indexOf('[[' + i.replace('!! ','') + ']]')>-1 ) { 
+              if( !n.parentElement.hasAttribute('modifiedPrivacyMode')) {
+                n.parentElement.setAttribute('modifiedPrivacyMode',true);
+                var txt = document.createElement("span");
+                txt.innerHTML = s.replace('[['+ i.replace('!! ','')  +']]', '<span class="roam42-privacy-block">[['+ i.replace('!! ','')  +']]</span>' );
+                n.replaceWith(txt);                
+              }
+            }         
+          })
+        }
+      });
+    })
+    
+    
+    
     
   }    // end of   scanBlocksForPageReferences()
   
@@ -215,6 +243,7 @@
 
   roam42.privacyMode.destroy = ()=>{
     document.querySelectorAll(".roam42-privacy-block").forEach( e=> e.classList.remove('roam42-privacy-block') );
+    document.querySelectorAll("div[modifiedPrivacyMode]").forEach( e=> e.removeAttribute('modifiedPrivacyMode') );
     observer.disconnect();
     observer = {};
     privacyList = [];    
