@@ -4,9 +4,9 @@
 (()=>{
   roam42.privacyMode = {};
   let privacyList = [];
-  var observer = {};
-  var active = false;
-  var roamPageWithPrivacyList = 'Roam42 Privacy Mode List';
+  let observer = {};
+  let active = false;
+  let roamPageWithPrivacyList = 'Roam42 Privacy Mode List';
 
   roam42.privacyMode.keyboardHandler = ev => {
     if( window != window.parent ) {  return; }
@@ -48,7 +48,8 @@
     
     //loop through blocks and retrive UIDs for all [[page links]] or #tags
     if(blocksFromRoam42PrivacyModeList.length==0) {
-      helpBannerForPrivacyMode()
+      helpBannerForPrivacyMode();
+      return false;
     } else {
       if(blocksFromRoam42PrivacyModeList[0][0].children) {
         blocksFromRoam42PrivacyModeList = flattenObject(blocksFromRoam42PrivacyModeList);        
@@ -71,20 +72,28 @@
             if (!privacyList.includes( block )){ privacyList.push( block );}
           }
         }  
+        if(privacyList.length==0) {
+          helpBannerForPrivacyMode();
+        } else {
+          return true;
+        }
       } else {
-        helpBannerForPrivacyMode()
+        helpBannerForPrivacyMode();
+        return false;
       }
     } 
+    return false;
   }  
   
-  const helpBannerForPrivacyMode = ()=> {
-    roam42.common.navigateUiTo(roamPageWithPrivacyList);    
+  const helpBannerForPrivacyMode = async ()=> {
+    var results = await roam42.common.navigateUiTo(roamPageWithPrivacyList);       
+    active = false;
     setTimeout(()=>{
         roam42.help.displayMessage(
           `Roam42 Privacy Mode List Page is not defined. <br/>
            Please create a block with the [[page name]] or #tag you want <br/>
            included in privacy mode.`);
-    },1500);
+    },1000);
     
   }
   
@@ -222,7 +231,9 @@
                 txt.innerHTML = s.replace('[['+ i.replace('!! ','')  +']]', '<span class="roam42-privacy-block">[['+ i.replace('!! ','')  +']]</span>' );
                 n.replaceWith(txt);                
               }
-            }         
+            } else if( s.indexOf('[[' + i + ']]')>-1 ) {
+              e.classList.add('roam42-privacy-block');          
+            } 
           })
         }
       });
@@ -234,7 +245,8 @@
   }    // end of   scanBlocksForPageReferences()
   
   roam42.privacyMode.observe = async ()=> {
-    await getPrivateBlockDetails();
+    var privacyDefined = await getPrivateBlockDetails();
+    if(privacyDefined == false) return false;
     scanBlocksForPageReferences();
     observer = new MutationObserver(scanBlocksForPageReferences);
     observer.observe(document, { childList: true, subtree: true  });
