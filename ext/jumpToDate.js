@@ -168,7 +168,7 @@
         setTimeout(()=>{
           roam42.common.setEmptyNodeValue( inPut,'' );
         },250);             
-      },400);   
+      },1000);   
     }, //navigateUIToDate
 
     initialize()  {

@@ -87,16 +87,16 @@
   
   const helpBannerForPrivacyMode = async ()=> {
     var results = await roam42.common.navigateUiTo(roamPageWithPrivacyList);       
+    // results = await roam42.common.navigateUiTo(roamPageWithPrivacyList);        //BUG: need to call twice
     active = false;
     setTimeout(()=>{
         roam42.help.displayMessage(
           `Roam42 Privacy Mode List Page is not defined. <br/>
            Please create a block with the [[page name]] or #tag you want <br/>
-           included in privacy mode.`);
-    },1000);
-    
+           included in privacy mode. For more information, please see this <a style="color:white" target="_blank" href="https://roamresearch.com/#/app/roamhacker/page/h6WbrPx10">link.</a>`);
+    },2000);      
   }
-  
+    
   const scanBlocksForPageReferences = (mutationList, observer)=> {
         
     let pageName = ''
