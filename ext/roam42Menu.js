@@ -157,9 +157,17 @@
     
 
     menu += `<hr style="margin:0px; margin-top:5px; padding:0px">`;
-    menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;color:grey;">${roam42.buildID}</span></li>`;
+    menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;color:grey;">
+              ${roam42.buildID}
+            </span></li>`;
 
     menu += `</ul></div>`
+    
+    menu += `
+          <div style="position:absolute;bottom:-7px;right:-2px;z-index:1000;">
+             <img width="40px" src="${roam42.loader.logo2HC}"></img>
+          </div>`
+
     
     return menu;
   }
