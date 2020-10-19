@@ -14,7 +14,7 @@
       headerControls: {
         maximize: 'remove'
       },
-      headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:300px;color:white !important;padding-top:2px;">Tutorials for Roam42 and Roam</div>',
+      headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:300px;color:white !important;padding-top:2px;">Tutorials for Roam<sup>42</sup> and Roam</div>',
       iconfont: [
         'bp3-button bp3-minimal bp3-small bp3-icon-small-minus', 
         'bp3-button bp3-minimal bp3-small bp3-icon-chevron-down',  
