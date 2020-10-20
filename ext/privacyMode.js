@@ -56,20 +56,29 @@
         for (const b in blocksFromRoam42PrivacyModeList) {
           var block = blocksFromRoam42PrivacyModeList[b].trim();
           var hidePageTitleNameOnly = false;
-          if(block.substring(0,3) == '![[' || block.substring(0,2) == '!#')  {
+          // FIRST Detect TITLE only redactions
             // the block when added to an array will have "!! " at begining to note its a title only redaction
+          if(block.substring(0,4) == '#![[' || block.substring(0,3) == '![[' || block.substring(0,2) == '!#')  {
             hidePageTitleNameOnly = true;
-            block = block.replace('![[','[[')
             block = block.replace('!#','#')
+            block = block.replace('!#','#')
+            block = block.replace('![[','[[')
           }
-          if(block.includes("#")) {
+          // SECOND process the reference and push it into priavcyList
+
+          if (block.includes("#[[")) {
+            block = block.replace('#[[','').replace(']]','');
+            block = hidePageTitleNameOnly ? '!! ' + block : block
+            if (!privacyList.includes( block )) privacyList.push( block )
+          } else if(block.includes("#")) {
             block =  block.replace('#','');
-            block = hidePageTitleNameOnly ? '!! ' + block : block
-            if (!privacyList.includes( block )){ privacyList.push( block );}
+            block = hidePageTitleNameOnly ? '!! ' + block : block;
+            if (!privacyList.includes( block )) privacyList.push( block )
           } else if (block.includes("[[")) {
-            block = block.replace('[[','').replace(']]','');
+            block = block.replace('[[','');
+            block = block.substr(0, block.lastIndexOf(']]'));
             block = hidePageTitleNameOnly ? '!! ' + block : block
-            if (!privacyList.includes( block )){ privacyList.push( block );}
+            if (!privacyList.includes( block )) privacyList.push( block )
           }
         }  
         if(privacyList.length==0) {
@@ -116,9 +125,10 @@
         document.querySelectorAll(' .rm-search-list-item, .rm-autocomplete-result').forEach(e=>{
           let s = e.innerText.toString()
           privacyList.forEach(i=>{
-            if( s.indexOf('#' + i)>-1 || s.indexOf('[[' + i + ']]')>-1 ||  i == '!! ' + s ||  s == i) {
+            i = i.replace('!! ','');
+            if( s.indexOf('#' + i)>-1 || s.indexOf('[[' + i + ']]')>-1 ||  s == i) {
               e.classList.add('roam42-privacy-block');
-            }
+            } 
           })
         })        
       }, 25)
@@ -152,7 +162,8 @@
 
     // All pages search
     document.querySelectorAll('a.rm-pages-title-text').forEach(e=>{
-      if( privacyList.includes( e.innerText ) || privacyList.includes( '!! ' + e.innerText)  ) { 
+      let innerText = e.innerText;
+      if( privacyList.includes( innerText ) || privacyList.includes( '!! ' + innerText )  ) { 
         e.parentElement.classList.add('roam42-privacy-block');
       }
     })

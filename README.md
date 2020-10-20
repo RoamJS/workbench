@@ -12,4 +12,3 @@ and also for sharing their work. I want to acknowledge them here:
 
 * [github.com/mgsloan/roam-navigator](https://github.com/mgsloan/roam-navigator) - Thanks Michael Slogan (Twitter: @treetopian)
 * [github.com/roam-unofficial/roam-toolkit](https://github.com/roam-unofficial/roam-toolkit) - Live preview came from this code base. it has been heavily modified, but the core is still from the toolkit. What an amazing project that pioneered extending roam
-* 
