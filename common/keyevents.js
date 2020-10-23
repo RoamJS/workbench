@@ -112,7 +112,8 @@
       //simple markdown
       if (ev.altKey && ev.shiftKey==false &&  ev.code=='KeyM'  ) {  
         event.preventDefault();
-        roam42.turndownPage();
+        // roam42.turndownPage();
+        roam42.formatConverterUI.show();
         return
       }
     }); 
