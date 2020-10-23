@@ -205,7 +205,21 @@
             if(e.parentElement.parentElement.parentElement.classList.contains('parent-path-wrapper')) {
               e.closest('.rm-reference-item').classList.add('roam42-privacy-block');                
             } else {
-              e.closest('.roam-block-container').classList.add('roam42-privacy-block');                
+              try {
+                e.closest('.roam-block-container').classList.add('roam42-privacy-block');                              
+              } catch(err) {
+                 //parachute!!!
+                //if all fails, try at least to concel the current tag
+                //trys to wrap the parent/parent, then parent, then finally itself if it cant the parent
+                try {  e.parentElement.parentElement.classList.add('roam42-privacy-block')
+                    } catch(e) {
+                      try { e.parentElement.classList.add('roam42-privacy-block')
+                      } catch(e) {
+                        try { e.classList.add('roam42-privacy-block')
+                        } catch(e) { };                  
+                      };                
+                    };
+                }
             }
         } else if(privacyList.includes( '!! ' + attributeValue)) { 
           e.classList.add('roam42-privacy-block');
