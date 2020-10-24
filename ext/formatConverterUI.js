@@ -96,10 +96,24 @@
   
   roam42.formatConverterUI.htmlview = async ()=> {
     var uid = await roam42.common.currentPageUID();
-    var md =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );    
+    var md =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );   
+    marked.setOptions({
+      gfm: true,
+      xhtml: false
+    });
     var results = marked(md);
-    var winPrint = window.open('','','left=0,top=0,width=800,height=600,toolbar=0,scrollbars=0,status=0');
-    winPrint.document.write(results);
+    var winPrint = window.open('','','left=50,top=100,width=1000,height=600,toolbar=0,scrollbars=0,status=0');
+    winPrint.document.write(results);        
+    setTimeout(()=>{
+      const addElementToPage = (element, tagId, typeT )=> {
+        Object.assign(element, { type:typeT, async:false, tagId:tagId } );
+        winPrint.document.getElementsByTagName('head')[0].appendChild(element);  
+      }
+      const addCSSToPage = (tagId, cssToAdd)=> {
+        addElementToPage(Object.assign(winPrint.document.createElement('link'),{href:cssToAdd, rel: 'stylesheet'} ) , tagId, 'text/css');
+      }
+     addCSSToPage('myStyle', roam42.host + 'css/markdown/default.css');  
+    }, 50)
   }
   
   window.roam42.formatConverterUI.testingReload = ()=>{

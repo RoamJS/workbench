@@ -123,28 +123,28 @@
     if(node.heading == 2) blockText = '## '  + blockText;
     if(node.heading == 3) blockText = '### ' + blockText;
     // process todo's
+    var todoPrefix = level > 0 ? '' : '- '; //todos on first level need a dash before them
     if(blockText.substring(0,12) == '{{[[TODO]]}}') {
-      blockText = blockText.replace('{{[[TODO]]}}','[ ]');
+      blockText = blockText.replace('{{[[TODO]]}}',todoPrefix + '[ ]');
     } else if(blockText.substring(0,8) == '{{TODO}}') {
-      blockText = blockText.replace('{{TODO}}','[ ]');
+      blockText = blockText.replace('{{TODO}}',todoPrefix + '[ ]');
     } else if(blockText.substring(0,12) == '{{[[DONE]]}}') {
-      blockText = blockText.replace('{{[[DONE]]}}','[x]');
+      blockText = blockText.replace('{{[[DONE]]}}',todoPrefix + '[x]');
     } else if(blockText.substring(0,12) == '{{[[DONE]]}}') {
-      blockText = blockText.replace('{{[[DONE]]}}','[x]');
+      blockText = blockText.replace('{{[[DONE]]}}',todoPrefix + '[x]');
     } 
     blockText = roamPageMarkdownScrubber(blockText);
     
-    if(level>0) {
+    if(level>0 && blockText.substring(0,3)!='```') {
       //handle indenting (first level is treated as no level, second level treated as first level)
-      level = level -1;
       if(parent["view-type"] == 'numbered') {
-        output += '    '.repeat(level) + '1. ';      
+        output += '    '.repeat(level-1) + '1. ';      
       } else {
         output += '  '.repeat(level) + '- ';
       }
     } else { //level 1, add line break before
       blockText =  '\n' + blockText ;      
-    }
+    }      
     output += blockText + '  \n';
   }
   
