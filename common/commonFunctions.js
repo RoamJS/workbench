@@ -5,6 +5,8 @@
   
   roam42.common = {};
   
+  roam42.common.sleep = m => new Promise(r => setTimeout(r, m))
+    
   roam42.common.baseUrl = () => {
     const url = new URL(window.location.href);
     const parts = url.hash.split('/');

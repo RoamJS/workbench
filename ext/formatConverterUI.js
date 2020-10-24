@@ -80,7 +80,7 @@
   <div style="float:right"><button onclick="roam42.formatConverterUI.copyToClipboard()">Copy</button></div>
   <div style="float:right"><button onclick="roam42.formatConverterUI.saveToFile()">Save to File</button></div>
 </div>
-<div style="margin-left:10px;margin-right:10px;height:90%;background-color:red">
+<div style="margin-left:10px;margin-right:10px;height:90%;">
   <textarea id='formatConverterUITextArea' style="font-family: monospace;width:100%;height:100%;"></textarea>
 </div>
 `,
@@ -95,6 +95,7 @@
 
   
   window.roam42.formatConverterUI.testingReload = ()=>{
+    if(document.querySelector('#r42Markdown')) document.querySelector('#r42Markdown').remove();
     roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
     roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
     setTimeout(async ()=>{

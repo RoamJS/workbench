@@ -4,46 +4,6 @@
   roam42.formatConverter = {};
   roam42.formatConverter.formatter = {};
   roam42.formatConverter.currentPageName = '';
-
-  roam42.common.sleep = m => new Promise(r => setTimeout(r, m))
-  
-  roam42.common.currentPageUID = async ()=> {
-    var uid = '';
-    if(window.location.href.includes('page')) {
-      uid = window.location.href.replace(roam42.common.baseUrl().href + '/','')
-    } else {
-      uid = await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date()))
-    }
-    return uid;    
-  }
-  
-  roam42.common.getBlockInfoByUID = async (uid, withChildren=false)=>{
-    try {
-      let q = `[:find 
-                  (pull ?page 
-                     [:node/title  
-                      :block/string   
-                      :block/uid
-                      :block/heading  
-                      :block/props 
-                      :entity/attrs 
-                      :block/open 
-                      :block/text-align 
-                      :children/view-type
-                      :block/order 
-                      ${withChildren ? '{:block/children ...}' : '' }
-                     ]) 
-                  :where 
-                      [?page :block/uid "${uid}"] 
-                ]`;
-        var results = await window.roamAlphaAPI.q(q);
-        if(results.length == 0 ) return null;
-        return results;
-      } catch(e) {
-        return null;
-      }
-  }
-
   
   var sortObjectsByOrder = async (o)=>{
      return o.sort(function (a, b) {
@@ -65,6 +25,7 @@
       // check if there are embeds and convert text to that
       let blockText = node.string;
       // First: check for block embed
+     blockText = blockText.replaceAll('\{\{embed:','\{\{\[\[embed\]\]\:');    
       let embeds = blockText.match(/\{\{\[\[embed\]\]\: \(\(.+?\)\)\}\}/g);
       if(embeds != null){
         for(const e of embeds){
@@ -86,11 +47,11 @@
       }  else {
         // Second: check for block refs
         let refs = blockText.match(/\(\(.+?\)\)/g);
-        if(refs != null){
+        if(refs != null ){
           for(const e of refs){
             let uid = e.replaceAll('(','').replaceAll(')','');
             let results = await roam42.common.getBlockInfoByUID(uid, false);
-            blockText = blockText.replace(e, results[0][0].string);
+            if(results) blockText = blockText.replace(e, results[0][0].string);
           }
         }
         outputFunction(blockText, node, level, parent);
@@ -103,16 +64,45 @@
         await walkDocumentStructureAndFormat(orderedNode[i], level + 1, outputFunction, node)
     } 
   }
+
+  var roamPageMarkdownScrubber = blockText=> {
+    blockText = blockText.replaceAll('{{TODO}}',       'TODO');
+    blockText = blockText.replaceAll('{{[[TODO]]}}',   'TODO');
+    blockText = blockText.replaceAll('{{DONE}}',       'DONE');
+    blockText = blockText.replaceAll('{{[[DONE]]}}',   'DONE');
+    blockText = blockText.replaceAll('{{[[table]]}}',  '');
+    blockText = blockText.replaceAll('{{[[kanban]]}}', '');
+    blockText = blockText.replaceAll('{{mermaid}}',    '');
+    blockText = blockText.replace('::', ':');
+    blockText = blockText.replaceAll(/\(\((.+?)\)\)/g, '$1');
+    blockText = blockText.replaceAll(/\[\[(.+?)\]\]/g, '$1');
+    return blockText;
+  }
+  
+  var roamMarkdownScrubber = blockText=> {
+    blockText = blockText.replace('::', ':');
+    blockText = blockText.replaceAll(/\*\*(.+?)\*\*/g, '$1');
+    blockText = blockText.replaceAll(/\_\_(.+?)\_\_/g, '$1');
+    blockText = blockText.replaceAll(/\^\^(.+?)\^\^/g, '$1');
+    blockText = blockText.replaceAll(/\~\~(.+?)\~\~/g, '$1');
+    return blockText;
+  }
   
   roam42.formatConverter.formatter.pureText_SpaceIndented = async (blockText, node, level)=> {
-    let leadingSpaces = level > 1 ?  '  '.repeat(level-1)  : '' ;      
+    blockText = roamPageMarkdownScrubber(blockText);
+    blockText = roamMarkdownScrubber(blockText);
+    let leadingSpaces = level > 1 ?  '  '.repeat(level-1)  : '' ;
     output += leadingSpaces + blockText + '\n'
   }
   
   roam42.formatConverter.formatter.pureText_TabIndented = async (blockText, node, level)=> {
+    blockText = roamPageMarkdownScrubber(blockText);
+    blockText = roamMarkdownScrubber(blockText);
     let leadingSpaces = level > 1 ?  '\t'.repeat(level-1)  : '' ;      
     output += leadingSpaces + blockText + '\n'
   }
+  
+  //todo: strip out roam stuff ( [[]] {{}})
   
   roam42.formatConverter.formatter.markdownGithub = async (blockText, node, level, parent)=> {
     level = level -1;
@@ -130,7 +120,8 @@
     } else if(blockText.substring(0,12) == '{{[[DONE]]}}') {
       blockText = blockText.replace('{{[[DONE]]}}','[x]');
     } 
-    blockText = blockText.replace('::', ':');
+    blockText = roamPageMarkdownScrubber(blockText);
+    
     if(level>0) {
       //handle indenting (first level is treated as no level, second level treated as first level)
       level = level -1;
