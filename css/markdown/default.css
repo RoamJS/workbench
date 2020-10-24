@@ -1,0 +1,139 @@
+/* Based on the example stylesheet from the article at Smashing Magazine
+ * http:// coding.smashingmagazine.com/2011/11/24/how-to-set-up-a-print-style-sheet/
+ * by Christian Krammer, ck@css3files.com
+ *  
+ * To use it: 
+ * include the content of this file inside a media query:
+ * @media print { … }
+ * and use the screen media query for the rest of the css:
+ * @media screen { … }
+ * Or save as a separate file and use medi="print" in the css link
+ */
+
+/*
+ * Check also the jquery print preview plugin:
+ * https://github.com/etimbo/jquery-print-preview-plugin
+ * Demo page:
+ * http://etimbo.github.com/jquery-print-preview-plugin/example/index.html
+ *
+ */
+
+/* page margins: does not work in Firefox */
+/*
+@page {
+    margin: 0.5cm;
+}
+*/
+
+/* You can also set page margins independently for odd and even pages */
+/*
+@page :left {
+    margin: 0.5cm;
+}
+@page :right {
+    margin: 0.8cm;
+}
+*/
+
+/* Reset quotes */
+q {quotes: none}
+q:before, q:after { content: "" }   
+
+img {
+  max-width: 600px;
+}
+
+/* font sizes */
+body {
+    font: 12pt Georgia, "Times New Roman", Times, serif;
+    line-height: 1.3;
+    color: #000;
+}
+
+h1 { font-size: 24pt }
+
+h2 { font-size: 14pt; margin-top: 25px }
+
+aside h2 { font-size: 18pt }
+
+/* Show printer-frindly logo. 
+ * In the html we have 2 logos: 1 for screen the other for print:
+ * something like: 
+ * <header>
+ * <a href="/" title="Home" class="logo">
+ *   <img src="img/logo.png" alt="Smashing Winery" class="screen"/>
+ *   <img src="img/logo_print.png" alt="" class="print"/>
+ * </a>
+ * </header>
+ */
+header .print { display: block }
+
+/* If you like things a little bit easier and more semantic you can 
+ * alternatively just leave the h1 of the  header visible, switch off 
+ * the margin and make it bigger than the rest of the headlines 
+ */
+/*header nav, footer, img { display: none }
+
+header h1 {
+    margin: 0;
+    font-size: 30pt;
+}*/
+
+/* Some browsers like to show a border around images. Switch it off */
+img { border: 0 }
+
+/* Mover the header a little bit awy from the content */
+header { margin-bottom: 40px }
+
+/* Add the url of the site after the header so that the user knows where the printout came from */
+header:after { display: block; content: "www.MY-AWSOME-SITE.com" }
+
+/* Additionally/optionally a little message could be displayed */
+/*header:before {
+    display: block;
+    content: "Page from www.MY-AWSOME-WEBSITE.com. Please check back soon...";
+    margin-bottom: 10px;
+    border: 1px solid #bbb;
+    padding: 3px 5px;
+    font-style: italic;
+}*/
+
+/* Separate blockquotes a little bit from the rest */
+blockquote {
+    font-size: 13pt;
+    font-style: italic;
+}
+
+/* Change link color to black */
+p a { color: #000 }
+
+/* Show the URL after each link, whereby internal links are preceeded by the site's URL */
+p a:after {
+    content: " [http://www.MY-AWSOME-SITE.com/" attr(href) "]";
+    font-size: 80%;
+    word-wrap: break-word; /* break long urls that donìt fit the page width */
+}
+
+/* External links don't get this treatment */
+p a[href^="http://"]:after, p a[href^="https://"]:after {
+	content: " [" attr(href) "]";
+}
+
+/*
+ * If you want to display links as a list of URIs appended as footnotes to the document
+ * take a look at this script 
+ * http://www.v2.easy-designs.net/code/footnoteLinks/index.php
+ */
+
+/* Append the source of the citation */
+q:after { content: " [" attr(cite) "]" }
+
+/* The Sidebar is placed under the content automatically. 
+ * To distinguish it from the rest a border and a gap is set before 
+ */
+aside {
+    border-top: 1px solid #bbb;
+    margin-top: 30px;
+    display: block;
+    /*page-break-before: always; */ /* Moves the sidebar to new page */
+}
