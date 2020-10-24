@@ -86,6 +86,7 @@ if( typeof window.roam42 == 'undefined' ) {
      roam42.loader.addScriptToPage( 'iziToast',        'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js'   );
         roam42.loader.addCSSToPage( 'cssiziToast',     'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css' );
      roam42.loader.addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/current-device.min.js'                 );
+     roam42.loader.addScriptToPage( 'marked-lib',       roam42.host + 'libs/marked.min.js' ); //https://github.com/markedjs/marked
     }
 
     //common shared functions

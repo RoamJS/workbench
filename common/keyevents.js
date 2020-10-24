@@ -116,6 +116,14 @@
         roam42.formatConverterUI.show();
         return
       }
+
+      //HTML view
+      if (ev.ctrlKey && ev.shiftKey==false &&  ev.code=='KeyM'  ) {  
+        event.preventDefault();
+        roam42.formatConverterUI.htmlview();
+        return
+      }
+      
     }); 
   } // End of Keydown listener
   

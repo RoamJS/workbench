@@ -66,6 +66,9 @@
   }
 
   var roamPageMarkdownScrubber = blockText=> {
+    if(blockText.substring(0,9)  == "{{[[query" || blockText.substring(0,7) == "{{query" ) return '';
+    if(blockText.substring(0,12) == "{{attr-table" ) return '';
+    if(blockText.substring(0,15) == "{{[[mentions]]:" ) return '';
     blockText = blockText.replaceAll('{{TODO}}',       'TODO');
     blockText = blockText.replaceAll('{{[[TODO]]}}',   'TODO');
     blockText = blockText.replaceAll('{{DONE}}',       'DONE');
@@ -73,6 +76,13 @@
     blockText = blockText.replaceAll('{{[[table]]}}',  '');
     blockText = blockText.replaceAll('{{[[kanban]]}}', '');
     blockText = blockText.replaceAll('{{mermaid}}',    '');
+    blockText = blockText.replaceAll('{{word-count}}',    '');
+    blockText = blockText.replaceAll('{{date}}',    '');
+    blockText = blockText.replaceAll('{{diagram}}',    '');
+    blockText = blockText.replaceAll('{{POMO}}',    '');
+    blockText = blockText.replaceAll('{{slider}}',    '');
+    blockText = blockText.replaceAll('{{TaoOfRoam}}',    '');
+    blockText = blockText.replaceAll('{{orphans}}',    '');
     blockText = blockText.replace('::', ':');
     blockText = blockText.replaceAll(/\(\((.+?)\)\)/g, '$1');
     blockText = blockText.replaceAll(/\[\[(.+?)\]\]/g, '$1');
@@ -89,6 +99,7 @@
   }
   
   roam42.formatConverter.formatter.pureText_SpaceIndented = async (blockText, node, level)=> {
+    if(node.title) return; 
     blockText = roamPageMarkdownScrubber(blockText);
     blockText = roamMarkdownScrubber(blockText);
     let leadingSpaces = level > 1 ?  '  '.repeat(level-1)  : '' ;
@@ -96,6 +107,7 @@
   }
   
   roam42.formatConverter.formatter.pureText_TabIndented = async (blockText, node, level)=> {
+    if(node.title) return; 
     blockText = roamPageMarkdownScrubber(blockText);
     blockText = roamMarkdownScrubber(blockText);
     let leadingSpaces = level > 1 ?  '\t'.repeat(level-1)  : '' ;      
@@ -106,7 +118,7 @@
   
   roam42.formatConverter.formatter.markdownGithub = async (blockText, node, level, parent)=> {
     level = level -1;
-    if(node.title){ output += blockText + '\n\n'; return; }
+    if(node.title) return; 
     if(node.heading == 1) blockText = '# '   + blockText;
     if(node.heading == 2) blockText = '## '  + blockText;
     if(node.heading == 3) blockText = '### ' + blockText;
