@@ -1,13 +1,13 @@
- /* globals roam42, Mousetrap, jsPanel, displayMessage */
+ /* globals roam42, Mousetrap, jsPanel, displayMessage, marked */
 
 //TODO
 // Find all block refs and convert them to their nomral output
 
 (()=>{
   roam42.formatConverterUI = {};
-  
-  let formatConverterUITextArea = null;
-  
+
+  let formatConverterUITextArea = null;  
+      
   roam42.formatConverterUI.changeFormat = async ()=> {
     var uid = await roam42.common.currentPageUID();
     switch(document.getElementById('r42formatConverterSelection').value) {
@@ -94,12 +94,21 @@
 } //END roam42.formatConverterUI.show
 
   
+  roam42.formatConverterUI.htmlview = async ()=> {
+    var uid = await roam42.common.currentPageUID();
+    var md =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );    
+    var results = marked(md);
+    var winPrint = window.open('','','left=0,top=0,width=800,height=600,toolbar=0,scrollbars=0,status=0');
+    winPrint.document.write(results);
+  }
+  
   window.roam42.formatConverterUI.testingReload = ()=>{
     if(document.querySelector('#r42Markdown')) document.querySelector('#r42Markdown').remove();
     roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
     roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
     setTimeout(async ()=>{
-      roam42.formatConverterUI.show()
+      // roam42.formatConverterUI.show()
+      roam42.formatConverterUI.htmlview()
     }, 500)  
   }   
 
