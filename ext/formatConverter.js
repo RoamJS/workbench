@@ -114,29 +114,34 @@
     output += leadingSpaces + blockText + '\n'
   }
   
-  let markdownGithubNumberedList = false;
   roam42.formatConverter.formatter.markdownGithub = async (blockText, node, level, parent)=> {
     level = level -1;
-    if(node.title){ output += blockText + '\n'; return; }
-    if(node.heading == 1) output += '# ';
-    if(node.heading == 2) output += '## ';
-    if(node.heading == 3) output += '### ';
-    if(parent["view-type"] == 'numbered') {
-      output += '    '.repeat(level) + '1. ';      
-    } else {
-      output += '    '.repeat(level) + '- ';
-    }
+    if(node.title){ output += blockText + '\n\n'; return; }
+    if(node.heading == 1) blockText = '# '   + blockText;
+    if(node.heading == 2) blockText = '## '  + blockText;
+    if(node.heading == 3) blockText = '### ' + blockText;
     // process todo's
     if(blockText.substring(0,12) == '{{[[TODO]]}}') {
-      blockText = blockText.replace('{{[[TODO]]}}','[ ]')
+      blockText = blockText.replace('{{[[TODO]]}}','[ ]');
     } else if(blockText.substring(0,8) == '{{TODO}}') {
-      blockText = blockText.replace('{{TODO}}','[ ]')
+      blockText = blockText.replace('{{TODO}}','[ ]');
     } else if(blockText.substring(0,12) == '{{[[DONE]]}}') {
-      blockText = blockText.replace('{{[[DONE]]}}','[x]')
+      blockText = blockText.replace('{{[[DONE]]}}','[x]');
     } else if(blockText.substring(0,12) == '{{[[DONE]]}}') {
-      blockText = blockText.replace('{{[[DONE]]}}','[x]')
+      blockText = blockText.replace('{{[[DONE]]}}','[x]');
     } 
-    
+    blockText = blockText.replace('::', ':');
+    if(level>0) {
+      //handle indenting (first level is treated as no level, second level treated as first level)
+      level = level -1;
+      if(parent["view-type"] == 'numbered') {
+        output += '    '.repeat(level) + '1. ';      
+      } else {
+        output += '  '.repeat(level) + '- ';
+      }
+    } else { //level 1, add line break before
+      blockText =  '\n' + blockText ;      
+    }
     output += blockText + '  \n';
   }
   

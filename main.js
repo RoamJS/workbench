@@ -15,7 +15,8 @@
   roam42.livePreview       Live preview features
   roam42.common            shared commands
   roam42.dateProcessing    Date functions
-  roam42.privacyMode   
+  roam42.privacyMode       Redacts content from your Roam
+  roam42.formatConverter   converts current page to various formats   
   roam42.KeyboardLib        imported from another library. so letting it stand as its own object
 */
 
@@ -24,7 +25,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2020-10-23';
+  roam42.buildID = 'Roam<sup>42</sup> 2020-10-24c';
   roam42.host    = document.currentScript.src.replace('main.js','');
 
   // roam42.loader 
