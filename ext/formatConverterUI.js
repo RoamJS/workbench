@@ -12,7 +12,6 @@
   roam42.formatConverterUI.changeFormat = async ()=> {
     var uid = await roam42.common.currentPageUID();
     clipboardConvertedText='';
-    console.log(document.getElementById('r42formatConverterSelection').value)
     switch(document.getElementById('r42formatConverterSelection').value) {
       case 'puretext_Tab':
         clipboardConvertedText =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.pureText_TabIndented );    
@@ -25,6 +24,9 @@
         break;
       case 'markdown_Github':
         clipboardConvertedText =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );    
+        break;
+      case 'html_Simple':
+        clipboardConvertedText =  await   roam42.formatConverter.formatter.htmlSimple(uid);   
         break;
     }
     formatConverterUITextArea.value = clipboardConvertedText;
@@ -76,45 +78,45 @@
       dragit: { containment: 10, snap: { containment: true, repositionOnSnap: true } },
       position: { my: 'center-bottom', at: 'center-bottom', offsetX: +10, offsetY: -10 },
       content: `
-<div style="padding:10px">
-  Output format: 
-  <select id="r42formatConverterSelection" onchange="roam42.formatConverterUI.changeFormat()">
-    <option value="puretext_Space">Text with space indentation</option>
-    <option value="puretext_Tab">Text with tab indentation</option>
-    <option value="pureText_NoIndentation">Text with no indentation</option>
-    <option value="markdown_Github">GitHub Flavored Markdown</option>
-  </select>
-  <div style="float:right"><div title="Refresh view based on current page" class="bp3-button bp3-minimal bp3-small bp3-icon-refresh" onclick="roam42.formatConverterUI.changeFormat()"></div></div>
-  <div style="float:right"><div title="Copy to clipboard" class="bp3-button bp3-minimal bp3-small bp3-icon-clipboard" onclick="roam42.formatConverterUI.copyToClipboard()"></div></div>
-  <div style="float:right"><div title="Save to a file" class="bp3-button bp3-minimal bp3-small bp3-icon-floppy-disk"  onclick="roam42.formatConverterUI.saveToFile()"></div></div>
-</div>
-<div style="margin-left:10px;margin-right:10px;height:90%;">
-  <textarea id='formatConverterUITextArea' style="font-family: monospace;width:100%;height:100%;"></textarea>
-</div>
-`,
-    callback: async function () {
-      formatConverterUITextArea = document.getElementById('formatConverterUITextArea'); 
-      setTimeout(async ()=>{
-        // document.querySelector('#r42formatConvertUI').style.backgroundColor='red !important';
-        roam42.formatConverterUI.changeFormat()
-      }, 100)
-    },
-  })    
-} //END roam42.formatConverterUI.show
-
+      <div style="padding:10px">
+        Output format: 
+        <select id="r42formatConverterSelection" onchange="roam42.formatConverterUI.changeFormat()">
+          <option value="puretext_Space">Text with space indentation</option>
+          <option value="puretext_Tab">Text with tab indentation</option>
+          <option value="pureText_NoIndentation">Text with no indentation</option>
+          <option value="markdown_Github">GitHub Flavored Markdown</option>
+          <option value="html_Simple">HTML</option>
+        </select>
+        <div style="float:right"><div title="Refresh view based on current page" class="bp3-button bp3-minimal bp3-small bp3-icon-refresh" onclick="roam42.formatConverterUI.changeFormat()"></div></div>
+        <div style="float:right"><div title="Copy to clipboard" class="bp3-button bp3-minimal bp3-small bp3-icon-clipboard" onclick="roam42.formatConverterUI.copyToClipboard()"></div></div>
+        <div style="float:right"><div title="Save to a file" class="bp3-button bp3-minimal bp3-small bp3-icon-floppy-disk"  onclick="roam42.formatConverterUI.saveToFile()"></div></div>
+      </div>
+      <div style="margin-left:10px;margin-right:10px;height:90%;">
+        <textarea id='formatConverterUITextArea' style="font-family: monospace;width:100%;height:100%;"></textarea>
+      </div>
+      `,
+          callback: async function () {
+            formatConverterUITextArea = document.getElementById('formatConverterUITextArea'); 
+            setTimeout(async ()=>{
+              // document.querySelector('#r42formatConvertUI').style.backgroundColor='red !important';
+              roam42.formatConverterUI.changeFormat()
+            }, 100)
+          },
+        })    
+      } //END roam42.formatConverterUI.show
   
   roam42.formatConverterUI.htmlview = async ()=> {
-    var roam42PrintViewPageUID = await roam42.common.getPageUidByTitle('Roam42 Settings');
-    if(roam42PrintViewPageUID) {
-      let blocks = await roam42.common.getBlockInfoByUID(roam42PrintViewPageUID, true);
-      console.log(blocks)
-      for(var b in blocks[0][0].children) {
-        console.log(blocks[0][0].children[b])
-        if(blocks[0][0].children[b].includes('PrintPreviewCSS')){
+//     var roam42PrintViewPageUID = await roam42.common.getPageUidByTitle('Roam42 Settings');
+//     if(roam42PrintViewPageUID) {
+//       let blocks = await roam42.common.getBlockInfoByUID(roam42PrintViewPageUID, true);
+//       console.log(blocks)
+//       for(var b in blocks[0][0].children) {
+//         console.log(blocks[0][0].children[b])
+//         if(blocks[0][0].children[b].string.includes('PrintPreviewCSS')){
           
-        };
-      }
-    }
+//         };
+//       }
+//     }
     var uid = await roam42.common.currentPageUID();
     var md =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );   
     marked.setOptions({
