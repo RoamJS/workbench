@@ -110,7 +110,7 @@
                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.formatConverterUI.htmlview();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-document-share"></div>
-                        Print View <span style="font-size:7pt">(Ctrl-m)</span><br/>
+                        Web View <span style="font-size:7pt">(Ctrl-m)</span><br/>
                         <div style="font-size:7pt;position:relative;left:27px;top:-5px;padding-bottom:0px"><em>(Experimental)</em></div>
                     </div>
                   </a>

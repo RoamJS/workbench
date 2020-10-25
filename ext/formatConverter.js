@@ -1,4 +1,4 @@
- /* globals roam42, Mousetrap,getPageUidByTitle */
+ /* globals roam42, Mousetrap,getPageUidByTitle, marked*/
 
 (()=>{
   roam42.formatConverter = {};
@@ -162,8 +162,17 @@
     }      
     output += blockText + '  \n';
   }
-  
-  
+
+  roam42.formatConverter.formatter.htmlSimple = async (uid)=> {
+    var md =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );   
+    marked.setOptions({
+      gfm: true,
+      xhtml: false
+    });
+    return md = '<html>\n<body>\n' + marked(md) + '</body>\n</html>';
+  }
+    
+    
   var output = '';
   
   roam42.formatConverter.iterateThroughTree = async (uid, formatterFunction)=>{
