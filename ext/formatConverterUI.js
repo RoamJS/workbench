@@ -17,6 +17,9 @@
       case 'puretext_Space':
         formatConverterUITextArea.value =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.pureText_SpaceIndented );    
         break;
+      case 'pureText_NoIndentation':
+        formatConverterUITextArea.value =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.pureText_NoIndentation );    
+        break;
       case 'markdown_Github':
         formatConverterUITextArea.value =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );    
         break;
@@ -72,8 +75,9 @@
 <div style="padding:10px">
   Output format: 
   <select id="r42formatConverterSelection" onchange="roam42.formatConverterUI.changeFormat()">
-    <option value="puretext_Space">Text with space indent</option>
-    <option value="puretext_Tab">Text with tab indent</option>
+    <option value="puretext_Space">Text with space indentation</option>
+    <option value="puretext_Tab">Text with tab indentation</option>
+    <option value="pureText_NoIndentation">Text with no indentation</option>
     <option value="markdown_Github">GitHub Flavored Markdown</option>
   </select>
   <div style="float:right"><button onclick="roam42.formatConverterUI.changeFormat()">Refresh</button></div>

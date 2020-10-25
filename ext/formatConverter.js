@@ -65,7 +65,7 @@
     } 
   }
 
-  var roamPageMarkdownScrubber = blockText=> {
+  var roamMarkupScrubber = (blockText, removeMarkdown=true)=> {
     if(blockText.substring(0,9)  == "{{[[query" || blockText.substring(0,7) == "{{query" ) return '';
     if(blockText.substring(0,12) == "{{attr-table" ) return '';
     if(blockText.substring(0,15) == "{{[[mentions]]:" ) return '';
@@ -83,42 +83,54 @@
     blockText = blockText.replaceAll('{{slider}}',    '');
     blockText = blockText.replaceAll('{{TaoOfRoam}}',    '');
     blockText = blockText.replaceAll('{{orphans}}',    '');
-    blockText = blockText.replace('::', ':');
-    blockText = blockText.replaceAll(/\(\((.+?)\)\)/g, '$1');
-    blockText = blockText.replaceAll(/\[\[(.+?)\]\]/g, '$1');
+    blockText = blockText.replace('::', ':');                      // ::
+    blockText = blockText.replaceAll(/\(\((.+?)\)\)/g, '$1');      // (())
+    blockText = blockText.replaceAll(/\[\[(.+?)\]\]/g, '$1');      // [[ ]]
+    blockText = blockText.replaceAll(/\$\$(.+?)\$\$/g, '$1');      // $$ $$
+    blockText = blockText.replaceAll(/\B\#([a-zA-Z]+\b)/g, '$1');  // #hash tag
+    blockText = blockText.replaceAll(/\{\{calc: (.+?)\}\}/g,  function(all, match) {
+      try{ return eval(match) } catch(e) { return ''}
+    });
+                                     
+                                     // calc functions  {{calc: 4+4}}
+    if(removeMarkdown) {
+      blockText = blockText.replaceAll(/\*\*(.+?)\*\*/g, '$1');    // ** **
+      blockText = blockText.replaceAll(/\_\_(.+?)\_\_/g, '$1');    // __ __
+      blockText = blockText.replaceAll(/\^\^(.+?)\^\^/g, '$1');    // ^^ ^^
+      blockText = blockText.replaceAll(/\~\~(.+?)\~\~/g, '$1');    // ~~ ~~
+      blockText = blockText.replaceAll(/\!\[(.+?)\]\((.+?)\)/g, '$1 $2'); //images with description
+      blockText = blockText.replaceAll(/\!\[\]\((.+?)\)/g, '$1');         //imags with no description
+      blockText = blockText.replaceAll(/\[(.+?)\]\((.+?)\)/g, '$1 $2');   //alias with description
+      blockText = blockText.replaceAll(/\[\]\((.+?)\)/g, '$1');           //alias with no description
+    }    
+    blockText = blockText.replaceAll(/\[(.+?)\](?!\()(.+?)\)/g, '$1');    //alias with embeded block (Odd side effect of parser)      
     return blockText;
   }
-  
-  var roamMarkdownScrubber = blockText=> {
-    blockText = blockText.replace('::', ':');
-    blockText = blockText.replaceAll(/\*\*(.+?)\*\*/g, '$1');
-    blockText = blockText.replaceAll(/\_\_(.+?)\_\_/g, '$1');
-    blockText = blockText.replaceAll(/\^\^(.+?)\^\^/g, '$1');
-    blockText = blockText.replaceAll(/\~\~(.+?)\~\~/g, '$1');
-    return blockText;
-  }
-  
+   
   roam42.formatConverter.formatter.pureText_SpaceIndented = async (blockText, node, level)=> {
     if(node.title) return; 
-    blockText = roamPageMarkdownScrubber(blockText);
-    blockText = roamMarkdownScrubber(blockText);
+    blockText = roamMarkupScrubber(blockText, true);
     let leadingSpaces = level > 1 ?  '  '.repeat(level-1)  : '' ;
     output += leadingSpaces + blockText + '\n'
   }
   
   roam42.formatConverter.formatter.pureText_TabIndented = async (blockText, node, level)=> {
     if(node.title) return; 
-    blockText = roamPageMarkdownScrubber(blockText);
-    blockText = roamMarkdownScrubber(blockText);
+    blockText = roamMarkupScrubber(blockText, true);
     let leadingSpaces = level > 1 ?  '\t'.repeat(level-1)  : '' ;      
     output += leadingSpaces + blockText + '\n'
   }
   
-  //todo: strip out roam stuff ( [[]] {{}})
+  roam42.formatConverter.formatter.pureText_NoIndentation = async (blockText, node, level)=> {
+    if(node.title) return; 
+    blockText = roamMarkupScrubber(blockText, true);
+    output += blockText + '\n'    
+  }  
   
   roam42.formatConverter.formatter.markdownGithub = async (blockText, node, level, parent)=> {
+    console.log(node)
     level = level -1;
-    if(node.title) return; 
+    if(node.title){ output += '# '  + blockText; return; }; 
     if(node.heading == 1) blockText = '# '   + blockText;
     if(node.heading == 2) blockText = '## '  + blockText;
     if(node.heading == 3) blockText = '### ' + blockText;
@@ -133,7 +145,7 @@
     } else if(blockText.substring(0,12) == '{{[[DONE]]}}') {
       blockText = blockText.replace('{{[[DONE]]}}',todoPrefix + '[x]');
     } 
-    blockText = roamPageMarkdownScrubber(blockText);
+    blockText = roamMarkupScrubber(blockText, false);
     
     if(level>0 && blockText.substring(0,3)!='```') {
       //handle indenting (first level is treated as no level, second level treated as first level)
@@ -163,7 +175,7 @@
     roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
     roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
     setTimeout(()=>{
-      roam42.markdown.iterateThroughTree(document.querySelector('.rm-title-display').innerText, roam42.formatConverter.formatter.pureText )
+     // roam42.markdown.iterateThroughTree(document.querySelector('.rm-title-display').innerText, roam42.formatConverter.formatter.pureText )
     }, 600)
   }  
 })();
