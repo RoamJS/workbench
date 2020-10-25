@@ -32,17 +32,19 @@
           let uid = e.replace('{{[[embed]]: ','').replace('}}',''); 
           uid = uid.replaceAll('(','').replaceAll(')','');
           let embedResults = await roam42.common.getBlockInfoByUID(uid, true);
-          blockText = await blockText.replace(e, embedResults[0][0].string);
-          outputFunction(blockText, node, level, parent);
-          //see if embed has children
-          if(typeof embedResults[0][0].children != 'undefined' && level < 30) {
-            let orderedNode = await sortObjectsByOrder(embedResults[0][0].children)
-            for(let i in await sortObjectsByOrder(embedResults[0][0].children)) {
-              await walkDocumentStructureAndFormat(orderedNode[i], level + 1, (embedResults, node, level,)=> {
-                outputFunction(embedResults, node, level,parent)
-              }, embedResults[0][0])
+          try{ 
+            blockText = await blockText.replace(e, embedResults[0][0].string) 
+            outputFunction(blockText, node, level, parent);
+            //see if embed has children
+            if(typeof embedResults[0][0].children != 'undefined' && level < 30) {
+              let orderedNode = await sortObjectsByOrder(embedResults[0][0].children)
+              for(let i in await sortObjectsByOrder(embedResults[0][0].children)) {
+                await walkDocumentStructureAndFormat(orderedNode[i], level + 1, (embedResults, node, level,)=> {
+                  outputFunction(embedResults, node, level,parent)
+                }, embedResults[0][0])
+              }
             }
-          }
+          }catch(e){}            
         }
       }  else {
         // Second: check for block refs
@@ -85,7 +87,9 @@
     blockText = blockText.replaceAll('{{orphans}}',    '');
     blockText = blockText.replace('::', ':');                      // ::
     blockText = blockText.replaceAll(/\(\((.+?)\)\)/g, '$1');      // (())
-    blockText = blockText.replaceAll(/\[\[(.+?)\]\]/g, '$1');      // [[ ]]
+    blockText = blockText.replaceAll(/\[\[(.+?)\]\]/g, '$1');      // [[ ]]  First run
+    blockText = blockText.replaceAll(/\[\[(.+?)\]\]/g, '$1');      // [[ ]]  second run
+    blockText = blockText.replaceAll(/\[\[(.+?)\]\]/g, '$1');      // [[ ]]  second run
     blockText = blockText.replaceAll(/\$\$(.+?)\$\$/g, '$1');      // $$ $$
     blockText = blockText.replaceAll(/\B\#([a-zA-Z]+\b)/g, '$1');  // #hash tag
     blockText = blockText.replaceAll(/\{\{calc: (.+?)\}\}/g,  function(all, match) {
@@ -100,7 +104,7 @@
       blockText = blockText.replaceAll(/\~\~(.+?)\~\~/g, '$1');    // ~~ ~~
       blockText = blockText.replaceAll(/\!\[(.+?)\]\((.+?)\)/g, '$1 $2'); //images with description
       blockText = blockText.replaceAll(/\!\[\]\((.+?)\)/g, '$1');         //imags with no description
-      blockText = blockText.replaceAll(/\[(.+?)\]\((.+?)\)/g, '$1 $2');   //alias with description
+      blockText = blockText.replaceAll(/\[(.+?)\]\((.+?)\)/g, '$1: $2');   //alias with description
       blockText = blockText.replaceAll(/\[\]\((.+?)\)/g, '$1');           //alias with no description
     }    
     blockText = blockText.replaceAll(/\[(.+?)\](?!\()(.+?)\)/g, '$1');    //alias with embeded block (Odd side effect of parser)      
@@ -128,7 +132,6 @@
   }  
   
   roam42.formatConverter.formatter.markdownGithub = async (blockText, node, level, parent)=> {
-    console.log(node)
     level = level -1;
     if(node.title){ output += '# '  + blockText; return; }; 
     if(node.heading == 1) blockText = '# '   + blockText;
