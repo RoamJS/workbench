@@ -7,6 +7,7 @@ body {
     font: 12pt Georgia, "Times New Roman", Times, serif;
     line-height: 1.3;
     color: #000;
+    background-color: lightgrey;
 }
 
 h1 { font-size: 24pt }
@@ -27,3 +28,5 @@ blockquote {
 }
 
 p a { color: #000 }
+
+
