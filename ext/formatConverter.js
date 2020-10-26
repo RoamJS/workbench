@@ -27,13 +27,16 @@
       // First: check for block embed
      blockText = blockText.replaceAll('\{\{embed:','\{\{\[\[embed\]\]\:');    
       let embeds = blockText.match(/\{\{\[\[embed\]\]\: \(\(.+?\)\)\}\}/g);
+      //Test for block embeds
       if(embeds != null){
         for(const e of embeds){
           let uid = e.replace('{{[[embed]]: ','').replace('}}',''); 
           uid = uid.replaceAll('(','').replaceAll(')','');
           let embedResults = await roam42.common.getBlockInfoByUID(uid, true);
           try{ 
-            blockText = await blockText.replace(e, embedResults[0][0].string) 
+            blockText = await blockText.replace(e, embedResults[0][0].string);
+            //test if the newly generated block has any block refs
+            blockText = await resolveBlockRefsInText(blockText);            
             outputFunction(blockText, node, level, parent);
             //see if embed has children
             if(typeof embedResults[0][0].children != 'undefined' && level < 30) {
@@ -48,14 +51,15 @@
         }
       }  else {
         // Second: check for block refs
-        let refs = blockText.match(/\(\(.+?\)\)/g);
-        if(refs != null ){
-          for(const e of refs){
-            let uid = e.replaceAll('(','').replaceAll(')','');
-            let results = await roam42.common.getBlockInfoByUID(uid, false);
-            if(results) blockText = blockText.replace(e, results[0][0].string);
-          }
-        }
+        blockText = await resolveBlockRefsInText(blockText);                    
+        // let refs = blockText.match(/\(\(.+?\)\)/g);
+        // if(refs != null ){
+        //   for(const e of refs){
+        //     let uid = e.replaceAll('(','').replaceAll(')','');
+        //     let results = await roam42.common.getBlockInfoByUID(uid, false);
+        //     if(results) blockText = blockText.replace(e, results[0][0].string);
+        //   }
+        // }
         outputFunction(blockText, node, level, parent);
       }
     }
@@ -67,6 +71,18 @@
     } 
   }
 
+  var resolveBlockRefsInText = async (blockText)=>{
+    let refs = blockText.match(/\(\(.+?\)\)/g);
+    if(refs != null ){
+      for(const e of refs){
+        let uid = e.replaceAll('(','').replaceAll(')','');
+        let results = await roam42.common.getBlockInfoByUID(uid, false);
+        if(results) blockText = blockText.replace(e, results[0][0].string);
+      }
+    }
+    return blockText
+  }
+  
   var roamMarkupScrubber = (blockText, removeMarkdown=true)=> {
     if(blockText.substring(0,9)  == "{{[[query" || blockText.substring(0,7) == "{{query" ) return '';
     if(blockText.substring(0,12) == "{{attr-table" ) return '';
@@ -106,8 +122,8 @@
       blockText = blockText.replaceAll(/\!\[\]\((.+?)\)/g, '$1');         //imags with no description
       blockText = blockText.replaceAll(/\[(.+?)\]\((.+?)\)/g, '$1: $2');   //alias with description
       blockText = blockText.replaceAll(/\[\]\((.+?)\)/g, '$1');           //alias with no description
+      blockText = blockText.replaceAll(/\[(.+?)\](?!\()(.+?)\)/g, '$1');    //alias with embeded block (Odd side effect of parser)      
     }    
-    blockText = blockText.replaceAll(/\[(.+?)\](?!\()(.+?)\)/g, '$1');    //alias with embeded block (Odd side effect of parser)      
     return blockText;
   }
    
@@ -132,8 +148,12 @@
   }  
   
   roam42.formatConverter.formatter.markdownGithub = async (blockText, node, level, parent)=> {
+    // console.log("1",blockText)
     level = level -1;
     if(node.title){ output += '# '  + blockText; return; }; 
+
+      blockText = blockText.replaceAll('\n', '<br/>');
+
     if(node.heading == 1) blockText = '# '   + blockText;
     if(node.heading == 2) blockText = '## '  + blockText;
     if(node.heading == 3) blockText = '### ' + blockText;
@@ -145,11 +165,13 @@
       blockText = blockText.replace('{{TODO}}',todoPrefix + '[ ]');
     } else if(blockText.substring(0,12) == '{{[[DONE]]}}') {
       blockText = blockText.replace('{{[[DONE]]}}',todoPrefix + '[x]');
-    } else if(blockText.substring(0,12) == '{{[[DONE]]}}') {
-      blockText = blockText.replace('{{[[DONE]]}}',todoPrefix + '[x]');
+    } else if(blockText.substring(0,8) == '{{DONE}}') {
+      blockText = blockText.replace('{{DONE}}',todoPrefix + '[x]');
     } 
+    // console.log("2",blockText)
     blockText = roamMarkupScrubber(blockText, false);
-    
+    // console.log("3",blockText)
+
     if(level>0 && blockText.substring(0,3)!='```') {
       //handle indenting (first level is treated as no level, second level treated as first level)
       if(parent["view-type"] == 'numbered') {
@@ -160,6 +182,7 @@
     } else { //level 1, add line break before
       blockText =  '\n' + blockText ;      
     }      
+    // console.log("4",blockText)
     output += blockText + '  \n';
   }
 
@@ -167,9 +190,16 @@
     var md =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );   
     marked.setOptions({
       gfm: true,
-      xhtml: false
+      xhtml: false,
+      pedantic: false,
+      
     });
-    return md = '<html>\n<body>\n' + marked(md) + '</body>\n</html>';
+    md = md.replaceAll('- [ ] [', '- [ ]&nbsp;&nbsp;['); //fixes odd isue of task and alis on same line
+    md = md.replaceAll('- [x] [', '- [x]&nbsp;['); //fixes odd isue of task and alis on same line
+    // console.log(md)    
+    
+    md = marked(md);
+    return  '<html>\n<body>\n' + marked(md) + '</body>\n</html>';
   }
     
     

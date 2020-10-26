@@ -117,13 +117,16 @@
 //         };
 //       }
 //     }
+    // var md =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );   
+    // marked.setOptions({
+    //   gfm: true,
+    //   xhtml: false
+    // });
+    
+    // var results = marked(md);
     var uid = await roam42.common.currentPageUID();
-    var md =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );   
-    marked.setOptions({
-      gfm: true,
-      xhtml: false
-    });
-    var results = marked(md);
+    var results = await roam42.formatConverter.formatter.htmlSimple(uid);
+
     var winPrint = await window.open('','','left=50,top=100,width=1000,height=600,toolbar=0,scrollbars=0,status=0');
     winPrint.document.write(results);        
     setTimeout(()=>{
