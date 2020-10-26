@@ -99,7 +99,7 @@
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.formatConverterUI.show();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-fork"></div>
                         Format Converter  <span style="font-size:7pt">(Alt-m)</span><br/>
-                        <div style="font-size:7pt;position:relative;left:27px;top:-5px;padding-bottom:0px"><em>(Experimental)</em></div>
+                        <div style="font-size:7pt;position:relative;left:27px;top:-5px;padding-bottom:0px"><em>(Beta)</em></div>
                     </div>
                   </a>
                 </li>`;
@@ -111,7 +111,7 @@
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.formatConverterUI.htmlview();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-document-share"></div>
                         Web View <span style="font-size:7pt">(Ctrl-m)</span><br/>
-                        <div style="font-size:7pt;position:relative;left:27px;top:-5px;padding-bottom:0px"><em>(Experimental)</em></div>
+                        <div style="font-size:7pt;position:relative;left:27px;top:-5px;padding-bottom:0px"><em>(Beta)</em></div>
                     </div>
                   </a>
                 </li>`;
