@@ -152,7 +152,8 @@
     level = level -1;
     if(node.title){ output += '# '  + blockText; return; }; 
 
-      blockText = blockText.replaceAll('\n', '<br/>');
+    //convert soft line breaks, but not with code blocks
+    if(blockText.substring(0,3)!= '```')  blockText = blockText.replaceAll('\n', '<br/>');
 
     if(node.heading == 1) blockText = '# '   + blockText;
     if(node.heading == 2) blockText = '## '  + blockText;
@@ -169,7 +170,9 @@
       blockText = blockText.replace('{{DONE}}',todoPrefix + '[x]');
     } 
     // console.log("2",blockText)
-    blockText = roamMarkupScrubber(blockText, false);
+    try{
+      blockText = roamMarkupScrubber(blockText, false);    
+    } catch(e) {}
     // console.log("3",blockText)
 
     if(level>0 && blockText.substring(0,3)!='```') {

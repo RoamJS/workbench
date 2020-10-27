@@ -123,7 +123,7 @@
                 <a class="bp3-menu-item bp3-popover-dismiss">
                   <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.quickRef.component.toggleQuickReference();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-help"></div>    
-                      Help <span style="font-size:7pt">(Alt-Shift-H)</span>
+                      Help <span style="font-size:7pt">(Ctrl-Shift-h)</span>
                   </div>
                 </a>
               </li>`;
@@ -182,7 +182,7 @@
     
 
     menu += `<hr style="margin:0px; margin-top:5px; padding:0px">`;
-    menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;color:grey;">
+    menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;">
               ${roam42.buildID}
             </span></li>`;
 
