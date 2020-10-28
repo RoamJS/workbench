@@ -1,4 +1,4 @@
-/* globals  roam42, logo2HC, Mousetrap ,iziToast, getArticleOfCurrentPage, simulateMouseClick,simulateMouseClickRight,
+  /* globals  roam42, logo2HC, Mousetrap ,iziToast, getArticleOfCurrentPage, simulateMouseClick,simulateMouseClickRight,
             saveLocationParametersOfTextArea, restoreLocationParametersOfTexArea, roam42KeyboardLib, simulateMouseOver   
             blockInsertAbove, blockInsertBelow, blockDelete
 */

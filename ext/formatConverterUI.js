@@ -1,4 +1,4 @@
- /* globals roam42, Mousetrap, jsPanel, displayMessage, marked */
+ /* globals roam42, Mousetrap, jsPanel, displayMessage, marked, Cookies */
 
 //TODO
 // Find all block refs and convert them to their nomral output
@@ -8,10 +8,27 @@
 
   let formatConverterUITextArea = null; 
   let clipboardConvertedText = '';
+  
+  
+  roam42.formatConverterUI.getLastFormat = ()=>{
+    var lastValue =  Cookies.get('formatConverterUI_lastFormat');
+    console.log(lastValue)
+    if( lastValue === undefined) {
+      return 0;
+    } else {
+      return lastValue;
+    };
+  }
+
+  roam42.formatConverterUI.setLastFormat = (val)=>{
+    Cookies.set('formatConverterUI_lastFormat', val); 
+  }  
       
   roam42.formatConverterUI.changeFormat = async ()=> {
+    //save selection state
+    roam42.formatConverterUI.setLastFormat( document.getElementById('r42formatConverterSelection').selectedIndex );    
     var uid = await roam42.common.currentPageUID();
-    clipboardConvertedText='';
+    clipboardConvertedText='';    
     switch(document.getElementById('r42formatConverterSelection').value) {
       case 'puretext_Tab':
         clipboardConvertedText =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.pureText_TabIndented );    
@@ -25,11 +42,16 @@
       case 'markdown_Github':
         clipboardConvertedText =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );    
         break;
+      case 'markdown_Github_flatten':
+        clipboardConvertedText =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub, true);    
+        break;
       case 'html_Simple':
         clipboardConvertedText =  await   roam42.formatConverter.formatter.htmlSimple(uid);   
         break;
     }
     formatConverterUITextArea.value = clipboardConvertedText;
+    formatConverterUITextArea.scrollLeft = 0;
+    formatConverterUITextArea.scrollTop = 0;
   }  
   
   roam42.formatConverterUI.copyToClipboard = async ()=> {
@@ -58,7 +80,7 @@
     // if already open, do nothing
     if(document.querySelector('#r42formatConvertUI')) return;
     
-    let panelTitle = 'Roam<sup>42</sup> Format Converter (Experimental)';
+    let panelTitle = 'Roam<sup>42</sup> Format Converter (Beta)';
     
     jsPanel.create({
       id: 'r42formatConvertUI',
@@ -85,6 +107,7 @@
           <option value="puretext_Tab">Text with tab indentation</option>
           <option value="pureText_NoIndentation">Text with no indentation</option>
           <option value="markdown_Github">GitHub Flavored Markdown</option>
+          <option value="markdown_Github_flatten">GitHub Flavored Markdown - flatten</option>
           <option value="html_Simple">HTML</option>
         </select>
         <div style="float:right"><div title="Refresh view based on current page" class="bp3-button bp3-minimal bp3-small bp3-icon-refresh" onclick="roam42.formatConverterUI.changeFormat()"></div></div>
@@ -99,6 +122,7 @@
             formatConverterUITextArea = document.getElementById('formatConverterUITextArea'); 
             setTimeout(async ()=>{
               // document.querySelector('#r42formatConvertUI').style.backgroundColor='red !important';
+              document.getElementById('r42formatConverterSelection')[roam42.formatConverterUI.getLastFormat()].selected=true;
               roam42.formatConverterUI.changeFormat()
             }, 100)
           },
@@ -117,13 +141,7 @@
 //         };
 //       }
 //     }
-    // var md =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub );   
-    // marked.setOptions({
-    //   gfm: true,
-    //   xhtml: false
-    // });
     
-    // var results = marked(md);
     var uid = await roam42.common.currentPageUID();
     var results = await roam42.formatConverter.formatter.htmlSimple(uid);
 
@@ -147,8 +165,8 @@
     roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
     roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
     setTimeout(async ()=>{
-     // roam42.formatConverterUI.show()
-      roam42.formatConverterUI.htmlview()
+     roam42.formatConverterUI.show()
+      // roam42.formatConverterUI.htmlview()
     }, 500)  
   }   
 

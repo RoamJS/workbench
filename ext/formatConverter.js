@@ -16,14 +16,18 @@
       return a.string.localeCompare(b.string)
     });
   }
+  
+  
+  // output( blockText, nodeCurrent, level, parent, flatten )
 
-  var walkDocumentStructureAndFormat = async (node, level, outputFunction, parent )=>{
-    if(typeof node.title != 'undefined') {          // Title of page
-      outputFunction(node.title, node, 0);
-      roam42.formatConverter.currentPageName = node.title;
-    } else if(typeof node.string != 'undefined' ) { // Text of a block
+  var walkDocumentStructureAndFormat = async (nodeCurrent, level, outputFunction, parent, flatten )=>{
+    // console.log('walkDocumentStructureAndFormat ' + flatten)
+    if(typeof nodeCurrent.title != 'undefined') {          // Title of page
+      outputFunction(nodeCurrent.title, nodeCurrent, 0, parent, flatten);
+      roam42.formatConverter.currentPageName = nodeCurrent.title;
+    } else if(typeof nodeCurrent.string != 'undefined' ) { // Text of a block
       // check if there are embeds and convert text to that
-      let blockText = node.string;
+      let blockText = nodeCurrent.string;
       // First: check for block embed
      blockText = blockText.replaceAll('\{\{embed:','\{\{\[\[embed\]\]\:');    
       let embeds = blockText.match(/\{\{\[\[embed\]\]\: \(\(.+?\)\)\}\}/g);
@@ -37,37 +41,29 @@
             blockText = await blockText.replace(e, embedResults[0][0].string);
             //test if the newly generated block has any block refs
             blockText = await resolveBlockRefsInText(blockText);            
-            outputFunction(blockText, node, level, parent);
+            outputFunction(blockText, nodeCurrent, level, parent, flatten);
             //see if embed has children
             if(typeof embedResults[0][0].children != 'undefined' && level < 30) {
               let orderedNode = await sortObjectsByOrder(embedResults[0][0].children)
               for(let i in await sortObjectsByOrder(embedResults[0][0].children)) {
-                await walkDocumentStructureAndFormat(orderedNode[i], level + 1, (embedResults, node, level,)=> {
-                  outputFunction(embedResults, node, level,parent)
-                }, embedResults[0][0])
+                await walkDocumentStructureAndFormat(orderedNode[i], level + 1, (embedResults, nodeCurrent, level)=> {
+                  outputFunction(embedResults, nodeCurrent, level, parent,flatten)
+                }, embedResults[0][0], parent, flatten)
               }
             }
           }catch(e){}            
         }
       }  else {
         // Second: check for block refs
-        blockText = await resolveBlockRefsInText(blockText);                    
-        // let refs = blockText.match(/\(\(.+?\)\)/g);
-        // if(refs != null ){
-        //   for(const e of refs){
-        //     let uid = e.replaceAll('(','').replaceAll(')','');
-        //     let results = await roam42.common.getBlockInfoByUID(uid, false);
-        //     if(results) blockText = blockText.replace(e, results[0][0].string);
-        //   }
-        // }
-        outputFunction(blockText, node, level, parent);
+        blockText = await resolveBlockRefsInText(blockText);
+        outputFunction(blockText, nodeCurrent, level, parent, flatten);
       }
     }
     // If block/node has children nodes, process them
-    if(typeof node.children != 'undefined') {
-      let orderedNode = await sortObjectsByOrder(node.children)
-      for(let i in await sortObjectsByOrder(node.children)) 
-        await walkDocumentStructureAndFormat(orderedNode[i], level + 1, outputFunction, node)
+    if(typeof nodeCurrent.children != 'undefined') {
+      let orderedNode = await sortObjectsByOrder(nodeCurrent.children)
+      for(let i in await sortObjectsByOrder(nodeCurrent.children)) 
+        await walkDocumentStructureAndFormat(orderedNode[i], level + 1, outputFunction, nodeCurrent, flatten)
     } 
   }
 
@@ -127,37 +123,46 @@
     return blockText;
   }
    
-  roam42.formatConverter.formatter.pureText_SpaceIndented = async (blockText, node, level)=> {
-    if(node.title) return; 
+  roam42.formatConverter.formatter.pureText_SpaceIndented = async (blockText, nodeCurrent, level, parent, flatten)=> {
+    if(nodeCurrent.title) return; 
     blockText = roamMarkupScrubber(blockText, true);
     let leadingSpaces = level > 1 ?  '  '.repeat(level-1)  : '' ;
     output += leadingSpaces + blockText + '\n'
   }
   
-  roam42.formatConverter.formatter.pureText_TabIndented = async (blockText, node, level)=> {
-    if(node.title) return; 
-    blockText = roamMarkupScrubber(blockText, true);
+  roam42.formatConverter.formatter.pureText_TabIndented = async (blockText, nodeCurrent, level, parent, flatten)=> {
+    if(nodeCurrent.title) return; 
+    try{
+      blockText = roamMarkupScrubber(blockText, true);
+    } catch(e) {}
     let leadingSpaces = level > 1 ?  '\t'.repeat(level-1)  : '' ;      
     output += leadingSpaces + blockText + '\n'
   }
   
-  roam42.formatConverter.formatter.pureText_NoIndentation = async (blockText, node, level)=> {
-    if(node.title) return; 
-    blockText = roamMarkupScrubber(blockText, true);
+  roam42.formatConverter.formatter.pureText_NoIndentation = async (blockText, nodeCurrent, level, parent, flatten)=> {
+    if(nodeCurrent.title) return; 
+    try{
+      blockText = roamMarkupScrubber(blockText, true);
+    } catch(e) {}
     output += blockText + '\n'    
   }  
   
-  roam42.formatConverter.formatter.markdownGithub = async (blockText, node, level, parent)=> {
+  roam42.formatConverter.formatter.markdownGithub = async (blockText, nodeCurrent, level, parent, flatten)=> {
     // console.log("1",blockText)
-    level = level -1;
-    if(node.title){ output += '# '  + blockText; return; }; 
+   // console.log(flatten)
+    if(flatten==true) {
+      level = 0
+    } else {
+      level = level -1;      
+    }
+    if(nodeCurrent.title){ output += '# '  + blockText; return; }; 
 
     //convert soft line breaks, but not with code blocks
     if(blockText.substring(0,3)!= '```')  blockText = blockText.replaceAll('\n', '<br/>');
 
-    if(node.heading == 1) blockText = '# '   + blockText;
-    if(node.heading == 2) blockText = '## '  + blockText;
-    if(node.heading == 3) blockText = '### ' + blockText;
+    if(nodeCurrent.heading == 1) blockText = '# '   + blockText;
+    if(nodeCurrent.heading == 2) blockText = '## '  + blockText;
+    if(nodeCurrent.heading == 3) blockText = '### ' + blockText;
     // process todo's
     var todoPrefix = level > 0 ? '' : '- '; //todos on first level need a dash before them
     if(blockText.substring(0,12) == '{{[[TODO]]}}') {
@@ -175,7 +180,7 @@
     } catch(e) {}
     // console.log("3",blockText)
 
-    if(level>0 && blockText.substring(0,3)!='```') {
+    if( level > 0 && blockText.substring(0,3)!='```') {
       //handle indenting (first level is treated as no level, second level treated as first level)
       if(parent["view-type"] == 'numbered') {
         output += '    '.repeat(level-1) + '1. ';      
@@ -205,22 +210,23 @@
     return  '<html>\n<body>\n' + marked(md) + '</body>\n</html>';
   }
     
-    
   var output = '';
   
-  roam42.formatConverter.iterateThroughTree = async (uid, formatterFunction)=>{
+  roam42.formatConverter.iterateThroughTree = async (uid, formatterFunction, flatten )=>{
     var results = await roam42.common.getBlockInfoByUID(uid, true)
     output = '';
-    await walkDocumentStructureAndFormat(results[0][0], 0, formatterFunction);
+    //nodeCurrent, level, outputFunction, parent, flatten
+    await walkDocumentStructureAndFormat(results[0][0], 0, formatterFunction, null, flatten);
     return output;
   } 
-
 
   window.roam42.formatConverter.testingReload = ()=>{
     roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
     roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
-    setTimeout(()=>{
-     // roam42.markdown.iterateThroughTree(document.querySelector('.rm-title-display').innerText, roam42.formatConverter.formatter.pureText )
+    setTimeout( async ()=>{
+      var uid = await roam42.common.currentPageUID();
+      var x =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub, false );    
+      // console.log( x );
     }, 600)
   }  
 })();
