@@ -119,9 +119,13 @@
       blockText = blockText.replaceAll(/\[(.+?)\]\((.+?)\)/g, '$1: $2');   //alias with description
       blockText = blockText.replaceAll(/\[\]\((.+?)\)/g, '$1');           //alias with no description
       blockText = blockText.replaceAll(/\[(.+?)\](?!\()(.+?)\)/g, '$1');    //alias with embeded block (Odd side effect of parser)      
+    } else {
+      blockText = blockText.replaceAll(/\_\_(.+?)\_\_/g, '\_$1\_');    // convert for use as italics _ _     
     }    
+    
+    
     return blockText;
-  }
+  }  
    
   roam42.formatConverter.formatter.pureText_SpaceIndented = async (blockText, nodeCurrent, level, parent, flatten)=> {
     if(nodeCurrent.title) return; 
