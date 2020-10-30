@@ -65,9 +65,29 @@
         } else { 
           roam42.dailyNotesPopup.component.toggleVisible(); 
         }
-        return
+        return;
       }    
 
+      // Daily notes page toggle in and out
+      if (ev.altKey && ev.shiftKey &&  (ev.key=='9' || ev.code=='Digit9')  ) { 
+        event.preventDefault();
+        console.log ('9')
+        if( window != window.parent ) { 
+        console.log ('iinsdie')
+          window.parent.focus();
+        } else { 
+        console.log ('outside')
+          // window.parent.document.querySelector('#jsPanelDNP').style.visibility = 'hidden';
+          roam42.dailyNotesPopup.component.panelDNP.style.visibility = 'hidden';
+          setTimeout(()=> {
+            roam42.dailyNotesPopup.component.panelDNP.style.visibility = 'visible';
+            document.getElementById('iframePanelDNP').focus();
+          },10);
+        }
+        return;
+      }    
+      
+      
       //insert todo #na
       if (ev.altKey && ev.shiftKey && ev.code=='KeyA'  ) {     
         event.preventDefault();
