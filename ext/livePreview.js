@@ -184,7 +184,6 @@
         iframe.style.top = '0';
         iframe.style.opacity = '0';
         iframe.style.pointerEvents = 'none';
-
         iframe.style.height = '0';
         iframe.style.width = '0';
         iframe.style.border = '0';
@@ -198,9 +197,7 @@
                 .roam-topbar {
                     display: none !important;
                 }
-                .roam-sidebar-container {
-                    display: none !important;
-                }
+
                 .roam-body-main {
                     top: 0px !important;
                     left; 0px !important;
@@ -262,7 +259,7 @@
 
         document.addEventListener('mouseover', (e) => {
           // if( e.ctrlKey == false ) { return }
-          if( roam42.livePreview.roam42LivePreviewState == 0) { return }
+          if( e.ctrlKey == false && roam42.livePreview.roam42LivePreviewState == 0 ) { return };
           let pageIsBlock = false;          
           let target = e.target;
 
@@ -330,7 +327,7 @@
           } catch(e) {}
           
           //preview BLOCK references
-          if ( isPageRef == false && roam42.livePreview.roam42LivePreviewState == 2 && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
+          if ( isPageRef == false && (  e.ctrlKey == true || roam42.livePreview.roam42LivePreviewState == 2 ) && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
             pageIsBlock = true;
             let block = target.closest('.roam-block').id;
             let bId = block.substring( block.length -9);

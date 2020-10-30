@@ -83,6 +83,7 @@
     if(blockText.substring(0,9)  == "{{[[query" || blockText.substring(0,7) == "{{query" ) return '';
     if(blockText.substring(0,12) == "{{attr-table" ) return '';
     if(blockText.substring(0,15) == "{{[[mentions]]:" ) return '';
+    if(blockText.substring(0,8) == ":hiccup " && blockText.includes(':hr') ) return  '---'; // Horizontal line in markup, replace it with MD 
     blockText = blockText.replaceAll('{{TODO}}',       'TODO');
     blockText = blockText.replaceAll('{{[[TODO]]}}',   'TODO');
     blockText = blockText.replaceAll('{{DONE}}',       'DONE');
@@ -107,6 +108,7 @@
     blockText = blockText.replaceAll(/\{\{calc: (.+?)\}\}/g,  function(all, match) {
       try{ return eval(match) } catch(e) { return ''}
     });
+    
                                      
                                      // calc functions  {{calc: 4+4}}
     if(removeMarkdown) {
