@@ -130,6 +130,7 @@
           roam42.dailyNotesPopup.component.panelDNP.offsetTop = window.innerHeight -100;
         }      
         roam42.dailyNotesPopup.component.panelDNP.style.visibility = 'visible';
+        document.getElementById('iframePanelDNP').focus();
       } else {
         roam42.dailyNotesPopup.component.panelDNP.normalize();
         roam42.dailyNotesPopup.component.saveUIChanges('toggleVisible');
@@ -140,5 +141,12 @@
 
   }
 
+  window.roam42.dailyNotesPopup.testingReload = ()=>{
+    if(document.querySelector('#jsPanelDNP')) document.querySelector('#jsPanelDNP').remove();
+    roam42.loader.addScriptToPage( 'dailyNotesPopup', 	roam42.host + 'ext/dailyNotesPopup.js');
+    setTimeout(async ()=>{
+      roam42.dailyNotesPopup.component.initialize();
+    }, 500)  
+  }     
 
 })();
