@@ -203,6 +203,7 @@
                 .roam-body-main {
                     top: 0px !important;
                     left; 0px !important;
+                    width: 100% !important;
                 }
                 #buffer {
                     display: none !important;
