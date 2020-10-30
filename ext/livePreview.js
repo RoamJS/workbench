@@ -198,6 +198,9 @@
                 .roam-topbar {
                     display: none !important;
                 }
+                .roam-sidebar-container {
+                    display: none !important;
+                }
                 .roam-body-main {
                     top: 0px !important;
                     left; 0px !important;
