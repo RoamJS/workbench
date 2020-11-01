@@ -103,13 +103,11 @@
     blockText = blockText.replaceAll(/\[\[(.+?)\]\]/g, '$1');      // [[ ]]  First run
     blockText = blockText.replaceAll(/\[\[(.+?)\]\]/g, '$1');      // [[ ]]  second run
     blockText = blockText.replaceAll(/\[\[(.+?)\]\]/g, '$1');      // [[ ]]  second run
-    blockText = blockText.replaceAll(/\$\$(.+?)\$\$/g, '$1');      // $$ $$
+    // blockText = blockText.replaceAll(/\$\$(.+?)\$\$/g, '$1');      // $$ $$
     blockText = blockText.replaceAll(/\B\#([a-zA-Z]+\b)/g, '$1');  // #hash tag
     blockText = blockText.replaceAll(/\{\{calc: (.+?)\}\}/g,  function(all, match) {
       try{ return eval(match) } catch(e) { return ''}
-    });
-    
-                                     
+    });        
                                      // calc functions  {{calc: 4+4}}
     if(removeMarkdown) {
       blockText = blockText.replaceAll(/\*\*(.+?)\*\*/g, '$1');    // ** **
@@ -209,10 +207,44 @@
     });
     md = md.replaceAll('- [ ] [', '- [ ]&nbsp;&nbsp;['); //fixes odd isue of task and alis on same line
     md = md.replaceAll('- [x] [', '- [x]&nbsp;['); //fixes odd isue of task and alis on same line
-    // console.log(md)    
+    md = md.replaceAll(/\{\{\youtube\: (.+?)\}\} /g, (str,lnk)=>{
+      lnk = lnk.replace('youtube.com/','youtube.com/embed/');
+      lnk = lnk.replace('youtu.be/','youtube.com/embed/');
+      lnk = lnk.replace('watch?v=','');
+      return `<iframe width="560" height="315" class="embededYoutubeVieo" src="${lnk}" frameborder="0"></iframe>`
+    });
+
     
-    md = marked(md);
-    return  '<html>\n<body>\n' + marked(md) + '</body>\n</html>';
+    //lATEX handling
+   md = md.replace(/  \- (\$\$)/g, '\n\n$1'); //Latex is centered
+    const tokenizer = {
+      codespan(src) {
+        var match = src.match(/\$\$(.*?)\$\$/);
+        if (match) {
+          var str = match[0];
+              str = str.replaceAll('<br>',' ');
+              str = str.replaceAll('<br/>',' ');
+              str = `<div>${str}</div>`;
+          return { type: 'text', raw: match[0],text: str };
+        }
+        // return false to use original codespan tokenizer
+        return false;
+      }
+    };
+    marked.use({ tokenizer });    
+    md = marked(md)
+
+    return  `<html>\n
+              <head>
+              </head>
+              <body>\n${md}\n
+              <script>
+                setTimeout(()=>{
+                renderMathInElement(document.body);
+                },1000)
+              </script>
+              </body>\n
+            </html>`;
   }
     
   var output = '';

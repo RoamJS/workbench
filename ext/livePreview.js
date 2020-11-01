@@ -193,12 +193,20 @@
               var style = document.createElement('style')
 
         const styleNode = document.createElement('style');
+  
+       
+        
         styleNode.innerHTML = `
                 .roam-topbar {
                     display: none !important;
                 }
                 .roam-sidebar-container {
                     display: none !important;
+                }
+                // solves gutter issues with certain themes
+                // that have horizontal layouts (https://github.com/azlen/roam-themes)
+                .roam-main {
+                  padding: 0 !important;
                 }
                 .roam-body-main {
                     top: 0px !important;
