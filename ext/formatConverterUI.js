@@ -146,7 +146,7 @@
     var results = await roam42.formatConverter.formatter.htmlSimple(uid);
 
     var winPrint = await window.open('','','left=50,top=100,width=1000,height=600,toolbar=0,scrollbars=0,status=0');
-    winPrint.document.write(results);        
+    winPrint.document.write(results.replace('<html>','<!DOCTYPE html>'));        
     setTimeout(()=>{
       const addElementToPage = (element, tagId, typeT )=> {
         Object.assign(element, { type:typeT, async:false, tagId:tagId } );
@@ -155,7 +155,13 @@
       const addCSSToPage = (tagId, cssToAdd)=> {
         addElementToPage(Object.assign(winPrint.document.createElement('link'),{href:cssToAdd, rel: 'stylesheet'} ) , tagId, 'text/css');
       }
-     addCSSToPage('myStyle', roam42.host + 'css/markdown/default.css');  
+      const addScriptToPage = (tagId, script)=> {
+        addElementToPage(Object.assign(document.createElement('script'),{src:script}) , tagId, 'text/javascript');
+      }
+      addCSSToPage(    'KatexCSS',     'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css');
+      addScriptToPage( 'KatexJS',      'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js');
+      addScriptToPage( 'KatexJS-auto', 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js');
+      addCSSToPage(    'myStyle',   roam42.host + 'css/markdown/default.css');  
      winPrint.document.title = "Roam42 Viewer"
     }, 50)
   }
