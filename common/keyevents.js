@@ -69,7 +69,7 @@
       }    
 
       // Daily notes page toggle in and out
-      if (ev.altKey && ev.shiftKey &&  (ev.key=='9' || ev.code=='Digit9')  ) { 
+      if (ev.altKey  && (ev.key=='y' || ev.code=='KeyY')  ) { 
         event.preventDefault();
         console.log ('9')
         if( window != window.parent ) { 

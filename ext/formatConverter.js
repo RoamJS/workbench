@@ -206,7 +206,6 @@
       gfm: true,
       xhtml: false,
       pedantic: false,
-      
     });
     md = md.replaceAll('- [ ] [', '- [ ]&nbsp;&nbsp;['); //fixes odd isue of task and alis on same line
     md = md.replaceAll('- [x] [', '- [x]&nbsp;['); //fixes odd isue of task and alis on same line
