@@ -184,42 +184,46 @@
         iframe.style.top = '0';
         iframe.style.opacity = '0';
         iframe.style.pointerEvents = 'none';
-        iframe.style.height = '0';
-        iframe.style.width = '0';
+        iframe.style.height = '0px';
+        iframe.style.width = '0px';
         iframe.style.border = '0';
         iframe.style.boxShadow = '0 0 4px 5px rgba(0, 0, 0, 0.2)';
-        iframe.style.borderRadius = '4px';
+        iframe.style.borderRadius = '8px';
         iframe.id = 'roam42-live-preview-iframe';
-              var style = document.createElement('style')
-
         const styleNode = document.createElement('style');
   
-       
-        
         styleNode.innerHTML = `
-                .roam-topbar {
-                    display: none !important;
-                }
-                .roam-sidebar-container {
-                    display: none !important;
-                }
-                // solves gutter issues with certain themes
-                // that have horizontal layouts (https://github.com/azlen/roam-themes)
-                .roam-main {
-                  padding: 0 !important;
-                }
-                .roam-body-main {
-                    top: 0px !important;
-                    left; 0px !important;
-                    width: 100% !important;
-                }
-                #buffer {
-                    display: none !important;
-                }
-                iframe {
-                    display: none !important;
-               }
-            `;
+          div.roam-app > div.flex-h-box {
+            margin-left: 10px !important;
+          }
+          .roam-article {
+            padding: 10px !important;
+            margin-top: 20px !important;
+            overflow: scroll;
+          }
+          .roam-topbar {
+              display: none !important;
+          }
+          .roam-sidebar-container {
+              display: none !important;
+          }
+          .roam-main {
+              padding: 0 !important;
+          }
+          .roam-body-main {
+              top: 0px !important;
+              left: 0px !important;
+              height: 100% !impportant!
+              width: 100% !important;
+          }
+          #buffer {
+              display: none !important;
+          }
+          iframe {
+              display: none !important;
+          }
+        `;
+        
         iframe.onload = (event) => {
           event.target.contentDocument.body.appendChild(styleNode);
         };
@@ -404,6 +408,7 @@
           }
         });
         document.addEventListener('mouseout', (e) => {
+          
           if(specialDelayMouseOut){
             hoveredElement = null
             return
