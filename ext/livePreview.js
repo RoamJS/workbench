@@ -198,8 +198,10 @@
           }
           .roam-article {
             padding: 10px !important;
-            margin-top: 20px !important;
-            overflow: scroll;
+            margin-top: 10px !important;
+          }
+          .rm-title-display {
+            margin-top: 0px;
           }
           .roam-topbar {
               display: none !important;
@@ -213,7 +215,6 @@
           .roam-body-main {
               top: 0px !important;
               left: 0px !important;
-              height: 100% !impportant!
               width: 100% !important;
           }
           #buffer {
@@ -380,30 +381,30 @@
              }
             if (!popupTimeout) {
               popupTimeout = window.setTimeout(() => {
-              if (previewIframe) {
-                previewIframe.style.opacity = '1';
-                previewIframe.style.pointerEvents = 'all';
-
-                // popper = window.Popper.createPopper(target, previewIframe, {
-                popper = window.Popper.createPopper( virtualElement, previewIframe, {
-                  placement: 'right',
-                  modifiers: [
-                    {
-                      name: 'preventOverflow',
-                      options: {
-                        padding: { top: 48 },
+                previewIframe.contentDocument.querySelector('.roam-article').scrollIntoView()                            
+                if (previewIframe) {
+                  previewIframe.style.opacity = '1';
+                  previewIframe.style.pointerEvents = 'all';
+                  // popper = window.Popper.createPopper(target, previewIframe, {
+                  popper = window.Popper.createPopper( virtualElement, previewIframe, {
+                    placement: 'right',
+                    modifiers: [
+                      {
+                        name: 'preventOverflow',
+                        options: {
+                          padding: { top: 48 },
+                        },
                       },
-                    },
-                    {
-                      name: 'flip',
-                      options: {
-                        boundary: document.querySelector('#app'),
+                      {
+                        name: 'flip',
+                        options: {
+                          boundary: document.querySelector('#app'),
+                        },
                       },
-                    },
-                  ],
-                });
-              }
-            }, delayTimer + 100)
+                    ],
+                  });
+                }
+              }, delayTimer + 100)
             }
           }
         });
@@ -417,7 +418,7 @@
           const relatedTarget = e.relatedTarget;
           const iframe = document.getElementById('roam42-live-preview-iframe');
           if (
-            (hoveredElement === target && relatedTarget !== iframe) ||
+            ( hoveredElement === target && relatedTarget !== iframe) ||
             (target === iframe && relatedTarget !== hoveredElement) ||
             !document.body.contains(hoveredElement)
           ) {
@@ -425,15 +426,15 @@
             clearTimeout(popupTimeout);
             popupTimeout = null;
             if (iframe) {
-              if (iframe.contentDocument) {
-                // scroll to top when removed
-                const scrollContainer = iframe.contentDocument.querySelector(
-                  '.roam-center > div'
-                );
-                if (scrollContainer) {
-                  scrollContainer.scrollTop = 0;
-                }
-              }
+              // if (iframe.contentDocument) {
+              //   // scroll to top when removed
+              //   const scrollContainer = iframe.contentDocument.querySelector(
+              //     '.roam-article > div'
+              //   );
+              //   if (scrollContainer) {
+              //     scrollContainer.scrollTop = 0;
+              //   }
+              // }            
               iframe.style.pointerEvents = 'none';
               iframe.style.opacity = '0';
               iframe.style.height = '0';
@@ -442,7 +443,7 @@
             if (popper) {
               popper.destroy();
               popper = null;
-            }
+            }                      
           } else {
             //console.log('out', target, event);
           }
