@@ -138,7 +138,7 @@
       }
 
       //HTML view
-      if (ev.ctrlKey && ev.shiftKey==false &&  ev.code=='KeyM'  ) {  
+      if (ev.altKey  && ev.shiftKey==true &&  ev.code=='KeyM'  ) {  
         event.preventDefault();
         roam42.formatConverterUI.htmlview();
         return
