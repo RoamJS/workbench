@@ -10,7 +10,7 @@
 
   roam42.privacyMode.keyboardHandler = ev => {
     if( window != window.parent ) {  return; }
-    if( ev.ctrlKey && ev.altKey && ev.code=='KeyP' ) {
+    if( ev.shiftKey && ev.altKey && ev.code=='KeyP' ) {
       ev.preventDefault();
       roam42.privacyMode.toggle();
     }
