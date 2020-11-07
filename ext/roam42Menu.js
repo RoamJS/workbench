@@ -68,7 +68,7 @@
                 </li>`;
     }
     
-    if( roam42.turndownPage != undefined ) {
+    if( roam42.typeAhead != undefined ) {
       menu += `<li class="">
                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.typeAhead.typeAheadLookup();">
@@ -79,12 +79,23 @@
                 </li>`;
     }    
     
+    if( roam42.focusMode  != undefined ) {
+      menu += `<li class="">
+                  <a class="bp3-menu-item bp3-popover-dismiss">
+                    <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.focusMode.toggle();">
+                      <div class="bp3-button bp3-minimal bp3-small bp3-icon-eye-open  ${roam42.focusMode.active() ? 'bp3-intent-primary"':''}"></div>
+                        Focus Mode <span style="font-size:7pt">(Alt-Shift-f)</span><br/>
+                    </div>
+                  </a>
+                </li>`;
+    }    
+    
     if( roam42.privacyMode  != undefined ) {
       menu += `<li class="">
                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.privacyMode.toggle();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-shield  ${roam42.privacyMode.active() ? 'bp3-intent-warning"':''}"></div>
-                        Privacy Mode <span style="font-size:7pt">(Ctrl+Alt-p)</span><br/>
+                        Privacy Mode <span style="font-size:7pt">(Alt-Shift-p)</span><br/>
                         <div style="font-size:7pt;position:relative;left:27px;top:-5px;padding-bottom:0px"><em>(Experimental)</em></div>
                     </div>
                   </a>
@@ -98,8 +109,7 @@
                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.formatConverterUI.show();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-fork"></div>
-                        Format Converter  <span style="font-size:7pt">(Alt-m)</span><br/>
-                        <div style="font-size:7pt;position:relative;left:27px;top:-5px;padding-bottom:0px"><em>(Experimental)</em></div>
+                        Converter <span style="font-size:7pt">(Alt-m)</span><br/>
                     </div>
                   </a>
                 </li>`;
@@ -110,8 +120,7 @@
                   <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.formatConverterUI.htmlview();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-document-share"></div>
-                        HTML Viewer  <span style="font-size:7pt">(Ctrl-m)</span><br/>
-                        <div style="font-size:7pt;position:relative;left:27px;top:-5px;padding-bottom:0px"><em>(Experimental)</em></div>
+                        Web View <span style="font-size:7pt">(Alt-Shift-m)</span><br/>
                     </div>
                   </a>
                 </li>`;
@@ -123,7 +132,7 @@
                 <a class="bp3-menu-item bp3-popover-dismiss">
                   <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.quickRef.component.toggleQuickReference();">
                       <div class="bp3-button bp3-minimal bp3-small bp3-icon-help"></div>    
-                      Help <span style="font-size:7pt">(Alt-Shift-H)</span>
+                      Help <span style="font-size:7pt">(Ctrl-Shift-h)</span>
                   </div>
                 </a>
               </li>`;
@@ -182,7 +191,7 @@
     
 
     menu += `<hr style="margin:0px; margin-top:5px; padding:0px">`;
-    menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;color:grey;">
+    menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;">
               ${roam42.buildID}
             </span></li>`;
 

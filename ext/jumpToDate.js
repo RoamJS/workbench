@@ -26,8 +26,8 @@
         ev.preventDefault();
         if (event.srcElement.localName == 'textarea') {
           roam42KeyboardLib.pressEsc();
-          setTimeout( ()=> {
-            roam42KeyboardLib.pressEsc();
+          setTimeout( async ()=> {
+            await roam42KeyboardLib.pressEsc();
             this.moveForwardToDate(false);
           },300 )
         } else {
@@ -40,8 +40,8 @@
         ev.preventDefault();
         if (event.srcElement.localName == 'textarea') {
           roam42KeyboardLib.pressEsc();
-          setTimeout( ()=> {
-            roam42KeyboardLib.pressEsc();
+          setTimeout( async ()=> {
+            await roam42KeyboardLib.pressEsc();
             this.moveForwardToDate(true);
           },300 );
         } else {
@@ -49,6 +49,7 @@
         }
         return true
       }
+      
     }, // addEventListener
 
 

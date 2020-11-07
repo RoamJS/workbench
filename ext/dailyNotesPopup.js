@@ -97,6 +97,7 @@
           simulateMouseOver(iframe.contentDocument.document.getElementsByClassName("roam-article")[0]);
         } catch(e) {} //if on ipad, the above command fails, so go to next step      
         iframe.contentDocument.head.appendChild(style);
+        iframe.contentDocument.getElementById('app').classList.add('roam42-DNP');
       },12000)
 
     },
@@ -130,6 +131,7 @@
           roam42.dailyNotesPopup.component.panelDNP.offsetTop = window.innerHeight -100;
         }      
         roam42.dailyNotesPopup.component.panelDNP.style.visibility = 'visible';
+        document.getElementById('iframePanelDNP').focus();
       } else {
         roam42.dailyNotesPopup.component.panelDNP.normalize();
         roam42.dailyNotesPopup.component.saveUIChanges('toggleVisible');
@@ -140,5 +142,12 @@
 
   }
 
+  window.roam42.dailyNotesPopup.testingReload = ()=>{
+    if(document.querySelector('#jsPanelDNP')) document.querySelector('#jsPanelDNP').remove();
+    roam42.loader.addScriptToPage( 'dailyNotesPopup', 	roam42.host + 'ext/dailyNotesPopup.js');
+    setTimeout(async ()=>{
+      roam42.dailyNotesPopup.component.initialize();
+    }, 500)  
+  }     
 
 })();

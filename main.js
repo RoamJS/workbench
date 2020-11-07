@@ -17,7 +17,8 @@
   roam42.dateProcessing    Date functions
   roam42.privacyMode       Redacts content from your Roam
   roam42.formatConverter   converts current page to various formats   
-  roam42.KeyboardLib        imported from another library. so letting it stand as its own object
+  roam42.formatConverterUI UI to roam42.formatConverter    
+  roam42.KeyboardLib       imported from another library. so letting it stand as its own object
 */
 
 ;(()=>{});
@@ -25,7 +26,8 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2020-10-24c';
+  roam42.buildID = 'Roam<sup>42</sup> 2020-11-07b (Vogon)';
+  
   roam42.host    = document.currentScript.src.replace('main.js','');
 
   // roam42.loader 
@@ -106,16 +108,18 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addScriptToPage( 'privacyMode',       roam42.host + 'ext/privacyMode.js'        );
     roam42.loader.addScriptToPage( 'roam42Menu',        roam42.host + 'ext/roam42Menu.js'         );
     roam42.loader.addScriptToPage( 'roam42Tutorials',   roam42.host + 'ext/tutorials.js'          );
+    roam42.loader.addScriptToPage( 'roamNavigator',     roam42.host + 'ext/roam-navigator.js'   );
 
     //Do not load in iframe windows
     if( window === window.parent  ){
       roam42.loader.addScriptToPage( 'quickReference',    roam42.host + 'ext/quickRef.js'  );
-      roam42.loader.addScriptToPage( 'turnDown',          roam42.host + 'ext/turndownservice.js'  );
-      roam42.loader.addScriptToPage( 'roamNavigator',     roam42.host + 'ext/roam-navigator.js'   );
+      // roam42.loader.addScriptToPage( 'turnDown',          roam42.host + 'ext/turndownservice.js'  );
       roam42.loader.addScriptToPage( 'lookupUI',          roam42.host + 'ext/typeaheadUI.js'      );
       roam42.loader.addScriptToPage( 'typeAheadData',     roam42.host + 'ext/typeaheadData.js'    );
       roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
       roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');      
+      roam42.loader.addScriptToPage( 'livePreview',       roam42.host + 'ext/livePreview.js'  );
+      roam42.loader.addScriptToPage( 'focuesMode',        roam42.host + 'ext/focusMode.js'  );
     }
 
     // Give the libraries a few seconds to get comfy in their new home 
@@ -123,15 +127,9 @@ if( typeof window.roam42 == 'undefined' ) {
     // begin initializing the environment with all the cool tools
     setTimeout(()=>{
 
-        // Dont display in iframe
-      // if( window === window.parent ) {
-      //     roam42.help.displayStartup(5000);  
-      // }
-
       setTimeout(()=>{
         try {
           if ( device.mobile() == false && window === window.parent  ) { 
-            roam42.loader.addScriptToPage( 'livePreview',     roam42.host + 'ext/livePreview.js'  );
             roam42.loader.addScriptToPage( 'dailyNote',       roam42.host + 'ext/dailyNotesPopup.js' );
           }
         } catch(e) {}
@@ -139,12 +137,11 @@ if( typeof window.roam42 == 'undefined' ) {
           roam42.keyevents.loadKeyEvents();
           roam42.autocomplete.loadAutoComplete();
           roam42.jumpnav.loadJumpNav();
-          try { roam42.typeAhead.loadTypeAhead();     } catch(e){};
-          try { roam42.jumpToDate.component.initialize();  } catch(e){};
-          try { roam42.quickRef.component.initialize(); } catch(e){};
+          try { roam42.typeAhead.loadTypeAhead();              } catch(e){};
+          try { roam42.jumpToDate.component.initialize();      } catch(e){};
+          try { roam42.quickRef.component.initialize();        } catch(e){};
           try { roam42.dailyNotesPopup.component.initialize(); } catch(e){};
-          try { roam42.roam42Menu.Initialize(); } catch(e){};
-          
+          try { roam42.roam42Menu.Initialize();                } catch(e){};
         }, 1000);      
       }, 2000);
     }, 5000);

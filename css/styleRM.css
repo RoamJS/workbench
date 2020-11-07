@@ -190,10 +190,30 @@
   color: black !important;
 }
 
+/*
 .roam42-privacy-block, .roam42-privacy-block *, .roam42-privacy-block > * {
   color:      black !important;
   background: black !important;
 }
+*/
+
+.roam42-privacy-block, .roam42-privacy-block * {
+  color: transparent !important;
+  background: transparent !important;
+  border-left: black !important;
+}
+
+.roam42-privacy-block, .roam42-privacy-block *::before { /* for removing custom-styled tags */
+  content: none !important;
+  color: transparent !important;
+  background: black !important;
+}
+
+.roam42-privacy-block img { 
+  display:none;
+}
+
+
 
 .tippy-box {
     background-clip:padding-box;

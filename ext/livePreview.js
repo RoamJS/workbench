@@ -184,31 +184,47 @@
         iframe.style.top = '0';
         iframe.style.opacity = '0';
         iframe.style.pointerEvents = 'none';
-
-        iframe.style.height = '0';
-        iframe.style.width = '0';
+        iframe.style.height = '0px';
+        iframe.style.width = '0px';
         iframe.style.border = '0';
         iframe.style.boxShadow = '0 0 4px 5px rgba(0, 0, 0, 0.2)';
-        iframe.style.borderRadius = '4px';
+        iframe.style.borderRadius = '8px';
         iframe.id = 'roam42-live-preview-iframe';
-              var style = document.createElement('style')
-
         const styleNode = document.createElement('style');
+  
         styleNode.innerHTML = `
-                .roam-topbar {
-                    display: none !important;
-                }
-                .roam-body-main {
-                    top: 0px !important;
-                    left; 0px !important;
-                }
-                #buffer {
-                    display: none !important;
-                }
-                iframe {
-                    display: none !important;
-               }
-            `;
+          div.roam-app > div.flex-h-box {
+            margin-left: 10px !important;
+          }
+          .roam-article {
+            padding: 10px !important;
+            margin-top: 10px !important;
+          }
+          .rm-title-display {
+            margin-top: 0px;
+          }
+          .roam-topbar {
+              display: none !important;
+          }
+          .roam-sidebar-container {
+              display: none !important;
+          }
+          .roam-main {
+              padding: 0 !important;
+          }
+          .roam-body-main {
+              top: 0px !important;
+              left: 0px !important;
+              width: 100% !important;
+          }
+          #buffer {
+              display: none !important;
+          }
+          iframe {
+              display: none !important;
+          }
+        `;
+        
         iframe.onload = (event) => {
           event.target.contentDocument.body.appendChild(styleNode);
         };
@@ -259,7 +275,7 @@
 
         document.addEventListener('mouseover', (e) => {
           // if( e.ctrlKey == false ) { return }
-          if( roam42.livePreview.roam42LivePreviewState == 0) { return }
+          if( e.ctrlKey == false && roam42.livePreview.roam42LivePreviewState == 0 ) { return };
           let pageIsBlock = false;          
           let target = e.target;
 
@@ -327,7 +343,7 @@
           } catch(e) {}
           
           //preview BLOCK references
-          if ( isPageRef == false && roam42.livePreview.roam42LivePreviewState == 2 && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
+          if ( isPageRef == false && (  e.ctrlKey == true || roam42.livePreview.roam42LivePreviewState == 2 ) && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
             pageIsBlock = true;
             let block = target.closest('.roam-block').id;
             let bId = block.substring( block.length -9);
@@ -365,34 +381,35 @@
              }
             if (!popupTimeout) {
               popupTimeout = window.setTimeout(() => {
-              if (previewIframe) {
-                previewIframe.style.opacity = '1';
-                previewIframe.style.pointerEvents = 'all';
-
-                // popper = window.Popper.createPopper(target, previewIframe, {
-                popper = window.Popper.createPopper( virtualElement, previewIframe, {
-                  placement: 'right',
-                  modifiers: [
-                    {
-                      name: 'preventOverflow',
-                      options: {
-                        padding: { top: 48 },
+                previewIframe.contentDocument.querySelector('.roam-article').scrollIntoView()                            
+                if (previewIframe) {
+                  previewIframe.style.opacity = '1';
+                  previewIframe.style.pointerEvents = 'all';
+                  // popper = window.Popper.createPopper(target, previewIframe, {
+                  popper = window.Popper.createPopper( virtualElement, previewIframe, {
+                    placement: 'right',
+                    modifiers: [
+                      {
+                        name: 'preventOverflow',
+                        options: {
+                          padding: { top: 48 },
+                        },
                       },
-                    },
-                    {
-                      name: 'flip',
-                      options: {
-                        boundary: document.querySelector('#app'),
+                      {
+                        name: 'flip',
+                        options: {
+                          boundary: document.querySelector('#app'),
+                        },
                       },
-                    },
-                  ],
-                });
-              }
-            }, delayTimer + 100)
+                    ],
+                  });
+                }
+              }, delayTimer + 100)
             }
           }
         });
         document.addEventListener('mouseout', (e) => {
+          
           if(specialDelayMouseOut){
             hoveredElement = null
             return
@@ -401,7 +418,7 @@
           const relatedTarget = e.relatedTarget;
           const iframe = document.getElementById('roam42-live-preview-iframe');
           if (
-            (hoveredElement === target && relatedTarget !== iframe) ||
+            ( hoveredElement === target && relatedTarget !== iframe) ||
             (target === iframe && relatedTarget !== hoveredElement) ||
             !document.body.contains(hoveredElement)
           ) {
@@ -409,15 +426,15 @@
             clearTimeout(popupTimeout);
             popupTimeout = null;
             if (iframe) {
-              if (iframe.contentDocument) {
-                // scroll to top when removed
-                const scrollContainer = iframe.contentDocument.querySelector(
-                  '.roam-center > div'
-                );
-                if (scrollContainer) {
-                  scrollContainer.scrollTop = 0;
-                }
-              }
+              // if (iframe.contentDocument) {
+              //   // scroll to top when removed
+              //   const scrollContainer = iframe.contentDocument.querySelector(
+              //     '.roam-article > div'
+              //   );
+              //   if (scrollContainer) {
+              //     scrollContainer.scrollTop = 0;
+              //   }
+              // }            
               iframe.style.pointerEvents = 'none';
               iframe.style.opacity = '0';
               iframe.style.height = '0';
@@ -426,7 +443,7 @@
             if (popper) {
               popper.destroy();
               popper = null;
-            }
+            }                      
           } else {
             //console.log('out', target, event);
           }

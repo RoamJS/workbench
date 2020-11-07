@@ -25,6 +25,7 @@
       try { if( roam42.jumpToDate.component.keyboardHandler(ev ) ) {return} } catch(e){};
       try { if( roam42.quickRef.component.keyboardHandler(ev) ) {return} } catch(e){};
       try { if( roam42.privacyMode.keyboardHandler(ev) ) {return} } catch(e){};      
+      try { if( roam42.focusMode.keyboardHandler(ev) ) {return} } catch(e){};      
 
       //Open right side bar 
       if (ev.altKey && ev.shiftKey &&  ev.code=='Slash' ) { 
@@ -65,9 +66,29 @@
         } else { 
           roam42.dailyNotesPopup.component.toggleVisible(); 
         }
-        return
+        return;
       }    
 
+      // Daily notes page toggle in and out
+      if (ev.altKey  && (ev.key=='y' || ev.code=='KeyY')  ) { 
+        event.preventDefault();
+        console.log ('9')
+        if( window != window.parent ) { 
+        console.log ('iinsdie')
+          window.parent.focus();
+        } else { 
+        console.log ('outside')
+          // window.parent.document.querySelector('#jsPanelDNP').style.visibility = 'hidden';
+          roam42.dailyNotesPopup.component.panelDNP.style.visibility = 'hidden';
+          setTimeout(()=> {
+            roam42.dailyNotesPopup.component.panelDNP.style.visibility = 'visible';
+            document.getElementById('iframePanelDNP').focus();
+          },10);
+        }
+        return;
+      }    
+      
+      
       //insert todo #na
       if (ev.altKey && ev.shiftKey && ev.code=='KeyA'  ) {     
         event.preventDefault();
@@ -118,7 +139,7 @@
       }
 
       //HTML view
-      if (ev.ctrlKey && ev.shiftKey==false &&  ev.code=='KeyM'  ) {  
+      if (ev.altKey  && ev.shiftKey==true &&  ev.code=='KeyM'  ) {  
         event.preventDefault();
         roam42.formatConverterUI.htmlview();
         return
