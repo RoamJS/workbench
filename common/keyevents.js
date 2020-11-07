@@ -25,6 +25,7 @@
       try { if( roam42.jumpToDate.component.keyboardHandler(ev ) ) {return} } catch(e){};
       try { if( roam42.quickRef.component.keyboardHandler(ev) ) {return} } catch(e){};
       try { if( roam42.privacyMode.keyboardHandler(ev) ) {return} } catch(e){};      
+      try { if( roam42.focusMode.keyboardHandler(ev) ) {return} } catch(e){};      
 
       //Open right side bar 
       if (ev.altKey && ev.shiftKey &&  ev.code=='Slash' ) { 

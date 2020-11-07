@@ -97,6 +97,7 @@
           simulateMouseOver(iframe.contentDocument.document.getElementsByClassName("roam-article")[0]);
         } catch(e) {} //if on ipad, the above command fails, so go to next step      
         iframe.contentDocument.head.appendChild(style);
+        iframe.contentDocument.getElementById('app').classList.add('roam42-DNP');
       },12000)
 
     },

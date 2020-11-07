@@ -79,6 +79,17 @@
                 </li>`;
     }    
     
+    if( roam42.focusMode  != undefined ) {
+      menu += `<li class="">
+                  <a class="bp3-menu-item bp3-popover-dismiss">
+                    <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.focusMode.toggle();">
+                      <div class="bp3-button bp3-minimal bp3-small bp3-icon-eye-open  ${roam42.focusMode.active() ? 'bp3-intent-primary"':''}"></div>
+                        Focus Mode <span style="font-size:7pt">(Alt-Shift-f)</span><br/>
+                    </div>
+                  </a>
+                </li>`;
+    }    
+    
     if( roam42.privacyMode  != undefined ) {
       menu += `<li class="">
                   <a class="bp3-menu-item bp3-popover-dismiss">
