@@ -172,7 +172,7 @@
       txtarea.focus();
       var range = document.selection.createRange();
       range.moveStart('character', -txtarea.value.length);
-      strPos = range.text.length;;
+      strPos = range.text.length;
     } else if (br == 'ff') strPos = txtarea.selectionStart;
 
     var front = txtarea.value.substring(0, strPos);
