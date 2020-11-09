@@ -60,7 +60,9 @@
   }
 
   roam42.dateProcessing.parseTextForDates = (str) => {
-    var txt = chrono.parse( str,  new Date() , { forwardDate: true } )
+    var str_with_pages_removed = str.replace(/\[+\[[^)]+\]+\] */g, "");
+    var txt = chrono.parse( str_with_pages_removed,  new Date() , { forwardDate: true } )
+
     if (txt.length > 0) {
       txt.forEach(function(element) {
         var roamDate = '';

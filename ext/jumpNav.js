@@ -10,7 +10,7 @@
   roam42.jumpnav = {};
   
   roam42.jumpnav.loadJumpNav = ()=> {
-   Mousetrap.prototype.stopCallback = function () { return false }
+    Mousetrap.prototype.stopCallback = function () { return false }
     Mousetrap.bind([
           // block: expand, collapse, ref, add action
           'ctrl+j x', 'ctrl+j l', 'ctrl+j r', 'ctrl+j s', 'ctrl+j a', 'meta+j x', 'meta+j l', 'meta+j s', 'meta+j r', 'meta+j a',   'alt+j x', 'alt+j l', 'alt+j s', 'alt+j r', 'alt+j a',   
@@ -19,6 +19,8 @@
           'ctrl+j k', 'ctrl+j j', 'ctrl+j d',             'meta+j k', 'meta+j j', 'meta+j d',               'alt+j k', 'alt+j j', 'alt+j d',    
           // block align left,center, right, justify
           'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4', 'meta+j 1', 'meta+j 2', 'meta+j 3', 'meta+j 4',   'alt+j 1', 'alt+j 2', 'alt+j 3', 'alt+j 4',  
+          // headings 1,2,3
+          'ctrl+j 5', 'ctrl+j 6', 'ctrl+j 7',           'meta+j 5', 'meta+j 6', 'meta+j 7',                'alt+j 5', 'alt+j 6', 'alt+j 7',   
           // page: first node last node
           'ctrl+j t', 'ctrl+j b', 'ctrl+ t',              'meta+j t', 'meta+j b', 'meta+ t',                'alt+j t', 'alt+j b', 'alt+ t',          
           // page: expand/collapse open in side
@@ -33,7 +35,10 @@
           'ctrl+j n','ctrl+j m',                      'meta+j n', 'meta+j m',                   'alt+j n', 'alt+j m',    
           // daily notes and lookup
           'ctrl+j ,','ctrl+j .',                      'meta+j ,', 'meta+j .',                   'alt+j ,', 'alt+j .',    
-        ], (event, handler)=> { 
+      ], (event, handler)=>  roam42.jumpnav.jumpCommand(event, handler) )
+  }
+    
+  roam42.jumpnav.jumpCommand = (event, handler)=> {
         handler = handler.replace('meta','ctrl')
         handler = handler.replace('alt', 'ctrl')
 
@@ -85,7 +90,7 @@
         }
 
         // BLOCKS: fun with blocks
-        if(['ctrl+j x', 'ctrl+j l', 'ctrl+j s', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4' ].includes(handler)) {
+        if(['ctrl+j x', 'ctrl+j l', 'ctrl+j s', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4', 'ctrl+j 5', 'ctrl+j 6', 'ctrl+j 7' ].includes(handler)) {
           var locFacts = roam42.common.saveLocationParametersOfTextArea(event.target);
           var parentControlNode = '';
           if( document.getElementById(locFacts.id).parentNode.parentNode.tagName == 'DIV') {
@@ -122,9 +127,24 @@
               case 'ctrl+j 3':     // right allign block
                 roam42.common.simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[2] );
                 roam42KeyboardLib.pressEsc();
-                break;              
+                break;
               case 'ctrl+j 4':     // justify allign block
                 roam42.common.simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[3] );
+                roam42KeyboardLib.pressEsc()
+                break;              
+              case 'ctrl+j 5':     // heading 1
+                console.log('5')
+                roam42.common.simulateMouseClick( document.querySelectorAll('.bp3-popover-content .flex-h-box')[1].childNodes[0] );
+                roam42KeyboardLib.pressEsc()
+                break;              
+              case 'ctrl+j 6':     // heading 1
+                console.log('6')
+                roam42.common.simulateMouseClick( document.querySelectorAll('.bp3-popover-content .flex-h-box')[1].childNodes[1] );
+                roam42KeyboardLib.pressEsc()
+                break;              
+              case 'ctrl+j 7':     // heading 1
+                console.log('7')                
+                roam42.common.simulateMouseClick( document.querySelectorAll('.bp3-popover-content .flex-h-box')[1].childNodes[2] );
                 roam42KeyboardLib.pressEsc()
                 break;              
             }
@@ -229,59 +249,60 @@
 
         return false
 
-      })
-
-    roam42.jumpnav.displayJumpNavHelp = ()=> { 
-     try{ 
-      iziToast.destroy(); 
-      iziToast.show({
-        title: 'Roam42 Jump Nav Commands',
-        message: `
-  <div style="position:absolute;top:-110px;right:-15px;z-index:1000;">
-    <img width="70px" src="${roam42.loader.logo2HC}"></img>
-  </div>
-  <br/>
-  <pre style="max-width:320px">
-  <b>Page</b>
-   t Top of page
-   b Bottom of page
-   e Expand all / c Collapse all
-   o Open this page in side bar
-  <b>Linked/Unlinked Refs</b>
-   w Toggle Linked refs
-   z Toggle Unlinked refs
-   f Toggle Parents (page level) 
-   v Expand children / p Collapse  
-  <b>Blocks</b>
-   r Copy block ref / s As alias
-   x Expand all / l Collapse all
-   i Insert block above / u below
-   k up a block / j down a block
-   d Delete block
-   1 Align left / 2 Center/ 3 right
-   4 Justify
-   a Reaction
-  <b>Queries</b>
-   y Toggle Queries
-  <b>Others</b>
-   n Toggle left sidebar
-   m Toggle right sidebar
-   q Roam42 Help
-   , Daily Notes Popup
-   . Dictionary
-  </pre>
-          `.trim(),
-          theme: 'dark',
-          progressBar: true,
-          animateInside: true,
-          close: false,
-          timeout: 30000,
-          closeOnClick: true,
-          maxWidth: '320px',
-          displayMode: 2
-        });
-      } catch(e) {}    
-    };
-  } 
+      }
 
 })();
+
+
+
+  //   roam42.jumpnav.displayJumpNavHelp = ()=> { 
+  //    try{ 
+  //     iziToast.destroy(); 
+  //     iziToast.show({
+  //       title: 'Roam42 Jump Nav Commands',
+  //       message: `
+  // <div style="position:absolute;top:-110px;right:-15px;z-index:1000;">
+  //   <img width="70px" src="${roam42.loader.logo2HC}"></img>
+  // </div>
+  // <br/>
+  // <pre style="max-width:320px">
+  // <b>Page</b>
+  //  t Top of page
+  //  b Bottom of page
+  //  e Expand all / c Collapse all
+  //  o Open this page in side bar
+  // <b>Linked/Unlinked Refs</b>
+  //  w Toggle Linked refs
+  //  z Toggle Unlinked refs
+  //  f Toggle Parents (page level) 
+  //  v Expand children / p Collapse  
+  // <b>Blocks</b>
+  //  r Copy block ref / s As alias
+  //  x Expand all / l Collapse all
+  //  i Insert block above / u below
+  //  k up a block / j down a block
+  //  d Delete block
+  //  1 Align left / 2 Center/ 3 right
+  //  4 Justify
+  //  a Reaction
+  // <b>Queries</b>
+  //  y Toggle Queries
+  // <b>Others</b>
+  //  n Toggle left sidebar
+  //  m Toggle right sidebar
+  //  q Roam42 Help
+  //  , Daily Notes Popup
+  //  . Dictionary
+  // </pre>
+  //         `.trim(),
+  //         theme: 'dark',
+  //         progressBar: true,
+  //         animateInside: true,
+  //         close: false,
+  //         timeout: 30000,
+  //         closeOnClick: true,
+  //         maxWidth: '320px',
+  //         displayMode: 2
+  //       });
+  //     } catch(e) {}    
+  //   };
