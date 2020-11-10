@@ -38,7 +38,7 @@
       },
       onMount(instance) {
         var bck = document.querySelector('#roam42-menu + div .tippy-box')
-            bck.style.width="230px";
+            bck.style.width="240px";
             bck.classList.add('bp3-popover');
             instance.setContent( roam42.roam42Menu.displayMenu() ); //force content in for sizing
       },

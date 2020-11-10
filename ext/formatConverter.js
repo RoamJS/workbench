@@ -238,11 +238,6 @@
               <head>
               </head>
               <body>\n${md}\n
-              <script>
-                setTimeout(()=>{
-                renderMathInElement(document.body);
-                },1000)
-              </script>
               </body>\n
             </html>`;
   }
