@@ -130,23 +130,25 @@
       } //END roam42.formatConverterUI.show
   
   roam42.formatConverterUI.htmlview = async ()=> {
-//     var roam42PrintViewPageUID = await roam42.common.getPageUidByTitle('Roam42 Settings');
-//     if(roam42PrintViewPageUID) {
-//       let blocks = await roam42.common.getBlockInfoByUID(roam42PrintViewPageUID, true);
-//       console.log(blocks)
-//       for(var b in blocks[0][0].children) {
-//         console.log(blocks[0][0].children[b])
-//         if(blocks[0][0].children[b].string.includes('PrintPreviewCSS')){
-          
-//         };
-//       }
-//     }
-    
     var uid = await roam42.common.currentPageUID();
     var results = await roam42.formatConverter.formatter.htmlSimple(uid);
 
     var winPrint = await window.open('','','left=50,top=100,width=1000,height=600,toolbar=0,scrollbars=0,status=0');
-    winPrint.document.write(results.replace('<html>','<!DOCTYPE html>'));        
+    results = results.replace('<html>','<!DOCTYPE html>')
+    // add custom css
+    var customCSSNode = await roam42.common.getBlocksReferringToThisPage('42WebViewCSS');
+    if(customCSSNode.length>0 && customCSSNode[0][0].children ) {
+      var childCSS = customCSSNode[0][0].children[0].string;
+      if(childCSS.substring(0,6) == '```css') {
+        childCSS = childCSS.replace('```css','');
+        childCSS = childCSS.replace('```','');
+        results = results.replace('</body>', '<style>\n'+ childCSS + '</style>\n</body>')
+      } 
+    }    
+    results = results.replace('</body>', '\n<script>setTimeout(()=>{renderMathInElement(document.body);},1000)</script>\n</body>')
+
+    winPrint.document.write(results);        
+    
     setTimeout(()=>{
       const addElementToPage = (element, tagId, typeT )=> {
         Object.assign(element, { type:typeT, async:false, tagId:tagId } );
@@ -171,8 +173,8 @@
     roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
     roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
     setTimeout(async ()=>{
-     roam42.formatConverterUI.show()
-      // roam42.formatConverterUI.htmlview()
+     // roam42.formatConverterUI.show()
+      roam42.formatConverterUI.htmlview()
     }, 500)  
   }   
 
