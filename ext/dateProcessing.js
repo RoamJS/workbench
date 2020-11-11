@@ -61,7 +61,11 @@
 
   roam42.dateProcessing.parseTextForDates = (str) => {
     var str_with_pages_removed = str.replace(/\[+\[[^)]+\]+\] */g, "");
-    var txt = chrono.parse( str_with_pages_removed,  new Date() , { forwardDate: true } )
+    
+    var dt = new Date();
+    var mondayThisWeek = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() - dt.getDay() + 1);
+
+    var txt = chrono.parse( str_with_pages_removed,  mondayThisWeek, { forwardDate: true } )
 
     if (txt.length > 0) {
       txt.forEach(function(element) {
