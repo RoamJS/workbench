@@ -6,7 +6,7 @@
   roam42.roam42Menu = {};
   roam42.roam42Menu.tippy = {};
   
-  roam42.roam42Menu.Initialize = ()=> {
+  roam42.roam42Menu.initialize = ()=> {
     if( window != window.parent ) { 
       return; //don't load if in a iframe
     }
