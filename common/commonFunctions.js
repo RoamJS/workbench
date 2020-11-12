@@ -196,6 +196,33 @@
       }, 100);
   }
 
+  roam42.common.replaceAsync = (string, searchValue, replacer) => {
+    //https://github.com/dsblv/string-replace-async#readme
+    try {
+      if (typeof replacer === "function") {
+        // 1. Run fake pass of `replace`, collect values from `replacer` calls
+        // 2. Resolve them with `Promise.all`
+        // 3. Run `replace` with resolved values
+        var values = [];
+        String.prototype.replace.call(string, searchValue, function () {
+          values.push(replacer.apply(undefined, arguments));
+          return "";
+        });
+        return Promise.all(values).then(function (resolvedValues) {
+          return String.prototype.replace.call(string, searchValue, function () {
+            return resolvedValues.shift();
+          });
+        });
+      } else {
+        return Promise.resolve(
+          String.prototype.replace.call(string, searchValue, replacer)
+        );
+      }
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  };  
+
   roam42.common.blockDelete = (block)=> {
     if (block.localName == "textarea") {
       roam42KeyboardLib.pressEsc().then(() => roam42KeyboardLib.pressBackspace())

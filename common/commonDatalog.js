@@ -42,5 +42,15 @@
               :where [?refs :block/refs ?title][?title :node/title "${title}"]]`);
     } catch(e) { return ''; }
   } 
+
+    
+  roam42.common.getRandomBlock = async ()=>{
+    var results = await window.roamAlphaAPI.q(`[:find [(rand 1 ?blocks)] :where [?e :block/uid ?blocks]]`);
+    return results
+  }
   
+  window.roam42.common.testingReloadDatalog = () => {
+    roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'common/commonDatalog.js');
+  };  
+
 })();  

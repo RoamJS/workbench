@@ -26,7 +26,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2020-11-11 (Vogon)';
+  roam42.buildID = 'Roam<sup>42</sup> 2020-11-12 (Vogon)';
   
   roam42.host    = document.currentScript.src.replace('main.js','');
 
@@ -68,27 +68,29 @@ if( typeof window.roam42 == 'undefined' ) {
   ( ()=>{
 
     //load all 3rd party libraries 
-    roam42.loader.addScriptToPage( 'JQUERY',          'https://code.jquery.com/jquery-3.5.1.min.js'                                 );
-    roam42.loader.addScriptToPage( 'JSCOOKIE',        'https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js'             );
-    roam42.loader.addScriptToPage( 'MOUSETRAP',       'https://cdn.jsdelivr.net/npm/mousetrap@1.6.5/mousetrap.min.js'               );
-    roam42.loader.addScriptToPage( 'CHRONO',          'https://cdn.jsdelivr.net/npm/chrono-node@1.4.8/dist/chrono.min.js'           );
-    roam42.loader.addScriptToPage( 'jsFlatpickr',     'https://cdn.jsdelivr.net/npm/flatpickr'                                      );
-       roam42.loader.addCSSToPage( 'cssFlatpckr',     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'               );
-       roam42.loader.addCSSToPage( 'cssFlatpckrThme',  roam42.host + 'css/airbnb.css'                                               );
-    roam42.loader.addScriptToPage( 'jsJsPanel',       'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.min.js'       );
-       roam42.loader.addCSSToPage( 'cssJsPanel',      'https://cdn.jsdelivr.net/npm/jspanel4@4.11.0-beta/dist/jspanel.min.css'      );
+    roam42.loader.addScriptToPage( 'JQUERY',           roam42.host + 'dist/jquery/jquery-3.5.1.min.js'                                 );
+    roam42.loader.addScriptToPage( 'JSCOOKIE',         roam42.host + 'dist/jscookie/js.cookie-3.0.0-rc.1.min.js'                                 );
+    roam42.loader.addScriptToPage( 'MOUSETRAP',        roam42.host + 'dist/mousetrap/mousetrap-1.6.5.min.js' );
+    roam42.loader.addScriptToPage( 'chrono',           roam42.host + 'dist/chrono/chrono-1.4.8.min.js' );
+    roam42.loader.addScriptToPage( 'jsFlatpickr',      roam42.host + 'dist/flatpickr/flatpickr-4.6.6.min.js' );
+       roam42.loader.addCSSToPage( 'cssFlatpckr',      roam42.host + 'dist/flatpickr/flatpickr.min.css' );
+       roam42.loader.addCSSToPage( 'cssFlatpckrThme',  roam42.host + 'css/airbnb.css' );
+    roam42.loader.addScriptToPage( 'jsJsPanel',        roam42.host + 'dist/jspanel/jspanel-4.1.1-rc.min.js' );
+       roam42.loader.addCSSToPage( 'cssJsPanel',       roam42.host + 'dist/jspanel/jspanel.min.css' );
+    roam42.loader.addScriptToPage( 'tributeJS',        roam42.host + 'dist/tribute/tribute.min.js' );
 
     //Do not load in iframe windows
     if( window === window.parent  ){
-     roam42.loader.addScriptToPage( 'TYPEAHEAD',       'https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js' );
-     roam42.loader.addScriptToPage( 'TURNDOWN',        'https://unpkg.com/turndown/dist/turndown.js'                                );
-     roam42.loader.addScriptToPage( 'popperjs',        'https://unpkg.com/@popperjs/core@2'                                         );
-     roam42.loader.addScriptToPage( 'tippyjs',         'https://unpkg.com/tippy.js@6'                                               );
-        roam42.loader.addCSSToPage( 'cssTippyjs',      'https://unpkg.com/tippy.js@6/themes/light-border.css'                       );  
-     roam42.loader.addScriptToPage( 'iziToast',        'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js'   );
-        roam42.loader.addCSSToPage( 'cssiziToast',     'https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css' );
-     roam42.loader.addScriptToPage( 'deviceDetection', 'https://unpkg.com/current-device/umd/current-device.min.js'                 );
-     roam42.loader.addScriptToPage( 'marked-lib',       roam42.host + 'libs/marked.min.js' ); //https://github.com/markedjs/marked
+     roam42.loader.addScriptToPage( 'TYPEAHEAD',       roam42.host + 'dist/typeahead/typeahead-0.11.1.bundle.js' );
+     roam42.loader.addScriptToPage( 'popperjs',        roam42.host + 'dist/popperjs/popperjs-core-2.5.4.js'                                         );
+     roam42.loader.addScriptToPage( 'tippyjs',         roam42.host + 'dist/tippy/tippy-6.2.7.min.js' );
+        roam42.loader.addCSSToPage( 'cssTippyjs',      roam42.host + 'dist/tippy/light-border.css' );
+      
+      
+     roam42.loader.addScriptToPage( 'iziToast',        roam42.host + 'dist/iziToast/iziToast-1.4.0.min.js' );
+        roam42.loader.addCSSToPage( 'cssiziToast',     roam42.host + 'dist/iziToast/iziToast.min.css' );
+     roam42.loader.addScriptToPage( 'deviceDetection', roam42.host + 'dist/deviceDetection/current-device.min.js' );
+     roam42.loader.addScriptToPage( 'marked-lib',      roam42.host + 'dist/marked/marked.min.js' ); //https://github.com/markedjs/marked
     }
 
     //common shared functions
@@ -108,12 +110,12 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addScriptToPage( 'privacyMode',       roam42.host + 'ext/privacyMode.js'        );
     roam42.loader.addScriptToPage( 'roam42Menu',        roam42.host + 'ext/roam42Menu.js'         );
     roam42.loader.addScriptToPage( 'roam42Tutorials',   roam42.host + 'ext/tutorials.js'          );
-    roam42.loader.addScriptToPage( 'roamNavigator',     roam42.host + 'ext/roam-navigator.js'   );
+    roam42.loader.addScriptToPage( 'roamNavigator',     roam42.host + 'ext/roam-navigator.js'     );
+    roam42.loader.addScriptToPage( 'smartBlocks',       roam42.host + 'ext/smartBlocks.js'        );
 
     //Do not load in iframe windows
     if( window === window.parent  ){
       roam42.loader.addScriptToPage( 'quickReference',    roam42.host + 'ext/quickRef.js'  );
-      // roam42.loader.addScriptToPage( 'turnDown',          roam42.host + 'ext/turndownservice.js'  );
       roam42.loader.addScriptToPage( 'lookupUI',          roam42.host + 'ext/typeaheadUI.js'      );
       roam42.loader.addScriptToPage( 'typeAheadData',     roam42.host + 'ext/typeaheadData.js'    );
       roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
@@ -141,7 +143,8 @@ if( typeof window.roam42 == 'undefined' ) {
           try { roam42.jumpToDate.component.initialize();      } catch(e){};
           try { roam42.quickRef.component.initialize();        } catch(e){};
           try { roam42.dailyNotesPopup.component.initialize(); } catch(e){};
-          try { roam42.roam42Menu.Initialize();                } catch(e){};
+          try { roam42.roam42Menu.initialize();                } catch(e){};
+          try { roam42.smartBlocks.initialize();               } catch(e){};
         }, 1000);      
       }, 2000);
     }, 5000);
