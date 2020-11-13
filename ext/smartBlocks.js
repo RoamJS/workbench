@@ -10,17 +10,18 @@
 
     const addStaticValues =  async (valueArray)=> {
       //DATE COMMANDS
-      valueArray.push({key: 'today (date)',           value: 'today',     processor:'date'});
-      valueArray.push({key: 'yesterday (date)',       value: 'yesterday', processor:'date'});      
+      valueArray.push({key: 'today (42)',           value: 'today',     processor:'date'});
+      valueArray.push({key: 'yesterday (42)',       value: 'yesterday', processor:'date'});      
       ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].forEach(  (e)=>{
-        valueArray.push({key: `${e} (date)`,          value: `${e}`,      processor:'date'});
-        valueArray.push({key: `Last ${e} (date)`,     value: `Last ${e}`, processor:'date'});
-        valueArray.push({key: `Next ${e} (date)`,     value: `Next ${e}`, processor:'date'});
+        valueArray.push({key: `${e} (42)`,          value: `${e}`,      processor:'date'});
+        valueArray.push({key: `Last ${e} (42)`,     value: `Last ${e}`, processor:'date'});
+        valueArray.push({key: `Next ${e} (42)`,     value: `Next ${e}`, processor:'date'});
       });
-      valueArray.push({key: 'yesterday (date)',       value: 'yesterday', processor:'date'});
-      valueArray.push({key: 'Time', value: getTime24Format(),     processor:'static'});
+      valueArray.push({key: 'yesterday (42)',       value: 'yesterday', processor:'date'});
+      valueArray.push({key: 'Time (42)', value: getTime24Format(),     processor:'static'});
       //SmartBlock COMMANDS
-      valueArray.push({key: '<% INPUT %> (SmartBlock function)', value: '<%INPUT:%>',                     processor:'static'});
+      valueArray.push({key: 'Horizontal Line (42)',   value: ':hiccup [:hr]',     processor:'static'});
+      valueArray.push({key: '<% INPUT %> (SmartBlock function)',           value: '<%INPUT:%>',                     processor:'static'});
       valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)', value: '<%RESOLVEBLOCKREF:%>', processor:'static'});
       valueArray.push({key: '<% DATE %> (SmartBlock function)',          value: '<%DATE:%>',         processor:'static'});
       valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',  value: '<%IFDAYOFWEEK:%>',         processor:'static'});
@@ -90,7 +91,8 @@
       //Evaluating javascript. Pattern: <%JAVASCRIPT:  NLP text %>
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','').trim();
-        return new Function(scriptToRun.toString())().trim();
+        var results = new Function(scriptToRun.toString())();
+        return results;
       });           
       //process input commands Pattern: <%input:  NLP text %>  use a %% for prompt then default value
       textToProcess = textToProcess.replaceAll(/(\<\%INPUT:)(\s*[\S\s]*?)(\%\>)/g, (match, p1, p2, p3)=>{
@@ -119,8 +121,7 @@
           minutes = minutes < 10 ? '0'+minutes : minutes;
           var strTime = hours + ':' + minutes + ' ' + ampm;
           return strTime;
-      }); 
-            
+      });           
       //process inline dates. Pattern: <%date:  NLP text %>
       textToProcess = textToProcess.replaceAll(/(\<\%DATE:)(\s*[\S\s]*?)(\%\>)/g, (match, p1, p2, p3)=>{
         return roam42.dateProcessing.parseTextForDates(p2).trim();
