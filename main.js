@@ -104,6 +104,7 @@ if( typeof window.roam42 == 'undefined' ) {
     //extension modules
     roam42.loader.addScriptToPage( 'dateProcessing',    roam42.host + 'ext/dateProcessing.js'     );
     roam42.loader.addScriptToPage( 'r42kb_lib',         roam42.host + 'common/r42kb_lib.js'       );
+    roam42.loader.addScriptToPage( 'smartBlocks',       roam42.host + 'ext/smartBlocks.js'        );
     roam42.loader.addScriptToPage( 'templatePoc',       roam42.host + 'ext/templatepoc.js'        );
     roam42.loader.addScriptToPage( 'jumpToDate',        roam42.host + 'ext/jumpToDate.js'         );
     roam42.loader.addScriptToPage( 'autocomplete',      roam42.host + 'ext/autoComplete.js'       );
@@ -111,7 +112,7 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addScriptToPage( 'roam42Menu',        roam42.host + 'ext/roam42Menu.js'         );
     roam42.loader.addScriptToPage( 'roam42Tutorials',   roam42.host + 'ext/tutorials.js'          );
     roam42.loader.addScriptToPage( 'roamNavigator',     roam42.host + 'ext/roam-navigator.js'     );
-    roam42.loader.addScriptToPage( 'smartBlocks',       roam42.host + 'ext/smartBlocks.js'        );
+    roam42.loader.addScriptToPage( 'smartBlocksRB',     roam42.host + 'ext/smartBlocksRB.js'      );
 
     //Do not load in iframe windows
     if( window === window.parent  ){
