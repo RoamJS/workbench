@@ -141,19 +141,19 @@
   // because the textarea in roam is managed by React component, and it wasn't being triggered to 
   // update when inserting a value
   roam42.common.setEmptyNodeValue = (element, value) => {
-      const e = new Event('input', { bubbles: true });
-      const valueSetter = Object.getOwnPropertyDescriptor(element, 'value').set;
-      const prototype = Object.getPrototypeOf(element);
-      const prototypeValueSetter = Object.getOwnPropertyDescriptor(
-        prototype,
-        'value'
-      ).set;
+    const e = new Event('input', { bubbles: true });
+    const valueSetter = Object.getOwnPropertyDescriptor(element, 'value').set;
+    const prototype = Object.getPrototypeOf(element);
+    const prototypeValueSetter = Object.getOwnPropertyDescriptor(
+      prototype,
+      'value'
+    ).set;
 
-      if (valueSetter && valueSetter !== prototypeValueSetter) {
-        prototypeValueSetter.call(element, value);
-      } else {
-        valueSetter.call(element, value);
-      }
+    if (valueSetter && valueSetter !== prototypeValueSetter) {
+      prototypeValueSetter.call(element, value);
+    } else {
+      valueSetter.call(element, value);
+    }
     element.dispatchEvent(e);
   }
 
@@ -248,5 +248,9 @@
   //    if(blockEmpty){setTimeout(()=>{ roam42KeyboardLib.simulateKey(38) },250) };  //up arrow
     }
   }
-      
+
+  window.roam42.common.testingReloadCommon = () => {
+    roam42.loader.addScriptToPage( "Common", roam42.host + 'common/commonFunctions.js');
+  };  
+   
 })();  

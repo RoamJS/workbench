@@ -1,9 +1,6 @@
 /* globals roam42, roam42KeyboardLib, Tribute */
 
 (() => {
-  roam42.loader.addScriptToPage( "tributeJS", "https://cdnjs.cloudflare.com/ajax/libs/tributejs/5.1.3/tribute.min.js" );
-  roam42.loader.addCSSToPage( "tributeCSS", "https://trillian.glitch.me/tribute.css");
-
   roam42.smartBlocks = {};  
   roam42.smartBlocks.initialize = ()=>{
     const exclusionBlockSymbol = '!!%%**!!%%**!!%%**!!%%**'; //used to indicate a block is not to be inserted
@@ -11,25 +8,25 @@
     const addStaticValues =  async (valueArray)=> {
       //DATE COMMANDS
       valueArray.push({key: 'today (42)',           value: 'today',     processor:'date'});
+      valueArray.push({key: 'tomorrow (42)',       value: 'tomorrow', processor:'date'});      
       valueArray.push({key: 'yesterday (42)',       value: 'yesterday', processor:'date'});      
       ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].forEach(  (e)=>{
         valueArray.push({key: `${e} (42)`,          value: `${e}`,      processor:'date'});
         valueArray.push({key: `Last ${e} (42)`,     value: `Last ${e}`, processor:'date'});
         valueArray.push({key: `Next ${e} (42)`,     value: `Next ${e}`, processor:'date'});
       });
-      valueArray.push({key: 'yesterday (42)',       value: 'yesterday', processor:'date'});
-      valueArray.push({key: 'Time (42)', value: getTime24Format(),     processor:'static'});
-      //SmartBlock COMMANDS
+      valueArray.push({key: 'Time (42)',       value: getTime24Format(),      processor:'static'});
+      valueArray.push({key: 'Serendipity - Random Block (42)', value: '',     processor:'randomblock'});
       valueArray.push({key: 'Horizontal Line (42)',   value: ':hiccup [:hr]',     processor:'static'});
       valueArray.push({key: '<% INPUT %> (SmartBlock function)',           value: '<%INPUT:%>',                     processor:'static'});
       valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)', value: '<%RESOLVEBLOCKREF:%>', processor:'static'});
-      valueArray.push({key: '<% DATE %> (SmartBlock function)',          value: '<%DATE:%>',         processor:'static'});
-      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',  value: '<%IFDAYOFWEEK:%>',         processor:'static'});
-      valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)', value: '<%IFDAYOFMONTH:%>',       processor:'static'});
-      valueArray.push({key: '<% TIME %> (SmartBlock function)',         value: '<%TIME%>',         processor:'static'});
-      valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',     value: '<%TIMEAMPM%>',         processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',  value: '<%RANDOMBLOCK%>',         processor:'static'});
-      valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',   value: '<%JAVASCRIPT:%>',         processor:'static'});            
+      valueArray.push({key: '<% DATE %> (SmartBlock function)',            value: '<%DATE:%>',         processor:'static'});
+      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',     value: '<%IFDAYOFWEEK:%>',         processor:'static'});
+      valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',    value: '<%IFDAYOFMONTH:%>',       processor:'static'});
+      valueArray.push({key: '<% TIME %> (SmartBlock function)',            value: '<%TIME%>',         processor:'static'});
+      valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',        value: '<%TIMEAMPM%>',         processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',     value: '<%RANDOMBLOCK%>',         processor:'static'});
+      valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',      value: '<%JAVASCRIPT:%>',         processor:'static'});            
     };
 
     const sortObjectByKey = async o => {
@@ -105,7 +102,7 @@
       });
       //Random block command
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCK\%\>)/g, async (match, name)=>{
-        return '((' + await roam42.common.getRandomBlock(1) + '))'
+        return roam42.smartBlocks.randomBlocks(textToProcess);
       });          
       //Time in 24 hour block command
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIME\%\>)/g, async (match, name)=>{
@@ -168,6 +165,7 @@
           } else {
             // console.log('multiple line')
             //has children, start walking through the nodes and insert them
+            let blockInsertCounter = 0 //used to track how many inserts performed so we can take a coffee break at 19, to let Roam catch up
             var currentOutlineLevel = 1;
 
             var loopStructure = async (parentNode, level) => {
@@ -176,13 +174,13 @@
                 //indent/unindent if needed
                 if (currentOutlineLevel < level) {
                   for (var inc = currentOutlineLevel; inc < level; inc++) {
-                    await roam42KeyboardLib.delay(50);
+                    await roam42KeyboardLib.delay(100);
                     await roam42KeyboardLib.pressTab();
                     currentOutlineLevel += 1;
                   }
                 } else if (currentOutlineLevel > level) {
                   for (var inc = currentOutlineLevel; inc > level; inc--) {
-                    await roam42KeyboardLib.delay(50);
+                    await roam42KeyboardLib.delay(100);
                     await roam42KeyboardLib.pressShiftTab();
                     currentOutlineLevel -= 1;
                   }
@@ -192,12 +190,14 @@
                 var insertText = n.string;
                 if (insertText == "") insertText = " "; //space needed in empty cell to maintaing indentation on empty blocks
                 insertText = await proccessBlockWithSmartness(insertText);
+                console.log(insertText)
                 if( !insertText.includes(exclusionBlockSymbol) ) {
                   roam42.common.setEmptyNodeValue( document.querySelector("textarea"), insertText );            
+                  
                   //roam42.common.insertAtCaret( document.querySelector("textarea").id, insertText );
                   if (insertText == " ") {
                     //if had to insert space, remove it
-                    await roam42.common.sleep(50);
+                    await roam42.common.sleep(100);
                     document.querySelector("textarea").setSelectionRange(0, 2); //now remove the spae before next line
                   }
                   //see if heading needs to be assigned
@@ -206,7 +206,7 @@
                     ev.target = document.querySelector("textarea");
                     roam42.jumpnav.jumpCommand( ev, "ctrl+j " + (Number(n.heading) + 4) ); //base is 4
                     var id = document.querySelector("textarea").id;
-                    await roam42KeyboardLib.pressEsc(400);
+                    await roam42KeyboardLib.pressEsc(500);
                     roam42.common.simulateMouseClick( document.querySelector("#" + id) );
                   }
                   if (n["text-align"] && n["text-align"] != "left") {
@@ -224,13 +224,19 @@
                         break;
                     }
                     var id = document.querySelector("textarea").id;
-                    await roam42KeyboardLib.pressEsc(400);
+                    await roam42.common.sleep(500);
                     roam42.common.simulateMouseClick(document.querySelector("#" + id));
                   }
-                  await roam42KeyboardLib.delay(50);
+                  await roam42.common.sleep(100);
                   await roam42KeyboardLib.pressEnter();
-                  if (/query|table|kanban|embed/.test(insertText))
-                    await roam42KeyboardLib.delay(200); //add extra delay for rendeing
+                  if (/query|kanban|embed|\`\`\`/.test(insertText)) 
+                    await roam42.common.sleep(500);
+                  
+                  blockInsertCounter += 1;
+                  if(blockInsertCounter > 10) {  //SmartBlocks coffee break to allow Roam to catch its breath
+                      blockInsertCounter = 0;
+                      await roam42.common.sleep(500);                  }
+
                   if (n.children) await loopStructure(n.children, level + 1);
                 } 
               }
@@ -282,6 +288,6 @@
       roam42.smartBlocks.initialize = {};
     } catch (e) {}
     roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocks.js');
-    setTimeout(()=>roam42.smartBlocks.initialize(), 1000)
+    setTimeout(()=>roam42.smartBlocks.initialize(), 2000)
   };
 })();
