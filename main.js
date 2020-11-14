@@ -18,6 +18,7 @@
   roam42.privacyMode       Redacts content from your Roam
   roam42.formatConverter   converts current page to various formats   
   roam42.formatConverterUI UI to roam42.formatConverter    
+  roam42.smartBlocks       SmartBlocks engine    
   roam42.KeyboardLib       imported from another library. so letting it stand as its own object
 */
 
@@ -26,7 +27,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2020-11-12 (Vogon)';
+  roam42.buildID = 'Roam<sup>42</sup> 2020-11-14b (Vogon)';
   
   roam42.host    = document.currentScript.src.replace('main.js','');
 
