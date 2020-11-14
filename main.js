@@ -97,6 +97,7 @@ if( typeof window.roam42 == 'undefined' ) {
        roam42.loader.addCSSToPage( 'styleRM',           roam42.host + 'css/styleRM.css'           );
     roam42.loader.addScriptToPage( 'commonFunctions',   roam42.host + 'common/commonFunctions.js' );
     roam42.loader.addScriptToPage( 'commonDatalog',     roam42.host + 'common/commonDatalog.js  ' );
+    roam42.loader.addScriptToPage( "settings",          roam42.host + 'ext/settings.js');    
     roam42.loader.addScriptToPage( 'keyEvents',         roam42.host + 'common/keyevents.js'       );
     roam42.loader.addScriptToPage( 'jumpNav'  ,         roam42.host + 'ext/jumpNav.js'            );
     roam42.loader.addScriptToPage( 'message-startup',   roam42.host + 'messages.js'               );
@@ -136,7 +137,7 @@ if( typeof window.roam42 == 'undefined' ) {
             roam42.loader.addScriptToPage( 'dailyNote',       roam42.host + 'ext/dailyNotesPopup.js' );
           }
         } catch(e) {}
-        setTimeout(()=>{
+        setTimeout(async ()=>{
           roam42.keyevents.loadKeyEvents();
           roam42.autocomplete.loadAutoComplete();
           roam42.jumpnav.loadJumpNav();
@@ -145,7 +146,7 @@ if( typeof window.roam42 == 'undefined' ) {
           try { roam42.quickRef.component.initialize();        } catch(e){};
           try { roam42.dailyNotesPopup.component.initialize(); } catch(e){};
           try { roam42.roam42Menu.initialize();                } catch(e){};
-          try { roam42.smartBlocks.initialize();               } catch(e){};
+          try { await roam42.smartBlocks.initialize();               } catch(e){};
         }, 1000);      
       }, 2000);
     }, 5000);
