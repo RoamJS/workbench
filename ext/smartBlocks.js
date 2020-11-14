@@ -2,7 +2,16 @@
 
 (() => {
   roam42.smartBlocks = {};  
-  roam42.smartBlocks.initialize = ()=>{
+  roam42.smartBlocks.initialize = async ()=>{
+    var smartBlockTrigger = ";;";
+    //determine if user has created a custom trigger
+    let customTrigger = await roam42.settings.get("SmartBlockTrigger");
+    if(customTrigger!=null && customTrigger.length>0) {
+      var newTrigger = customTrigger.replaceAll('\"','').trim();
+      if(newTrigger.length>0)
+        smartBlockTrigger = customTrigger;
+    }
+    
     const exclusionBlockSymbol = '!!%%**!!%%**!!%%**!!%%**'; //used to indicate a block is not to be inserted
 
     const addStaticValues =  async (valueArray)=> {
@@ -18,12 +27,21 @@
       valueArray.push({key: 'Time (42)',       value: getTime24Format(),      processor:'static'});
       valueArray.push({key: 'Serendipity - Random Block (42)', value: '',     processor:'randomblock'});
       valueArray.push({key: 'Horizontal Line (42)',   value: ':hiccup [:hr]',     processor:'static'});
+      valueArray.push({key: 'Workflow Starter (SmartBlock function)', processor:'function', value: async ()=>{
+                        var workflowName = prompt("What is the name of the new workflow?")
+                        roam42.common.setEmptyNodeValue( document.querySelector("textarea"), "#42SmartBlock " + workflowName );            
+                        await roam42.common.sleep(200);
+                        await roam42KeyboardLib.pressEnter();
+                        await roam42.common.sleep(200);
+                        await roam42KeyboardLib.pressTab();
+                      }});
+      valueArray.push({key: 'sb42 (SmartBlock function)',                  value: '#42SmartBlock',                     processor:'static'});
       valueArray.push({key: '<% INPUT %> (SmartBlock function)',           value: '<%INPUT:%>',                     processor:'static'});
-      valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)', value: '<%RESOLVEBLOCKREF:%>', processor:'static'});
-      valueArray.push({key: '<% DATE %> (SmartBlock function)',            value: '<%DATE:%>',         processor:'static'});
-      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',     value: '<%IFDAYOFWEEK:%>',         processor:'static'});
-      valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',    value: '<%IFDAYOFMONTH:%>',       processor:'static'});
-      valueArray.push({key: '<% TIME %> (SmartBlock function)',            value: '<%TIME%>',         processor:'static'});
+      valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)', value: '<%RESOLVEBLOCKREF:%>',           processor:'static'});
+      valueArray.push({key: '<% DATE %> (SmartBlock function)',            value: '<%DATE:%>',                     processor:'static'});
+      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',     value: '<%IFDAYOFWEEK:%>',              processor:'static'});
+      valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',    value: '<%IFDAYOFMONTH:%>',             processor:'static'});
+      valueArray.push({key: '<% TIME %> (SmartBlock function)',            value: '<%TIME%>',                       processor:'static'});
       valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',        value: '<%TIMEAMPM%>',         processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',     value: '<%RANDOMBLOCK%>',         processor:'static'});
       valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',      value: '<%JAVASCRIPT:%>',         processor:'static'});            
@@ -43,9 +61,7 @@
 
     const valuesForLookup = async (text, cb) => {
       //graab all blocks with #SmartBlock
-      let sb = await roam42.common.getBlocksReferringToThisPage(
-        "42SmartBlock"
-      );
+      let sb = await roam42.common.getBlocksReferringToThisPage("42SmartBlock");
       let results = sb.flatMap(sb => {
         if (sb[0].children)
           // if has children, add it into returned list key: is text, value is UID of block
@@ -146,6 +162,7 @@
     const blocksToInsert = item => {
       setTimeout(async () => {        
         if(item.original.processor=='date')   insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() );
+        if(item.original.processor=='function') await item.original.value();
         if(item.original.processor=='static') insertSnippetIntoBlock( item.original.value );
         if(item.original.processor=='randomblock') insertSnippetIntoBlock( '((' + await roam42.common.getRandomBlock(1) + '))' );
 
@@ -190,7 +207,6 @@
                 var insertText = n.string;
                 if (insertText == "") insertText = " "; //space needed in empty cell to maintaing indentation on empty blocks
                 insertText = await proccessBlockWithSmartness(insertText);
-                console.log(insertText)
                 if( !insertText.includes(exclusionBlockSymbol) ) {
                   roam42.common.setEmptyNodeValue( document.querySelector("textarea"), insertText );            
                   
@@ -264,7 +280,7 @@
 
       //tribute is the autocomplete dropdown that appears in a text area
       var tribute = new Tribute({
-        trigger: ";;",
+        trigger: smartBlockTrigger,
         menuItemTemplate: function(item) {
           return "" + item.string;
         },
