@@ -1,9 +1,7 @@
 'use strict';
-  
 {
-  
   roam42.roamNavigator = {};
-  
+   
   // Set to true to enable debug logging.
   const DEBUG = false;
 
@@ -12,7 +10,7 @@
 
   // Key to start navigation.  Alt + this key will also trigger
   // navigation.
-  const START_NAVIGATE_KEY = ['g', '©', 'G'];  //ROAM42 MOD
+  const START_NAVIGATE_KEY = 'g';  //ROAM42 MOD
 
   // Key sequence to navigate to daily notes.
   const DAILY_NOTES_KEY = 'g';
@@ -40,6 +38,10 @@
 
   // Key to toggle left sidebar visibility.
   const LEFT_SIDEBAR_KEY = '`';
+
+  // Maximum number of breadcrumbs (recent pages) to keep track of /
+  // attempt to display.
+  const MAX_BREADCRUMB_COUNT = 15;
 
   function readSetting(name, initial) {
     if (window.roamNavigatorSettings && name in window.roamNavigatorSettings) {
@@ -109,6 +111,15 @@
   const SCROLL_OUTSIDE_NAVIGATE_MODE =
         readSetting('scroll-outside-navigate-mode', true);
 
+  // Set to true to enable display of recent pages list.
+  const BREADCRUMBS_ENABLED =
+        readSetting('breadcrumbs-enabled', true);
+
+  // Set to true to display recent pages list, even when not in
+  // navigation mode.
+  const BREADCRUMBS_ALWAYS_VISIBLE =
+        readSetting('breadcrumbs-always-visible', false);
+
   // 'navigate' (g) attempts to assign keys to items based on their
   // names. In some case there might not be a concise labeling. This
   // sets the limit on key sequence length for things based on
@@ -127,9 +138,13 @@
   // was mutated.
   let blockWasHighlighted = false;
 
+  // MUTABLE. Indicates to the mutation observer that the changes
+  // occurred while executing roam-navigator code that mutates DOM,
+  // and so the changes should be ignored.
+  let domMutationLevel = 0;
+
   function initialize() {
     document.addEventListener('keydown', (ev) => {
-      //console.log('keydown', ev.key, ev.code, ev.keyCode);
       debug('keydown', ev);
       debug('keysToIgnore', keysToIgnore);
       if (keyIsModifier(ev)) {
@@ -142,7 +157,7 @@
       if (!roamNavigatorEnabled) { return }  //navigator disabled, don't go further
       
       if (ev.ctrlKey ||
-          (ev.altKey && (isNavigating() || START_NAVIGATE_KEY.includes(ev.key)==false))  ) {
+          (ev.altKey && (isNavigating() || ev.key !== START_NAVIGATE_KEY))) {
 // ROAM42 MOD END
         delete keysToIgnore[ev.key];
         return;
@@ -156,9 +171,7 @@
           handleNavigateKey(ev);
         }
         return;
-//      } else if (ev.key === START_NAVIGATE_KEY || ev.key === START_NAVIGATE_KEY ="©") {
-        //ROAM42 MOD
-        } else if ( START_NAVIGATE_KEY.includes(ev.key) ) {
+      } else if (ev.key === START_NAVIGATE_KEY) {
         const inputTarget = getInputTarget(ev);
         if (ev.altKey || !inputTarget) {
           ev.stopImmediatePropagation();
@@ -204,37 +217,49 @@
       }
     }, true);
 
+    let isReady = false;
+    let initiatedNavigation = false;
+
     const handleChange = throttle(20, () => {
       const blockHighlighted = isBlockHighlighted();
+      const bodyFocused = document.activeElement === document.body;
       debug('DOM mutation. blockHighlighted = ', blockHighlighted,
           'blockWasHighlighted = ', blockWasHighlighted);
       if (isNavigating()) {
-        if (ACTIVATE_ON_NO_FOCUS && roamNavigatorEnabled &&
-            blockHighlighted &&
-            document.activeElement === document.body) {
+        if (ACTIVATE_ON_NO_FOCUS  && roamNavigatorEnabled && blockHighlighted && bodyFocused) {
           handleFocusIn();
         } else {
           setupNavigate(false);
           registerScrollHandlers();
         }
-      } else if (ACTIVATE_ON_NO_FOCUS && roamNavigatorEnabled &&
+      } else if (ACTIVATE_ON_STARTUP && isReady && !initiatedNavigation  && roamNavigatorEnabled) {
+        navigate();
+      } else if (ACTIVATE_ON_NO_FOCUS &&
                  !blockHighlighted &&
                  blockWasHighlighted &&
-                 document.activeElement === document.body) {
+                 bodyFocused) {
         handleFocusOut();
       }
+      if (ACTIVATE_ON_STARTUP && isReady && !initiatedNavigation  && roamNavigatorEnabled) {
+        initiatedNavigation = true;
+      }
       blockWasHighlighted = blockHighlighted;
+      updateBreadcrumbs();
     });
 
-    const observer = new MutationObserver(handleChange);
+    const observer = new MutationObserver(() => {
+      if (!domMutationLevel) {
+        handleChange();
+      }
+    });
     observer.observe(document, {
       childList: true,
       subtree: true,
       attributes: true,
     });
 
-    // Watch for DOM changes, to know when to re-render tips.
-    if (ACTIVATE_ON_NO_FOCUS && roamNavigatorEnabled) {
+   // Watch for DOM changes, to know when to re-render tips.
+    if (ACTIVATE_ON_NO_FOCUS  && roamNavigatorEnabled) {
       document.addEventListener('focusout', (ev) => {
         if (getInputTarget(ev) && document.activeElement === document.body) {
           handleFocusOut();
@@ -249,8 +274,11 @@
 
     // Activate on startup, once the DOM is sufficiently populated.
     if (ACTIVATE_ON_STARTUP) {
-       persistentlyFind(() => getById('right-sidebar'),
-          navigate);
+      persistentlyFind(() => getById('right-sidebar'),
+          () => {
+            isReady = true;
+            handleChange();
+          });
     }
   }
 
@@ -273,16 +301,17 @@
     }
   }
 
-  function registerScrollHandlers() {
+ function registerScrollHandlers() {
     const rightScroller = getById('roam-right-sidebar-content');
     if (rightScroller) {
       rightScroller.removeEventListener('scroll', handleScroll);
       rightScroller.addEventListener('scroll', handleScroll);
     }
-    const mainScroller = getUniqueClass(document, 'roam-center');
+    let mainScroller = getUniqueClass(document, 'roam-body-main');
     if (mainScroller && mainScroller.firstChild) {
-      mainScroller.firstChild.removeEventListener('scroll', handleScroll);
-      mainScroller.firstChild.addEventListener('scroll', handleScroll);
+      mainScroller = mainScroller.firstChild;
+      mainScroller.removeEventListener('scroll', handleScroll);
+      mainScroller.addEventListener('scroll', handleScroll);
     }
   }
 
@@ -358,10 +387,10 @@
     currentNavigatePrefixesUsed = {};
     navigateKeysPressed = '';
 
-
-    // TODO: Cleanup: Was a function to disconnect observer, but now
-    // it is always registered.
     finishNavigate = () => {
+      if (!BREADCRUMBS_ALWAYS_VISIBLE) {
+        clearBreadcrumbs();
+      }
     };
 
     setupNavigate(false);
@@ -388,6 +417,7 @@
   // overrides the keyboard handler such that it temporarily expects a
   // key.
   function setupNavigate(onlyLinks) {
+    updateBreadcrumbs();      
     // ensureSidebarOpen();
     if (!matchingClass(NAVIGATE_CLASS)(document.body)) {
       document.body.classList.add(NAVIGATE_CLASS);
@@ -433,7 +463,7 @@
     }
   }
 
-  function collectNavigateOptions(onlyLinks) {
+ function collectNavigateOptions() {
     const sidebar = getUniqueClass(document, 'roam-sidebar-container');
     // Initialize a list of elements to bind to keys for
     // navigation. Starts out with some reserved keys that will
@@ -489,7 +519,6 @@
       });
     });
 
-    
     withUniqueClass(document, 'roam-topbar', all, (topbar) => {
       const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open'];
       const button = getUniqueClass(topbar, buttonClasses);
@@ -609,6 +638,11 @@
       addLinks(linksByUid, navigateOptions, rightSidebar);
     });
 
+    const breadcrumbsContainer = getUniqueClass(document, BREADCRUMBS_CLASS);
+    if (breadcrumbsContainer) {
+      addLinks(linksByUid, navigateOptions, breadcrumbsContainer);
+    }
+
     const linkItems = [];
     for (const uid of Object.keys(linksByUid)) {
       linkItems.push(linksByUid[uid]);
@@ -621,16 +655,20 @@
   }
 
 
-  function addLinks(linksByUid, navigateOptions, el) {
-    const links = el.querySelectorAll([
+ function addLinks(linksByUid, navigateOptions, container) {
+    const links = container.querySelectorAll([
       '.rm-page-ref',
       'a',
     ].join(', '));
     for (let i = 0; i < links.length; i++) {
       const link = links[i];
       const boundingRect = link.getBoundingClientRect();
-      if (boundingRect.bottom > 50 &&
-          boundingRect.top < window.innerHeight - 10) {
+      const visible =
+            container.classList.contains(BREADCRUMBS_CLASS) ?
+            boundingRect.top < 45 :
+            boundingRect.bottom > 50 &&
+              boundingRect.top < window.innerHeight - 10;
+      if (visible) {
         const parent = link.parentElement;
         let el;
         let uid;
@@ -705,17 +743,20 @@
 
   // Add in tips to tell the user what key to press.
   function rerenderTips(onlyLinks) {
-    // ensureSidebarOpen();
-    removeOldTips(onlyLinks);
     let renderedAny = false;
-    if (!onlyLinks) {
-      for (const k of Object.keys(currentNavigateOptions)) {
-        renderedAny = renderTip(k, currentNavigateOptions[k]) || renderedAny;
+    withDomMutation(() => {
+      updateBreadcrumbs();
+      // ensureSidebarOpen();
+      removeOldTips(onlyLinks);
+      if (!onlyLinks) {
+        for (const k of Object.keys(currentNavigateOptions)) {
+          renderedAny = renderTip(k, currentNavigateOptions[k]) || renderedAny;
+        }
       }
-    }
-    for (const k of Object.keys(currentLinkOptions)) {
-      renderedAny = renderTip(k, currentLinkOptions[k]) || renderedAny;
-    }
+      for (const k of Object.keys(currentLinkOptions)) {
+        renderedAny = renderTip(k, currentLinkOptions[k]) || renderedAny;
+      }
+    });
     // Boolean result is false if navigation mode should be exited due
     // to no tips to render.
     return onlyLinks || renderedAny;
@@ -740,15 +781,15 @@
     return false;
   }
 
-  function renderTipInternal(prefix, rest, el, extraClasses) {
-    const tip = div(HINT_CLASS, text(rest));
+   function renderTipInternal(prefix, rest, el, extraClasses) {
+    const tip = div({'class': HINT_CLASS}, text(rest));
     if (extraClasses) {
       for (const cls of extraClasses) {
         tip.classList.add(cls);
       }
     }
     if (prefix.length > 0) {
-      tip.prepend(span(HINT_TYPED_CLASS, text(prefix)));
+      tip.prepend(span({'class': HINT_TYPED_CLASS}, text(prefix)));
     }
     if (matchingClass('rm-block-text')(el) ||
         el.id === 'block-input-ghost') {
@@ -780,9 +821,7 @@
   */
 
   function closeSidebarIfOpened() {
-    withUniqueClass(document, 'roam-center', all, (main) => {
-      mouseOver(main);
-    });
+    withUniqueClass(document, 'roam-body-main', all, mouseOver);
   }
 
   // Lowercase and take only alphanumeric.
@@ -1057,7 +1096,7 @@
     return Math.abs(hash);
   }
 
-  function handleScrollKey(ev) {
+function handleScrollKey(ev) {
     if (ev.key === BIG_SCROLL_KEY) {
       // Space to scroll down.  Shift+space to scroll up.
       withContainerToScroll((container) => {
@@ -1068,13 +1107,13 @@
         }
       });
       return true;
-    } else if (ev.key === SCROLL_UP_KEY && document.querySelector('#rqrJumpToDatePanel').style.visibility=='hidden') { //ROAM42 MOD
+    } else if (ev.key === SCROLL_UP_KEY) {
       // Up arrow to scroll up a little bit.
       withContainerToScroll((container) => {
         container.scrollBy(0, -40);
       });
       return true;
-    } else if (ev.key === SCROLL_DOWN_KEY && document.querySelector('#rqrJumpToDatePanel').style.visibility=='hidden') { //ROAM42 MOD
+    } else if (ev.key === SCROLL_DOWN_KEY) {
       // Down arrow to scroll down a little bit.
       withContainerToScroll((container) => {
         container.scrollBy(0, 40);
@@ -1222,7 +1261,7 @@
     }
   }
 
-  function withContainerToScroll(f) {
+   function withContainerToScroll(f) {
     if (navigateKeysPressed.startsWith(SIDEBAR_BLOCK_PREFIX)) {
       withId('roam-right-sidebar-content', f);
     } else {
@@ -1230,8 +1269,8 @@
       if (allPages) {
         withUniqueClass(allPages, 'table', all, f);
       } else {
-        withUniqueClass(document, 'roam-center', all, (roamCenter) => {
-          f(roamCenter.firstChild);
+        withUniqueClass(document, 'roam-body-main', all, (main) => {
+          f(main.firstChild);
         });
       }
     }
@@ -1252,19 +1291,173 @@
     // FIXME: I can't quite explain this, but for some reason, querying the
     // list that matches the class name doesn't quite work.  So instead find
     // and remove until they are all gone.
-    let toDelete = [];
-    do {
-      for (let i = 0; i < toDelete.length; i++) {
-        const el = toDelete[i];
-        el.parentElement.removeChild(el);
-      }
-      const cls = onlyLinks ? LINK_HINT_CLASS : HINT_CLASS;
-      toDelete = document.getElementsByClassName(cls);
-    } while (toDelete.length > 0);
+    withDomMutation(() => {
+      let toDelete = [];
+      do {
+        for (let i = 0; i < toDelete.length; i++) {
+          const el = toDelete[i];
+          el.parentElement.removeChild(el);
+        }
+        const cls = onlyLinks ? LINK_HINT_CLASS : HINT_CLASS;
+        toDelete = document.getElementsByClassName(cls);
+      } while (toDelete.length > 0);
+    });
   }
 
   function isNavigating() {
     return finishNavigate !== null;
+  }
+
+  /*****************************************************************************
+   * Recent history breadcrumbs
+   */
+
+  // MUTABLE. Array of recently visited pages. { title: "", hash: "", uid: "" }
+  const breadcrumbs = [];
+
+  // Class used for breadcrumbs container.
+  const BREADCRUMBS_CLASS = 'roam_navigator_breadcrumbs';
+
+  // Attributes used for link portion of breadcrumbs.
+  const LINK_ATTRS = {
+    'tabindex': '-1',
+    'class': 'rm-page-ref rm-page-ref-link-color',
+  };
+
+  // Regex used to extract id from hash portion of url.
+  const ID_FROM_HASH_REGEX = /#\/app\/[^\/]*\/page\/([a-zA-Z0-9\-]*)$/;
+
+  // Regex used to identify if the hash portion of the url is the daily page.
+  const IS_DAILY_NOTES_REGEX = /#\/app\/[^\/]*$/;
+
+  function updateBreadcrumbs() {
+    if (BREADCRUMBS_ENABLED) {
+      const hash = window.location.hash;
+      const pageTitleElement =
+            document.querySelector('.roam-body-main .rm-title-display > span');
+      const pageUidMatchResult = ID_FROM_HASH_REGEX.exec(hash);
+      const isDailyPage = IS_DAILY_NOTES_REGEX.exec(hash) !== null;
+      let title;
+      let uid;
+      if (pageTitleElement) {
+        title = pageTitleElement.innerText;
+      } else if (!isDailyPage) {
+        if (!pageUidMatchResult) {
+          // Fall back on using document title, this is used for cases
+          // like the graph overview / all pages.
+          title = document.title;
+          uid = document.title;
+        } else {
+          debug('Didn\'t find title element for page');
+          return;
+        }
+      }
+      if (isDailyPage) {
+        uid = 'daily_notes';
+        title = 'Daily Notes';
+      } else {
+        if (pageUidMatchResult) {
+          uid = pageUidMatchResult[1];
+        }
+      }
+      let newBreadcrumb;
+      if (uid) {
+        newBreadcrumb = {hash, title, uid};
+      } else {
+        newBreadcrumb = {hash, title};
+      }
+      let changed = false;
+      if (breadcrumbs.length < 1) {
+        breadcrumbs.push(newBreadcrumb);
+        changed = true;
+      }
+      const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1];
+      if (lastBreadcrumb.hash === hash) {
+        if (lastBreadcrumb.title !== title) {
+          lastBreadcrumb.title = title;
+        }
+      } else {
+        // Remove existing occurrences.
+        for (let i = 0; i < breadcrumbs.length; i++) {
+          if (breadcrumbs[i].hash === hash) {
+            breadcrumbs.splice(i, 1);
+          }
+        }
+        breadcrumbs.push(newBreadcrumb);
+        changed = true;
+      }
+      if (changed) {
+        trimExcessBreadcrumbs();
+        debug('updated breadcrumbs = ', breadcrumbs);
+      }
+      // Update rendering of breadcrumbs.
+      const alreadyVisible =
+            selectAll(document, '.' + BREADCRUMBS_CLASS).length > 0;
+      const shouldBeVisible = BREADCRUMBS_ALWAYS_VISIBLE || isNavigating();
+      if (!shouldBeVisible) {
+        clearBreadcrumbs();
+      } else if (changed || !alreadyVisible) {
+        clearBreadcrumbs();
+        renderBreadcrumbs();
+      }
+    }
+  }
+
+  function clearBreadcrumbs() {
+    withDomMutation(() => {
+      withQuery(document, '.' + BREADCRUMBS_CLASS, (container) => {
+        container.parentNode.removeChild(container);
+      });
+    });
+  }
+
+  function renderBreadcrumbs() {
+    withDomMutation(() => {
+      const container = div({'class': BREADCRUMBS_CLASS});
+      for (let i = breadcrumbs.length - 2; i >= 0; i--) {
+        const breadcrumb = breadcrumbs[i];
+        const breadcrumbAttrs = {
+          'title': breadcrumb.title,
+          'data-link-title': breadcrumb.title,
+        };
+        if ('uid' in breadcrumb) {
+          breadcrumbAttrs['data-link-uid'] = breadcrumb['uid'];
+        }
+        const breadcrumbSpan = span(breadcrumbAttrs);
+        breadcrumbSpan.appendChild(span(LINK_ATTRS, text(breadcrumb.title)));
+        breadcrumbSpan.onclick = (event) => {
+          setTimeout(() => {
+            window.location.hash = breadcrumb.hash;
+          });
+        };
+        container.appendChild(breadcrumbSpan);
+      }
+
+      withUnique(document, '.roam-topbar > .flex-h-box', (topbar) => {
+        const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open'];
+        const sidebarButton = getUniqueClass(topbar, buttonClasses);
+        if (sidebarButton && sidebarButton.nextSibling) {
+          topbar.insertBefore(container, sidebarButton.nextSibling);
+        } else {
+          topbar.insertBefore(container, topbar.firstChild);
+        }
+      });
+    });
+  }
+
+  function trimExcessBreadcrumbs() {
+    if (breadcrumbs.length > MAX_BREADCRUMB_COUNT) {
+      breadcrumbs.splice(0, breadcrumbs.length - MAX_BREADCRUMB_COUNT);
+    }
+  }
+
+  function withDomMutation(f) {
+    domMutationLevel += 1;
+    try {
+      f();
+    } finally {
+      domMutationLevel -= 1;
+    }
   }
 
   /*****************************************************************************
@@ -1279,7 +1472,7 @@
     const el = finder();
     if (el) {
       f(el);
-    } else if (n > 200) {
+    } else if (n > 1000) {
       warn('Giving up on finding after', n, 'retries.');
     } else {
       setTimeout(() => persistentlyFindImpl(finder, n + 1, f), 15);
@@ -1402,14 +1595,12 @@
 
   // https://stackoverflow.com/a/41586311/1164871
   function getStack() {
-    if(DEBUG==true){  //ROAM42 mod
       try {
         throw new Error();
       } catch (e) {
         return e.stack;
       }
     }
-  }
 
   // https://github.com/greasemonkey/greasemonkey/issues/2724#issuecomment-354005162
   function addCss(css) {
@@ -1456,10 +1647,9 @@
   }
 
   // Uses querySelectorAll, and applies the provided function to each result.
-  // eslint-disable-next-line no-unused-vars
   function withQuery(parent, query, f) {
     const els = selectAll(parent, query);
-    for (const i = 0; i < els.length; i++) {
+    for (let i = 0; i < els.length; i++) {
       f(els[i]);
     }
   }
@@ -1699,10 +1889,10 @@
     return element('div', ...rest);
   }
 
-  function element(t, cls, ...children) {
+  function element(t, attrs, ...children) {
     const el = document.createElement(t);
-    if (cls) {
-      el.classList.add(cls);
+    for (const attr of Object.keys(attrs)) {
+      el.setAttribute(attr, attrs[attr]);
     }
     for (const child of children) {
       el.appendChild(child);
@@ -1755,9 +1945,32 @@
     '  display: inline;',
     '  margin-top: -14px;',
     '}',
+    '.' + BREADCRUMBS_CLASS + ' .' + LINK_HINT_CLASS + ' {',
+    '  margin-top: -2px;',
+    '  margin-left: 5px;',
+    '}',
     // Prevents clipping of tips.
     '.' + NAVIGATE_CLASS + ' .parent-path-wrapper {',
+    '  flex: 100 0 0;',
     '  overflow: visible !important;',
+    '}',
+    '.' + BREADCRUMBS_CLASS + ' {',
+    '  flex: 100 0 0;',
+    '  overflow: hidden;',
+    '  height: 45px;',
+    '  line-height: 45px;',
+    '}',
+    '.' + BREADCRUMBS_CLASS + ' > span {',
+    '  float: right;',
+    '  margin-left: 5px;',
+    '}',
+    '.' + BREADCRUMBS_CLASS + ' .rm-page-ref {',
+    '  white-space: nowrap;',
+    '  overflow: hidden;',
+    '  max-width: 256px;',
+    '  text-overflow: ellipsis;',
+    '  border-left: 0.5px solid #666;',
+    '  padding-left: 5px;',
     '}',
   ].join('\n'));
 
