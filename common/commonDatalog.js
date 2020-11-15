@@ -62,16 +62,14 @@
     return results
   }
   
-  roam42.common.getRandomBlockRefferingToPage = async (page_title)=>{
+  roam42.common.getRandomBlockMentioningPage = async (page_title)=>{
     var results = await roam42.common.getBlocksReferringToThisPage(page_title);
-
     if (results.length == 0) {
       return "";
     }
 
     var random_result = results[Math.floor(Math.random() * results.length)];
-
-    return random_result[0].string
+    return random_result[0].uid
   }
 
   roam42.common.getRandomBlockFromPage = async (page_title)=>{
