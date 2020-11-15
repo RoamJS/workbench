@@ -160,8 +160,7 @@
       }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKMENTION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         return '((' + await roam42.smartBlocks.getRandomBlocksMentioningPage(textToProcess) + '))';
-      });
-      //Random Page Command
+      }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMPAGE\%\>)/g, async (match, name)=>{
         return roam42.smartBlocks.getRandomPage();
       });
