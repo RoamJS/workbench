@@ -43,12 +43,52 @@
     } catch(e) { return ''; }
   } 
 
-    
+  roam42.common.pageExists = async (page_title)=>{
+    var results = await window.roamAlphaAPI.q(`[:find ?e :where [?e :node/title "${page_title}"]]`);
+    if (results.length == 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  roam42.common.getRandomPage = async ()=>{
+    var results = await window.roamAlphaAPI.q(`[:find [(rand 1 ?page)] :where [?e :node/title ?page]]`);
+    return results;
+  }
+
   roam42.common.getRandomBlock = async ()=>{
     var results = await window.roamAlphaAPI.q(`[:find [(rand 1 ?blocks)] :where [?e :block/uid ?blocks]]`);
     return results
   }
   
+  roam42.common.getRandomBlockRefferingToPage = async (page_title)=>{
+    var results = await roam42.common.getBlocksReferringToThisPage(page_title);
+
+    if (results.length == 0) {
+      return "";
+    }
+
+    var random_result = results[Math.floor(Math.random() * results.length)];
+
+    return random_result[0].string
+  }
+
+  roam42.common.getRandomBlockFromPage = async (page_title)=>{
+    var rule = '[[(ancestor ?b ?a)[?a :block/children ?b]][(ancestor ?b ?a)[?parent :block/children ?b ](ancestor ?parent ?a) ]]';
+
+    var query = `[:find  (pull ?block [:block/uid])
+                                 :in $ ?page_title %
+                                 :where
+                                 [?page :node/title ?page_title]
+                                 (ancestor ?block ?page)]`;
+
+    var results = await window.roamAlphaAPI.q(query, page_title, rule);
+    var random_result = results[Math.floor(Math.random() * results.length)];
+
+    return random_result[0].uid;
+  }
+
   window.roam42.common.testingReloadDatalog = () => {
     roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'common/commonDatalog.js');
   };  
