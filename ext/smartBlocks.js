@@ -27,6 +27,7 @@
       valueArray.push({key: 'Time 24 (42)',          value: getTime24Format(),      processor:'static'});
       valueArray.push({key: 'Time AM/PM (42)',       value: getTimeAPPMFormat(),      processor:'static'});
       valueArray.push({key: 'Serendipity - Random Block (42)', value: '',     processor:'randomblock'});
+      valueArray.push({key: 'Serendipity - Random Page (42)', value: '',     processor:'randompage'});
       valueArray.push({key: 'Horizontal Line (42)',   value: ':hiccup [:hr]',     processor:'static'});
       valueArray.push({key: 'Workflow Starter (SmartBlock function)', processor:'function', value: async ()=>{
                         var workflowName = prompt("What is the name of the new workflow?")
@@ -46,10 +47,12 @@
       valueArray.push({key: '<% INPUT %> (SmartBlock function)',           value: '<%INPUT:%>',                     processor:'static'});
       valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',      value: '<%JAVASCRIPT:%>',         processor:'static'});            
       valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock function)',    value: '<%NOBLOCKOUTPUT%>',         processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',     value: '<%RANDOMBLOCK%>',         processor:'static'});
       valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)', value: '<%RESOLVEBLOCKREF:%>',           processor:'static'});
       valueArray.push({key: '<% TIME %> (SmartBlock function)',            value: '<%TIME%>',                       processor:'static'});
       valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',        value: '<%TIMEAMPM%>',         processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',     value: '<%RANDOMBLOCK%>',         processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCKFROMPAGE %> (SmartBlock function)',     value: '<%RANDOMBLOCKFROMPAGE%>',         processor:'static'});
+      valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock function)',     value: '<%RANDOMPAGE%>',         processor:'static'});
     };
 
     const sortObjectByKey = async o => {
@@ -144,9 +147,20 @@
           return prompt(textToProcess.toString());        
         }
       });
+      //Random block command
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCK\%\>)/g, async (match, name)=>{
-        return roam42.smartBlocks.randomBlocks(match);
-      });          
+        return '((' + await roam42.common.getRandomBlock(1) + '))';
+      }); 
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        return roam42.smartBlocks.getRandomBlocks(textToProcess);
+      }); 
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKFROMPAGE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        return '((' + await roam42.smartBlocks.getRandomBlocksFromPage(textToProcess) + '))';
+      }); 
+      //Random Page Command
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMPAGE\%\>)/g, async (match, name)=>{
+        return roam42.smartBlocks.getRandomPage();
+      });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIME\%\>)/g, async (match, name)=>{
         return getTime24Format()
       }); 
@@ -197,6 +211,7 @@
         if(item.original.processor=='function') await item.original.value();
         if(item.original.processor=='static') insertSnippetIntoBlock( item.original.value );
         if(item.original.processor=='randomblock') insertSnippetIntoBlock( '((' + await roam42.common.getRandomBlock(1) + '))' );
+        if(item.original.processor=='randompage') insertSnippetIntoBlock(await roam42.smartBlocks.getRandomPage());
 
         if(item.original.processor=='blocks') {
           var results = await roam42.common.getBlockInfoByUID( item.original.value, true );
