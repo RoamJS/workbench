@@ -47,12 +47,12 @@
       valueArray.push({key: '<% INPUT %> (SmartBlock function)',           value: '<%INPUT:%>',                     processor:'static'});
       valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',      value: '<%JAVASCRIPT:%>',         processor:'static'});            
       valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock function)',    value: '<%NOBLOCKOUTPUT%>',         processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',     value: '<%RANDOMBLOCK:%>',         processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCKFROMPAGE %> (SmartBlock function)',     value: '<%RANDOMBLOCKFROMPAGE:%>',         processor:'static'});
+      valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock function)',       value: '<%RANDOMPAGE%>',         processor:'static'});
       valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)', value: '<%RESOLVEBLOCKREF:%>',           processor:'static'});
       valueArray.push({key: '<% TIME %> (SmartBlock function)',            value: '<%TIME%>',                       processor:'static'});
       valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',        value: '<%TIMEAMPM%>',         processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',     value: '<%RANDOMBLOCK%>',         processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCKFROMPAGE %> (SmartBlock function)',     value: '<%RANDOMBLOCKFROMPAGE%>',         processor:'static'});
-      valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock function)',     value: '<%RANDOMPAGE%>',         processor:'static'});
     };
 
     const sortObjectByKey = async o => {
@@ -118,7 +118,7 @@
       }
     };    
     
-    const proccessBlockWithSmartness = async (textToProcess, UID)=>{
+    const proccessBlockWithSmartness = async (textToProcess)=>{
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTBLOCKREF\%\>)/g, async (match, name)=>{
         let tID = await  asyncQuerySelector(document,'textarea');
         let UID = tID.id;
@@ -134,15 +134,15 @@
           return queryResults[0][0].string;
       });        
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','').trim();
+        var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','');
         var results = new Function(scriptToRun.toString())();
         return results;
       });           
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%INPUT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%INPUT:','').replace('%>','').trim();
+        var textToProcess = match.replace('<%INPUT:','').replace('%>','');
         if(textToProcess.includes('\%\%')) {
           var splitPrompt = textToProcess.split('\%\%');
-          return prompt( splitPrompt[0].trim(),  splitPrompt[1].trim() )
+          return prompt( splitPrompt[0],  splitPrompt[1] )
         } else {
           return prompt(textToProcess.toString());        
         }
@@ -157,7 +157,6 @@
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKFROMPAGE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         return '((' + await roam42.smartBlocks.getRandomBlocksFromPage(textToProcess) + '))';
       }); 
-      //Random Page Command
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMPAGE\%\>)/g, async (match, name)=>{
         return roam42.smartBlocks.getRandomPage();
       });
@@ -188,7 +187,7 @@
           return exclusionBlockSymbol
       });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLIPBOARDWRITE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToWrite = match.replace('<%CLIPBOARDWRITE:','').replace('%>','').trim();
+        var textToWrite = match.replace('<%CLIPBOARDWRITE:','').replace('%>','');
         await navigator.clipboard.writeText( textToWrite );
         return ' ';
       });
