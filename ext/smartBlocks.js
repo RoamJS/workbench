@@ -24,7 +24,8 @@
         valueArray.push({key: `Last ${e} (42)`,     value: `Last ${e}`, processor:'date'});
         valueArray.push({key: `Next ${e} (42)`,     value: `Next ${e}`, processor:'date'});
       });
-      valueArray.push({key: 'Time (42)',       value: getTime24Format(),      processor:'static'});
+      valueArray.push({key: 'Time 24 (42)',          value: getTime24Format(),      processor:'static'});
+      valueArray.push({key: 'Time AM/PM (42)',       value: getTimeAPPMFormat(),      processor:'static'});
       valueArray.push({key: 'Serendipity - Random Block (42)', value: '',     processor:'randomblock'});
       valueArray.push({key: 'Horizontal Line (42)',   value: ':hiccup [:hr]',     processor:'static'});
       valueArray.push({key: 'Workflow Starter (SmartBlock function)', processor:'function', value: async ()=>{
@@ -36,15 +37,19 @@
                         await roam42KeyboardLib.pressTab();
                       }});
       valueArray.push({key: 'sb42 (SmartBlock function)',                  value: '#42SmartBlock',                     processor:'static'});
-      valueArray.push({key: '<% INPUT %> (SmartBlock function)',           value: '<%INPUT:%>',                     processor:'static'});
-      valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)', value: '<%RESOLVEBLOCKREF:%>',           processor:'static'});
+      valueArray.push({key: '<% CLIPBOARDWRITE %> (SmartBlock function)',  value: '<%CLIPBOARDWRITE:%>',           processor:'static'});
+      valueArray.push({key: '<% CLIPBOARDREADTEXT %> (SmartBlock function)', value: '<%CLIPBOARDREADTEXT%>',         processor:'static'});
+      valueArray.push({key: '<% CURRENTBLOCKREF %> (SmartBlock function)',   value: '<%CURRENTBLOCKREF%>',         processor:'static'});
       valueArray.push({key: '<% DATE %> (SmartBlock function)',            value: '<%DATE:%>',                     processor:'static'});
-      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',     value: '<%IFDAYOFWEEK:%>',              processor:'static'});
       valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',    value: '<%IFDAYOFMONTH:%>',             processor:'static'});
+      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',     value: '<%IFDAYOFWEEK:%>',              processor:'static'});
+      valueArray.push({key: '<% INPUT %> (SmartBlock function)',           value: '<%INPUT:%>',                     processor:'static'});
+      valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',      value: '<%JAVASCRIPT:%>',         processor:'static'});            
+      valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock function)',    value: '<%NOBLOCKOUTPUT%>',         processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',     value: '<%RANDOMBLOCK%>',         processor:'static'});
+      valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)', value: '<%RESOLVEBLOCKREF:%>',           processor:'static'});
       valueArray.push({key: '<% TIME %> (SmartBlock function)',            value: '<%TIME%>',                       processor:'static'});
       valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',        value: '<%TIMEAMPM%>',         processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',     value: '<%RANDOMBLOCK%>',         processor:'static'});
-      valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',      value: '<%JAVASCRIPT:%>',         processor:'static'});            
     };
 
     const sortObjectByKey = async o => {
@@ -86,13 +91,37 @@
     
     const getTime24Format = ()=> {
       var dt = new Date();
-      return dt.getHours() + ':' + dt.getMinutes().toString().padStart(2, '0');
+      return dt.getHours().toString().padStart(2, '0') + ':' + dt.getMinutes().toString().padStart(2, '0');
     }
     
-    //time
-    //JAVASCRIPTEVAL
-
-    const proccessBlockWithSmartness = async (textToProcess)=>{
+    const getTimeAPPMFormat = ()=>{
+        var dt = new Date();
+        var hours = dt.getHours();
+        var minutes = dt.getMinutes();
+        var ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        minutes = minutes < 10 ? '0'+minutes : minutes;
+        var strTime = hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(0,2) + ' ' + ampm;
+        return strTime;      
+    }
+    
+    const asyncQuerySelector = async (node, query) => {
+      try {
+        return await (query ? node.querySelector(query) : node);
+      } catch (error) {
+        console.error(`Cannot find ${query ? `${query} in`: ''} ${node}.`, error);
+        return null;
+      }
+    };    
+    
+    const proccessBlockWithSmartness = async (textToProcess, UID)=>{
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTBLOCKREF\%\>)/g, async (match, name)=>{
+        let tID = await  asyncQuerySelector(document,'textarea');
+        let UID = tID.id;
+        let results = '((' + UID.substring( UID.length -9) + '))';
+        return results;
+      });          
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RESOLVEBLOCKREF:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var uid = match.replace('<%RESOLVEBLOCKREF:','').replace('%>','').replace('((','').replace('))','').trim();
         var queryResults = await roam42.common.getBlockInfoByUID(uid);
@@ -101,60 +130,63 @@
         else
           return queryResults[0][0].string;
       });        
-      //Evaluating javascript. Pattern: <%JAVASCRIPT:  NLP text %>
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','').trim();
         var results = new Function(scriptToRun.toString())();
         return results;
       });           
-      //process input commands Pattern: <%input:  NLP text %>  use a %% for prompt then default value
-      textToProcess = textToProcess.replaceAll(/(\<\%INPUT:)(\s*[\S\s]*?)(\%\>)/g, (match, p1, p2, p3)=>{
-        if(p2.includes('\%\%')) {
-          var splitPrompt = p2.split('\%\%');
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%INPUT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%INPUT:','').replace('%>','').trim();
+        if(textToProcess.includes('\%\%')) {
+          var splitPrompt = textToProcess.split('\%\%');
           return prompt( splitPrompt[0].trim(),  splitPrompt[1].trim() )
         } else {
-          return prompt(p2.toString());        
+          return prompt(textToProcess.toString());        
         }
       });
-      //Random block command
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCK\%\>)/g, async (match, name)=>{
-        return roam42.smartBlocks.randomBlocks(textToProcess);
+        return roam42.smartBlocks.randomBlocks(match);
       });          
-      //Time in 24 hour block command
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIME\%\>)/g, async (match, name)=>{
         return getTime24Format()
       }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIMEAMPM\%\>)/g, async (match, name)=>{
-          var dt = new Date();
-          var hours = dt.getHours();
-          var minutes = dt.getMinutes();
-          var ampm = hours >= 12 ? 'pm' : 'am';
-          hours = hours % 12;
-          hours = hours ? hours : 12; // the hour '0' should be '12'
-          minutes = minutes < 10 ? '0'+minutes : minutes;
-          var strTime = hours + ':' + minutes + ' ' + ampm;
-          return strTime;
+        return getTimeAPPMFormat();
       });           
-      //process inline dates. Pattern: <%date:  NLP text %>
-      textToProcess = textToProcess.replaceAll(/(\<\%DATE:)(\s*[\S\s]*?)(\%\>)/g, (match, p1, p2, p3)=>{
-        return roam42.dateProcessing.parseTextForDates(p2).trim();
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%DATE:','').replace('%>','').trim();
+        return roam42.dateProcessing.parseTextForDates(textToProcess).trim();
       });
-      //process inline dates. Pattern: <%IFDAYOFWEEK: day number (comma separatedlist) %>
-      textToProcess = textToProcess.replaceAll(/(\<\%IFDAYOFWEEK:)(\s*[\S\s]*?)(\%\>)/g, (match, p1, p2, p3)=>{
-        if(p2.replaceAll(' ','').split(',').includes( String(new Date().getDay()) ) ) 
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDAYOFWEEK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%IFDAYOFWEEK:','').replace('%>','').trim();
+        var day = String(new Date().getDay());
+        if(day=='0') day='7'; //sunday
+        if(textToProcess.replaceAll(' ','').split(',').includes(day)) 
           return ''; //
         else 
           return exclusionBlockSymbol
       });
-      //If today is the day of the month. Pattern: <%IFDAYOFMONTH: day number (comma separatedlist) %>
-      textToProcess = textToProcess.replaceAll(/(\<\%IFDAYOFMONTH:)(\s*[\S\s]*?)(\%\>)/g, (match, p1, p2, p3)=>{
-        if(p2.replaceAll(' ','').split(',').includes( String(new Date().getDate()) ) ) 
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDAYOFMONTH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%IFDAYOFMONTH:','').replace('%>','').trim();
+        if(textToProcess.replaceAll(' ','').split(',').includes( String(new Date().getDate()) ) ) 
           return ''; //
         else 
           return exclusionBlockSymbol
       });
-      //RANDOM block
-      //resolve block
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLIPBOARDWRITE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToWrite = match.replace('<%CLIPBOARDWRITE:','').replace('%>','').trim();
+        await navigator.clipboard.writeText( textToWrite );
+        return ' ';
+      });
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLIPBOARDREADTEXT\%\>)/g, async (match, name)=>{
+        var cb = await navigator.clipboard.readText();
+        await roam42.common.sleep(50);        
+        return cb;
+      });      
+      //ALWAYS at end of process
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOBLOCKOUTPUT\%\>)/g, async (match, name)=>{
+        return exclusionBlockSymbol;
+      });               
       if(textToProcess.includes(exclusionBlockSymbol)) return exclusionBlockSymbol; //skip this block
       return textToProcess; //resert new text
     }
@@ -208,12 +240,17 @@
                 var insertText = n.string;
                 if (insertText == "") insertText = " "; //space needed in empty cell to maintaing indentation on empty blocks
                 insertText = await proccessBlockWithSmartness(insertText);
+                console.log(insertText)
                 if( !insertText.includes(exclusionBlockSymbol) ) {
-                  if (/\#|\]\|\:\:]/.test(insertText)) //fixes a bug generated by tags
+                  if (/\#|\]\]|\:\:/.test(insertText)) //fixes a bug generated by tags
                     insertText = insertText + ' ';
                   if (firstBlock==true) {
                     firstBlock = false;
-                    roam42.common.insertAtCaret( document.querySelector("textarea").id, insertText );
+                    var txtarea = document.querySelector("textarea");
+                    var strPos = txtarea.selectionStart;
+                    var front = txtarea.value.substring(0, strPos);
+                    var back = txtarea.value.substring(strPos, txtarea.value.length);
+                    roam42.common.setEmptyNodeValue(txtarea, front + insertText + back);                    
                   } else {
                     roam42.common.setEmptyNodeValue( document.querySelector("textarea"), insertText );                                
                   }
@@ -224,6 +261,12 @@
                     await roam42.common.sleep(100);
                     document.querySelector("textarea").setSelectionRange(0, 2); //now remove the spae before next line
                   }
+
+                  if (/\#|\]\]|\)\)|\:\:/.test(insertText)) //fixes a bug generated by tags
+                    await roam42.common.sleep(250);
+                  else
+                    await roam42.common.sleep(100);
+                                    
                   //see if heading needs to be assigned
                   if (n.heading) {
                     var ev = {};
@@ -252,11 +295,6 @@
                     roam42.common.simulateMouseClick(document.querySelector("#" + id));
                   }
 
-                  if (/\#|\]\|\:\:]/.test(insertText)) //fixes a bug generated by tags
-                    await roam42.common.sleep(250);
-                  else
-                    await roam42.common.sleep(100);
-                  
                   await roam42KeyboardLib.pressEnter();
                   if (/query|kanban|embed|\`\`\`/.test(insertText)) 
                     await roam42.common.sleep(500);
@@ -294,6 +332,7 @@
       //tribute is the autocomplete dropdown that appears in a text area
       var tribute = new Tribute({
         trigger: smartBlockTrigger,
+        requireLeadingSpace: false,
         menuItemTemplate: function(item) {
           return "" + item.string;
         },
