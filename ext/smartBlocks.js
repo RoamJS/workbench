@@ -157,7 +157,6 @@
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKFROMPAGE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         return '((' + await roam42.smartBlocks.getRandomBlocksFromPage(textToProcess) + '))';
       }); 
-      //Random Page Command 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMPAGE\%\>)/g, async (match, name)=>{
         return roam42.smartBlocks.getRandomPage();
       });
