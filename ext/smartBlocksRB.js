@@ -13,28 +13,14 @@
   	return result;
   }
 
+  roam42.smartBlocks.getRandomBlocksMentioningPage = async (textToProcess) => {
+    var page_title = textToProcess.replace('<%RANDOMBLOCKMENTION:','').replace('%>','').trim();
+  	result = await roam42.common.getRandomBlockMentioningPage(page_title);
+  	return result;
+  }
+
   roam42.smartBlocks.getRandomBlocks = async (textToProcess)=> {
     var randomBlockParam = textToProcess.replace('<%RANDOMBLOCK:','').replace('%>','').trim();
-
-    const isPage = randomBlockParam => {
-    	var page_exists = roam42.common.pageExists(randomBlockParam);
-    	if (page_exists) { 
-    		return true;
-    	}
-
-    	return false;
-    }
-
-  	if (randomBlockParam == '') {
-    	result =  '((' + await roam42.common.getRandomBlock(1) + '))'
-    	return result;
-  	}
-
-  	if (isPage(randomBlockParam)) {
-    	result =  await roam42.common.getRandomBlockRefferingToPage(randomBlockParam);
-    	return result;
-  	}
-
     return '((' + await roam42.common.getRandomBlock(1) + '))'
   }
   

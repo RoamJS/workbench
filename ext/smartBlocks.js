@@ -49,6 +49,7 @@
       valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock function)',    value: '<%NOBLOCKOUTPUT%>',         processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',     value: '<%RANDOMBLOCK:%>',         processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCKFROMPAGE %> (SmartBlock function)',     value: '<%RANDOMBLOCKFROMPAGE:%>',         processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCKMENTION %> (SmartBlock function)',     value: '<%RANDOMBLOCKMENTION:%>',         processor:'static'});
       valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock function)',       value: '<%RANDOMPAGE%>',         processor:'static'});
       valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)', value: '<%RESOLVEBLOCKREF:%>',           processor:'static'});
       valueArray.push({key: '<% TIME %> (SmartBlock function)',            value: '<%TIME%>',                       processor:'static'});
@@ -157,6 +158,9 @@
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKFROMPAGE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         return '((' + await roam42.smartBlocks.getRandomBlocksFromPage(textToProcess) + '))';
       }); 
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKMENTION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        return '((' + await roam42.smartBlocks.getRandomBlocksMentioningPage(textToProcess) + '))';
+      }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMPAGE\%\>)/g, async (match, name)=>{
         return roam42.smartBlocks.getRandomPage();
       });
@@ -202,138 +206,144 @@
       });               
       if(textToProcess.includes(exclusionBlockSymbol)) return exclusionBlockSymbol; //skip this block
       return textToProcess; //resert new text
-    }
+    }    
 
     const blocksToInsert = item => {
       setTimeout(async () => {        
-        if(item.original.processor=='date')   insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() );
-        if(item.original.processor=='function') await item.original.value();
-        if(item.original.processor=='static') insertSnippetIntoBlock( item.original.value );
-        if(item.original.processor=='randomblock') insertSnippetIntoBlock( '((' + await roam42.common.getRandomBlock(1) + '))' );
-        if(item.original.processor=='randompage') insertSnippetIntoBlock(await roam42.smartBlocks.getRandomPage());
-
-        if(item.original.processor=='blocks') {
-          var results = await roam42.common.getBlockInfoByUID( item.original.value, true );
-          // console.log(results)
-
-          //loop through array outline and insert into Roam
-          roam42.test=results;
-
-          if (results[0][0].children.length == 1 && !results[0][0].children[0].children) {
-            // console.log('single line')
-            //has no children, just insert text into block and safe it
-            var processedText = await proccessBlockWithSmartness( results[0][0].children[0].string);
-            if( !processedText.includes(exclusionBlockSymbol) )
-              insertSnippetIntoBlock( processedText );
-          } else {
-            // console.log('multiple line')
-            //has children, start walking through the nodes and insert them
-            let blockInsertCounter = 0 //used to track how many inserts performed so we can take a coffee break at 19, to let Roam catch up
-            let firstBlock = true    //handles the first block specially
-            var currentOutlineLevel = 1;
-
-            var loopStructure = async (parentNode, level) => {
-              let orderedNode = await sortObjectsByOrder(parentNode);
-              for (var i = 0; i < orderedNode.length; i++) {
-                //indent/unindent if needed
-                if (currentOutlineLevel < level) {
-                  for (var inc = currentOutlineLevel; inc < level; inc++) {
-                    await roam42KeyboardLib.delay(100);
-                    await roam42KeyboardLib.pressTab();
-                    currentOutlineLevel += 1;
-                  }
-                } else if (currentOutlineLevel > level) {
-                  for (var inc = currentOutlineLevel; inc > level; inc--) {
-                    await roam42KeyboardLib.delay(100);
-                    await roam42KeyboardLib.pressShiftTab();
-                    currentOutlineLevel -= 1;
-                  }
-                }
-                var n = orderedNode[i];
-                //TEXT INSERTION HAPPENING HERE
-                var insertText = n.string;
-                if (insertText == "") insertText = " "; //space needed in empty cell to maintaing indentation on empty blocks
-                insertText = await proccessBlockWithSmartness(insertText);
-                console.log(insertText)
-                if( !insertText.includes(exclusionBlockSymbol) ) {
-                  if (/\#|\]\]|\:\:/.test(insertText)) //fixes a bug generated by tags
-                    insertText = insertText + ' ';
-                  if (firstBlock==true) {
-                    firstBlock = false;
-                    var txtarea = document.querySelector("textarea");
-                    var strPos = txtarea.selectionStart;
-                    var front = txtarea.value.substring(0, strPos);
-                    var back = txtarea.value.substring(strPos, txtarea.value.length);
-                    roam42.common.setEmptyNodeValue(txtarea, front + insertText + back);                    
-                  } else {
-                    roam42.common.setEmptyNodeValue( document.querySelector("textarea"), insertText );                                
-                  }
-                  
-                  //roam42.common.insertAtCaret( document.querySelector("textarea").id, insertText );
-                  if (insertText == " ") {
-                    //if had to insert space, remove it
-                    await roam42.common.sleep(100);
-                    document.querySelector("textarea").setSelectionRange(0, 2); //now remove the spae before next line
-                  }
-
-                  if (/\#|\]\]|\)\)|\:\:/.test(insertText)) //fixes a bug generated by tags
-                    await roam42.common.sleep(250);
-                  else
-                    await roam42.common.sleep(100);
-                                    
-                  //see if heading needs to be assigned
-                  if (n.heading) {
-                    var ev = {};
-                    ev.target = document.querySelector("textarea");
-                    roam42.jumpnav.jumpCommand( ev, "ctrl+j " + (Number(n.heading) + 4) ); //base is 4
-                    var id = document.querySelector("textarea").id;
-                    await roam42KeyboardLib.pressEsc(500);
-                    roam42.common.simulateMouseClick( document.querySelector("#" + id) );
-                  }
-                  if (n["text-align"] && n["text-align"] != "left") {
-                    var ev = {};
-                    ev.target = document.querySelector("textarea");
-                    switch (n["text-align"]) {
-                      case "center":
-                        roam42.jumpnav.jumpCommand(ev, "ctrl+j 2"); //base is 4
-                        break;
-                      case "right":
-                        roam42.jumpnav.jumpCommand(ev, "ctrl+j 3"); //base is 4
-                        break;
-                      case "justify":
-                        roam42.jumpnav.jumpCommand(ev, "ctrl+j 4"); //base is 4
-                        break;
+        try {          
+            roam42.smartBlocks.textBoxObserver.disconnect(); //stop observing blocks during insertion
+            if(item.original.processor=='date')   insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() );
+            if(item.original.processor=='function') await item.original.value();
+            if(item.original.processor=='static') insertSnippetIntoBlock( item.original.value );
+            if(item.original.processor=='randomblock') insertSnippetIntoBlock( '((' + await roam42.common.getRandomBlock(1) + '))' );
+            if(item.original.processor=='randompage') insertSnippetIntoBlock(await roam42.smartBlocks.getRandomPage());
+            if(item.original.processor=='blocks') {
+              var results = await roam42.common.getBlockInfoByUID( item.original.value, true );
+              //loop through array outline and insert into Roam
+              if (results[0][0].children.length == 1 && !results[0][0].children[0].children) {
+                //has no children, just insert text into block and safe it
+                var processedText = await proccessBlockWithSmartness( results[0][0].children[0].string);
+                if( !processedText.includes(exclusionBlockSymbol) )
+                  insertSnippetIntoBlock( processedText );
+              } else {
+                //has children, start walking through the nodes and insert them
+                let blockInsertCounter = 0 //used to track how many inserts performed so we can take a coffee break at 19, to let Roam catch up
+                let firstBlock = true    //handles the first block specially
+                var currentOutlineLevel = 1;
+                var loopStructure = async (parentNode, level) => {
+                  let orderedNode = await sortObjectsByOrder(parentNode);
+                  for (var i = 0; i < orderedNode.length; i++) {
+                    //indent/unindent if needed
+                    if (currentOutlineLevel < level) {
+                      for (var inc = currentOutlineLevel; inc < level; inc++) {
+                        await roam42KeyboardLib.delay(100);
+                        await roam42KeyboardLib.pressTab();
+                        currentOutlineLevel += 1;
+                      }
+                    } else if (currentOutlineLevel > level) {
+                      for (var inc = currentOutlineLevel; inc > level; inc--) {
+                        await roam42KeyboardLib.delay(100);
+                        await roam42KeyboardLib.pressShiftTab();
+                        currentOutlineLevel -= 1;
+                      }
                     }
-                    var id = document.querySelector("textarea").id;
-                    await roam42.common.sleep(500);
-                    roam42.common.simulateMouseClick(document.querySelector("#" + id));
+                    var n = orderedNode[i];
+                    //TEXT INSERTION HAPPENING HERE
+                    var insertText = n.string;
+                    if (insertText == "") insertText = " "; //space needed in empty cell to maintaing indentation on empty blocks
+                    insertText = await proccessBlockWithSmartness(insertText);
+                    if( !insertText.includes(exclusionBlockSymbol) ) {
+                      // if (/\#|\]\]|\:\:/.test(insertText)) //fixes a bug generated by tags
+                      //   insertText = insertText + ' ';
+                      if (firstBlock==true && document.activeElement.value.length>2) { 
+                        firstBlock = false;
+                        var txtarea = document.querySelector("textarea");
+                        var strPos = txtarea.selectionStart;
+                        var front = txtarea.value.substring(0, strPos);
+                        var back = txtarea.value.substring(strPos, txtarea.value.length);
+                        // roam42.common.setEmptyNodeValue(txtarea, front + insertText + back);
+                        var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+                        setValue.call(txtarea, front + insertText + back );
+                        var e = new Event('input', { bubbles: true });
+                        txtarea.dispatchEvent(e);                      
+                      } else {
+                        firstBlock = false;
+                        // roam42.common.setEmptyNodeValue( document.querySelector("textarea"), insertText );       
+                        let txtarea = document.querySelector("textarea");
+                        //https://stackoverflow.com/questions/45659576/trigger-change-events-when-the-value-of-an-input-changed-programmatically-react
+                        var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+                        setValue.call(txtarea, insertText );
+                        var e = new Event('input', { bubbles: true });
+                        txtarea.dispatchEvent(e);  
+                      }
+
+                      //see if heading needs to be assigned (MUST DO THIS SLOWLY)
+                      if (n.heading) {
+                        var ev = {};
+                        ev.target = document.querySelector("textarea");
+                        roam42.jumpnav.jumpCommand( ev, "ctrl+j " + (Number(n.heading) + 4) ); //base is 4
+                        var id = document.querySelector("textarea").id;
+                        await roam42KeyboardLib.pressEsc(500);
+                        roam42.common.simulateMouseClick( document.querySelector("#" + id) );
+                      }
+                      if (n["text-align"] && n["text-align"] != "left") {
+                        var ev = {};
+                        ev.target = document.querySelector("textarea");
+                        switch (n["text-align"]) {
+                          case "center":
+                            roam42.jumpnav.jumpCommand(ev, "ctrl+j 2"); //base is 4
+                            break;
+                          case "right":
+                            roam42.jumpnav.jumpCommand(ev, "ctrl+j 3"); //base is 4
+                            break;
+                          case "justify":
+                            roam42.jumpnav.jumpCommand(ev, "ctrl+j 4"); //base is 4
+                            break;
+                        }
+                        var id = document.querySelector("textarea").id;
+                        await roam42.common.sleep(500);
+                        roam42.common.simulateMouseClick(document.querySelector("#" + id));
+                      }
+
+                      //PRESS ENTER 
+                      {
+                        let currentBlockId = document.querySelector('textarea').id
+                        await roam42KeyboardLib.pressEnter();
+                        await roam42.common.sleep(50);
+                        if( currentBlockId == document.querySelector('textarea').id ) {
+                          await roam42KeyboardLib.pressEnter();
+                        }
+                      }
+
+                      // if (/query|kanban|embed|\`\`\`/.test(insertText)) 
+                      //   await roam42.common.sleep(500);
+
+                      blockInsertCounter += 1;
+                      if(blockInsertCounter > 9) {  //SmartBlocks coffee break to allow Roam to catch its breath
+                          blockInsertCounter = 0;
+                          await roam42.common.sleep(250);                  }
+
+                      if (n.children) await loopStructure(n.children, level + 1);
+                    } 
                   }
+                }; //END of LOOPSTRUCTURE
 
-                  await roam42KeyboardLib.pressEnter();
-                  if (/query|kanban|embed|\`\`\`/.test(insertText)) 
-                    await roam42.common.sleep(500);
-                  
-                  blockInsertCounter += 1;
-                  if(blockInsertCounter > 5) {  //SmartBlocks coffee break to allow Roam to catch its breath
-                      blockInsertCounter = 0;
-                      await roam42.common.sleep(200);                  }
-
-                  if (n.children) await loopStructure(n.children, level + 1);
-                } 
+                // await roam42.common.sleep(100);
+                // var ta = document.querySelector("textarea");
+                // ta.setSelectionRange(ta.selectionStart - 2, ta.selectionStart + 1); //this deals with extra space added
+                if (results[0][0].children){
+                  await loopStructure(results[0][0].children, 1); //only process if has children
+                }
               }
-            }; //END of LOOPSTRUCTURE
-
-            await roam42.common.sleep(100);
-            var ta = document.querySelector("textarea");
-            ta.setSelectionRange(ta.selectionStart - 2, ta.selectionStart + 1); //this deals with extra space added
-            if (results[0][0].children){
-              // console.log(results[0][0].children)
-              await loopStructure(results[0][0].children, 1); //only process if has children
-            }
-          }
-        } // end IF
+            } // end IF
+          //start observing mutations again
+          roam42.smartBlocks.textBoxObserver.observe(document, { childList: true, subtree: true });  
+        } catch(e) {
+          console.log(e);
+          //start observing mutations again
+          roam42.smartBlocks.textBoxObserver.observe(document, { childList: true, subtree: true });  
+        } 
       }, 10); // end setTimeout
-
       return " ";
     };
     
