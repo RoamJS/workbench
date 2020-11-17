@@ -26,8 +26,8 @@
       });
       valueArray.push({key: 'Time 24 (42)',          value: getTime24Format(),      processor:'static'});
       valueArray.push({key: 'Time AM/PM (42)',       value: getTimeAPPMFormat(),      processor:'static'});
-      valueArray.push({key: 'Serendipity - Random Block (42)', value: '',     processor:'randomblock'});
-      valueArray.push({key: 'Serendipity - Random Page (42)', value: '',     processor:'randompage'});
+      valueArray.push({key: 'Serendipity - R a n d o m Block (42)', value: '',     processor:'randomblock'});
+      valueArray.push({key: 'Serendipity - R a n d o m Page (42)', value: '',     processor:'randompage'});
       valueArray.push({key: 'Horizontal Line (42)',   value: ':hiccup [:hr]',     processor:'static'});
       valueArray.push({key: 'Workflow Starter (SmartBlock function)', processor:'function', value: async ()=>{
                         var workflowName = prompt("What is the name of the new workflow?")
@@ -37,23 +37,25 @@
                         await roam42.common.sleep(200);
                         await roam42KeyboardLib.pressTab();
                       }});
-      valueArray.push({key: 'sb42 (SmartBlock function)',                  value: '#42SmartBlock',                     processor:'static'});
-      valueArray.push({key: '<% CLIPBOARDWRITE %> (SmartBlock function)',  value: '<%CLIPBOARDWRITE:%>',           processor:'static'});
-      valueArray.push({key: '<% CLIPBOARDREADTEXT %> (SmartBlock function)', value: '<%CLIPBOARDREADTEXT%>',         processor:'static'});
-      valueArray.push({key: '<% CURRENTBLOCKREF %> (SmartBlock function)',   value: '<%CURRENTBLOCKREF%>',         processor:'static'});
-      valueArray.push({key: '<% DATE %> (SmartBlock function)',            value: '<%DATE:%>',                     processor:'static'});
-      valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',    value: '<%IFDAYOFMONTH:%>',             processor:'static'});
-      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',     value: '<%IFDAYOFWEEK:%>',              processor:'static'});
-      valueArray.push({key: '<% INPUT %> (SmartBlock function)',           value: '<%INPUT:%>',                     processor:'static'});
-      valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',      value: '<%JAVASCRIPT:%>',         processor:'static'});            
-      valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock function)',    value: '<%NOBLOCKOUTPUT%>',         processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',     value: '<%RANDOMBLOCK:%>',         processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCKFROMPAGE %> (SmartBlock function)',     value: '<%RANDOMBLOCKFROMPAGE:%>',         processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCKMENTION %> (SmartBlock function)',     value: '<%RANDOMBLOCKMENTION:%>',         processor:'static'});
-      valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock function)',       value: '<%RANDOMPAGE%>',         processor:'static'});
-      valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)', value: '<%RESOLVEBLOCKREF:%>',           processor:'static'});
-      valueArray.push({key: '<% TIME %> (SmartBlock function)',            value: '<%TIME%>',                       processor:'static'});
-      valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',        value: '<%TIMEAMPM%>',         processor:'static'});
+      valueArray.push({key: 'sb42 (SmartBlock function)',                      value: '#42SmartBlock',                processor:'static'});
+      valueArray.push({key: '<% CURSOR %> (SmartBlock function)',              value: '<%CURSOR%>',                   processor:'static'});
+      valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock function)',       value: '<%CLIPBOARDCOPY:&&&%>',    processor:'static'});
+      valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock function)',  value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
+      valueArray.push({key: '<% CURRENTBLOCKREF %> (SmartBlock function)',     value: '<%CURRENTBLOCKREF%>',    processor:'static'});
+      valueArray.push({key: '<% DATE %> (SmartBlock function)',                value: '<%DATE:&&&%>',              processor:'static'});
+      valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',        value: '<%IFDAYOFMONTH:&&&%>',      processor:'static'});
+      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',         value: '<%IFDAYOFWEEK:&&&%>',       processor:'static'});
+      valueArray.push({key: '<% INPUT %> (SmartBlock function)',               value: '<%INPUT:&&&%>',             processor:'static'});
+      valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',          value: '<%JAVASCRIPT:&&&%>',        processor:'static'});            
+      valueArray.push({key: '<% JAVASCRIPTASYNC %> (SmartBlock function)',     value: '<%JAVASCRIPTASYNC:&&&%>',        processor:'static'});            
+      valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock function)',       value: '<%NOBLOCKOUTPUT%>',      processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',         value: '<%RANDOMBLOCK%>',       processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCKFROMPAGE %> (SmartBlock function)', value: '<%RANDOMBLOCKFROMPAGE:&&&%>',processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCKMENTION %> (SmartBlock function)',  value: '<%RANDOMBLOCKMENTION:&&&%>',processor:'static'});
+      valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock function)',          value: '<%RANDOMPAGE%>',         processor:'static'});
+      valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)',     value: '<%RESOLVEBLOCKREF:&&&%>',   processor:'static'});
+      valueArray.push({key: '<% TIME %> (SmartBlock function)',                value: '<%TIME%>',               processor:'static'});
+      valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',            value: '<%TIMEAMPM%>',           processor:'static'});
     };
 
     const sortObjectByKey = async o => {
@@ -86,11 +88,30 @@
       cb( results );
     };
 
-    const insertSnippetIntoBlock = async (textToInsert)=> {
-      var ta = document.querySelector("textarea");
-      ta.setSelectionRange(ta.selectionStart - 2, ta.selectionStart + 1); //this deals with extra space added
-      roam42.common.insertAtCaret( ta.id, textToInsert );
-      setTimeout(()=>ta.setSelectionRange(ta.selectionStart + 1, ta.selectionStart + 2),200); //this deals with extra space added      
+    const insertSnippetIntoBlock = async ( textToInsert, removeIfCursor = true )=> {
+      setTimeout(async()=>{
+        var txtarea = document.activeElement;
+        var strPos = txtarea.selectionStart;
+        var front = txtarea.value.substring(0, strPos-2);
+        var back = txtarea.value.substring(strPos, txtarea.value.length);
+        var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+        var newValue =  front + textToInsert + back;
+        var startPos = -1;
+        if (removeIfCursor == false ) { //remove for static function
+          startPos = newValue.search('&&&');
+          newValue = newValue.replace('&&&', '');
+        }    
+        if (removeIfCursor) {  //remove for general isnertions
+          startPos = newValue.search('<%CURSOR%>');
+          newValue = newValue.replace('<%CURSOR%>','');
+        }       
+        setValue.call(txtarea, newValue );
+        var e = new Event('input', { bubbles: true });
+        txtarea.dispatchEvent(e);
+        setTimeout(async()=>{
+          if(startPos>=0) document.activeElement.setSelectionRange(startPos,startPos)
+        },25)      
+      },50)
     }
     
     const getTime24Format = ()=> {
@@ -133,10 +154,16 @@
           return match + '--> Block Ref is not valid <--'; //no results, return origional
         else
           return queryResults[0][0].string;
-      });        
+      });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','');
         var results = new Function(scriptToRun.toString())();
+        return results;
+      });           
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPTASYNC:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var scriptToRun = match.replace('<%JAVASCRIPTASYNC:','').replace('%>','');
+        var AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
+        var results = new AsyncFunction(scriptToRun.toString())();
         return results;
       });           
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%INPUT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
@@ -162,7 +189,7 @@
         return '((' + await roam42.smartBlocks.getRandomBlocksMentioningPage(textToProcess) + '))';
       }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMPAGE\%\>)/g, async (match, name)=>{
-        return roam42.smartBlocks.getRandomPage();
+        return await roam42.smartBlocks.getRandomPage();
       });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIME\%\>)/g, async (match, name)=>{
         return getTime24Format()
@@ -190,12 +217,12 @@
         else 
           return exclusionBlockSymbol
       });
-      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLIPBOARDWRITE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToWrite = match.replace('<%CLIPBOARDWRITE:','').replace('%>','');
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLIPBOARDCOPY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToWrite = match.replace('<%CLIPBOARDCOPY:','').replace('%>','');
         await navigator.clipboard.writeText( textToWrite );
         return ' ';
       });
-      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLIPBOARDREADTEXT\%\>)/g, async (match, name)=>{
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLIPBOARDPASTETEXT\%\>)/g, async (match, name)=>{
         var cb = await navigator.clipboard.readText();
         await roam42.common.sleep(50);        
         return cb;
@@ -214,7 +241,7 @@
             roam42.smartBlocks.textBoxObserver.disconnect(); //stop observing blocks during insertion
             if(item.original.processor=='date')   insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() );
             if(item.original.processor=='function') await item.original.value();
-            if(item.original.processor=='static') insertSnippetIntoBlock( item.original.value );
+            if(item.original.processor=='static') insertSnippetIntoBlock( item.original.value, false );
             if(item.original.processor=='randomblock') insertSnippetIntoBlock( '((' + await roam42.common.getRandomBlock(1) + '))' );
             if(item.original.processor=='randompage') insertSnippetIntoBlock(await roam42.smartBlocks.getRandomPage());
             if(item.original.processor=='blocks') {
@@ -230,6 +257,7 @@
                 let blockInsertCounter = 0 //used to track how many inserts performed so we can take a coffee break at 19, to let Roam catch up
                 let firstBlock = true    //handles the first block specially
                 var currentOutlineLevel = 1;
+                roam42.smartBlocks.startingBlockTextArea = document.activeElement.id;
                 var loopStructure = async (parentNode, level) => {
                   let orderedNode = await sortObjectsByOrder(parentNode);
                   for (var i = 0; i < orderedNode.length; i++) {
@@ -253,23 +281,21 @@
                     if (insertText == "") insertText = " "; //space needed in empty cell to maintaing indentation on empty blocks
                     insertText = await proccessBlockWithSmartness(insertText);
                     if( !insertText.includes(exclusionBlockSymbol) ) {
-                      // if (/\#|\]\]|\:\:/.test(insertText)) //fixes a bug generated by tags
-                      //   insertText = insertText + ' ';
                       if (firstBlock==true && document.activeElement.value.length>2) { 
                         firstBlock = false;
                         var txtarea = document.querySelector("textarea");
                         var strPos = txtarea.selectionStart;
                         var front = txtarea.value.substring(0, strPos);
                         var back = txtarea.value.substring(strPos, txtarea.value.length);
-                        // roam42.common.setEmptyNodeValue(txtarea, front + insertText + back);
                         var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
                         setValue.call(txtarea, front + insertText + back );
                         var e = new Event('input', { bubbles: true });
                         txtarea.dispatchEvent(e);                      
                       } else {
-                        firstBlock = false;
-                        // roam42.common.setEmptyNodeValue( document.querySelector("textarea"), insertText );       
                         let txtarea = document.querySelector("textarea");
+                        await roam42.common.replaceAsync(insertText, /(\<\%CURSOR\%\>)/g, async (match, name)=>{
+                          roam42.smartBlocks.startingBlockTextArea = document.activeElement.id; //if CURSOR, then make this the position block in end
+                        }); 
                         //https://stackoverflow.com/questions/45659576/trigger-change-events-when-the-value-of-an-input-changed-programmatically-react
                         var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
                         setValue.call(txtarea, insertText );
@@ -334,10 +360,21 @@
                 if (results[0][0].children){
                   await loopStructure(results[0][0].children, 1); //only process if has children
                 }
+                roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.startingBlockTextArea));
+                setTimeout(()=>{
+                  if(document.activeElement.value.includes('<%CURSOR%>'))    {
+                    var newValue = document.querySelector('textarea').value;
+                    document.activeElement.value = '';
+                    insertSnippetIntoBlock(newValue);
+                  }
+                  else
+                    document.activeElement.setSelectionRange(document.activeElement.value.length,document.activeElement.value.length);                              
+                },100);                
               }
+              
             } // end IF
           //start observing mutations again
-          roam42.smartBlocks.textBoxObserver.observe(document, { childList: true, subtree: true });  
+          roam42.smartBlocks.textBoxObserver.observe(document, { childList: true, subtree: true });   
         } catch(e) {
           console.log(e);
           //start observing mutations again
