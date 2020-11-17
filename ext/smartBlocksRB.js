@@ -1,21 +1,21 @@
-/* globals roam42, roam42KeyboardLib, Tribute */
+/* globals roam42 */
 
 (() => {
 
   roam42.smartBlocks.getRandomPage = async () => {
   	var page = await roam42.common.getRandomPage(1);
-    return await "[[" + page[0][0] + "]]";
+    return "[[" + page[0][0] + "]]";
   }
 
   roam42.smartBlocks.getRandomBlocksFromPage = async (textToProcess) => {
     var page_title = textToProcess.replace('<%RANDOMBLOCKFROMPAGE:','').replace('%>','').trim();
-  	result = await roam42.common.getRandomBlockFromPage(page_title);
+  	var result = await roam42.common.getRandomBlockFromPage(page_title);
   	return result;
   }
 
   roam42.smartBlocks.getRandomBlocksMentioningPage = async (textToProcess) => {
     var page_title = textToProcess.replace('<%RANDOMBLOCKMENTION:','').replace('%>','').trim();
-  	result = await roam42.common.getRandomBlockMentioningPage(page_title);
+  	var result = await roam42.common.getRandomBlockMentioningPage(page_title);
   	return result;
   }
 
