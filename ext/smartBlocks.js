@@ -237,6 +237,21 @@
 
     const blocksToInsert = item => {
       setTimeout(async () => {        
+        //make sure we are in the textarea that started this insert (tribute menu may have closed focus on text area)
+        console.log(document.activeElement.type)
+        if(document.activeElement.type !='textarea') {
+          roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeTributeTextAreaId));
+          await roam42.common.sleep(100);    
+          var textarea = document.querySelector('textarea'); 
+          var newValue = textarea.value;
+          var startPos = newValue.search(roam42.smartBlocks.tributeMenuTrigger);
+          newValue = newValue.replace(roam42.smartBlocks.tributeMenuTrigger,'');          
+          textarea.value = newValue;
+          await roam42.common.sleep(100);
+          textarea.setSelectionRange(startPos,startPos);
+          await roam42.common.sleep(100);
+        }      
+
         try {          
             roam42.smartBlocks.textBoxObserver.disconnect(); //stop observing blocks during insertion
             if(item.original.processor=='date')   insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() );
@@ -341,9 +356,6 @@
                         }
                       }
 
-                      // if (/query|kanban|embed|\`\`\`/.test(insertText)) 
-                      //   await roam42.common.sleep(500);
-
                       blockInsertCounter += 1;
                       if(blockInsertCounter > 9) {  //SmartBlocks coffee break to allow Roam to catch its breath
                           blockInsertCounter = 0;
@@ -354,9 +366,6 @@
                   }
                 }; //END of LOOPSTRUCTURE
 
-                // await roam42.common.sleep(100);
-                // var ta = document.querySelector("textarea");
-                // ta.setSelectionRange(ta.selectionStart - 2, ta.selectionStart + 1); //this deals with extra space added
                 if (results[0][0].children){
                   await loopStructure(results[0][0].children, 1); //only process if has children
                 }
@@ -369,7 +378,7 @@
                   }
                   else
                     document.activeElement.setSelectionRange(document.activeElement.value.length,document.activeElement.value.length);                              
-                },100);                
+                },200);                
               }
               
             } // end IF
@@ -380,16 +389,18 @@
           //start observing mutations again
           roam42.smartBlocks.textBoxObserver.observe(document, { childList: true, subtree: true });  
         } 
-      }, 10); // end setTimeout
+      }, 300); // end setTimeout
       return " ";
     };
     
+    roam42.smartBlocks.activeTributeTextAreaId = '';
+    roam42.smartBlocks.tributeMenuTrigger = '';
     roam42.smartBlocks.scanForNewTextAreas = (mutationList, observer) => {
       var ta = document.querySelector("textarea");
       if (!ta || ta.getAttribute("r42sb") != null) return; //no text area or this text box is already r42 active
 
       ta.setAttribute("r42sb", "active");
-
+      
       //tribute is the autocomplete dropdown that appears in a text area
       var tribute = new Tribute({
         trigger: smartBlockTrigger,
@@ -397,6 +408,7 @@
         menuItemTemplate: function(item) {
           return "" + item.string;
         },
+        menuItemLimit: 25,
         values: valuesForLookup,
         lookup: "key",
         fillAttr: "value",
@@ -404,6 +416,12 @@
       });
 
       tribute.attach(ta);
+      roam42.smartBlocks.activeTributeTextAreaId = ta.id;
+
+      ta.addEventListener("tribute-replaced", function(e) {
+        roam42.smartBlocks.tributeMenuTrigger = e.detail.context.mentionTriggerChar + e.detail.context.mentionText;
+      });      
+    
     }; // End of scanForNewTextAreas
     
     roam42.smartBlocks.textBoxObserver = new MutationObserver( roam42.smartBlocks.scanForNewTextAreas );
