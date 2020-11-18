@@ -34,12 +34,40 @@
         return null;
       }
   }
-  
+ 
+  roam42.common.isPage = async (title)=> {
+    try {   
+      var page = await window.roamAlphaAPI.q(`
+          [:find ?e 
+              :where [?e :node/title "${title}"]]`);
+
+      return page.length > 0 ? true: false;
+    } catch(e) { return ''; }
+  } 
+
+  roam42.common.isBlockRef = async (uid)=> {
+    try {   
+      var block_ref = await window.roamAlphaAPI.q(`
+          [:find ?e 
+              :where [?e :block/uid "${uid}"]]`);
+
+      return block_ref.length > 0 ? true: false;
+    } catch(e) { return ''; }
+  } 
+
   roam42.common.getBlocksReferringToThisPage = async (title)=> {
     try {   
       return await window.roamAlphaAPI.q(`
           [:find (pull ?refs [:block/string :block/uid {:block/children ...}]) 
               :where [?refs :block/refs ?title][?title :node/title "${title}"]]`);
+    } catch(e) { return ''; }
+  } 
+
+  roam42.common.getBlocksReferringToThisBlockRef = async (uid)=> {
+    try {   
+      return await window.roamAlphaAPI.q(`
+          [:find (pull ?refs [:block/string :block/uid {:block/children ...}]) 
+              :where [?refs :block/refs ?block][?block :block/uid "${uid}"]]`);
     } catch(e) { return ''; }
   } 
 
@@ -64,6 +92,16 @@
   
   roam42.common.getRandomBlockMentioningPage = async (page_title)=>{
     var results = await roam42.common.getBlocksReferringToThisPage(page_title);
+    if (results.length == 0) {
+      return "";
+    }
+
+    var random_result = results[Math.floor(Math.random() * results.length)];
+    return random_result[0].uid
+  }
+
+  roam42.common.getRandomBlockMentioningBlockRef = async (block_ref)=>{
+    var results = await roam42.common.getBlocksReferringToThisBlockRef(block_ref);
     if (results.length == 0) {
       return "";
     }
