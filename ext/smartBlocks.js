@@ -45,7 +45,9 @@
       valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock function)',  value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
       valueArray.push({key: '<% CURRENTBLOCKREF %> (SmartBlock function)',     value: '<%CURRENTBLOCKREF%>',    processor:'static'});
       valueArray.push({key: '<% DATE %> (SmartBlock function)',                value: '<%DATE:&&&%>',           processor:'static'});
-      valueArray.push({key: '<% IF %> (SmartBlock function)',                  value: '<%IF:&&&%%%%%>',             processor:'static'});      
+      valueArray.push({key: '<% IF %> (SmartBlock function)',                  value: '<%IF:&&&%>',             processor:'static'});      
+      valueArray.push({key: '<% THEN %> (SmartBlock function)',                value: '<%THEN:&&&%>',             processor:'static'});      
+      valueArray.push({key: '<% ELSE %> (SmartBlock function)',                value: '<%ELSE:&&&%>',             processor:'static'});      
       valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',        value: '<%IFDAYOFMONTH:&&&%>',   processor:'static'});
       valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',         value: '<%IFDAYOFWEEK:&&&%>',    processor:'static'});
       valueArray.push({key: '<% INPUT %> (SmartBlock function)',               value: '<%INPUT:&&&%>',          processor:'static'});
@@ -60,7 +62,7 @@
       valueArray.push({key: '<% TIME %> (SmartBlock function)',                value: '<%TIME%>',               processor:'static'});
       valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',            value: '<%TIMEAMPM%>',           processor:'static'});
       valueArray.push({key: '<% GET %> (SmartBlock function)',                 value: '<%GET:&&&%>',    processor:'static'});
-      valueArray.push({key: '<% SET %> (SmartBlock function)',                 value: '<%SET:&&&%%%>',    processor:'static'});
+      valueArray.push({key: '<% SET %> (SmartBlock function)',                 value: '<%SET:&&&%>',    processor:'static'});
     };
 
     const sortObjectByKey = async o => {
@@ -147,6 +149,7 @@
     };    
     
     const proccessBlockWithSmartness = async (textToProcess)=>{
+      let ifCommand = null;  // null if no IF, true process THEN, false process ELSE
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTBLOCKREF\%\>)/g, async (match, name)=>{
         let tID = await  asyncQuerySelector(document,'textarea.rm-block-input');
         let UID = tID.id;
@@ -239,17 +242,29 @@
         return exclusionBlockSymbol;
       });               
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IF:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToWrite = match.replace('<%IF:','').replace('%>','');
-        if(textToWrite.includes('\%\%')) {
-          var splitResults = textToWrite.split('\%\%');
-          console.log(splitResults)
-          if(eval(splitResults[0])) 
-            return splitResults[1];
+        var textToProcess = match.replace('<%IF:','').replace('%>','');
+        try {
+          if(eval(textToProcess)) 
+            ifCommand = true;
           else
-            return splitResults[2];          
-        } else 
-          return '';
-      });
+            ifCommand = false;
+        } catch(e) { return '<%IF%> Failed with error: ' + e }
+        return '';   
+      });      
+      if(ifCommand!=null){
+        if(ifCommand==true){
+          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%ELSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{return ''});          
+          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%THEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+            return match.replace('<%THEN:','').replace('%>','');
+          });
+        } else {
+          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%THEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{return ''});
+          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%ELSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+            return match.replace('<%ELSE:','').replace('%>','');
+          });
+        }
+      }
+      
       if(textToProcess.includes(exclusionBlockSymbol)) return exclusionBlockSymbol; //skip this block
       return textToProcess; //resert new text
     }    
