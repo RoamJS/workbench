@@ -14,7 +14,7 @@
         smartBlockTrigger = customTrigger;
     }
     
-    const exclusionBlockSymbol = '!!%%**!!%%**!!%%**!!%%**'; //used to indicate a block is not to be inserted
+    const exclusionBlockSymbol = '!!!!****!!!!****!!!!****!!!!****!!!!****'; //used to indicate a block is not to be inserted
 
     const addStaticValues =  async (valueArray)=> {
       //DATE COMMANDS
@@ -45,6 +45,7 @@
       valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock function)',  value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
       valueArray.push({key: '<% CURRENTBLOCKREF %> (SmartBlock function)',     value: '<%CURRENTBLOCKREF%>',    processor:'static'});
       valueArray.push({key: '<% DATE %> (SmartBlock function)',                value: '<%DATE:&&&%>',           processor:'static'});
+      valueArray.push({key: '<% IF %> (SmartBlock function)',                  value: '<%IF:&&&%%%%%>',             processor:'static'});      
       valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',        value: '<%IFDAYOFMONTH:&&&%>',   processor:'static'});
       valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',         value: '<%IFDAYOFWEEK:&&&%>',    processor:'static'});
       valueArray.push({key: '<% INPUT %> (SmartBlock function)',               value: '<%INPUT:&&&%>',          processor:'static'});
@@ -98,7 +99,6 @@
         var strPos = txtarea.selectionStart;
         var front = txtarea.value.substring(0, strPos-2);
         var back = txtarea.value.substring(strPos, txtarea.value.length);
-        var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;      
         var newValue =  front + textToInsert + back;
         var startPos = -1;
         if (removeIfCursor == false ) { //remove for static function
@@ -108,8 +108,9 @@
         if (removeIfCursor) {  //remove for general isnertions
           startPos = newValue.search('<%CURSOR%>');
           newValue = newValue.replace('<%CURSOR%>','');
-        }       
-        if(txtarea=='') txtarea=' ';
+        }      
+        if(newValue=='') newValue=' ';
+        var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;      
         setValue.call(txtarea, newValue );
         var e = new Event('input', { bubbles: true });
         txtarea.dispatchEvent(e);          
@@ -232,10 +233,23 @@
         await roam42.common.sleep(50);        
         return cb;
       });      
+
       //ALWAYS at end of process
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOBLOCKOUTPUT\%\>)/g, async (match, name)=>{
         return exclusionBlockSymbol;
       });               
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IF:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToWrite = match.replace('<%IF:','').replace('%>','');
+        if(textToWrite.includes('\%\%')) {
+          var splitResults = textToWrite.split('\%\%');
+          console.log(splitResults)
+          if(eval(splitResults[0])) 
+            return splitResults[1];
+          else
+            return splitResults[2];          
+        } else 
+          return '';
+      });
       if(textToProcess.includes(exclusionBlockSymbol)) return exclusionBlockSymbol; //skip this block
       return textToProcess; //resert new text
     }    
