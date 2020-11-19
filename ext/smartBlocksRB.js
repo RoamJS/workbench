@@ -13,9 +13,18 @@
   	return result;
   }
 
-  roam42.smartBlocks.getRandomBlocksMentioningPage = async (textToProcess) => {
-    var page_title = textToProcess.replace('<%RANDOMBLOCKMENTION:','').replace('%>','').trim();
-  	var result = await roam42.common.getRandomBlockMentioningPage(page_title);
+  roam42.smartBlocks.getRandomBlocksMention = async (textToProcess) => {
+    var paramter = textToProcess.replace('<%RANDOMBLOCKMENTION:','').replace('%>','').trim();
+
+    var result = "";
+    if (await roam42.common.isPage(paramter)) {
+      return await roam42.common.getRandomBlockMentioningPage(paramter);
+    }
+
+    if (await roam42.common.isBlockRef(paramter)) {
+      return await roam42.common.getRandomBlockMentioningBlockRef(paramter);
+    }
+
   	return result;
   }
 

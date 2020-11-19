@@ -2,6 +2,8 @@
 
 (() => {
   roam42.smartBlocks = {};  
+  roam42.smartBlocks.vars = new Object();  //used to store variables during running a Workflow
+  
   roam42.smartBlocks.initialize = async ()=>{
     var smartBlockTrigger = ";;";
     //determine if user has created a custom trigger
@@ -37,25 +39,27 @@
                         await roam42.common.sleep(200);
                         await roam42KeyboardLib.pressTab();
                       }});
-      valueArray.push({key: 'sb42 (SmartBlock function)',                      value: '#42SmartBlock',                processor:'static'});
-      valueArray.push({key: '<% CURSOR %> (SmartBlock function)',              value: '<%CURSOR%>',                   processor:'static'});
-      valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock function)',       value: '<%CLIPBOARDCOPY:&&&%>',    processor:'static'});
+      valueArray.push({key: 'sb42 (SmartBlock function)',                      value: '#42SmartBlock',          processor:'static'});
+      valueArray.push({key: '<% CURSOR %> (SmartBlock function)',              value: '<%CURSOR%>',             processor:'static'});
+      valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock function)',       value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static'});
       valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock function)',  value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
       valueArray.push({key: '<% CURRENTBLOCKREF %> (SmartBlock function)',     value: '<%CURRENTBLOCKREF%>',    processor:'static'});
-      valueArray.push({key: '<% DATE %> (SmartBlock function)',                value: '<%DATE:&&&%>',              processor:'static'});
-      valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',        value: '<%IFDAYOFMONTH:&&&%>',      processor:'static'});
-      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',         value: '<%IFDAYOFWEEK:&&&%>',       processor:'static'});
-      valueArray.push({key: '<% INPUT %> (SmartBlock function)',               value: '<%INPUT:&&&%>',             processor:'static'});
-      valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',          value: '<%JAVASCRIPT:&&&%>',        processor:'static'});            
-      valueArray.push({key: '<% JAVASCRIPTASYNC %> (SmartBlock function)',     value: '<%JAVASCRIPTASYNC:&&&%>',        processor:'static'});            
+      valueArray.push({key: '<% DATE %> (SmartBlock function)',                value: '<%DATE:&&&%>',           processor:'static'});
+      valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',        value: '<%IFDAYOFMONTH:&&&%>',   processor:'static'});
+      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',         value: '<%IFDAYOFWEEK:&&&%>',    processor:'static'});
+      valueArray.push({key: '<% INPUT %> (SmartBlock function)',               value: '<%INPUT:&&&%>',          processor:'static'});
+      valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',          value: '<%JAVASCRIPT:&&&%>',     processor:'static'});            
+      valueArray.push({key: '<% JAVASCRIPTASYNC %> (SmartBlock function)',     value: '<%JAVASCRIPTASYNC:&&&%>',processor:'static'});            
       valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock function)',       value: '<%NOBLOCKOUTPUT%>',      processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',         value: '<%RANDOMBLOCK%>',       processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',         value: '<%RANDOMBLOCK%>',        processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCKFROMPAGE %> (SmartBlock function)', value: '<%RANDOMBLOCKFROMPAGE:&&&%>',processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCKMENTION %> (SmartBlock function)',  value: '<%RANDOMBLOCKMENTION:&&&%>',processor:'static'});
       valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock function)',          value: '<%RANDOMPAGE%>',         processor:'static'});
-      valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)',     value: '<%RESOLVEBLOCKREF:&&&%>',   processor:'static'});
+      valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)',     value: '<%RESOLVEBLOCKREF:&&&%>',processor:'static'});
       valueArray.push({key: '<% TIME %> (SmartBlock function)',                value: '<%TIME%>',               processor:'static'});
       valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',            value: '<%TIMEAMPM%>',           processor:'static'});
+      valueArray.push({key: '<% GET %> (SmartBlock function)',                 value: '<%GET:&&&%>',    processor:'static'});
+      valueArray.push({key: '<% SET %> (SmartBlock function)',                 value: '<%SET:&&&%%%>',    processor:'static'});
     };
 
     const sortObjectByKey = async o => {
@@ -94,7 +98,7 @@
         var strPos = txtarea.selectionStart;
         var front = txtarea.value.substring(0, strPos-2);
         var back = txtarea.value.substring(strPos, txtarea.value.length);
-        var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+        var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;      
         var newValue =  front + textToInsert + back;
         var startPos = -1;
         if (removeIfCursor == false ) { //remove for static function
@@ -105,9 +109,10 @@
           startPos = newValue.search('<%CURSOR%>');
           newValue = newValue.replace('<%CURSOR%>','');
         }       
+        if(txtarea=='') txtarea=' ';
         setValue.call(txtarea, newValue );
         var e = new Event('input', { bubbles: true });
-        txtarea.dispatchEvent(e);
+        txtarea.dispatchEvent(e);          
         setTimeout(async()=>{
           if(startPos>=0) document.activeElement.setSelectionRange(startPos,startPos)
         },25)      
@@ -142,11 +147,11 @@
     
     const proccessBlockWithSmartness = async (textToProcess)=>{
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTBLOCKREF\%\>)/g, async (match, name)=>{
-        let tID = await  asyncQuerySelector(document,'textarea');
+        let tID = await  asyncQuerySelector(document,'textarea.rm-block-input');
         let UID = tID.id;
         let results = '((' + UID.substring( UID.length -9) + '))';
         return results;
-      });          
+      });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RESOLVEBLOCKREF:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var uid = match.replace('<%RESOLVEBLOCKREF:','').replace('%>','').replace('((','').replace('))','').trim();
         var queryResults = await roam42.common.getBlockInfoByUID(uid);
@@ -186,7 +191,7 @@
         return '((' + await roam42.smartBlocks.getRandomBlocksFromPage(textToProcess) + '))';
       }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKMENTION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        return '((' + await roam42.smartBlocks.getRandomBlocksMentioningPage(textToProcess) + '))';
+        return '((' + await roam42.smartBlocks.getRandomBlocksMention(textToProcess) + '))';
       }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMPAGE\%\>)/g, async (match, name)=>{
         return await roam42.smartBlocks.getRandomPage();
@@ -238,11 +243,10 @@
     const blocksToInsert = item => {
       setTimeout(async () => {        
         //make sure we are in the textarea that started this insert (tribute menu may have closed focus on text area)
-        console.log(document.activeElement.type)
         if(document.activeElement.type !='textarea') {
           roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeTributeTextAreaId));
           await roam42.common.sleep(100);    
-          var textarea = document.querySelector('textarea'); 
+          var textarea = document.querySelector('textarea.rm-block-input'); 
           var newValue = textarea.value;
           var startPos = newValue.search(roam42.smartBlocks.tributeMenuTrigger);
           newValue = newValue.replace(roam42.smartBlocks.tributeMenuTrigger,'');          
@@ -298,7 +302,7 @@
                     if( !insertText.includes(exclusionBlockSymbol) ) {
                       if (firstBlock==true && document.activeElement.value.length>2) { 
                         firstBlock = false;
-                        var txtarea = document.querySelector("textarea");
+                        var txtarea = document.querySelector("textarea.rm-block-input");
                         var strPos = txtarea.selectionStart;
                         var front = txtarea.value.substring(0, strPos);
                         var back = txtarea.value.substring(strPos, txtarea.value.length);
@@ -307,7 +311,7 @@
                         var e = new Event('input', { bubbles: true });
                         txtarea.dispatchEvent(e);                      
                       } else {
-                        let txtarea = document.querySelector("textarea");
+                        let txtarea = document.querySelector("textarea.rm-block-input");
                         await roam42.common.replaceAsync(insertText, /(\<\%CURSOR\%\>)/g, async (match, name)=>{
                           roam42.smartBlocks.startingBlockTextArea = document.activeElement.id; //if CURSOR, then make this the position block in end
                         }); 
@@ -321,15 +325,15 @@
                       //see if heading needs to be assigned (MUST DO THIS SLOWLY)
                       if (n.heading) {
                         var ev = {};
-                        ev.target = document.querySelector("textarea");
+                        ev.target = document.querySelector("textarea.rm-block-input");
                         roam42.jumpnav.jumpCommand( ev, "ctrl+j " + (Number(n.heading) + 4) ); //base is 4
-                        var id = document.querySelector("textarea").id;
+                        var id = document.querySelector("textarea.rm-block-input").id;
                         await roam42KeyboardLib.pressEsc(500);
                         roam42.common.simulateMouseClick( document.querySelector("#" + id) );
                       }
                       if (n["text-align"] && n["text-align"] != "left") {
                         var ev = {};
-                        ev.target = document.querySelector("textarea");
+                        ev.target = document.querySelector("textarea.rm-block-input");
                         switch (n["text-align"]) {
                           case "center":
                             roam42.jumpnav.jumpCommand(ev, "ctrl+j 2"); //base is 4
@@ -341,17 +345,17 @@
                             roam42.jumpnav.jumpCommand(ev, "ctrl+j 4"); //base is 4
                             break;
                         }
-                        var id = document.querySelector("textarea").id;
+                        var id = document.querySelector("textarea.rm-block-input").id;
                         await roam42.common.sleep(500);
                         roam42.common.simulateMouseClick(document.querySelector("#" + id));
                       }
 
                       //PRESS ENTER 
                       {
-                        let currentBlockId = document.querySelector('textarea').id
+                        let currentBlockId = document.querySelector('textarea.rm-block-input').id
                         await roam42KeyboardLib.pressEnter();
                         await roam42.common.sleep(50);
-                        if( currentBlockId == document.querySelector('textarea').id ) {
+                        if( currentBlockId == document.querySelector('textarea.rm-block-input').id ) {
                           await roam42KeyboardLib.pressEnter();
                         }
                       }
@@ -372,7 +376,7 @@
                 roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.startingBlockTextArea));
                 setTimeout(()=>{
                   if(document.activeElement.value.includes('<%CURSOR%>'))    {
-                    var newValue = document.querySelector('textarea').value;
+                    var newValue = document.querySelector('textarea.rm-block-input').value;
                     document.activeElement.value = '';
                     insertSnippetIntoBlock(newValue);
                   }
@@ -396,7 +400,7 @@
     roam42.smartBlocks.activeTributeTextAreaId = '';
     roam42.smartBlocks.tributeMenuTrigger = '';
     roam42.smartBlocks.scanForNewTextAreas = (mutationList, observer) => {
-      var ta = document.querySelector("textarea");
+      var ta = document.querySelector("textarea.rm-block-input");
       if (!ta || ta.getAttribute("r42sb") != null) return; //no text area or this text box is already r42 active
 
       ta.setAttribute("r42sb", "active");
