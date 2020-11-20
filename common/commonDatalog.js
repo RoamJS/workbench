@@ -125,6 +125,21 @@
     return random_result[0].uid;
   }
 
+  roam42.common.getRandomBlockFromBlock = async (uid)=>{
+    var rule = '[[(ancestor ?b ?a)[?a :block/children ?b]][(ancestor ?b ?a)[?parent :block/children ?b ](ancestor ?parent ?a) ]]';
+
+    var query = `[:find  (pull ?block [:block/uid])
+                                 :in $ ?uid %
+                                 :where
+                                 [?page :block/uid ?uid]
+                                 (ancestor ?block ?page)]`;
+
+    var results = await window.roamAlphaAPI.q(query, uid, rule);
+    var random_result = results[Math.floor(Math.random() * results.length)];
+
+    return random_result[0].uid;
+  }
+
   window.roam42.common.testingReloadDatalog = () => {
     roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'common/commonDatalog.js');
   };  

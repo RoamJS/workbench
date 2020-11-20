@@ -55,7 +55,7 @@
       valueArray.push({key: '<% JAVASCRIPTASYNC %> (SmartBlock function)',     value: '<%JAVASCRIPTASYNC:&&&%>',processor:'static'});            
       valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock function)',       value: '<%NOBLOCKOUTPUT%>',      processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',         value: '<%RANDOMBLOCK%>',        processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCKFROMPAGE %> (SmartBlock function)', value: '<%RANDOMBLOCKFROMPAGE:&&&%>',processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCKFROM %> (SmartBlock function)',     value: '<%RANDOMBLOCKFROM:&&&%>',processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCKMENTION %> (SmartBlock function)',  value: '<%RANDOMBLOCKMENTION:&&&%>',processor:'static'});
       valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock function)',          value: '<%RANDOMPAGE%>',         processor:'static'});
       valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)',     value: '<%RESOLVEBLOCKREF:&&&%>',processor:'static'});
@@ -191,8 +191,8 @@
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         return roam42.smartBlocks.getRandomBlocks(textToProcess);
       }); 
-      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKFROMPAGE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        return '((' + await roam42.smartBlocks.getRandomBlocksFromPage(textToProcess) + '))';
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKFROM:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        return '((' + await roam42.smartBlocks.getRandomBlocksFrom(textToProcess) + '))';
       }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKMENTION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         return '((' + await roam42.smartBlocks.getRandomBlocksMention(textToProcess) + '))';
