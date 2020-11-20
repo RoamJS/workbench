@@ -2,7 +2,7 @@
 
 (() => {
   roam42.smartBlocks = {};  
-  roam42.smartBlocks.vars = new Object();  //used to store variables during running a Workflow
+  roam42.smartBlocks.vars = new Object();  //used to store variables during running a Workflow  
   
   roam42.smartBlocks.initialize = async ()=>{
     var smartBlockTrigger = ";;";
@@ -46,8 +46,8 @@
       valueArray.push({key: '<% CURRENTBLOCKREF %> (SmartBlock function)',     value: '<%CURRENTBLOCKREF%>',    processor:'static'});
       valueArray.push({key: '<% DATE %> (SmartBlock function)',                value: '<%DATE:&&&%>',           processor:'static'});
       valueArray.push({key: '<% IF %> (SmartBlock function)',                  value: '<%IF:&&&%>',             processor:'static'});      
-      valueArray.push({key: '<% THEN %> (SmartBlock function)',                value: '<%THEN:&&&%>',             processor:'static'});      
-      valueArray.push({key: '<% ELSE %> (SmartBlock function)',                value: '<%ELSE:&&&%>',             processor:'static'});      
+      valueArray.push({key: '<% THEN %> (SmartBlock function)',                value: '<%THEN:&&&%>',           processor:'static'});      
+      valueArray.push({key: '<% ELSE %> (SmartBlock function)',                value: '<%ELSE:&&&%>',           processor:'static'});      
       valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',        value: '<%IFDAYOFMONTH:&&&%>',   processor:'static'});
       valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',         value: '<%IFDAYOFWEEK:&&&%>',    processor:'static'});
       valueArray.push({key: '<% INPUT %> (SmartBlock function)',               value: '<%INPUT:&&&%>',          processor:'static'});
@@ -61,8 +61,9 @@
       valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)',     value: '<%RESOLVEBLOCKREF:&&&%>',processor:'static'});
       valueArray.push({key: '<% TIME %> (SmartBlock function)',                value: '<%TIME%>',               processor:'static'});
       valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',            value: '<%TIMEAMPM%>',           processor:'static'});
-      valueArray.push({key: '<% GET %> (SmartBlock function)',                 value: '<%GET:&&&%>',    processor:'static'});
-      valueArray.push({key: '<% SET %> (SmartBlock function)',                 value: '<%SET:&&&%>',    processor:'static'});
+      valueArray.push({key: '<% GET %> (SmartBlock function)',                 value: '<%GET:&&&%>',            processor:'static'});
+      valueArray.push({key: '<% SET %> (SmartBlock function)',                 value: '<%SET:&&&%>',            processor:'static'});
+      valueArray.push({key: '<% CLEARVARS %> (SmartBlock function)',           value: '<%CLEARVARS%>',          processor:'static'});
     };
 
     const sortObjectByKey = async o => {
@@ -78,23 +79,22 @@
     };  
 
     const valuesForLookup = async (text, cb) => {
-      //graab all blocks with #SmartBlock
-      let sb = await roam42.common.getBlocksReferringToThisPage("42SmartBlock");
-      let results = sb.flatMap(sb => {
-        if (sb[0].children)
-          // if has children, add it into returned list key: is text, value is UID of block
-          return {
-            key: sb[0].string.replace("#42SmartBlock", "").trim(),
-            value: sb[0].uid,
-            processor: 'blocks'
-          };
-        else return [];
-      });
-      results = await sortObjectByKey(results);
+      let results = await roam42.smartBlocks.UserDefinedWorkflowsList();
       addStaticValues( results );
       cb( results );
     };
 
+    roam42.smartBlocks.UserDefinedWorkflowsList = async () => {
+      let sbList = await roam42.common.getBlocksReferringToThisPage("42SmartBlock");
+      let results = [];
+      for(var sb of sbList ) {
+          var sKey =  await roam42.common.replaceAsync(sb[0].string,"#42SmartBlock", ()=>{return ''});
+          results.push({  key: sKey.trim(),  value: sb[0].uid,processor:'blocks'});
+      }
+      return results = await sortObjectByKey(results);
+    };
+
+    
     const insertSnippetIntoBlock = async ( textToInsert, removeIfCursor = true )=> {
       setTimeout(async()=>{
         var txtarea = document.activeElement;
@@ -150,6 +150,10 @@
     
     const proccessBlockWithSmartness = async (textToProcess)=>{
       let ifCommand = null;  // null if no IF, true process THEN, false process ELSE
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLEARVARS\%\>)/g, async (match, name)=>{
+        roam42.smartBlocks.vars = new Object();    
+        return '';
+      });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTBLOCKREF\%\>)/g, async (match, name)=>{
         let tID = await  asyncQuerySelector(document,'textarea.rm-block-input');
         let UID = tID.id;
@@ -163,7 +167,13 @@
           return match + '--> Block Ref is not valid <--'; //no results, return origional
         else
           return queryResults[0][0].string;
-      });
+      });      
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%GET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%GET:','').replace('%>','');
+        var vValue = roam42.smartBlocks.vars[textToProcess];
+        if(vValue==undefined) vValue = `--> Variable ${textToProcess} not SET <--`
+        return vValue;   
+      });      
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','');
         var results = new Function(scriptToRun.toString())();
@@ -264,7 +274,11 @@
           });
         }
       }
-      
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%SET:','').replace('%>','');
+        roam42.smartBlocks.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
+        return '';   
+      });      
       if(textToProcess.includes(exclusionBlockSymbol)) return exclusionBlockSymbol; //skip this block
       return textToProcess; //resert new text
     }    
@@ -284,7 +298,6 @@
           textarea.setSelectionRange(startPos,startPos);
           await roam42.common.sleep(100);
         }      
-
         try {          
             roam42.smartBlocks.textBoxObserver.disconnect(); //stop observing blocks during insertion
             if(item.original.processor=='date')   insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() );
@@ -306,8 +319,12 @@
                 let firstBlock = true    //handles the first block specially
                 var currentOutlineLevel = 1;
                 roam42.smartBlocks.startingBlockTextArea = document.activeElement.id;
+
+                console.clear()
+
                 var loopStructure = async (parentNode, level) => {
                   let orderedNode = await sortObjectsByOrder(parentNode);
+                  
                   for (var i = 0; i < orderedNode.length; i++) {
                     //indent/unindent if needed
                     if (currentOutlineLevel < level) {
@@ -392,7 +409,8 @@
                       blockInsertCounter += 1;
                       if(blockInsertCounter > 9) {  //SmartBlocks coffee break to allow Roam to catch its breath
                           blockInsertCounter = 0;
-                          await roam42.common.sleep(250);                  }
+                          await roam42.common.sleep(250);                  
+                      }
 
                       if (n.children) await loopStructure(n.children, level + 1);
                     } 
