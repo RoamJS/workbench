@@ -7,10 +7,19 @@
     return "[[" + page[0][0] + "]]";
   }
 
-  roam42.smartBlocks.getRandomBlocksFromPage = async (textToProcess) => {
-    var page_title = textToProcess.replace('<%RANDOMBLOCKFROMPAGE:','').replace('%>','').trim();
-  	var result = await roam42.common.getRandomBlockFromPage(page_title);
-  	return result;
+  roam42.smartBlocks.getRandomBlocksFrom = async (textToProcess) => {
+    var paramter = textToProcess.replace('<%RANDOMBLOCKFROM:','').replace('%>','').trim();
+
+    var result = "";
+    if (await roam42.common.isPage(paramter)) {
+      var result = await roam42.common.getRandomBlockFromPage(paramter);
+    }
+
+    if (await roam42.common.isBlockRef(paramter)) {
+      return await roam42.common.getRandomBlockFromBlock(paramter);
+    }
+
+    return result;
   }
 
   roam42.smartBlocks.getRandomBlocksMention = async (textToProcess) => {

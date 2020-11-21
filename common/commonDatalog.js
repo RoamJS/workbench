@@ -47,6 +47,11 @@
 
   roam42.common.isBlockRef = async (uid)=> {
     try {   
+      if (uid.startsWith("((")) {
+        uid = uid.slice(2, uid.length);
+        uid = uid.slice(0, -2);      
+      }
+
       var block_ref = await window.roamAlphaAPI.q(`
           [:find ?e 
               :where [?e :block/uid "${uid}"]]`);
@@ -101,6 +106,11 @@
   }
 
   roam42.common.getRandomBlockMentioningBlockRef = async (block_ref)=>{
+    if (block_ref.startsWith("((")) {
+      block_ref = block_ref.slice(2, block_ref.length);
+      block_ref = block_ref.slice(0, -2);      
+    }
+    
     var results = await roam42.common.getBlocksReferringToThisBlockRef(block_ref);
     if (results.length == 0) {
       return "";
@@ -120,6 +130,26 @@
                                  (ancestor ?block ?page)]`;
 
     var results = await window.roamAlphaAPI.q(query, page_title, rule);
+    var random_result = results[Math.floor(Math.random() * results.length)];
+
+    return random_result[0].uid;
+  }
+
+  roam42.common.getRandomBlockFromBlock = async (uid)=>{
+    if (uid.startsWith("((")) {
+      uid = uid.slice(2, uid.length);
+      uid = uid.slice(0, -2);      
+    }
+
+    var rule = '[[(ancestor ?b ?a)[?a :block/children ?b]][(ancestor ?b ?a)[?parent :block/children ?b ](ancestor ?parent ?a) ]]';
+
+    var query = `[:find  (pull ?block [:block/uid])
+                                 :in $ ?uid %
+                                 :where
+                                 [?page :block/uid ?uid]
+                                 (ancestor ?block ?page)]`;
+
+    var results = await window.roamAlphaAPI.q(query, uid, rule);
     var random_result = results[Math.floor(Math.random() * results.length)];
 
     return random_result[0].uid;
