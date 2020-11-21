@@ -256,3 +256,22 @@
 .tribute-container .menu-highlighted {
   font-weight: bold;
 }
+.roam42-focusmode-current-block {
+  opacity: null;
+}
+
+.roam42-focusmode-parent-block {
+ opacity: null;
+}
+
+.roam42-focusmode-children-block {
+ opacity: null;
+}
+
+.roam42-focusmode-siblings-block {
+ opacity: null;
+}
+
+.roam42-focusmode-rest-block {
+ opacity: 0.3;
+}
