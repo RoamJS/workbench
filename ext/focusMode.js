@@ -12,10 +12,12 @@
     if (ev.metaKey && ev.shiftKey && ev.code == "BracketLeft") {
       focusModeStatesIdx = ((focusModeStatesIdx + focusModeStates.length) - 1) % focusModeStates.length;
       updateFocusMode();
+      return false;
     }
     else if (ev.metaKey && ev.shiftKey && ev.code == "BracketRight"){
       focusModeStatesIdx = ((focusModeStatesIdx + focusModeStates.length) + 1) % focusModeStates.length;
       updateFocusMode();
+      return false;
     }
   };
 

@@ -275,3 +275,12 @@
 .roam42-focusmode-rest-block {
  opacity: 0.3;
 }
+
+.rm-page-ref-tag[data-tag="42SmartBlock"]:before {
+    display:inline-block;
+    height:14px;
+  	width:24px;
+    content: "";
+    background:url(https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Flego3blocks.png?v=1605993127860) no-repeat 0 0;
+    background-size: auto 14px;
+}
