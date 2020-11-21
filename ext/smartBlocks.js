@@ -45,6 +45,7 @@
       valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock function)',  value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
       valueArray.push({key: '<% CURRENTBLOCKREF %> (SmartBlock function)',     value: '<%CURRENTBLOCKREF%>',    processor:'static'});
       valueArray.push({key: '<% DATE %> (SmartBlock function)',                value: '<%DATE:&&&%>',           processor:'static'});
+      valueArray.push({key: '<% FOCUSONBLOCK %> (SmartBlock function)',        value: '<%FOCUSONBLOCK%>',      processor:'static'});
       valueArray.push({key: '<% IF %> (SmartBlock function)',                  value: '<%IF:&&&%>',             processor:'static'});      
       valueArray.push({key: '<% THEN %> (SmartBlock function)',                value: '<%THEN:&&&%>',           processor:'static'});      
       valueArray.push({key: '<% ELSE %> (SmartBlock function)',                value: '<%ELSE:&&&%>',           processor:'static'});      
@@ -55,7 +56,7 @@
       valueArray.push({key: '<% JAVASCRIPTASYNC %> (SmartBlock function)',     value: '<%JAVASCRIPTASYNC:&&&%>',processor:'static'});            
       valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock function)',       value: '<%NOBLOCKOUTPUT%>',      processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',         value: '<%RANDOMBLOCK%>',        processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCKFROMPAGE %> (SmartBlock function)', value: '<%RANDOMBLOCKFROMPAGE:&&&%>',processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCKFROM %> (SmartBlock function)',     value: '<%RANDOMBLOCKFROM:&&&%>',processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCKMENTION %> (SmartBlock function)',  value: '<%RANDOMBLOCKMENTION:&&&%>',processor:'static'});
       valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock function)',          value: '<%RANDOMPAGE%>',         processor:'static'});
       valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)',     value: '<%RESOLVEBLOCKREF:&&&%>',processor:'static'});
@@ -201,8 +202,8 @@
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         return roam42.smartBlocks.getRandomBlocks(textToProcess);
       }); 
-      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKFROMPAGE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        return '((' + await roam42.smartBlocks.getRandomBlocksFromPage(textToProcess) + '))';
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKFROM:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        return '((' + await roam42.smartBlocks.getRandomBlocksFrom(textToProcess) + '))';
       }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKMENTION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         return '((' + await roam42.smartBlocks.getRandomBlocksMention(textToProcess) + '))';
@@ -250,7 +251,7 @@
       //ALWAYS at end of process
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOBLOCKOUTPUT\%\>)/g, async (match, name)=>{
         return exclusionBlockSymbol;
-      });               
+      }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IF:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var textToProcess = match.replace('<%IF:','').replace('%>','');
         try {
@@ -273,7 +274,12 @@
             return match.replace('<%ELSE:','').replace('%>','');
           });
         }
-      }
+      }      
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%FOCUSONBLOCK\%\>)/g, async (match, name)=>{
+        //if assigned, will zoom to this location later
+        roam42.smartBlocks.focusOnBlock = document.activeElement.id; //if CURSOR, then make this the position block in end
+        return ''; 
+      });       
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var textToProcess = match.replace('<%SET:','').replace('%>','');
         roam42.smartBlocks.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
@@ -319,7 +325,7 @@
                 let firstBlock = true    //handles the first block specially
                 var currentOutlineLevel = 1;
                 roam42.smartBlocks.startingBlockTextArea = document.activeElement.id;
-
+                roam42.smartBlocks.focusOnBlock = '' // if set with <%FOCUSONBLOCK%> Will move to this block for focus mode after workflow
                 console.clear()
 
                 var loopStructure = async (parentNode, level) => {
@@ -419,8 +425,18 @@
 
                 if (results[0][0].children){
                   await loopStructure(results[0][0].children, 1); //only process if has children
+                }                
+                //Do a FOCUS on BLOCK
+                if(roam42.smartBlocks.focusOnBlock!='') {
+                  roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.focusOnBlock));   
+                  await roam42.common.sleep(100);
+                  let parentControlNode =  document.activeElement.parentNode;                    
+                  roam42.common.simulateMouseClickRight(parentControlNode.previousSibling.childNodes[1]);
+                  document.querySelector('.bp3-popover-content > div> ul').childNodes[1].childNodes[0].click();
+                  await roam42.common.sleep(100);
                 }
-                roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.startingBlockTextArea));
+                //SET cursor location
+               roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.startingBlockTextArea));
                 setTimeout(()=>{
                   if(document.activeElement.value.includes('<%CURSOR%>'))    {
                     var newValue = document.querySelector('textarea.rm-block-input').value;
