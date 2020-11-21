@@ -40,23 +40,44 @@
     }, //navigateUIToDate
   
   
-  // roam42.common.navigateUiTo = (destinationPage, useShiftKey)=>{
-  //     let inPut =  document.getElementById('find-or-create-input');
-  //     inPut.focus();
-  //     roam42.common.setEmptyNodeValue( inPut, destinationPage );
-  //     setTimeout(()=>{
-  //      if( roam42.keyevents.shiftKeyDownTracker==true && useShiftKey==true ) {
-  //         roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});   
-  //       } else {
-  //         roam42KeyboardLib.pressEnter();
-  //       }
-  //       setTimeout(()=>{
-  //         roam42.common.setEmptyNodeValue( inPut,'' );
-  //       },250);             
-  //     },400);   
-  //   }
+  roam42.common.sortObjectByKey = async o => {
+    return o.sort(function(a, b) {
+      return a.key.localeCompare(b.key);
+    });
+  };
 
+  roam42.common.sortObjectsByOrder = async o => {
+    return o.sort(function(a, b) {
+      return a.order - b.order;
+    });
+  };  
+  
+  roam42.common.asyncQuerySelector = async (node, query) => {
+    try {
+      return await (query ? node.querySelector(query) : node);
+    } catch (error) {
+      console.error(`Cannot find ${query ? `${query} in`: ''} ${node}.`, error);
+      return null;
+    }
+  };    
 
+  roam42.common.getTime24Format = ()=> {
+    var dt = new Date();
+    return dt.getHours().toString().padStart(2, '0') + ':' + dt.getMinutes().toString().padStart(2, '0');
+  }
+
+  roam42.common.getTimeAPPMFormat = ()=>{
+      var dt = new Date();
+      var hours = dt.getHours();
+      var minutes = dt.getMinutes();
+      var ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+      minutes = minutes < 10 ? '0'+minutes : minutes;
+      var strTime = hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(0,2) + ' ' + ampm;
+      return strTime;      
+  }
+      
   roam42.common.sidebarRightToggle = ()=>{
     try {
         document.getElementsByClassName("bp3-icon-more")[0].click();
