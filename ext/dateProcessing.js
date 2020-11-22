@@ -19,7 +19,36 @@
     'November',
     'December'
   ];
+  
+  //return true if the date is a roam date, ex: [[November 1st, 2020]]
+  roam42.dateProcessing.testIfRoamDateAndConvert = (strDate)=> {
+    strDate = strDate.replace('[[','').replace(']]','');
+    var testMonth = roam42.dateProcessing.monthsDateProcessing.includes(strDate.match(/[A-z]+/)[0])
+    var testYear  = isNaN(strDate.substring(strDate.length-4,strDate.length))
+    if(testMonth && testYear !=true) 
+      return chrono.parseDate(strDate)
+    else
+      return null
+  }
 
+
+  roam42.dateProcessing.getTime24Format = ()=> {
+    var dt = new Date();
+    return dt.getHours().toString().padStart(2, '0') + ':' + dt.getMinutes().toString().padStart(2, '0');
+  }
+
+  roam42.dateProcessing.getTimeAPPMFormat = ()=>{
+      var dt = new Date();
+      var hours = dt.getHours();
+      var minutes = dt.getMinutes();
+      var ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+      minutes = minutes < 10 ? '0'+minutes : minutes;
+      var strTime = hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(0,2) + ' ' + ampm;
+      return strTime;      
+  }
+  
   roam42.dateProcessing.nthDate = d => {
     if (d > 3 && d < 21) return 'th';
     switch (d % 10) {
@@ -96,5 +125,9 @@
       return str;
     }
   }
+
+  window.roam42.dateProcessing.testingDateProcessing = () => {
+    roam42.loader.addScriptToPage( "smartBlocksRB", roam42.host + 'ext/dateProcessing.js');
+  };  
   
 })();

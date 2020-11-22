@@ -1,7 +1,6 @@
 /* globals roam42, roam42KeyboardLib */
 
 (() => {
-    if(!roam42.smartBlocks) roam42.smartBlocks = {};
     roam42.smartBlocks.addCommands =  async (valueArray)=> {
       //DATE COMMANDS
       valueArray.push({key: 'today (42)',      icon:'time',     value: 'today',     processor:'date'});
@@ -12,8 +11,8 @@
         valueArray.push({key: `Last ${e} (42)`,  icon:'time',   value: `Last ${e}`, processor:'date'});
         valueArray.push({key: `Next ${e} (42)`,  icon:'time',   value: `Next ${e}`, processor:'date'});
       });
-      valueArray.push({key: 'Time 24 (42)',      icon:'time',    value: roam42.common.getTime24Format(),      processor:'static'});
-      valueArray.push({key: 'Time AM/PM (42)',    icon:'time',   value: roam42.common.getTimeAPPMFormat(),      processor:'static'});
+      valueArray.push({key: 'Time 24 (42)',      icon:'time',    value: roam42.dateProcessing.getTime24Format(),      processor:'static'});
+      valueArray.push({key: 'Time AM/PM (42)',    icon:'time',   value: roam42.dateProcessing.getTimeAPPMFormat(),      processor:'static'});
       valueArray.push({key: 'Serendipity - R a n d o m Block (42)', value: '', icon:'random',    processor:'randomblock'});
       valueArray.push({key: 'Serendipity - R a n d o m Page (42)', value: '',  icon:'random',   processor:'randompage'});
       valueArray.push({key: 'Horizontal Line (42)',   value: ':hiccup [:hr]',  icon:'hl',   processor:'static'});
@@ -25,9 +24,6 @@
                         await roam42.common.sleep(200);
                         await roam42KeyboardLib.pressTab();
                       }});
-      for(let cmd of roam42.smartBlocks.userCommands){
-        valueArray.push(cmd)
-      }
       valueArray.push({key: 'sb42 (SmartBlock function)',                     icon:'gear', value: '#42SmartBlock',          processor:'static'});
       valueArray.push({key: '<% CURSOR %> (SmartBlock function)',             icon:'gear', value: '<%CURSOR%>',             processor:'static'});
       valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock function)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static'});
@@ -59,7 +55,7 @@
     roam42.smartBlocks.proccessBlockWithSmartness = async (textToProcess)=>{
       let ifCommand = null;  // null if no IF, true process THEN, false process ELSE
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLEARVARS\%\>)/g, async (match, name)=>{
-        roam42.smartBlocks.vars = new Object();    
+        roam42.smartBlocks.activeWorkflow.vars = new Object();    
         return '';
       });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTBLOCKREF\%\>)/g, async (match, name)=>{
@@ -78,17 +74,21 @@
       });      
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%GET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var textToProcess = match.replace('<%GET:','').replace('%>','');
-        var vValue = roam42.smartBlocks.vars[textToProcess];
+        var vValue = roam42.smartBlocks.activeWorkflow.vars[textToProcess];
         if(vValue==undefined) vValue = `--> Variable ${textToProcess} not SET <--`
         return vValue;   
       });      
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','');
+        var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','').trim();
+        if(scriptToRun.substring(0,13)=='```javascript')
+          scriptToRun = scriptToRun.substring(13,scriptToRun.length-3);   
         var results = new Function(scriptToRun.toString())();
         return results;
       });           
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPTASYNC:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var scriptToRun = match.replace('<%JAVASCRIPTASYNC:','').replace('%>','');
+        var scriptToRun = match.replace('<%JAVASCRIPTASYNC:','').replace('%>','').trim();
+        if(scriptToRun.substring(0,13)=='```javascript')
+          scriptToRun = scriptToRun.substring(13,scriptToRun.length-3); 
         var AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
         var results = new AsyncFunction(scriptToRun.toString())();
         return results;
@@ -119,10 +119,10 @@
         return await roam42.smartBlocks.getRandomPage();
       });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIME\%\>)/g, async (match, name)=>{
-        return roam42.common.getTime24Format()
+        return roam42.dateProcessing.getTime24Format()
       }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIMEAMPM\%\>)/g, async (match, name)=>{
-        return roam42.common.getTimeAPPMFormat();
+        return roam42.dateProcessing.getTimeAPPMFormat();
       });           
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var textToProcess = match.replace('<%DATE:','').replace('%>','').trim();
@@ -189,10 +189,15 @@
       });       
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var textToProcess = match.replace('<%SET:','').replace('%>','');
-        roam42.smartBlocks.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
+        roam42.smartBlocks.activeWorkflow.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
         return '';   
       });    
       if(textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol)) return roam42.smartBlocks.exclusionBlockSymbol; //skip this block
       return textToProcess; //resert new text
-    }      
+    }
+    
+  window.roam42.smartBlocks.testingReloadCmds = () => {
+    roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocksCmds.js');
+  };
+    
 })();
