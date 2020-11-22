@@ -110,10 +110,10 @@
         return roam42.smartBlocks.getRandomBlocks(textToProcess);
       }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKFROM:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        return '((' + await roam42.smartBlocks.getRandomBlocksFrom(textToProcess) + '))';
-      }); 
+        return '((' + await roam42.smartBlocks.getRandomBlocksFrom(match) + '))';
+      });       
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKMENTION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        return '((' + await roam42.smartBlocks.getRandomBlocksMention(textToProcess) + '))';
+        return '((' + await roam42.smartBlocks.getRandomBlocksMention(match) + '))';
       }); 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMPAGE\%\>)/g, async (match, name)=>{
         return await roam42.smartBlocks.getRandomPage();
@@ -191,7 +191,7 @@
         var textToProcess = match.replace('<%SET:','').replace('%>','');
         roam42.smartBlocks.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
         return '';   
-      });      
+      });    
       if(textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol)) return roam42.smartBlocks.exclusionBlockSymbol; //skip this block
       return textToProcess; //resert new text
     }      
