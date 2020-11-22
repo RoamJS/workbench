@@ -1,7 +1,7 @@
 /* globals roam42, roam42KeyboardLib, Tribute */
 
 (() => {
-  roam42.smartBlocks = {};
+  if(!roam42.smartBlocks) roam42.smartBlocks = {};
   roam42.smartBlocks.vars = new Object();  //used to store variables during running a Workflow  
   roam42.smartBlocks.userCommands = [];  //used to store variables during running a Workflow  
   roam42.smartBlocks.exclusionBlockSymbol = '!!!!****!!!!****!!!!****!!!!****!!!!****'; //used to indicate a block is not to be inserted
@@ -52,6 +52,46 @@
         },25)      
       },50)
     }
+    
+    const applyViewType = async (node)=>{
+      //applies the document type for the bullet level
+      var blockId = document.querySelector('textarea.rm-block-input').id;
+      var parentControlNode = document.querySelector('textarea.rm-block-input').parentNode;  
+      roam42.common.simulateMouseClickRight(
+        document.querySelector('textarea.rm-block-input').closest('.flex-h-box').querySelector('.simple-bullet-outer'))
+      await roam42.common.sleep(100);
+      var menuItem1 = document.querySelector('.bp3-popover-content > div> ul').childNodes[9].innerText;
+      var menuItem2 = document.querySelector('.bp3-popover-content > div> ul').childNodes[10].innerText;
+      var menuItemToClick = false;
+      switch (node['view-type']) {
+        case 'bullet':
+          if(menuItem1=='View as Bulleted List') 
+            menuItemToClick=1;
+          if(menuItem2=='View as Bulleted List') 
+            menuItemToClick=2;
+          break;
+        case 'document':
+          if(menuItem1=='View as Document') 
+            menuItemToClick=1;
+          if(menuItem2=='View as Document') 
+            menuItemToClick=2;
+          break;
+        case 'numbered':
+          if(menuItem1=='View as Numbered List') 
+            menuItemToClick=1;
+          if(menuItem2=='View as Numbered List') 
+            menuItemToClick=2;
+          break;
+      }
+      if(menuItemToClick == false) 
+        await roam42KeyboardLib.pressEsc(100);
+      else
+        document.querySelector('.bp3-popover-content > div> ul').childNodes[8 + menuItemToClick  ].childNodes[0].click();
+      await roam42.common.sleep(100);
+      roam42.common.simulateMouseClick(document.getElementById(blockId));
+      await roam42.common.sleep(100);
+      document.activeElement.setSelectionRange(document.activeElement.textLength,document.activeElement.textLength);          
+    }
 
     const blocksToInsert = item => {
       setTimeout(async () => {        
@@ -76,7 +116,9 @@
             if(item.original.processor=='randomblock') insertSnippetIntoBlock( '((' + await roam42.common.getRandomBlock(1) + '))' );
             if(item.original.processor=='randompage') insertSnippetIntoBlock(await roam42.smartBlocks.getRandomPage());
             if(item.original.processor=='blocks') {
+
               var results = await roam42.common.getBlockInfoByUID( item.original.value, true );
+
               //loop through array outline and insert into Roam
               if (results[0][0].children.length == 1 && !results[0][0].children[0].children) {
                 //has no children, just insert text into block and safe it
@@ -90,8 +132,8 @@
                 var currentOutlineLevel = 1;
                 roam42.smartBlocks.startingBlockTextArea = document.activeElement.id;
                 roam42.smartBlocks.focusOnBlock = '' // if set with <%FOCUSONBLOCK%> Will move to this block for focus mode after workflow
-                console.clear()
-
+              
+                console.log('hi')
                 var loopStructure = async (parentNode, level) => {
                   let orderedNode = await roam42.common.sortObjectsByOrder(parentNode);
                   
@@ -116,7 +158,7 @@
                     if (insertText == "") insertText = " "; //space needed in empty cell to maintaing indentation on empty blocks
                     insertText = await roam42.smartBlocks.proccessBlockWithSmartness(insertText);
                     if( !insertText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) {
-                      if (firstBlock==true && document.activeElement.value.length>2) { 
+                      if (firstBlock==true && document.activeElement.value.length>2) {
                         firstBlock = false;
                         var txtarea = document.querySelector("textarea.rm-block-input");
                         var strPos = txtarea.selectionStart;
@@ -125,7 +167,7 @@
                         var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
                         setValue.call(txtarea, front + insertText + back );
                         var e = new Event('input', { bubbles: true });
-                        txtarea.dispatchEvent(e);                      
+                        txtarea.dispatchEvent(e);                        
                       } else {
                         let txtarea = document.querySelector("textarea.rm-block-input");
                         await roam42.common.replaceAsync(insertText, /(\<\%CURSOR\%\>)/g, async (match, name)=>{
@@ -143,11 +185,16 @@
                         var ev = {};
                         ev.target = document.querySelector("textarea.rm-block-input");
                         roam42.jumpnav.jumpCommand( ev, "ctrl+j " + (Number(n.heading) + 4) ); //base is 4
-                        var id = document.querySelector("textarea.rm-block-input").id;
+                        // var id = document.querySelector("textarea.rm-block-input").id;
                         await roam42KeyboardLib.pressEsc(500);
-                        roam42.common.simulateMouseClick( document.querySelector("#" + id) );
+                        // roam42.common.simulateMouseClick( document.querySelector("#" + id) );
                       }
+                      
+                      if(n['view-type']) 
+                        await applyViewType(n);
+                      
                       if (n["text-align"] && n["text-align"] != "left") {
+
                         var ev = {};
                         ev.target = document.querySelector("textarea.rm-block-input");
                         switch (n["text-align"]) {
@@ -161,9 +208,9 @@
                             roam42.jumpnav.jumpCommand(ev, "ctrl+j 4"); //base is 4
                             break;
                         }
-                        var id = document.querySelector("textarea.rm-block-input").id;
+                        // var id = document.querySelector("textarea.rm-block-input").id;
                         await roam42.common.sleep(500);
-                        roam42.common.simulateMouseClick(document.querySelector("#" + id));
+                        // roam42.common.simulateMouseClick(document.querySelector("#" + id));
                       }
 
                       //PRESS ENTER 
@@ -189,7 +236,12 @@
 
                 if (results[0][0].children){
                   await loopStructure(results[0][0].children, 1); //only process if has children
-                }                
+                }
+                //delete last blok inserted
+                await roam42.common.sleep(100);                
+                roam42.common.blockDelete(document.activeElement);
+                await roam42.common.sleep(100);                
+                
                 //Do a FOCUS on BLOCK
                 if(roam42.smartBlocks.focusOnBlock!='') {
                   roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.focusOnBlock));   
@@ -288,7 +340,7 @@
       roam42.smartBlocks.initialize = {};
     } catch (e) {}
     roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocks.js');
-    roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocksCmds.js');
-    setTimeout(()=>roam42.smartBlocks.initialize(), 2000)
+    setTimeout(()=>roam42.smartBlocks.initialize(), 1000)
+    setTimeout(()=>roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocksCmds.js'), 3000)    
   };
 })();
