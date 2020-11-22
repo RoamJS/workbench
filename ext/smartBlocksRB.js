@@ -24,7 +24,6 @@
 
   roam42.smartBlocks.getRandomBlocksMention = async (textToProcess) => {
     var paramter = textToProcess.replace('<%RANDOMBLOCKMENTION:','').replace('%>','').trim();
-
     var result = "";
     if (await roam42.common.isPage(paramter)) {
       return await roam42.common.getRandomBlockMentioningPage(paramter);

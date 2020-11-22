@@ -133,7 +133,6 @@
                 roam42.smartBlocks.startingBlockTextArea = document.activeElement.id;
                 roam42.smartBlocks.focusOnBlock = '' // if set with <%FOCUSONBLOCK%> Will move to this block for focus mode after workflow
               
-                console.log('hi')
                 var loopStructure = async (parentNode, level) => {
                   let orderedNode = await roam42.common.sortObjectsByOrder(parentNode);
                   
@@ -340,7 +339,7 @@
       roam42.smartBlocks.initialize = {};
     } catch (e) {}
     roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocks.js');
-    setTimeout(()=>roam42.smartBlocks.initialize(), 1000)
-    setTimeout(()=>roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocksCmds.js'), 3000)    
+    setTimeout(()=>roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocksCmds.js'), 2000)    
+    setTimeout(()=>roam42.smartBlocks.initialize(), 4000)
   };
 })();
