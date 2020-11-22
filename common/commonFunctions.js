@@ -61,22 +61,6 @@
     }
   };    
 
-  roam42.common.getTime24Format = ()=> {
-    var dt = new Date();
-    return dt.getHours().toString().padStart(2, '0') + ':' + dt.getMinutes().toString().padStart(2, '0');
-  }
-
-  roam42.common.getTimeAPPMFormat = ()=>{
-      var dt = new Date();
-      var hours = dt.getHours();
-      var minutes = dt.getMinutes();
-      var ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12;
-      hours = hours ? hours : 12; // the hour '0' should be '12'
-      minutes = minutes < 10 ? '0'+minutes : minutes;
-      var strTime = hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(0,2) + ' ' + ampm;
-      return strTime;      
-  }
       
   roam42.common.sidebarRightToggle = ()=>{
     try {
