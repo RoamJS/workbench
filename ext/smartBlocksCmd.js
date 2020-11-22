@@ -1,6 +1,7 @@
 /* globals roam42, roam42KeyboardLib */
 
 (() => {
+    if(!roam42.smartBlocks) roam42.smartBlocks = {};
     roam42.smartBlocks.addCommands =  async (valueArray)=> {
       //DATE COMMANDS
       valueArray.push({key: 'today (42)',      icon:'time',     value: 'today',     processor:'date'});

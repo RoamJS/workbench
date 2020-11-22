@@ -88,29 +88,6 @@
         return;
       }    
       
-      
-      //insert todo #na
-      if (ev.altKey && ev.shiftKey && ev.code=='KeyA'  ) {     
-        event.preventDefault();
-        if (event.srcElement.localName == "textarea") {
-          if (document.queryCommandSupported("insertText")) {
-              roam42.common.setEmptyNodeValue(document.getElementById(event.srcElement.id),  "{{[[TODO]]}} #na  " + event.srcElement.innerHTML );
-          }
-        }
-        return
-      }
-
-      //insert todo #weekend    
-      if (ev.altKey && ev.shiftKey && ev.code=='KeyW'  ) {  
-        event.preventDefault();
-        if (event.srcElement.localName == "textarea") {
-          if (document.queryCommandSupported("insertText")) {
-              roam42.common.setEmptyNodeValue(document.getElementById(event.srcElement.id),  "{{[[TODO]]}} #weekend  " + event.srcElement.innerHTML );
-          }
-        }
-        return
-      }
-
       //do a strikeout    
       if (ev.altKey && ev.shiftKey && ev.code=='KeyT'  ) {  
         event.preventDefault();

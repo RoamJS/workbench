@@ -133,17 +133,14 @@
                 roam42KeyboardLib.pressEsc()
                 break;              
               case 'ctrl+j 5':     // heading 1
-                console.log('5')
                 roam42.common.simulateMouseClick( document.querySelectorAll('.bp3-popover-content .flex-h-box')[1].childNodes[0] );
                 roam42KeyboardLib.pressEsc()
                 break;              
               case 'ctrl+j 6':     // heading 1
-                console.log('6')
                 roam42.common.simulateMouseClick( document.querySelectorAll('.bp3-popover-content .flex-h-box')[1].childNodes[1] );
                 roam42KeyboardLib.pressEsc()
                 break;              
               case 'ctrl+j 7':     // heading 1
-                console.log('7')                
                 roam42.common.simulateMouseClick( document.querySelectorAll('.bp3-popover-content .flex-h-box')[1].childNodes[2] );
                 roam42KeyboardLib.pressEsc()
                 break;              
