@@ -108,6 +108,7 @@
     }
     
     const outputArrayWrite = async ()=> {
+        let blockInsertCounter = 0;
         if(roam42.smartBlocks.activeWorkflow.arrayToWrite.length>0) {
           for(let sb of roam42.smartBlocks.activeWorkflow.arrayToWrite) {
             var textToInsert = sb.text;
@@ -120,15 +121,20 @@
             //PRESS ENTER 
             {
               let currentBlockId = document.querySelector('textarea.rm-block-input').id
-              await roam42KeyboardLib.pressEnter();
+              await roam42KeyboardLib.pressEnter(50);
               await roam42.common.sleep(100);
               if( currentBlockId == document.querySelector('textarea.rm-block-input').id ) {
-                await roam42KeyboardLib.pressEnter();
+                await roam42KeyboardLib.pressEnter(50);
               }
+            }          
+            blockInsertCounter += 1;
+            if(blockInsertCounter > 9) {  //SmartBlocks coffee break to allow Roam to catch its breath
+                blockInsertCounter = 0;
+                await roam42.common.sleep(100);                  
             }            
           }
           //reset for next run
-          await roam42.common.sleep(300);
+          await roam42.common.sleep(100);
           roam42.smartBlocks.activeWorkflow.arrayToWrite = [];
         }      
     }
@@ -189,14 +195,12 @@
                     //indent/unindent if needed
                     if (currentOutlineLevel < level) {
                       for (var inc = currentOutlineLevel; inc < level; inc++) {
-                        await roam42.common.sleep(250);
-                        await roam42KeyboardLib.pressTab();
+                        await roam42KeyboardLib.pressTab(50);
                         currentOutlineLevel += 1;
                       }
                     } else if (currentOutlineLevel > level) {
                       for (var inc = currentOutlineLevel; inc > level; inc--) {
-                        await roam42.common.sleep(250);
-                        await roam42KeyboardLib.pressShiftTab();
+                        await roam42KeyboardLib.pressShiftTab(50);
                         currentOutlineLevel -= 1;
                       }
                     }
@@ -266,17 +270,17 @@
                       //PRESS ENTER 
                       {
                         let currentBlockId = document.querySelector('textarea.rm-block-input').id
-                        await roam42KeyboardLib.pressEnter();
+                        await roam42KeyboardLib.pressEnter(50);
                         await roam42.common.sleep(100);
                         if( currentBlockId == document.querySelector('textarea.rm-block-input').id ) {
-                          await roam42KeyboardLib.pressEnter();
+                          await roam42KeyboardLib.pressEnter(50);
                         }
                       }
 
                       blockInsertCounter += 1;
                       if(blockInsertCounter > 9) {  //SmartBlocks coffee break to allow Roam to catch its breath
                           blockInsertCounter = 0;
-                          await roam42.common.sleep(250);                  
+                          await roam42.common.sleep(100);                  
                       }
                       
                       await outputArrayWrite()

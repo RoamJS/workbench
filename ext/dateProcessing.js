@@ -20,7 +20,7 @@
     'December'
   ];
   
-  //return true if the date is a roam date, ex: [[November 1st, 2020]]
+  //return a real date if the date is a roam date, ex: [[November 1st, 2020]], otherwise returns nulll
   roam42.dateProcessing.testIfRoamDateAndConvert = (strDate)=> {
     strDate = strDate.replace('[[','').replace(']]','');
     var testMonth = roam42.dateProcessing.monthsDateProcessing.includes(strDate.match(/[A-z]+/)[0])
