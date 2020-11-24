@@ -60,6 +60,19 @@
     } catch(e) { return ''; }
   } 
 
+  roam42.common.getPageNamesFromBlockUidList =async  (blockUidList)=> {
+    //blockUidList ex ['sdfsd', 'ewfawef']
+    var rule = '[[(ancestor ?b ?a)[?a :block/children ?b]][(ancestor ?b ?a)[?parent :block/children ?b ](ancestor ?parent ?a) ]]';
+    var query = `[:find  (pull ?block [:block/uid :block/string])(pull ?page [:node/title :block/uid])
+                                     :in $ [?block_uid_list ...] %
+                                     :where
+                                      [?block :block/uid ?block_uid_list]
+                                     [?page :node/title]
+                                     (ancestor ?block ?page)]`;
+    var results = await window.roamAlphaAPI.q(query, blockUidList, rule);
+    return results;
+  }  
+  
   roam42.common.getBlocksReferringToThisPage = async (title)=> {
     try {   
       return await window.roamAlphaAPI.q(`
