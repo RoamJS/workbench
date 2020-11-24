@@ -13,6 +13,7 @@
   roam42.smartBlocks.activeWorkflow.focusOnBlock = ''; // if set with <%FOCUSONBLOCK%> Will move to this block for focus mode after workflow
   roam42.smartBlocks.activeWorkflow.arrayToWrite = []; // use to output multiple blocks from a command
   roam42.smartBlocks.exclusionBlockSymbol = '!!!!****!!!!****!!!!****!!!!****!!!!****'; //used to indicate a block is not to be inserted
+  roam42.smartBlocks.customCommands = [];
   
   roam42.smartBlocks.initialize = async ()=>{
     var smartBlockTrigger = ";;";

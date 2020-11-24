@@ -50,7 +50,8 @@
       valueArray.push({key: '<% GET %> (SmartBlock function)',                icon:'gear', value: '<%GET:&&&%>',            processor:'static'});
       valueArray.push({key: '<% SET %> (SmartBlock function)',                icon:'gear', value: '<%SET:&&&%>',            processor:'static'});
       valueArray.push({key: '<% CLEARVARS %> (SmartBlock function)',          icon:'gear', value: '<%CLEARVARS%>',          processor:'static'});
-    };  
+      roam42.smartBlocks.customCommands.forEach(v => valueArray.push(v));
+    };
 
     roam42.smartBlocks.proccessBlockWithSmartness = async (textToProcess)=>{
       let ifCommand = null;  // null if no IF, true process THEN, false process ELSE
@@ -191,7 +192,10 @@
         var textToProcess = match.replace('<%SET:','').replace('%>','');
         roam42.smartBlocks.activeWorkflow.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
         return '';   
-      });    
+      });
+      for (const { value, processor } of roam42.smartBlocks.customCommands) {
+        textToProcess = await roam42.common.replaceAsync(textToProcess, new RegExp(value, 'g'), processor); 
+      }
       if(textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol)) return roam42.smartBlocks.exclusionBlockSymbol; //skip this block
       return textToProcess; //resert new text
     }
