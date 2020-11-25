@@ -11,8 +11,15 @@
         valueArray.push({key: `Last ${e} (42)`,  icon:'time',   value: `Last ${e}`, processor:'date'});
         valueArray.push({key: `Next ${e} (42)`,  icon:'time',   value: `Next ${e}`, processor:'date'});
       });
-      valueArray.push({key: 'Time 24 (42)',      icon:'time',    value: roam42.dateProcessing.getTime24Format(),      processor:'static'});
-      valueArray.push({key: 'Time AM/PM (42)',    icon:'time',   value: roam42.dateProcessing.getTimeAPPMFormat(),      processor:'static'});
+      valueArray.push({key: 'Time 24 (42)',         icon:'time',   value: roam42.dateProcessing.getTime24Format(),     processor:'static'});
+      valueArray.push({key: 'Time AM/PM (42)',      icon:'time',   value: roam42.dateProcessing.getTimeAPPMFormat(),   processor:'static'});
+      valueArray.push({key: 'TODOs for Today (42)', icon:'time',   value: roam42.timemgmt.smartBlocks.todosDueToday,   processor:'function'});
+      valueArray.push({key: 'TODOs Overdue (42)',   icon:'time',   value: roam42.timemgmt.smartBlocks.todosOverdue,    processor:'function'});
+      valueArray.push({key: 'TODOs Overdue + DNP (42)',   icon:'time',   value: roam42.timemgmt.smartBlocks.todosOverduePlusDNP,    processor:'function'});
+      valueArray.push({key: 'TODOs Undated (42)',   icon:'time',         value: roam42.timemgmt.smartBlocks.todoNotDated,  processor:'function'});
+      valueArray.push({key: 'TODOs Future (42)',   icon:'time',         value: roam42.timemgmt.smartBlocks.todosFuture,    processor:'function'});
+      valueArray.push({key: 'TODOs Future + DNP (42)',   icon:'time',   value: roam42.timemgmt.smartBlocks.todosFuturePlusDNP,    processor:'function'});
+      
       valueArray.push({key: 'Serendipity - R a n d o m Block (42)', value: '', icon:'random',    processor:'randomblock'});
       valueArray.push({key: 'Serendipity - R a n d o m Page (42)', value: '',  icon:'random',   processor:'randompage'});
       valueArray.push({key: 'Horizontal Line (42)',   value: ':hiccup [:hr]',  icon:'hl',   processor:'static'});
@@ -24,33 +31,41 @@
                         await roam42.common.sleep(200);
                         await roam42KeyboardLib.pressTab();
                       }});
-      valueArray.push({key: 'sb42 (SmartBlock function)',                     icon:'gear', value: '#42SmartBlock',          processor:'static'});
-      valueArray.push({key: '<% CURSOR %> (SmartBlock function)',             icon:'gear', value: '<%CURSOR%>',             processor:'static'});
-      valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock function)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static'});
-      valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock function)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
-      valueArray.push({key: '<% CURRENTBLOCKREF %> (SmartBlock function)',    icon:'gear', value: '<%CURRENTBLOCKREF%>',    processor:'static'});
-      valueArray.push({key: '<% DATE %> (SmartBlock function)',               icon:'gear', value: '<%DATE:&&&%>',           processor:'static'});
-      valueArray.push({key: '<% FOCUSONBLOCK %> (SmartBlock function)',       icon:'gear', value: '<%FOCUSONBLOCK%>',       processor:'static'});
-      valueArray.push({key: '<% IF %> (SmartBlock function)',                 icon:'gear', value: '<%IF:&&&%>',             processor:'static'});      
-      valueArray.push({key: '<% THEN %> (SmartBlock function)',               icon:'gear', value: '<%THEN:&&&%>',           processor:'static'});      
-      valueArray.push({key: '<% ELSE %> (SmartBlock function)',               icon:'gear', value: '<%ELSE:&&&%>',           processor:'static'});      
-      valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock function)',       icon:'gear', value: '<%IFDAYOFMONTH:&&&%>',   processor:'static'});
-      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock function)',        icon:'gear', value: '<%IFDAYOFWEEK:&&&%>',    processor:'static'});
-      valueArray.push({key: '<% INPUT %> (SmartBlock function)',              icon:'gear', value: '<%INPUT:&&&%>',          processor:'static'});
-      valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock function)',         icon:'gear', value: '<%JAVASCRIPT:&&&%>',     processor:'static'});            
-      valueArray.push({key: '<% JAVASCRIPTASYNC %> (SmartBlock function)',    icon:'gear', value: '<%JAVASCRIPTASYNC:&&&%>',processor:'static'});            
-      valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock function)',      icon:'gear', value: '<%NOBLOCKOUTPUT%>',      processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock function)',        icon:'gear', value: '<%RANDOMBLOCK%>',        processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCKFROM %> (SmartBlock function)',    icon:'gear', value: '<%RANDOMBLOCKFROM:&&&%>',processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCKMENTION %> (SmartBlock function)', icon:'gear', value: '<%RANDOMBLOCKMENTION:&&&%>',processor:'static'});
-      valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock function)',         icon:'gear', value: '<%RANDOMPAGE%>',         processor:'static'});
-      valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock function)',    icon:'gear', value: '<%RESOLVEBLOCKREF:&&&%>',processor:'static'});
-      valueArray.push({key: '<% TIME %> (SmartBlock function)',               icon:'gear', value: '<%TIME%>',               processor:'static'});
-      valueArray.push({key: '<% TIMEAMPM %> (SmartBlock function)',           icon:'gear', value: '<%TIMEAMPM%>',           processor:'static'});
-      valueArray.push({key: '<% GET %> (SmartBlock function)',                icon:'gear', value: '<%GET:&&&%>',            processor:'static'});
-      valueArray.push({key: '<% SET %> (SmartBlock function)',                icon:'gear', value: '<%SET:&&&%>',            processor:'static'});
-      valueArray.push({key: '<% CLEARVARS %> (SmartBlock function)',          icon:'gear', value: '<%CLEARVARS%>',          processor:'static'});
-    };  
+      
+      valueArray.push({key: 'sb42 (SmartBlock Command)',                     icon:'gear', value: '#42SmartBlock',          processor:'static'});
+      valueArray.push({key: '<% CURSOR %> (SmartBlock Command)',             icon:'gear', value: '<%CURSOR%>',             processor:'static'});
+      valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static'});
+      valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock Command)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
+      valueArray.push({key: '<% CURRENTBLOCKREF %> (SmartBlock Command)',    icon:'gear', value: '<%CURRENTBLOCKREF%>',    processor:'static'});
+      valueArray.push({key: '<% DATE %> (SmartBlock Command)',               icon:'gear', value: '<%DATE:&&&%>',           processor:'static'});
+      valueArray.push({key: '<% FOCUSONBLOCK %> (SmartBlock Command)',       icon:'gear', value: '<%FOCUSONBLOCK%>',       processor:'static'});
+      valueArray.push({key: '<% IF %> (SmartBlock Command)',                 icon:'gear', value: '<%IF:&&&%>',             processor:'static'});      
+      valueArray.push({key: '<% THEN %> (SmartBlock Command)',               icon:'gear', value: '<%THEN:&&&%>',           processor:'static'});      
+      valueArray.push({key: '<% ELSE %> (SmartBlock Command)',               icon:'gear', value: '<%ELSE:&&&%>',           processor:'static'});      
+      valueArray.push({key: '<% IFDAYOFMONTH %> (SmartBlock Command)',       icon:'gear', value: '<%IFDAYOFMONTH:&&&%>',   processor:'static'});
+      valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock Command)',        icon:'gear', value: '<%IFDAYOFWEEK:&&&%>',    processor:'static'});
+      valueArray.push({key: '<% INPUT %> (SmartBlock Command)',              icon:'gear', value: '<%INPUT:&&&%>',          processor:'static'});
+      valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock Command)',         icon:'gear', value: '<%JAVASCRIPT:&&&%>',     processor:'static'});            
+      valueArray.push({key: '<% JAVASCRIPTASYNC %> (SmartBlock Command)',    icon:'gear', value: '<%JAVASCRIPTASYNC:&&&%>',processor:'static'});            
+      valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock Command)',      icon:'gear', value: '<%NOBLOCKOUTPUT%>',      processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock Command)',        icon:'gear', value: '<%RANDOMBLOCK%>',        processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCKFROM %> (SmartBlock Command)',    icon:'gear', value: '<%RANDOMBLOCKFROM:&&&%>',processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCKMENTION %> (SmartBlock Command)', icon:'gear', value: '<%RANDOMBLOCKMENTION:&&&%>',processor:'static'});
+      valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock Command)',         icon:'gear', value: '<%RANDOMPAGE%>',         processor:'static'});
+      valueArray.push({key: '<% RESOLVEBLOCKREF %> (SmartBlock Command)',    icon:'gear', value: '<%RESOLVEBLOCKREF:&&&%>',processor:'static'});
+      valueArray.push({key: '<% TIME %> (SmartBlock Command)',               icon:'gear', value: '<%TIME%>',               processor:'static'});
+      valueArray.push({key: '<% TIMEAMPM %> (SmartBlock Command)',           icon:'gear', value: '<%TIMEAMPM%>',           processor:'static'});
+      valueArray.push({key: '<% TODOTODAY %> (SmartBlock Command)',          icon:'gear', value: '<%TODOTODAY:20&&&%>',    processor:'static'});
+      valueArray.push({key: '<% TODOOVERDUE %> (SmartBlock Command)',        icon:'gear', value: '<%TODOOVERDUE:20&&&%>',  processor:'static'});
+      valueArray.push({key: '<% TODOOVERDUEDNP %> (SmartBlock Command)',     icon:'gear', value: '<%TODOOVERDUEDNP:20&&&%>',  processor:'static'});
+      valueArray.push({key: '<% TODOFUTURE %> (SmartBlock Command)',         icon:'gear', value: '<%TODOFUTURE:20&&&%>',  processor:'static'});
+      valueArray.push({key: '<% TODOFUTUREDNP %> (SmartBlock Command)',      icon:'gear', value: '<%TODOFUTUREDNP:20&&&%>',  processor:'static'});
+      valueArray.push({key: '<% TODOUNDATED %> (SmartBlock Command)',        icon:'gear', value: '<%TODOUNDATED:20&&&%>',  processor:'static'});
+      valueArray.push({key: '<% GET %> (SmartBlock Command)',                icon:'gear', value: '<%GET:&&&%>',            processor:'static'});
+      valueArray.push({key: '<% SET %> (SmartBlock Command)',                icon:'gear', value: '<%SET:&&&%>',            processor:'static'});
+      valueArray.push({key: '<% CLEARVARS %> (SmartBlock Command)',          icon:'gear', value: '<%CLEARVARS%>',          processor:'static'});
+      roam42.smartBlocks.customCommands.forEach(v => valueArray.push(v));
+    };
 
     roam42.smartBlocks.proccessBlockWithSmartness = async (textToProcess)=>{
       let ifCommand = null;  // null if no IF, true process THEN, false process ELSE
@@ -58,6 +73,12 @@
         roam42.smartBlocks.activeWorkflow.vars = new Object();    
         return '';
       });
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%GET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%GET:','').replace('%>','');
+        var vValue = roam42.smartBlocks.activeWorkflow.vars[textToProcess];
+        if(vValue==undefined) vValue = `--> Variable ${textToProcess} not SET <--`
+        return vValue;   
+      });      
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTBLOCKREF\%\>)/g, async (match, name)=>{
         let tID = await roam42.common.asyncQuerySelector(document,'textarea.rm-block-input');
         let UID = tID.id;
@@ -71,12 +92,6 @@
           return match + '--> Block Ref is not valid <--'; //no results, return origional
         else
           return queryResults[0][0].string;
-      });      
-      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%GET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%GET:','').replace('%>','');
-        var vValue = roam42.smartBlocks.activeWorkflow.vars[textToProcess];
-        if(vValue==undefined) vValue = `--> Variable ${textToProcess} not SET <--`
-        return vValue;   
       });      
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','').trim();
@@ -144,6 +159,31 @@
         else 
           return roam42.smartBlocks.exclusionBlockSymbol
       });
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOTODAY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%TODOTODAY:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todosDueToday(textToProcess);
+      });      
+      
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOOVERDUE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%TODOOVERDUE:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todosOverdue(textToProcess,false);
+      });            
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOOVERDUEDNP:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%TODOOVERDUEDNP:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todosOverdue(textToProcess,true);
+      });                  
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOFUTURE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%TODOFUTURE:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todosFuture(textToProcess,false);
+      });            
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOFUTUREDNP:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%TODOFUTUREDNP:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todosFuture(textToProcess,true);
+      });                  
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOUNDATED:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%TODOUNDATED:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todoNotDated(textToProcess,true);
+      });                  
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLIPBOARDCOPY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var textToWrite = match.replace('<%CLIPBOARDCOPY:','').replace('%>','');
         await navigator.clipboard.writeText( textToWrite );
@@ -154,7 +194,10 @@
         await roam42.common.sleep(50);        
         return cb;
       });      
-
+      // process CUSTOM commands
+      for (const { value, processor } of roam42.smartBlocks.customCommands) {
+        textToProcess = await roam42.common.replaceAsync(textToProcess, new RegExp(value, 'g'), processor); 
+      }
       //ALWAYS at end of process
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOBLOCKOUTPUT\%\>)/g, async (match, name)=>{
         return roam42.smartBlocks.exclusionBlockSymbol;
@@ -191,7 +234,7 @@
         var textToProcess = match.replace('<%SET:','').replace('%>','');
         roam42.smartBlocks.activeWorkflow.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
         return '';   
-      });    
+      });
       if(textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol)) return roam42.smartBlocks.exclusionBlockSymbol; //skip this block
       return textToProcess; //resert new text
     }
