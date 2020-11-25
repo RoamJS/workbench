@@ -108,7 +108,7 @@
       document.activeElement.setSelectionRange(document.activeElement.textLength,document.activeElement.textLength);          
     }
     
-    const outputArrayWrite = async ()=> {
+    roam42.smartBlocks.outputArrayWrite = async ()=> {
         let blockInsertCounter = 0;
         if(roam42.smartBlocks.activeWorkflow.arrayToWrite.length>0) {
           for(let sb of roam42.smartBlocks.activeWorkflow.arrayToWrite) {
@@ -181,7 +181,7 @@
                 roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = document.activeElement.id;
                 if( !processedText.includes(roam42.smartBlocks.exclusionBlockSymbol) )
                   insertSnippetIntoBlock( processedText );
-                await outputArrayWrite()
+                await roam42.smartBlocks.outputArrayWrite()
               } else {
                 //has children, start walking through the nodes and insert them
                 let blockInsertCounter = 0 //used to track how many inserts performed so we can take a coffee break at 19, to let Roam catch up
@@ -284,7 +284,7 @@
                           await roam42.common.sleep(100);                  
                       }
                       
-                      await outputArrayWrite()
+                      await roam42.smartBlocks.outputArrayWrite()
                       
                       if (n.children) await loopStructure(n.children, level + 1);
                     } 
