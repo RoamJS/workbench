@@ -12,7 +12,8 @@
   roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = '';            //the HTML Element ID of current point of execution
   roam42.smartBlocks.activeWorkflow.focusOnBlock = ''; // if set with <%FOCUSONBLOCK%> Will move to this block for focus mode after workflow
   roam42.smartBlocks.activeWorkflow.arrayToWrite = []; // use to output multiple blocks from a command
-  roam42.smartBlocks.exclusionBlockSymbol = '!!!!****!!!!****!!!!****!!!!****!!!!****'; //used to indicate a block is not to be inserted
+  roam42.smartBlocks.exclusionBlockSymbol = '$$$$****$$$$****'; //used to indicate a block is not to be inserted
+  roam42.smartBlocks.exitBlockCommand = '$$$$XXXX$$$$XXXX'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.customCommands = [];
   
   roam42.smartBlocks.initialize = async ()=>{
@@ -172,6 +173,7 @@
               roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = '';
               roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = '';
               roam42.smartBlocks.activeWorkflow.arrayToWrite = [];
+              roam42.smartBlocks.exitTriggered = false; // if true will force the workflow to stop
               
               //loop through array outline and insert into Roam
               if (results[0][0].children.length == 1 && !results[0][0].children[0].children) {
@@ -190,6 +192,8 @@
                 roam42.smartBlocks.activeWorkflow.focusOnBlock = '' // if set with <%FOCUSONBLOCK%> Will move to this block for focus mode after workflow
               
                 var loopStructure = async (parentNode, level) => {
+
+                  if(roam42.smartBlocks.exitTriggered==true) return;                                                      
                   let orderedNode = await roam42.common.sortObjectsByOrder(parentNode);
                   
                   for (var i = 0; i < orderedNode.length; i++) {
@@ -212,7 +216,11 @@
                     roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = insertText;                
                     roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = document.activeElement.id;
                     insertText = await roam42.smartBlocks.proccessBlockWithSmartness(insertText);
-                    if( !insertText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) {
+                    //test for EXIT command
+                    if( insertText.includes(roam42.smartBlocks.exitBlockCommand)) {
+                      roam42.smartBlocks.exitTriggered  = true; //forces workflow to stop after finishing his block
+                    }  
+                    if( !insertText.includes(roam42.smartBlocks.exclusionBlockSymbol)) {
                       if (firstBlock==true && document.activeElement.value.length>2) {
                         firstBlock = false;
                         var txtarea = document.querySelector("textarea.rm-block-input");
@@ -268,6 +276,8 @@
                         // roam42.common.simulateMouseClick(document.querySelector("#" + id));
                       }
 
+                      if(roam42.smartBlocks.exitTriggered==true) return;                                                      
+
                       //PRESS ENTER 
                       {
                         let currentBlockId = document.querySelector('textarea.rm-block-input').id
@@ -285,6 +295,8 @@
                       }
                       
                       await roam42.smartBlocks.outputArrayWrite()
+                      
+                      if(roam42.smartBlocks.exitTriggered==true) return;
                       
                       if (n.children) await loopStructure(n.children, level + 1);
                     } 
