@@ -229,7 +229,6 @@
     return outputTODOs.sort((a, b) => a.pageTitle-b.pageTitle );
   }  
   
-  
   window.roam42.timemgmt.testingReload = () => {
     roam42.loader.addScriptToPage( "timemgmt", roam42.host + 'ext/timemgmt.js');
     setTimeout(async ()=>{

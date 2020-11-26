@@ -1596,9 +1596,9 @@ function handleScrollKey(ev) {
   // https://stackoverflow.com/a/41586311/1164871
   function getStack() {
       try {
-        throw new Error();
+        // throw new Error();
       } catch (e) {
-        return e.stack;
+        // return e.stack;
       }
     }
 
