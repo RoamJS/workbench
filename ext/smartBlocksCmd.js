@@ -255,7 +255,7 @@
         return await roam42.timemgmt.smartBlocks.commands.todoNotDated(textToProcess,true);
       });
 
-      if(textToProcess.includes(roam42.smartBlocks.exclusionBlockSymboli))
+      if(textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol))
         if(exitCommandFound)
           return roam42.smartBlocks.exclusionBlockSymbol && roam42.smartBlocks.exitBlockCommand; //skip this block and exit
         else

@@ -1,4 +1,4 @@
-/* globals roam42 */
+/* globals roam42, chrono */
 
 (() => {
   roam42.timemgmt = {};
@@ -19,9 +19,12 @@
     var outputTODOs = [];
     var outputCounter = 1;
     for(var task of await roam42.timemgmt.getAllTasks()) {
-      if(outputCounter < limitOutputCount && task[0].string.includes('{{[[TODO]]}}') && task[0].string.includes(todayDate)) {
-        outputCounter += 1;
-        outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title})
+      var taskString = task[0].string + ' ';
+      if(taskString.substring(0,12)!='{{[[query]]:') { 
+        if(outputCounter < limitOutputCount && taskString.includes('{{[[TODO]]}}') && taskString.includes(todayDate)) {
+          outputCounter += 1;
+          outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title})
+        }
       }
     }    
     return outputTODOs;
@@ -36,14 +39,9 @@
 
   // DUE TODAY COMMAND to use in workflow
   roam42.timemgmt.smartBlocks.commands.todosDueToday = async (limitOutputCount = 50)=> {
-    var firstBlock = '';
-    for(var task of await roam42.timemgmt.todosDueToday(limitOutputCount)) {
-      if(firstBlock=='') 
-        firstBlock = `((${task.taskUID}))`;
-      else
-        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
-    }
-    return firstBlock;
+    for(var task of await roam42.timemgmt.todosDueToday(limitOutputCount))
+      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
+    return '';
   }
 
   // OVERDUE Used in menu to directly insert TODOS
@@ -59,14 +57,10 @@
 
   // OVERDUE COMMAND to use in workflow
   roam42.timemgmt.smartBlocks.commands.todosOverdue = async (limitOutputCount = 50, includeDNP=false)=> {
-    var firstBlock = '';
     for(var task of await roam42.timemgmt.todosOverdue(limitOutputCount,true,includeDNP)) {
-      if(firstBlock=='') 
-        firstBlock = `((${task.taskUID}))`;
-      else
-        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
+      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
     }  
-    return firstBlock
+    return '';
   }
   
 
@@ -103,14 +97,9 @@
   
   // FUTURE COMMAND to use in workflow
   roam42.timemgmt.smartBlocks.commands.todosFuture = async (limitOutputCount = 50, includeDNP=false)=> {
-    var firstBlock = '';
-    for(var task of await roam42.timemgmt.todosFuture(limitOutputCount,true,includeDNP)) {
-      if(firstBlock=='') 
-        firstBlock = `((${task.taskUID}))`;
-      else
-        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
-    }  
-    return firstBlock
+    for(var task of await roam42.timemgmt.todosFuture(limitOutputCount,true,includeDNP)) 
+      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
+    return '';
   }  
 
   // UNDATED
@@ -126,38 +115,37 @@
   
   // UNDATED COMMAND to use in workflow
   roam42.timemgmt.smartBlocks.commands.todoNotDated = async (limitOutputCount = 50)=> {
-    var firstBlock = '';
-    for(var task of await roam42.timemgmt.todoNotDated(limitOutputCount)) {
-      if(firstBlock=='') 
-        firstBlock = `((${task.taskUID}))`;
-      else
-        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
-    }  
-    return firstBlock
+    for(var task of await roam42.timemgmt.todoNotDated(limitOutputCount)) 
+      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
+    return '';
   }    
   
   
   roam42.timemgmt.todosOverdue = async (limitOutputCount = 50, sortAscending=true, includeDNPTasks=true)=>{
-    var yesterday = new Date().setDate( new Date().getDate() - 1 );
+    var yesterday = chrono.parseDate('yesterday');
     var outputTODOs = [];
     var outputCounter = 1;
+    
     //STEPS: (1) loop through each tag to see if it is a date before today (2) Also check if page name is dated
     for(var task of await roam42.timemgmt.getAllTasks()) {
       if(outputCounter < limitOutputCount) {
         var taskWasOutputted=false; //tracks for this loop if thee was an output
         var testForPages=null;
-        if(task[0].string.includes('{{[[TODO]]}}')) //confirm there is a TODO in the string properly formatted
-          testForPages = task[0].string.replace('[[TODO]]','').match(/\[\[(\s*[\S\s]*?)\]\]/g)
-        if(testForPages!=null) {
-          for(let page of testForPages) {
-            var testForDate = roam42.dateProcessing.testIfRoamDateAndConvert(page);
-            if(testForDate && testForDate <= yesterday) {
-              outputCounter+=1;
-              taskWasOutputted=true;
-              outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:testForDate})
-            } 
-          }
-        } //end of testForPages!=null
+        var taskString = task[0].string + ' '; 
+        if(taskString.substring(0,12)!='{{[[query]]:') { 
+          if(taskString.includes('{{[[TODO]]}}')) //confirm there is a TODO in the string properly formatted
+            testForPages = taskString.replace('[[TODO]]','').match(/\[\[(\s*[\S\s]*?)\]\]/g)
+          if(testForPages!=null) {
+            for(let page of testForPages) {
+              var testForDate =  roam42.dateProcessing.testIfRoamDateAndConvert(page);
+              if(testForDate && testForDate <= yesterday) {
+                outputCounter+=1;
+                taskWasOutputted=true;
+                outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:testForDate})
+              } 
+            }
+          } //end of testForPages!=null
+        }
         //This task has no date, but check if it is on a DNP, thus inherits the date
         if(includeDNPTasks && taskWasOutputted==false) {          
           var pageNameIsDate = roam42.dateProcessing.testIfRoamDateAndConvert(task[1].title);
@@ -173,7 +161,7 @@
   }
   
   roam42.timemgmt.todosFuture = async (limitOutputCount = 50, sortAscending=true, includeDNPTasks=true)=>{
-    var tomorrow = new Date().setDate( new Date().getDate() + 1 );
+    var tomorrow = chrono.parseDate('tomorrow');
     var outputTODOs = [];
     var outputCounter = 1;
     //STEPS: (1) loop through each tag to see if it is a date before today (2) Also check if page name is dated
@@ -181,18 +169,21 @@
       if(outputCounter < limitOutputCount) {
         var taskWasOutputted=false; //tracks for this loop if thee was an output
         var testForPages=null;
-        if(task[0].string.includes('{{[[TODO]]}}')) //confirm there is a TODO in the string properly formatted
-          testForPages = task[0].string.replace('[[TODO]]','').match(/\[\[(\s*[\S\s]*?)\]\]/g)
-        if(testForPages!=null) {
-          for(let page of testForPages) {
-            var testForDate = roam42.dateProcessing.testIfRoamDateAndConvert(page);
-            if(testForDate && testForDate >= tomorrow) {
-              outputCounter+=1;
-              taskWasOutputted=true;
-              outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:testForDate})
-            } 
-          }
-        } //end of testForPages!=null
+        var taskString = task[0].string + ' '; 
+        if(taskString.substring(0,12)!='{{[[query]]:') { 
+          if(taskString.includes('{{[[TODO]]}}')) //confirm there is a TODO in the string properly formatted
+            testForPages = taskString.replace('[[TODO]]','').match(/\[\[(\s*[\S\s]*?)\]\]/g)
+          if(testForPages!=null) {
+            for(let page of testForPages) {
+              var testForDate = roam42.dateProcessing.testIfRoamDateAndConvert(page);
+              if(testForDate && testForDate >= tomorrow) {
+                outputCounter+=1;
+                taskWasOutputted=true;
+                outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:testForDate})
+              } 
+            }
+          } //end of testForPages!=null
+        }
         //This task has no date, but check if it is on a DNP, thus inherits the date
         if(includeDNPTasks && taskWasOutputted==false) {          
           var pageNameIsDate = roam42.dateProcessing.testIfRoamDateAndConvert(task[1].title);
@@ -211,22 +202,27 @@
     var outputTODOs = [];
     var outputCounter = 1;
     for(var task of await roam42.timemgmt.getAllTasks()) {
-      var testForPages = task[0].string.replace('[[TODO]]','').match(/\[\[(\s*[\S\s]*?)\]\]/g)
-      var todoContainsDate = false;
-      if(testForPages) {
-        for(let page of testForPages) {
-          var testForDate = roam42.dateProcessing.testIfRoamDateAndConvert(page);
-          if(!testForDate ) 
-            todoContainsDate = true
+      var taskString = task[0].string + ' ';
+      if(taskString.substring(0,12)!='{{[[query]]:') { 
+        var testForPages = taskString.replace('[[TODO]]','').replace('[[TODO]]','').match(/\[\[(\s*[\S\s]*?)\]\]/g)
+        var todoContainsDate = false;
+        if(testForPages) {
+          for(let page of testForPages) {
+            var testForDate = roam42.dateProcessing.testIfRoamDateAndConvert(page);
+            if(testForDate) 
+              todoContainsDate = true
+          }
+        } // end of first IF
+        // console.log(todoContainsDate)
+        if(outputCounter < limitOutputCount && todoContainsDate==false){
+          outputCounter+=1;
+          var taskString = task[0].string.replace('{{[[TODO]]}}','').trim();
+          outputTODOs.push({taskUID: task[0].uid, taskSort:taskString, pageTitle: task[1].title})
         }
-      } // end of first IF
-      if(outputCounter < limitOutputCount && todoContainsDate==false){
-        outputCounter+=1;
-        outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title})
+        todoContainsDate = false;
       }
-      todoContainsDate = false;
     } //end of for
-    return outputTODOs.sort((a, b) => a.pageTitle-b.pageTitle );
+    return outputTODOs.sort((a, b) => a.taskSort.localeCompare(b.taskSort));
   }  
   
   window.roam42.timemgmt.testingReload = () => {
