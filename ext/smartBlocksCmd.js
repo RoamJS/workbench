@@ -233,6 +233,7 @@
         var textToProcess = match.replace('<%TODOTODAY:','').replace('%>','').trim();
         return await roam42.timemgmt.smartBlocks.commands.todosDueToday(textToProcess);
       });      
+      
 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOOVERDUE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var textToProcess = match.replace('<%TODOOVERDUE:','').replace('%>','').trim();
