@@ -39,9 +39,13 @@
 
   // DUE TODAY COMMAND to use in workflow
   roam42.timemgmt.smartBlocks.commands.todosDueToday = async (limitOutputCount = 50)=> {
+    var firstBlock = '';
     for(var task of await roam42.timemgmt.todosDueToday(limitOutputCount))
-      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
-    return '';
+      if(firstBlock=='')
+        firstBlock = `((${task.taskUID}))`;
+      else
+        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
+    return firstBlock;
   }
 
   // OVERDUE Used in menu to directly insert TODOS
@@ -57,10 +61,14 @@
 
   // OVERDUE COMMAND to use in workflow
   roam42.timemgmt.smartBlocks.commands.todosOverdue = async (limitOutputCount = 50, includeDNP=false)=> {
-    for(var task of await roam42.timemgmt.todosOverdue(limitOutputCount,true,includeDNP)) {
-      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
-    }  
-    return '';
+    var firstBlock = '';
+    for(var task of await roam42.timemgmt.todosOverdue(limitOutputCount,true,includeDNP)) 
+      if(firstBlock=='')
+        firstBlock = `((${task.taskUID}))`;
+      else
+        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
+    return firstBlock;
+    
   }
   
 
@@ -97,9 +105,13 @@
   
   // FUTURE COMMAND to use in workflow
   roam42.timemgmt.smartBlocks.commands.todosFuture = async (limitOutputCount = 50, includeDNP=false)=> {
+    var firstBlock = '';
     for(var task of await roam42.timemgmt.todosFuture(limitOutputCount,true,includeDNP)) 
-      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
-    return '';
+      if(firstBlock=='')
+        firstBlock = `((${task.taskUID}))`;
+      else
+        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
+    return firstBlock;        
   }  
 
   // UNDATED
@@ -115,9 +127,14 @@
   
   // UNDATED COMMAND to use in workflow
   roam42.timemgmt.smartBlocks.commands.todoNotDated = async (limitOutputCount = 50)=> {
+    var firstBlock = '';
     for(var task of await roam42.timemgmt.todoNotDated(limitOutputCount)) 
-      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
-    return '';
+      if(firstBlock=='')
+        firstBlock = `((${task.taskUID}))`;
+      else
+        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
+    return firstBlock;        
+    
   }    
   
   
