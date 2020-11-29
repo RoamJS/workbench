@@ -315,7 +315,7 @@
   }
   
   roam42.q.smartBlocks.blockMentions = async()=> {
-    var requestString = prompt('input')
+    var requestString = prompt('Name of page or tag reference to search for?')
     if(requestString == null) return;
     var query = await roam42.q.blockMentions(requestString);
     if(query.length>50 && confirm(`There are ${query.length+1} blocks matching your request. Continue with inserting blocks?`)==false) return;      
@@ -327,14 +327,9 @@
   roam42.q.smartBlocks.commands.blockMentions = async (requestString)=> {
     var limitOutputCount = Number(requestString.substring(0,requestString.search(',')));
     var queryParameters = requestString.substring(requestString.search(',')+1,requestString.length);
-    var firstBlock = '';
-    for(var block of await roam42.q.blockMentions(queryParameters,limitOutputCount+1)) {
-      if(firstBlock=='')
-        firstBlock = `((${block.uid}))`;
-      else
-        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block.uid}))`);  
-    }
-    return firstBlock;
+    for(var block of await roam42.q.blockMentions(queryParameters,limitOutputCount+1)) 
+        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block.text}))`);  
+    return '';
   }
   
   

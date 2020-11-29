@@ -27,7 +27,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2020-11-29 (BeebleBrox) ';
+  roam42.buildID = 'Roam<sup>42</sup> 2020-11-29b (BeebleBrox) ';
   
   roam42.host    = document.currentScript.src.replace('main.js','');
 
@@ -151,8 +151,8 @@ if( typeof window.roam42 == 'undefined' ) {
           try { roam42.roam42Menu.initialize();                } catch(e){};
           try { await roam42.smartBlocks.initialize();               } catch(e){};
         }, 1000);      
-      }, 2000);
-    }, 5000);
+      }, 4000);
+    }, 8000);
 
   })();
 
