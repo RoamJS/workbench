@@ -27,7 +27,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2020-11-28b (BeebleBrox) ';
+  roam42.buildID = 'Roam<sup>42</sup> 2020-11-29 (BeebleBrox) ';
   
   roam42.host    = document.currentScript.src.replace('main.js','');
 
@@ -126,7 +126,7 @@ if( typeof window.roam42 == 'undefined' ) {
       roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
       roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');      
       roam42.loader.addScriptToPage( 'livePreview',       roam42.host + 'ext/livePreview.js'  );
-      roam42.loader.addScriptToPage( 'focuesMode',        roam42.host + 'ext/focusMode.js'  );
+//      roam42.loader.addScriptToPage( 'focuesMode',        roam42.host + 'ext/focusMode.js'  );
     }
 
     // Give the libraries a few seconds to get comfy in their new home 
