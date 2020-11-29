@@ -19,6 +19,8 @@
       valueArray.push({key: 'TODOs Undated (42)',   icon:'time',         value: roam42.timemgmt.smartBlocks.todoNotDated,  processor:'function'});
       valueArray.push({key: 'TODOs Future (42)',   icon:'time',         value: roam42.timemgmt.smartBlocks.todosFuture,    processor:'function'});
       valueArray.push({key: 'TODOs Future + DNP (42)',   icon:'time',   value: roam42.timemgmt.smartBlocks.todosFuturePlusDNP,    processor:'function'});
+
+      valueArray.push({key: 'Block Mentions List (42)', icon:'time',   value: roam42.q.smartBlocks.blockMentions,   processor:'function'});
       
       valueArray.push({key: 'Serendipity - R a n d o m Block (42)', value: '', icon:'random',    processor:'randomblock'});
       valueArray.push({key: 'Serendipity - R a n d o m Page (42)', value: '',  icon:'random',   processor:'randompage'});
@@ -33,6 +35,7 @@
                       }});
       
       valueArray.push({key: 'sb42 (SmartBlock Command)',                     icon:'gear', value: '#42SmartBlock',          processor:'static'});
+      valueArray.push({key: '<% BLOCKMENTIONS %> (SmartBlock Command)',      icon:'gear', value: '<%BLOCKMENTIONS:&&&%>',  processor:'static'});
       valueArray.push({key: '<% CURSOR %> (SmartBlock Command)',             icon:'gear', value: '<%CURSOR%>',             processor:'static'});
       valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static'});
       valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock Command)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
@@ -227,6 +230,11 @@
         var textToProcess = match.replace('<%SET:','').replace('%>','');
         roam42.smartBlocks.activeWorkflow.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
         return '';   
+      });
+
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%BLOCKMENTIONS:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%BLOCKMENTIONS:','').replace('%>','').trim();
+        return await roam42.q.smartBlocks.commands.blockMentions (textToProcess);
       });
       
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOTODAY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{

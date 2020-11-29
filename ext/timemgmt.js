@@ -154,22 +154,26 @@
             testForPages = taskString.replace('[[TODO]]','').match(/\[\[(\s*[\S\s]*?)\]\]/g)
           if(testForPages!=null) {
             for(let page of testForPages) {
-              var testForDate =  roam42.dateProcessing.testIfRoamDateAndConvert(page);
-              if(testForDate && testForDate <= yesterday) {
-                outputCounter+=1;
-                taskWasOutputted=true;
-                outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:testForDate})
-              } 
+              try {
+                var testForDate =  roam42.dateProcessing.testIfRoamDateAndConvert(page);
+                if(testForDate && testForDate <= yesterday) {
+                  outputCounter+=1;
+                  taskWasOutputted=true;
+                  outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:testForDate})
+                }                 
+              } catch(e) {}
             }
           } //end of testForPages!=null
         }
         //This task has no date, but check if it is on a DNP, thus inherits the date
         if(includeDNPTasks && taskWasOutputted==false) {          
-          var pageNameIsDate = roam42.dateProcessing.testIfRoamDateAndConvert(task[1].title);
-          if(pageNameIsDate && pageNameIsDate <= yesterday) {
-                outputCounter+=1;
-                outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:pageNameIsDate })
-          }
+          try {
+            var pageNameIsDate = roam42.dateProcessing.testIfRoamDateAndConvert(task[1].title);
+            if(pageNameIsDate && pageNameIsDate <= yesterday) {
+                  outputCounter+=1;
+                  outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:pageNameIsDate })
+            }            
+          } catch(e) {}
         } //end of includeDNPTasks
       } // end outputCounter < limitOutputCount
     } //end of for
@@ -192,22 +196,26 @@
             testForPages = taskString.replace('[[TODO]]','').match(/\[\[(\s*[\S\s]*?)\]\]/g)
           if(testForPages!=null) {
             for(let page of testForPages) {
-              var testForDate = roam42.dateProcessing.testIfRoamDateAndConvert(page);
-              if(testForDate && testForDate >= tomorrow) {
-                outputCounter+=1;
-                taskWasOutputted=true;
-                outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:testForDate})
-              } 
+              try {
+                var testForDate = roam42.dateProcessing.testIfRoamDateAndConvert(page);
+                if(testForDate && testForDate >= tomorrow) {
+                  outputCounter+=1;
+                  taskWasOutputted=true;
+                  outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:testForDate})
+                }                 
+              } catch(e) {}
             }
           } //end of testForPages!=null
         }
         //This task has no date, but check if it is on a DNP, thus inherits the date
-        if(includeDNPTasks && taskWasOutputted==false) {          
-          var pageNameIsDate = roam42.dateProcessing.testIfRoamDateAndConvert(task[1].title);
-          if(pageNameIsDate && pageNameIsDate >= tomorrow) {
-                outputCounter+=1;
-                outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:pageNameIsDate })
-          }
+        if(includeDNPTasks && taskWasOutputted==false) {         
+          try {
+            var pageNameIsDate = roam42.dateProcessing.testIfRoamDateAndConvert(task[1].title);
+            if(pageNameIsDate && pageNameIsDate >= tomorrow) {
+                  outputCounter+=1;
+                  outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:pageNameIsDate })
+            }            
+          } catch(e) {}
         } //end of includeDNPTasks
       } // end outputCounter < limitOutputCount
     } //end of for
@@ -225,9 +233,11 @@
         var todoContainsDate = false;
         if(testForPages) {
           for(let page of testForPages) {
-            var testForDate = roam42.dateProcessing.testIfRoamDateAndConvert(page);
-            if(testForDate) 
-              todoContainsDate = true
+            try {
+              var testForDate = roam42.dateProcessing.testIfRoamDateAndConvert(page);
+              if(testForDate) 
+                todoContainsDate = true              
+            } catch(e) {}
           }
         } // end of first IF
         // console.log(todoContainsDate)
@@ -249,4 +259,91 @@
       // console.log(await roam42.timemgmt.todoNotDated(25))
     },2000)
   };
+})();
+
+(() => {
+  roam42.q = {};
+  roam42.q.smartBlocks = {};
+  roam42.q.smartBlocks.commands = {};
+  
+  var tagQuery = async (pageRef)=>{
+    var results = [];
+    for(var block of await roam42.common.getBlocksReferringToThisPage(pageRef)) 
+      results.push({uid: block[0].uid, text:block[0].string})
+    return results
+  }
+  
+  var stripToPageName = async (pageName)=>{
+    //removes possible leading and trailing characters for a page name
+    if(pageName.substring(0,1)=="#") pageName = pageName.substring(1,pageName.length);
+    if(pageName.substring(0,2)=="[[") 
+      if(pageName.substring(pageName.length-2,pageName.length)=="]]") 
+          pageName = pageName.substring(2, pageName.length-2);
+    return pageName;
+  }
+  
+  //return blocks that reference all the included references
+  //pageRefString comma delimited list of page refs
+  roam42.q.blockMentions = async (pageRefString, limitOutputCount = 1000)=> {
+    var results = [];
+    var tokens = pageRefString.split(',')
+    var outputCounter = 1;
+    if( pageRefString.trim() != '' && tokens.length>0) {
+      var firstPage = await stripToPageName(tokens[0]);   //grab first block
+      if(tokens.length>1) tokens.shift() //remove first element
+      for(var block of await tagQuery(firstPage)) {
+        if(outputCounter < limitOutputCount ) {
+          var bIncludeRef = true;
+          var blockText = block.text.toLowerCase();
+          for(var t of tokens) {
+            var tokenText = t.toLowerCase(); 
+            if(tokenText.substring(0,1)=='-') {
+              var searchFor = tokenText.substring(1,tokenText.length);
+              if(blockText.includes(searchFor)) bIncludeRef = false;                        
+            }
+            else
+              if(!blockText.includes(tokenText)) bIncludeRef = false;
+          }
+          if(bIncludeRef==true) {
+            results.push(block);
+            outputCounter+=1;
+          }
+        }
+      } //end for      
+    }
+    return results;
+  }
+  
+  roam42.q.smartBlocks.blockMentions = async()=> {
+    var requestString = prompt('input')
+    if(requestString == null) return;
+    var query = await roam42.q.blockMentions(requestString);
+    if(query.length>50 && confirm(`There are ${query.length+1} blocks matching your request. Continue with inserting blocks?`)==false) return;      
+    for(var block of query) 
+      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block.uid}))`);   
+    await roam42.smartBlocks.outputArrayWrite()    
+  }
+
+  roam42.q.smartBlocks.commands.blockMentions = async (requestString)=> {
+    var limitOutputCount = Number(requestString.substring(0,requestString.search(',')));
+    var queryParameters = requestString.substring(requestString.search(',')+1,requestString.length);
+    var firstBlock = '';
+    for(var block of await roam42.q.blockMentions(queryParameters,limitOutputCount+1)) {
+      if(firstBlock=='')
+        firstBlock = `((${block.uid}))`;
+      else
+        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block.uid}))`);  
+    }
+    return firstBlock;
+  }
+  
+  
+  // setTimeout(async ()=>{
+    // console.clear()
+    //  var y = await roam42.q.blockMentions('toRead,todo,via')
+    //   console.log(y)
+    //      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);       
+  // }, 1000)
+  
+  
 })();
