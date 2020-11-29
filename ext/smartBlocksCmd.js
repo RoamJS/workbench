@@ -233,8 +233,8 @@
       });
 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%BLOCKMENTIONS:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%BLOCKMENTIONS:','').replace('%>','').trim();
-        return await roam42.q.smartBlocks.commands.blockMentions (textToProcess);
+        var textToProcess = match.replace('<%BLOCKMENTIONS:','').replace('%>','');
+        return await roam42.q.smartBlocks.commands.blockMentions(textToProcess);
       });
       
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOTODAY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
