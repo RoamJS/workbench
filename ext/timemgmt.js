@@ -310,8 +310,8 @@
           }
         }
       } //end for      
-    }
-    return results;
+    }      
+    return results.sort((a, b) => a.text.localeCompare(b.text));
   }
   
   roam42.q.smartBlocks.blockMentions = async()=> {
@@ -324,21 +324,25 @@
     await roam42.smartBlocks.outputArrayWrite()    
   }
 
-  roam42.q.smartBlocks.commands.blockMentions = async (requestString)=> {
+  roam42.q.smartBlocks.commands.blockMentions = async (requestString, textToProcess)=> {
     var limitOutputCount = Number(requestString.substring(0,requestString.search(',')));
     var queryParameters = requestString.substring(requestString.search(',')+1,requestString.length);
+    var UIDS = [];
     for(var block of await roam42.q.blockMentions(queryParameters,limitOutputCount+1)) 
-        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block.text}))`);  
-    return '';
+      UIDS.push(block.uid)
+    var results =  await roam42.common.getPageNamesFromBlockUidList(UIDS);
+    results = results.sort((a, b) => a[0].string.localeCompare(b[0].string));
+    for(var block of results) { 
+      var newText = await roam42.common.replaceAsync(textToProcess, /(\<\%BLOCKMENTIONS:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        return `((${block[0].uid}))`;
+      });
+      newText = await roam42.common.replaceAsync(newText, /(\<\%PAGE\%\>)/g, async (match, name)=>{
+        return `[[${block[1].title}]]`;
+      });
+      newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
+      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);      
+    }
+    return roam42.smartBlocks.replaceFirstBlock;
   }
-  
-  
-  // setTimeout(async ()=>{
-    // console.clear()
-    //  var y = await roam42.q.blockMentions('toRead,todo,via')
-    //   console.log(y)
-    //      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);       
-  // }, 1000)
-  
   
 })();
