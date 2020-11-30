@@ -43,11 +43,11 @@
       await roam42.smartBlocks.activeWorkflow.arrayToWrite.push({'text': blockText, reprocess: reprocessBlock  });
     }
     
-    const insertSnippetIntoBlock = async ( textToInsert, removeIfCursor = true )=> {
+    const insertSnippetIntoBlock = async ( textToInsert, removeIfCursor = true, startPosistionOffset=2 )=> {
       setTimeout(async()=>{
         var txtarea = document.activeElement;
         var strPos = txtarea.selectionStart;
-        var front = txtarea.value.substring(0, strPos-2);
+        var front = txtarea.value.substring(0, strPos-startPosistionOffset);
         var back = txtarea.value.substring(strPos, txtarea.value.length);
         var newValue =  front + textToInsert + back;
         var startPos = -1;
@@ -145,17 +145,22 @@
     const blocksToInsert = item => {
       setTimeout(async () => {        
         //make sure we are in the textarea that started this insert (tribute menu may have closed focus on text area)
+        var removeTributeTriggerSpacer=2;
         if(document.activeElement.type !='textarea') {
-          roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeTributeTextAreaId));
+          roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeTributeTextAreaId));          
           await roam42.common.sleep(100);    
           var textarea = document.querySelector('textarea.rm-block-input'); 
           var newValue = textarea.value;
           var startPos = newValue.search(roam42.smartBlocks.tributeMenuTrigger);
-          newValue = newValue.replace(roam42.smartBlocks.tributeMenuTrigger,'');          
-          textarea.value = newValue;
+          newValue = newValue.replace(roam42.smartBlocks.tributeMenuTrigger,'');
+          var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+          setValue.call(textarea,newValue);
+          var e = new Event('input', { bubbles: true });
+          textarea.dispatchEvent(e);                        
           await roam42.common.sleep(100);
           textarea.setSelectionRange(startPos,startPos);
           await roam42.common.sleep(100);
+          removeTributeTriggerSpacer=0;
         }      
         try {          
             roam42.smartBlocks.textBoxObserver.disconnect(); //stop observing blocks during insertion
@@ -182,8 +187,8 @@
                 var processedText = await roam42.smartBlocks.proccessBlockWithSmartness( results[0][0].children[0].string);
                 roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = processedText;
                 roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = document.activeElement.id;
-                if( !processedText.includes(roam42.smartBlocks.exclusionBlockSymbol) )
-                  insertSnippetIntoBlock( processedText );
+                if( !processedText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) 
+                  insertSnippetIntoBlock( processedText, true, removeTributeTriggerSpacer );
                 await roam42.smartBlocks.outputArrayWrite()
               } else {
                 //has children, start walking through the nodes and insert them
@@ -393,7 +398,7 @@
 
       tribute.attach(ta);
       roam42.smartBlocks.activeTributeTextAreaId = ta.id;
-
+      
       ta.addEventListener("tribute-replaced", function(e) {
         roam42.smartBlocks.tributeMenuTrigger = e.detail.context.mentionTriggerChar + e.detail.context.mentionText;
       });      
@@ -411,7 +416,7 @@
       roam42.smartBlocks.initialize = {};
     } catch (e) {}
     roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocks.js');
-    setTimeout(()=>roam42.smartBlocks.initialize(), 2000)
-    setTimeout(()=>roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocksCmds.js'), 4000)    
+    setTimeout(()=>roam42.loader.addScriptToPage( 'smartBlocksCmd',roam42.host + 'ext/smartBlocksCmd.js'), 3000)    
+    setTimeout(()=>roam42.smartBlocks.initialize(), 6000)
   };
 })();

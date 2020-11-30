@@ -342,7 +342,10 @@
       newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);      
     }
-    return roam42.smartBlocks.replaceFirstBlock;
+    if(results.length>0)
+      return roam42.smartBlocks.replaceFirstBlock;
+    else
+      return '';
   }
   
 })();
