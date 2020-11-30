@@ -95,7 +95,7 @@
         var uid = match.replace('<%RESOLVEBLOCKREF:','').replace('%>','').replace('((','').replace('))','').trim();
         var queryResults = await roam42.common.getBlockInfoByUID(uid);
         if(queryResults==null) 
-          return match + '--> Block Ref is not valid <--'; //no results, return origional
+          return match + ''; //no results, return origional
         else
           return queryResults[0][0].string;
       });      
@@ -221,7 +221,7 @@
         var uid = match.replace('<%RESOLVEBLOCKREFATEND:','').replace('%>','').replace('((','').replace('))','').trim();
         var queryResults = await roam42.common.getBlockInfoByUID(uid);
         if(queryResults==null) 
-          return match + '--> Block Ref is not valid <--'; //no results, return origional
+          return match + ''; //no results, return origional
         else
           return queryResults[0][0].string;
       });      
@@ -233,8 +233,9 @@
       });
 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%BLOCKMENTIONS:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%BLOCKMENTIONS:','').replace('%>','');
-        return await roam42.q.smartBlocks.commands.blockMentions(textToProcess);
+        var commandParameters = match.replace('<%BLOCKMENTIONS:','').replace('%>','');
+        
+        return await roam42.q.smartBlocks.commands.blockMentions(commandParameters, textToProcess);
       });
       
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOTODAY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{

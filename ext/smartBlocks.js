@@ -12,8 +12,9 @@
   roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = '';            //the HTML Element ID of current point of execution
   roam42.smartBlocks.activeWorkflow.focusOnBlock = ''; // if set with <%FOCUSONBLOCK%> Will move to this block for focus mode after workflow
   roam42.smartBlocks.activeWorkflow.arrayToWrite = []; // use to output multiple blocks from a command
-  roam42.smartBlocks.exclusionBlockSymbol = '$$$$****$$$$****'; //used to indicate a block is not to be inserted
-  roam42.smartBlocks.exitBlockCommand = '$$$$XXXX$$$$XXXX'; //used to indicate a block is not to be inserted
+  roam42.smartBlocks.exclusionBlockSymbol = 'NOUTNOUTNOUTNOUT'; //used to indicate a block is not to be inserted
+  roam42.smartBlocks.exitBlockCommand     = 'SBEXITSBEXITSBEXIT'; //used to indicate a block is not to be inserted
+  roam42.smartBlocks.replaceFirstBlock    = 'SBRPLCSBRPLCSBRPLC'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.customCommands = [];
   
   roam42.smartBlocks.initialize = async ()=>{
@@ -220,7 +221,7 @@
                     if( insertText.includes(roam42.smartBlocks.exitBlockCommand)) {
                       roam42.smartBlocks.exitTriggered  = true; //forces workflow to stop after finishing his block
                     }  
-                    if( !insertText.includes(roam42.smartBlocks.exclusionBlockSymbol)) {
+                    if( !insertText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) {
                       if (firstBlock==true && document.activeElement.value.length>2) {
                         firstBlock = false;
                         var txtarea = document.querySelector("textarea.rm-block-input");
@@ -242,7 +243,7 @@
                         var e = new Event('input', { bubbles: true });
                         txtarea.dispatchEvent(e);  
                       }
-
+                      
                       //see if heading needs to be assigned (MUST DO THIS SLOWLY)
                       if (n.heading) {
                         var ev = {};
@@ -279,7 +280,8 @@
                       if(roam42.smartBlocks.exitTriggered==true) return;                                                      
 
                       //PRESS ENTER 
-                      {
+                      console.log(insertText)
+                      if(!insertText.includes(roam42.smartBlocks.replaceFirstBlock)) {
                         let currentBlockId = document.querySelector('textarea.rm-block-input').id
                         await roam42KeyboardLib.pressEnter(50);
                         await roam42.common.sleep(100);
