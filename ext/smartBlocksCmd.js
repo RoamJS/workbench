@@ -273,8 +273,8 @@
       return textToProcess; //resert new text
     }
     
-  window.roam42.smartBlocks.testingReloadCmds = () => {
-    roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocksCmds.js');
-  };
+  // window.roam42.smartBlocks.testingReloadCmds = () => {
+  //   roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocksCmds.js');
+  // };
     
 })();
