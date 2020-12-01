@@ -266,6 +266,7 @@
   roam42.q.smartBlocks = {};
   roam42.q.smartBlocks.commands = {};
   
+  //BLOCKMENTIONS
   var tagQuery = async (pageRef)=>{
     var results = [];
     for(var block of await roam42.common.getBlocksReferringToThisPage(pageRef)) 
@@ -318,18 +319,18 @@
     var requestString = prompt('Name of page or tag reference to search for?')
     if(requestString == null) return;
     var query = await roam42.q.blockMentions(requestString);
-    if(query.length>50 && confirm(`There are ${query.length+1} blocks matching your request. Continue with inserting blocks?`)==false) return;      
+    if(query.length>20 && confirm(`There are ${query.length+1} blocks matching your request. Continue with inserting blocks?`)==false) return;      
     for(var block of query) 
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block.uid}))`);   
     await roam42.smartBlocks.outputArrayWrite()    
   }
-
+  
   roam42.q.smartBlocks.commands.blockMentions = async (requestString, textToProcess)=> {
     var limitOutputCount = Number(requestString.substring(0,requestString.search(',')));
     var queryParameters = requestString.substring(requestString.search(',')+1,requestString.length);
     var UIDS = [];
     for(var block of await roam42.q.blockMentions(queryParameters,limitOutputCount+1)) 
-      UIDS.push(block.uid)
+      UIDS.push(block.uid);
     var results =  await roam42.common.getPageNamesFromBlockUidList(UIDS);
     results = results.sort((a, b) => a[0].string.localeCompare(b[0].string));
     for(var block of results) { 
@@ -347,5 +348,77 @@
     else
       return '';
   }
+  
+  //SEARCH
+  
+  roam42.q.search = async (searchString, limitOutputCount = 1000)=> {
+    var results = [];
+    var tokens = searchString.split(',')
+    var outputCounter = 1;
+    if( searchString.trim() != '' && tokens.length>0) {
+      var firstSearchTerm = await stripToPageName(tokens[0]);   //grab first block
+      if(tokens.length>1) tokens.shift() //remove first element
+      for(var block of await roam42.common.getBlockByPhrase(firstSearchTerm)) {
+        if(outputCounter < limitOutputCount ) {
+          var bIncludeRef = true;
+          var blockText = block[0].string.toLowerCase();
+          for(var t of tokens) {
+            var tokenText = t.toLowerCase(); 
+            if(tokenText.substring(0,1)=='-') {
+              var searchFor = tokenText.substring(1,tokenText.length);
+              if(blockText.includes(searchFor)) bIncludeRef = false;                        
+            }
+            else
+              if(!blockText.includes(tokenText)) bIncludeRef = false;
+          }
+          if(bIncludeRef==true) {
+            results.push(block);
+            outputCounter+=1;
+          }
+        }
+      } //end for      
+    }      
+    return results.sort((a, b) => a[0].string.localeCompare(b[0].string));
+  }  
+
+  roam42.q.smartBlocks.search = async()=> {
+    var requestString = prompt('Text to search for?')
+    if(requestString == null) return;
+    var query = await roam42.q.search(requestString);
+    if(query.length>20 && confirm(`There are ${query.length+1} blocks matching your request. Continue with inserting blocks?`)==false) return;      
+    for(var block of query) 
+      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block[0].uid}))`);   
+    await roam42.smartBlocks.outputArrayWrite()    
+  }
+  
+  roam42.q.smartBlocks.commands.search = async (requestString, textToProcess)=> {  
+    var limitOutputCount = Number(requestString.substring(0,requestString.search(',')));
+    var queryParameters = requestString.substring(requestString.search(',')+1,requestString.length);
+    var outputCounter = 0;
+    var UIDS = [];
+    for(var block of await roam42.q.search(queryParameters,limitOutputCount)) {
+      if(outputCounter < limitOutputCount) 
+        UIDS.push(block[0].uid)
+      outputCounter++;
+    }
+    var results =  await roam42.common.getPageNamesFromBlockUidList(UIDS);
+    for(var block of results) { 
+      var newText = await roam42.common.replaceAsync(textToProcess, /(\<\%SEARCH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        return `((${block[0].uid}))`;
+      });
+      newText = await roam42.common.replaceAsync(newText, /(\<\%PAGE\%\>)/g, async (match, name)=>{
+        return `[[${block[1].title}]]`;
+      });
+      newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
+      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);      
+    }
+    console.log(roam42.smartBlocks.activeWorkflow.arrayToWrite)
+   console.log(results,results.length)
+    if(results.length>0)
+      return roam42.smartBlocks.replaceFirstBlock;
+    else
+      return '';
+  }
+  
   
 })();

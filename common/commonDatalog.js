@@ -9,8 +9,7 @@
   } 
   
   roam42.common.getBlockByPhrase = async (search_phrase)=> {
-    var blocks = await window.roamAlphaAPI.q(`[:find (pull ?e [:block/uid]) :where [?e :block/string ?contents][(clojure.string/includes? ?contents "${search_phrase}")]]`);
-    
+    var blocks = await window.roamAlphaAPI.q(`[:find (pull ?e [:block/uid :block/string] ) :where [?e :block/string ?contents][(clojure.string/includes? ?contents "${search_phrase}")]]`);
     return blocks;    
   }
 

@@ -20,7 +20,9 @@
       valueArray.push({key: 'TODOs Future (42)',   icon:'time',         value: roam42.timemgmt.smartBlocks.todosFuture,    processor:'function'});
       valueArray.push({key: 'TODOs Future + DNP (42)',   icon:'time',   value: roam42.timemgmt.smartBlocks.todosFuturePlusDNP,    processor:'function'});
 
-      valueArray.push({key: 'Block Mentions List (42)', icon:'time',   value: roam42.q.smartBlocks.blockMentions,   processor:'function'});
+      valueArray.push({key: 'Block Mentions List (42)', icon:'list',   value: roam42.q.smartBlocks.blockMentions,   processor:'function'});
+      valueArray.push({key: 'Search - plain text (42)', icon:'list',   value: roam42.q.smartBlocks.search,   processor:'function'});
+      
       
       valueArray.push({key: 'Serendipity - R a n d o m Block (42)', value: '', icon:'random',    processor:'randomblock'});
       valueArray.push({key: 'Serendipity - R a n d o m Page (42)', value: '',  icon:'random',   processor:'randompage'});
@@ -51,8 +53,11 @@
       valueArray.push({key: '<% IFDAYOFWEEK %> (SmartBlock Command)',        icon:'gear', value: '<%IFDAYOFWEEK:&&&%>',    processor:'static'});
       valueArray.push({key: '<% INPUT %> (SmartBlock Command)',              icon:'gear', value: '<%INPUT:&&&%>',          processor:'static'});
       valueArray.push({key: '<% JAVASCRIPT %> (SmartBlock Command)',         icon:'gear', value: '<%JAVASCRIPT:&&&%>',     processor:'static'});            
+      valueArray.push({key: '<% J %> JavaScript Shortcut (SmartBlock Command)', icon:'gear', value: '<%J:&&&%>',     processor:'static'});            
       valueArray.push({key: '<% JAVASCRIPTASYNC %> (SmartBlock Command)',    icon:'gear', value: '<%JAVASCRIPTASYNC:&&&%>',processor:'static'});            
+      valueArray.push({key: '<% JA %> JavaScript Async Shortcut (SmartBlock Command)', icon:'gear', value: '<%JA:&&&%>',processor:'static'});            
       valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock Command)',      icon:'gear', value: '<%NOBLOCKOUTPUT%>',      processor:'static'});
+      valueArray.push({key: '<% PAGE %> subcommand (SmartBlock Command)',    icon:'gear', value: '<%PAGE%>',               processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock Command)',        icon:'gear', value: '<%RANDOMBLOCK%>',        processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCKFROM %> (SmartBlock Command)',    icon:'gear', value: '<%RANDOMBLOCKFROM:&&&%>',processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCKFROM %> (SmartBlock Command)',    icon:'gear', value: '<%RANDOMBLOCKFROM:&&&%>',processor:'static'});
@@ -101,6 +106,12 @@
         else
           return queryResults[0][0].string;
       });      
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%J:)/g, async (match, name)=>{
+        return  match.replace('<%J:','<%JAVASCRIPT:')
+      });      
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JA:)/g, async (match, name)=>{
+        return  match.replace('<%JA:','<%JAVASCRIPTASYNC:')
+      });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','').trim();
         if(scriptToRun.substring(0,13)=='```javascript')
@@ -236,21 +247,24 @@
 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%BLOCKMENTIONS:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandParameters = match.replace('<%BLOCKMENTIONS:','').replace('%>','');
-        
         return await roam42.q.smartBlocks.commands.blockMentions(commandParameters, textToProcess);
       });
       
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SEARCH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandParameters = match.replace('<%SEARCH:','').replace('%>','');
-        var limit = 25;
-        var results = await roam42.common.getBlockByPhrase(commandParameters);
-        var outputCounter = 1;
-        for(var block of results) 
-          if (outputCounter < limit) {
-            await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block[0].uid}))`);   
-            outputCounter++;
-          }
-        await roam42.smartBlocks.outputArrayWrite()
+        return await roam42.q.smartBlocks.commands.search(commandParameters, textToProcess);
+        
+        
+        // var commandParameters = match.replace('<%SEARCH:','').replace('%>','');
+        // var limit = 25;
+        // var results = await roam42.common.getBlockByPhrase(commandParameters);
+        // var outputCounter = 1;
+        // for(var block of results) 
+        //   if (outputCounter < limit) {
+        //     await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block[0].uid}))`);   
+        //     outputCounter++;
+        //   }
+        // await roam42.smartBlocks.outputArrayWrite()
       });
 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOTODAY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
