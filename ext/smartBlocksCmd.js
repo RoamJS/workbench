@@ -36,6 +36,7 @@
       
       valueArray.push({key: 'sb42 (SmartBlock Command)',                     icon:'gear', value: '#42SmartBlock',          processor:'static'});
       valueArray.push({key: '<% BLOCKMENTIONS %> (SmartBlock Command)',      icon:'gear', value: '<%BLOCKMENTIONS:&&&%>',  processor:'static'});
+      valueArray.push({key: '<% SEARCH %> (SmartBlock Command)',             icon:'gear', value: '<%SEARCH:&&&%>',         processor:'static'});
       valueArray.push({key: '<% CURSOR %> (SmartBlock Command)',             icon:'gear', value: '<%CURSOR%>',             processor:'static'});
       valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static'});
       valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock Command)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
@@ -53,6 +54,7 @@
       valueArray.push({key: '<% JAVASCRIPTASYNC %> (SmartBlock Command)',    icon:'gear', value: '<%JAVASCRIPTASYNC:&&&%>',processor:'static'});            
       valueArray.push({key: '<% NOBLOCKOUTPUT %> (SmartBlock Command)',      icon:'gear', value: '<%NOBLOCKOUTPUT%>',      processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock Command)',        icon:'gear', value: '<%RANDOMBLOCK%>',        processor:'static'});
+      valueArray.push({key: '<% RANDOMBLOCKFROM %> (SmartBlock Command)',    icon:'gear', value: '<%RANDOMBLOCKFROM:&&&%>',processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCKFROM %> (SmartBlock Command)',    icon:'gear', value: '<%RANDOMBLOCKFROM:&&&%>',processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCKMENTION %> (SmartBlock Command)', icon:'gear', value: '<%RANDOMBLOCKMENTION:&&&%>',processor:'static'});
       valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock Command)',         icon:'gear', value: '<%RANDOMPAGE%>',         processor:'static'});
@@ -238,6 +240,19 @@
         return await roam42.q.smartBlocks.commands.blockMentions(commandParameters, textToProcess);
       });
       
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SEARCH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var commandParameters = match.replace('<%SEARCH:','').replace('%>','');
+        var limit = 25;
+        var results = await roam42.common.getBlockByPhrase(commandParameters);
+        var outputCounter = 1;
+        for(var block of results) 
+          if (outputCounter < limit) {
+            await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block[0].uid}))`);   
+            outputCounter++;
+          }
+        await roam42.smartBlocks.outputArrayWrite()
+      });
+
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOTODAY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var textToProcess = match.replace('<%TODOTODAY:','').replace('%>','').trim();
         return await roam42.timemgmt.smartBlocks.commands.todosDueToday(textToProcess);
