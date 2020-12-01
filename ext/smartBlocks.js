@@ -188,7 +188,9 @@
                 roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = processedText;
                 roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = document.activeElement.id;
                 if( !processedText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) 
-                  insertSnippetIntoBlock( processedText, true, removeTributeTriggerSpacer );
+                  if(!processedText.includes(roam42.smartBlocks.replaceFirstBlock))
+                    insertSnippetIntoBlock( processedText, true, removeTributeTriggerSpacer );
+                console.log('here 1')
                 await roam42.smartBlocks.outputArrayWrite()
               } else {
                 //has children, start walking through the nodes and insert them
@@ -285,7 +287,6 @@
                       if(roam42.smartBlocks.exitTriggered==true) return;                                                      
 
                       //PRESS ENTER 
-                      console.log(insertText)
                       if(!insertText.includes(roam42.smartBlocks.replaceFirstBlock)) {
                         let currentBlockId = document.querySelector('textarea.rm-block-input').id
                         await roam42KeyboardLib.pressEnter(50);
@@ -300,6 +301,8 @@
                           blockInsertCounter = 0;
                           await roam42.common.sleep(100);                  
                       }
+                      
+                      console.log('here')
                       
                       await roam42.smartBlocks.outputArrayWrite()
                       
@@ -372,6 +375,9 @@
               break;
             case 'random':
               img = 'https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Frandom.png?v=1605996193519';
+              break;
+            case 'list':
+              img = 'https://cdn.glitch.com/463389d2-59ec-4fdc-b3c8-674037563d0e%2Flist.png?v=1606820752757';
               break;
             case 'gear':
               img = 'https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Fgear.png?v=1605994815962';   
