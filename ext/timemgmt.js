@@ -13,7 +13,7 @@
     return await roam42.common.getPageNamesFromBlockUidList(todoUIDs);
   }
   
-  // DUE TODAY FUNCTIONS
+  //DUE TODAY FUNCTIONS
   roam42.timemgmt.todosDueToday = async (limitOutputCount = 50)=>{
     var todayDate = roam42.dateProcessing.parseTextForDates('today');
     var outputTODOs = [];
@@ -47,7 +47,7 @@
         await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
     return firstBlock;
   }
-
+  
   // OVERDUE Used in menu to directly insert TODOS
   roam42.timemgmt.smartBlocks.todosOverdue = async ()=> {
     for(var task of await roam42.timemgmt.todosOverdue(100,true,false)) 
@@ -348,6 +348,100 @@
     else
       return '';
   }
+  
+  //returns date range. Params: 
+  //  1 - Limit block count
+  //  2 - Page name
+  //  3 - Start Date
+  //  4 - End Date
+  //  5 - Sort order
+  //  6 - Filter parameters
+  roam42.q.smartBlocks.commands.blockMentionsDated = async (requestString, textToProcess)=> {
+    console.clear()
+    console.log(requestString, textToProcess)
+    
+    var params = requestString.split(',')
+    console.log(params)
+    if(params.length<5) return 'BLOCKMENTIONSDATED requires atleast 5 parameters'
+
+    var limitOutputCount = params.shift()
+    console.log('limitOutputCount',limitOutputCount)
+
+    var pageRefName = params.shift()
+    console.log('pageRefName',pageRefName)
+
+    var startDate = params.shift()
+    startDate = startDate!=0 ? await Date.parse(chrono.parseDate(startDate)) : Date.parse('1-01-01');
+    console.log('startDate',startDate)
+    
+    var endDate = params.shift()    
+    endDate   = endDate!=0   ? await Date.parse(chrono.parseDate(endDate))   : Date.parse('9999-012-30');
+    console.log('endDate',endDate)
+
+    var sortOrder = params.shift()
+    console.log('sortOrder',sortOrder)
+    
+    
+    var queryParameters = pageRefName + ',' + params.join(',')
+    console.log('queryParameters',queryParameters)    
+
+    
+    var UIDS = [];
+    for(var block of await roam42.q.blockMentions(queryParameters,1000)) 
+      UIDS.push(block.uid);
+    
+    var queryDates = [];
+    var outputCounter = 0;
+    for(var block of await roam42.common.getPageNamesFromBlockUidList(UIDS)) {
+      var blockText = block[0].string;
+      if(outputCounter < limitOutputCount && blockText.substring(0,12)!='{{[[query]]:') { 
+        var pageRefs = blockText.replace(`[[${pageRefName}]]`,'').match(/\[\[(\s*[\S\s]*?)\]\]/g)
+        if(pageRefs!=null) {
+          for(let ref of pageRefs) {
+            try {
+              var testForDate =  roam42.dateProcessing.testIfRoamDateAndConvert(ref);
+              if(testForDate &&  startDate<=testForDate & endDate>=testForDate ) {
+                outputCounter+=1;
+                block[0].date = testForDate;
+                queryDates.push(block)
+              }                 
+            } catch(e) {}
+          }
+        } //end of testForPages!=null
+      }
+     } //end of for
+    
+    
+    var sortedQueryDates = [];
+    switch(sortOrder.toUpperCase()) {
+      case 'ASC':
+        sortedQueryDates = queryDates.sort((a, b) => a[0].date-b[0].date);
+        break;
+      case 'DESC':
+        sortedQueryDates = queryDates.sort((a, b) => b[0].date-a[0].date );
+        break;
+      default:
+        sortedQueryDates = queryDates; //no nothing, pass query forward
+    }   
+    
+    for(var block of sortedQueryDates) { 
+      var newText = await roam42.common.replaceAsync(textToProcess, /(\<\%BLOCKMENTIONSDATED:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        return `((${block[0].uid}))`;
+      });
+      newText = await roam42.common.replaceAsync(newText, /(\<\%PAGE\%\>)/g, async (match, name)=>{
+        return `[[${block[1].title}]]`;
+      });
+      newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
+      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);      
+    }
+    if(sortedQueryDates.length>0)
+      return roam42.smartBlocks.replaceFirstBlock;
+    else
+      return '';
+  }
+  
+  
+  
   
   //SEARCH
   

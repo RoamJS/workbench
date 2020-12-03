@@ -194,7 +194,6 @@
                 if( !processedText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) 
                   if(!processedText.includes(roam42.smartBlocks.replaceFirstBlock))
                     insertSnippetIntoBlock( processedText, true, removeTributeTriggerSpacer );
-                console.log('here 1')
                 await roam42.smartBlocks.outputArrayWrite()
               } else {
                 //has children, start walking through the nodes and insert them
@@ -260,9 +259,7 @@
                         var ev = {};
                         ev.target = document.querySelector("textarea.rm-block-input");
                         roam42.jumpnav.jumpCommand( ev, "ctrl+j " + (Number(n.heading) + 4) ); //base is 4
-                        // var id = document.querySelector("textarea.rm-block-input").id;
-                        await roam42KeyboardLib.pressEsc(500);
-                        // roam42.common.simulateMouseClick( document.querySelector("#" + id) );
+                        await roam42KeyboardLib.pressEsc(1000);
                       }
                       
                       if(n['view-type']) 
@@ -283,9 +280,7 @@
                             roam42.jumpnav.jumpCommand(ev, "ctrl+j 4"); //base is 4
                             break;
                         }
-                        // var id = document.querySelector("textarea.rm-block-input").id;
-                        await roam42.common.sleep(500);
-                        // roam42.common.simulateMouseClick(document.querySelector("#" + id));
+                        await roam42.common.sleep(1000);
                       }
 
                       if(roam42.smartBlocks.exitTriggered==true) return;                                                      
@@ -305,8 +300,6 @@
                           blockInsertCounter = 0;
                           await roam42.common.sleep(100);                  
                       }
-                      
-                      console.log('here')
                       
                       await roam42.smartBlocks.outputArrayWrite()
                       
