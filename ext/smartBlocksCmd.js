@@ -39,6 +39,8 @@
       valueArray.push({key: 'sb42 (SmartBlock Command)',                     icon:'gear', value: '#42SmartBlock',          processor:'static'});
       valueArray.push({key: '<% BLOCKMENTIONS %> (SmartBlock Command)',      icon:'gear', value: '<%BLOCKMENTIONS:&&&%>',  processor:'static'});
       valueArray.push({key: '<% SEARCH %> (SmartBlock Command)',             icon:'gear', value: '<%SEARCH:&&&%>',         processor:'static'});
+      valueArray.push({key: '<% DATEBASISDAILYNOTES %> (SmartBlock Command)',icon:'gear', value: '<%DATEBASISDAILYNOTES%>',processor:'static'});
+      valueArray.push({key: '<% DATEBASISTODY %> (SmartBlock Command)',      icon:'gear', value: '<%DATEBASISTODY%>',      processor:'static'});
       valueArray.push({key: '<% CURSOR %> (SmartBlock Command)',             icon:'gear', value: '<%CURSOR%>',             processor:'static'});
       valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static'});
       valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock Command)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
@@ -159,9 +161,28 @@
         return roam42.dateProcessing.getTimeAPPMFormat();
       });           
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%DATE:','').replace('%>','').trim();
-        return roam42.dateProcessing.parseTextForDates(textToProcess).trim();
+       var textToProcess = match.replace('<%DATE:','').replace('%>','').trim();
+
+       var daily_notes_page_date = null;
+       debugger;
+        var use_reference_date = roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'];
+        if (use_reference_date) {
+          daily_notes_page_date = roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.rm-title-display').innerText)
+        }
+
+        return roam42.dateProcessing.parseTextForDates(textToProcess, daily_notes_page_date).trim();
       });
+
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATEBASISDAILYNOTES)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = true;
+        return roam42.smartBlocks.exclusionBlockSymbol;   
+      });
+
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATEBASISTODY)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = false;
+        return roam42.smartBlocks.exclusionBlockSymbol; 
+      });
+
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDAYOFWEEK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var textToProcess = match.replace('<%IFDAYOFWEEK:','').replace('%>','').trim();
         var day = String(new Date().getDay());
@@ -249,7 +270,7 @@
         var commandParameters = match.replace('<%BLOCKMENTIONS:','').replace('%>','');
         return await roam42.q.smartBlocks.commands.blockMentions(commandParameters, textToProcess);
       });
-      
+
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SEARCH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandParameters = match.replace('<%SEARCH:','').replace('%>','');
         return await roam42.q.smartBlocks.commands.search(commandParameters, textToProcess);
