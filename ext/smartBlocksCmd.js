@@ -38,6 +38,7 @@
       
       valueArray.push({key: 'sb42 (SmartBlock Command)',                     icon:'gear', value: '#42SmartBlock',          processor:'static'});
       valueArray.push({key: '<% BLOCKMENTIONS %> (SmartBlock Command)',      icon:'gear', value: '<%BLOCKMENTIONS:&&&%>',  processor:'static'});
+      valueArray.push({key: '<% BLOCKMENTIONSDATED %> (SmartBlock Command)', icon:'gear', value: '<%BLOCKMENTIONSDATED:&&&%>',  processor:'static'});
       valueArray.push({key: '<% SEARCH %> (SmartBlock Command)',             icon:'gear', value: '<%SEARCH:&&&%>',         processor:'static'});
       valueArray.push({key: '<% CURSOR %> (SmartBlock Command)',             icon:'gear', value: '<%CURSOR%>',             processor:'static'});
       valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static'});
@@ -128,12 +129,12 @@
         return results;
       });           
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%INPUT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%INPUT:','').replace('%>','');
-        if(textToProcess.includes('\%\%')) {
-          var splitPrompt = textToProcess.split('\%\%');
+        var commandToProcess = match.replace('<%INPUT:','').replace('%>','');
+        if(commandToProcess.includes('\%\%')) {
+          var splitPrompt = commandToProcess.split('\%\%');
           return prompt( splitPrompt[0],  splitPrompt[1] )
         } else {
-          return prompt(textToProcess.toString());        
+          return prompt(commandToProcess.toString());        
         }
       });
       //Random block command
@@ -159,14 +160,14 @@
         return roam42.dateProcessing.getTimeAPPMFormat();
       });           
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%DATE:','').replace('%>','').trim();
-        return roam42.dateProcessing.parseTextForDates(textToProcess).trim();
+        var commandToProcess = match.replace('<%DATE:','').replace('%>','').trim();
+        return roam42.dateProcessing.parseTextForDates(commandToProcess).trim();
       });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDAYOFWEEK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%IFDAYOFWEEK:','').replace('%>','').trim();
+        var commandToProcess = match.replace('<%IFDAYOFWEEK:','').replace('%>','').trim();
         var day = String(new Date().getDay());
         if(day=='0') day='7'; //sunday
-        if(textToProcess.replaceAll(' ','').split(',').includes(day)) 
+        if(commandToProcess.replaceAll(' ','').split(',').includes(day)) 
           return ''; //
         else 
           return roam42.smartBlocks.exclusionBlockSymbol
@@ -249,49 +250,42 @@
         var commandParameters = match.replace('<%BLOCKMENTIONS:','').replace('%>','');
         return await roam42.q.smartBlocks.commands.blockMentions(commandParameters, textToProcess);
       });
+
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%BLOCKMENTIONSDATED:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var commandParameters = match.replace('<%BLOCKMENTIONSDATED:','').replace('%>','');
+        return await roam42.q.smartBlocks.commands.blockMentionsDated(commandParameters, textToProcess);
+      });
       
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SEARCH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandParameters = match.replace('<%SEARCH:','').replace('%>','');
         return await roam42.q.smartBlocks.commands.search(commandParameters, textToProcess);
-        
-        
-        // var commandParameters = match.replace('<%SEARCH:','').replace('%>','');
-        // var limit = 25;
-        // var results = await roam42.common.getBlockByPhrase(commandParameters);
-        // var outputCounter = 1;
-        // for(var block of results) 
-        //   if (outputCounter < limit) {
-        //     await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block[0].uid}))`);   
-        //     outputCounter++;
-        //   }
-        // await roam42.smartBlocks.outputArrayWrite()
       });
 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOTODAY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%TODOTODAY:','').replace('%>','').trim();
-        return await roam42.timemgmt.smartBlocks.commands.todosDueToday(textToProcess);
+        var commandToProcess = match.replace('<%TODOTODAY:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todosDueToday(commandToProcess);
       });      
       
 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOOVERDUE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%TODOOVERDUE:','').replace('%>','').trim();
-        return await roam42.timemgmt.smartBlocks.commands.todosOverdue(textToProcess,false);
+        var commandToProcess = match.replace('<%TODOOVERDUE:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todosOverdue(commandToProcess,false);
       });            
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOOVERDUEDNP:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%TODOOVERDUEDNP:','').replace('%>','').trim();
-        return await roam42.timemgmt.smartBlocks.commands.todosOverdue(textToProcess,true);
+        var commandToProcess = match.replace('<%TODOOVERDUEDNP:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todosOverdue(commandToProcess,true);
       });                  
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOFUTURE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%TODOFUTURE:','').replace('%>','').trim();
-        return await roam42.timemgmt.smartBlocks.commands.todosFuture(textToProcess,false);
+        var commandToProcess = match.replace('<%TODOFUTURE:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todosFuture(commandToProcess,false);
       });            
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOFUTUREDNP:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%TODOFUTUREDNP:','').replace('%>','').trim();
-        return await roam42.timemgmt.smartBlocks.commands.todosFuture(textToProcess,true);
+        var commandToProcess = match.replace('<%TODOFUTUREDNP:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todosFuture(commandToProcess,true);
       });                  
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOUNDATED:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%TODOUNDATED:','').replace('%>','').trim();
-        return await roam42.timemgmt.smartBlocks.commands.todoNotDated(textToProcess,true);
+        var commandToProcess = match.replace('<%TODOUNDATED:','').replace('%>','').trim();
+        return await roam42.timemgmt.smartBlocks.commands.todoNotDated(commandToProcess,true);
       });
 
       if(textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol))
