@@ -21,6 +21,10 @@
     var smartBlockTrigger = ";;";
     //determine if user has created a custom trigger
     let customTrigger = await roam42.settings.get("SmartBlockTrigger");
+
+    //by default we don't use date references from the daily note pages.
+    roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = false;
+
     if(customTrigger!=null && customTrigger.length>0) {
       var newTrigger = customTrigger.replaceAll('\"','').trim();
       if(newTrigger.length>0)

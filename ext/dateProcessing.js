@@ -88,10 +88,16 @@
     return hour + ':' + minute + amPM;
   }
 
-  roam42.dateProcessing.parseTextForDates = (str) => {
+
+  roam42.dateProcessing.parseTextForDates = (str, reference_date) => {
     var str_with_pages_removed = str.replace(/\[+\[[^)]+\]+\] */g, "");
-    
-    var txt = chrono.parse( str_with_pages_removed )
+    var txt = '';
+    if (reference_date) {
+      txt = chrono.parse( str_with_pages_removed, reference_date )
+    }
+    else {
+      txt = chrono.parse( str_with_pages_removed )
+    }
 
     if (txt.length > 0) {
       txt.forEach(function(element) {
