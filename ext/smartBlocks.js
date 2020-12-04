@@ -22,9 +22,6 @@
     //determine if user has created a custom trigger
     let customTrigger = await roam42.settings.get("SmartBlockTrigger");
 
-    //by default we don't use date references from the daily note pages.
-    roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = false;
-
     if(customTrigger!=null && customTrigger.length>0) {
       var newTrigger = customTrigger.replaceAll('\"','').trim();
       if(newTrigger.length>0)
@@ -150,6 +147,9 @@
       setTimeout(async () => {        
         //make sure we are in the textarea that started this insert (tribute menu may have closed focus on text area)
         var removeTributeTriggerSpacer=2;
+        //by default we don't use date references from the daily note pages.
+        roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = false;
+        
         if(document.activeElement.type !='textarea') {
           roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeTributeTextAreaId));          
           await roam42.common.sleep(100);    
@@ -341,6 +341,9 @@
               }
               
             } // end IF
+          
+          //by default we don't use date references from the daily note pages.
+          roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = false;          
           //start observing mutations again
           roam42.smartBlocks.textBoxObserver.observe(document, { childList: true, subtree: true });   
         } catch(e) {
