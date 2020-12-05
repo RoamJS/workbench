@@ -6,26 +6,17 @@
   roam42.dateProcessing = {};
   
   roam42.dateProcessing.monthsDateProcessing = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December'
-  ];
+    'January','February','March','April','May','June',
+    'July','August','September','October','November','December'];
+  
   
   //return a real date if the date is a roam date, ex: [[November 1st, 2020]], otherwise returns nulll
   roam42.dateProcessing.testIfRoamDateAndConvert = (strDate)=> {
     strDate = strDate.replace('[[','').replace(']]','');
     var testMonth = roam42.dateProcessing.monthsDateProcessing.includes(strDate.match(/[A-z]+/)[0])
+    var testDay   = ['st, ', 'th, ', 'nd, ', 'rd, '].some(v => strDate.includes(v));
     var testYear  = isNaN(strDate.substring(strDate.length-4,strDate.length))
-    if(testMonth && testYear !=true) 
+    if(testDay && testMonth && testYear !=true) 
       return chrono.parseDate(strDate)
     else
       return null
@@ -88,15 +79,99 @@
     return hour + ':' + minute + amPM;
   }
 
+  //https://github.com/wanasit/chrono/tree/v1.x.x
+  const chronoCustomParser = new chrono.Parser();
+  chronoCustomParser.pattern = function () { return /DBOM|DEOM|DBOY|DEOY|DBONM|DEONM|DBONY|DEONY/i; };
+  chronoCustomParser.extract = function(text, ref, match, opt) { 
+      var basisYear  = new Date().getFullYear();
+      var basisMonth = new Date().getMonth();
+      var dayOut;
+      var monthOut;
+      var yearOut;
+    
+      if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES']) {
+        var daily_notes_page_date = roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.rm-title-display').innerText);      
+        if(daily_notes_page_date) {
+          console.log('daily_notes_page_date',daily_notes_page_date)
+          basisYear  = daily_notes_page_date.getFullYear();
+          basisMonth = daily_notes_page_date.getMonth();        }
+      } 
+      
+      console.log(basisYear, basisMonth)
+    
+      switch(match[0]){
+        case "DBOM": //Beginning of this month
+          yearOut = basisYear;
+          monthOut= basisMonth+1;
+          dayOut  = 1;
+          break;
+        case "DEOM":  //End of this month
+          yearOut = basisYear;
+          monthOut= basisMonth+1;
+          dayOut  = new Date(yearOut, monthOut, 0).getDate();
+          break;
+        case "DBOY": //Beginning of Year
+          yearOut = basisYear;
+          monthOut= 1;
+          dayOut  = 1;
+          break;
+        case "DEOY": //End of YEAR
+          yearOut = basisYear;
+          monthOut= 12;
+          dayOut  = new Date(yearOut, monthOut, 0).getDate();
+          break;
+        case "DBONM": //begining of next month
+          yearOut = basisMonth == 11 ? basisYear+1 : basisYear;
+          monthOut= basisMonth == 11 ? 1 : basisMonth +2;
+          dayOut  = 1
+          break;
+        case "DEONM": //beginnning of next month
+          yearOut = basisMonth == 11 ? basisYear+1 : basisYear;
+          monthOut= basisMonth== 11 ? 1 : basisMonth+2;
+          dayOut  = new Date(yearOut, monthOut, 0).getDate();
+          break;
+        case "DBONY": //beginning of next year
+          yearOut = basisYear+1;
+          monthOut= 1;
+          dayOut  = 1;
+          break;
+        case "DEONY": //end of next year
+          yearOut = basisYear+1;
+          monthOut= 12;
+          dayOut  = new Date(yearOut, monthOut, 0).getDate();
+          break;      
+      }
+    
+     return new chrono.ParsedResult({
+          ref: ref,
+          text: match[0],
+          index: match.index,
+          start: { day: dayOut, month: monthOut, year: yearOut }
+      });        
+    
+  };
+
+  var customChrono42 = new chrono.Chrono();
+  customChrono42.parsers.push(chronoCustomParser);
 
   roam42.dateProcessing.parseTextForDates = (str, reference_date) => {
     var str_with_pages_removed = str.replace(/\[+\[[^)]+\]+\] */g, "");
     var txt = '';
-    if (reference_date) {
-      txt = chrono.parse( str_with_pages_removed, reference_date )
+        
+    if (reference_date) { //forces parsing to use a specific date
+      txt = customChrono42.parse( str_with_pages_removed, reference_date )
     }
     else {
-      txt = chrono.parse( str_with_pages_removed )
+      if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES']) {
+        //if using DATEBASISDAILYNOTES, see if we are on DNP and handle accordingly
+        var daily_notes_page_date = null;
+        daily_notes_page_date = roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.rm-title-display').innerText);
+        if(daily_notes_page_date)
+          txt = customChrono42.parse( str_with_pages_removed, daily_notes_page_date );
+        else
+          txt = customChrono42.parse( str_with_pages_removed );
+      } else
+        txt = customChrono42.parse( str_with_pages_removed);
     }
 
     if (txt.length > 0) {

@@ -73,42 +73,50 @@
     
     const applyViewType = async (node)=>{
       //applies the document type for the bullet level
-      var blockId = document.querySelector('textarea.rm-block-input').id;
-      var parentControlNode = document.querySelector('textarea.rm-block-input').parentNode;  
-      roam42.common.simulateMouseClickRight(
-        document.querySelector('textarea.rm-block-input').closest('.flex-h-box').querySelector('.simple-bullet-outer'))
-      await roam42.common.sleep(100);
-      var menuItem1 = document.querySelector('.bp3-popover-content > div> ul').childNodes[9].innerText;
-      var menuItem2 = document.querySelector('.bp3-popover-content > div> ul').childNodes[10].innerText;
-      var menuItemToClick = false;
-      switch (node['view-type']) {
-        case 'bullet':
-          if(menuItem1=='View as Bulleted List') 
-            menuItemToClick=1;
-          if(menuItem2=='View as Bulleted List') 
-            menuItemToClick=2;
-          break;
-        case 'document':
-          if(menuItem1=='View as Document') 
-            menuItemToClick=1;
-          if(menuItem2=='View as Document') 
-            menuItemToClick=2;
-          break;
-        case 'numbered':
-          if(menuItem1=='View as Numbered List') 
-            menuItemToClick=1;
-          if(menuItem2=='View as Numbered List') 
-            menuItemToClick=2;
-          break;
+      try {
+        var blockId = document.querySelector('textarea.rm-block-input').id;
+        var parentControlNode = document.querySelector('textarea.rm-block-input').parentNode;  
+        roam42.common.simulateMouseClickRight(
+          document.querySelector('textarea.rm-block-input').closest('.flex-h-box').querySelector('.rm-bullet'))
+        await roam42.common.sleep(500);
+        var menuItem1 = document.querySelector('.bp3-popover-content > div> ul').childNodes[9].innerText;
+        var menuItem2 = document.querySelector('.bp3-popover-content > div> ul').childNodes[10].innerText;
+        var menuItemToClick = false;
+        switch (node['view-type']) {
+          case 'bullet':
+            if(menuItem1=='View as Bulleted List') 
+              menuItemToClick=1;
+            if(menuItem2=='View as Bulleted List') 
+              menuItemToClick=2;
+            break;
+          case 'document':
+            if(menuItem1=='View as Document') 
+              menuItemToClick=1;
+            if(menuItem2=='View as Document') 
+              menuItemToClick=2;
+            break;
+          case 'numbered':
+            if(menuItem1=='View as Numbered List') 
+              menuItemToClick=1;
+            if(menuItem2=='View as Numbered List') 
+              menuItemToClick=2;
+            break;
+        }
+        if(menuItemToClick == false) 
+          await roam42KeyboardLib.pressEsc(100);
+        else
+          document.querySelector('.bp3-popover-content > div> ul').childNodes[8 + menuItemToClick  ].childNodes[0].click();
+        await roam42.common.sleep(100);
+        roam42.common.simulateMouseClick(document.getElementById(blockId));
+        await roam42.common.sleep(100);
+        document.activeElement.setSelectionRange(document.activeElement.textLength,document.activeElement.textLength);        
+      } catch(e) { 
+        console.log('View type change failed with error',e)
       }
-      if(menuItemToClick == false) 
-        await roam42KeyboardLib.pressEsc(100);
-      else
-        document.querySelector('.bp3-popover-content > div> ul').childNodes[8 + menuItemToClick  ].childNodes[0].click();
-      await roam42.common.sleep(100);
       roam42.common.simulateMouseClick(document.getElementById(blockId));
       await roam42.common.sleep(100);
-      document.activeElement.setSelectionRange(document.activeElement.textLength,document.activeElement.textLength);          
+      document.activeElement.setSelectionRange(document.activeElement.textLength,document.activeElement.textLength);        
+      
     }
     
     roam42.smartBlocks.outputArrayWrite = async ()=> {
