@@ -45,6 +45,7 @@
       valueArray.push({key: '<% CURSOR: %> (SmartBlock Command)',             icon:'gear', value: '<%CURSOR%>',             processor:'static'});
       valueArray.push({key: '<% CLIPBOARDCOPY: %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static'});
       valueArray.push({key: '<% CLIPBOARDPASTETEXT: %> (SmartBlock Command)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
+      valueArray.push({key: '<% CONCAT: %> (SmartBlock Command)',             icon:'gear', value: '<%CONCAT:&&&%>',           processor:'static'});
       valueArray.push({key: '<% CURRENTBLOCKREF: %> (SmartBlock Command)',    icon:'gear', value: '<%CURRENTBLOCKREF%>',    processor:'static'});
       valueArray.push({key: '<% DATE: %> (SmartBlock Command)',               icon:'gear', value: '<%DATE:&&&%>',           processor:'static'});
       valueArray.push({key: '<% EXIT: %> (SmartBlock Command)',               icon:'gear', value: '<%EXIT%>',       processor:'static'});
@@ -251,7 +252,13 @@
         else
           return queryResults[0][0].string;
       });      
-      
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CONCAT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+       var commandToProcess = match.replace('<%CONCAT:','').replace('%>','');
+       commandToProcess = await roam42.common.replaceAsync(commandToProcess, /\\,/g, async (match, name)=>'&&comma;;');
+       commandToProcess = await roam42.common.replaceAsync(commandToProcess, /,/g,   async (match, name)=>'');
+       commandToProcess = await roam42.common.replaceAsync(commandToProcess, /\&\&comma\;\;/g,   async (match, name)=>',');
+       return commandToProcess;
+      });      
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var textToProcess = match.replace('<%SET:','').replace('%>','');
         roam42.smartBlocks.activeWorkflow.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
