@@ -14,6 +14,10 @@
     return url;
   };
   
+  roam42.common.currentPageNameInfo = ()=> {
+    //return {pageName:'', pageUID:'', DNPDate:''}
+  }
+  
     roam42.common.navigateUiTo = async function (destinationPage, useShiftKey=false) {
       var uid = await window.roamAlphaAPI.q("[:find ?uid :in $ ?a :where [?e :node/title ?a] [?e :block/uid ?uid]]", destinationPage).flat()[0]
       //page exists, go to it
@@ -253,9 +257,18 @@
   //    if(blockEmpty){setTimeout(()=>{ roam42KeyboardLib.simulateKey(38) },250) };  //up arrow
     }
   }
+  
+  roam42.common.startOfWeek = (date)=> {
+    var diff = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);  
+    return new Date(date.setDate(diff));
+  }
+
+
 
   window.roam42.common.testingReloadCommon = () => {
     roam42.loader.addScriptToPage( "Common", roam42.host + 'common/commonFunctions.js');
   };  
    
+  
+
 })();  

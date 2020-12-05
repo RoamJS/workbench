@@ -40,6 +40,7 @@
         roam42.common.sidebarLeftToggle();
         return
       }  
+      
 
       //Date NLP
       if (ev.altKey && ev.shiftKey &&  ev.code=='KeyD'  ) {  

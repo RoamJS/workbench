@@ -139,7 +139,7 @@
   
   
   roam42.timemgmt.todosOverdue = async (limitOutputCount = 50, sortAscending=true, includeDNPTasks=true)=>{
-    var yesterday = chrono.parseDate('yesterday');
+    var yesterday = roam42.dateProcessing.testIfRoamDateAndConvert(roam42.dateProcessing.parseTextForDates('yesterday'));
     var outputTODOs = [];
     var outputCounter = 1;
     
@@ -182,7 +182,7 @@
   }
   
   roam42.timemgmt.todosFuture = async (limitOutputCount = 50, sortAscending=true, includeDNPTasks=true)=>{
-    var tomorrow = chrono.parseDate('tomorrow');
+    var tomorrow = roam42.dateProcessing.testIfRoamDateAndConvert(roam42.dateProcessing.parseTextForDates('tomorrow'));
     var outputTODOs = [];
     var outputCounter = 1;
     //STEPS: (1) loop through each tag to see if it is a date before today (2) Also check if page name is dated
@@ -371,7 +371,7 @@
     var bReturnCount = false;
     var bReturnUndatedTodos = false;
     
-    if(params.length<4) return 'BLOCKMENTIONSDATED requires atleast 5 parameters'
+    if(params.length<4) return 'BLOCKMENTIONSDATED requires atleast 4 parameters';
 
     var limitOutputCount = params.shift()
     if(limitOutputCount==-1) {
@@ -379,10 +379,10 @@
       bReturnCount = true;
     }
     
-    var pageRefName = params.shift()
+    var pageRefName = params.shift();
 
-    var startDate = params.shift()
-    var endDate = params.shift()    
+    var startDate = roam42.dateProcessing.parseTextForDates(params.shift()).replace('[[','').replace(']]','');
+    var endDate   = roam42.dateProcessing.parseTextForDates(params.shift()).replace('[[','').replace(']]',''); 
   
     if(startDate == '-1' && endDate =='-1') 
       bReturnUndatedTodos = true;
@@ -390,9 +390,10 @@
       startDate = startDate!=0 ? await Date.parse(chrono.parseDate(startDate)) : Date.parse('1-01-01');
       endDate   = endDate!=0   ? await Date.parse(chrono.parseDate(endDate))   : Date.parse('9999-012-30');
     }
-    var sortOrder = params.shift()
-        
-    var queryParameters = pageRefName + ',' + params.join(',')
+ 
+    var sortOrder = params.length>0 ? params.shift() : 'ASC';
+    
+    var queryParameters = pageRefName + ',' + params.join(',');
     
     var UIDS = [];
     for(var block of await roam42.q.blockMentions(queryParameters,2000)) 
@@ -460,9 +461,6 @@
     else
       return '';
   }
-  
-  
-  
   
   //SEARCH
   
