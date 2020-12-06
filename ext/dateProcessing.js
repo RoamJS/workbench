@@ -79,6 +79,34 @@
     return hour + ':' + minute + amPM;
   }
 
+
+  roam42.dateProcessing.resolveDNPName = () =>{
+    var daily_notes_page_date = null;
+    try {
+      if(document.activeElement.type=='textarea') {
+        if(document.activeElement.closest('.roam-article')!=null) {
+          if(document.activeElement.closest('.roam-article').querySelector('.rm-title-display'))
+            daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.roam-article').querySelector('.rm-title-display').innerText);          
+          else if(document.activeElement.closest('.roam-article').querySelector('.rm-zoom-item-content'))  
+            daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.roam-article').querySelector('.rm-zoom-item-content').innerText);
+        } else if(document.activeElement.closest('.sidebar-content')!=null) {
+          //inside the sidebar
+          if(document.activeElement.closest('.rm-sidebar-outline').querySelector('h1.rm-title-display'))
+            daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.rm-sidebar-outline').querySelector('h1.rm-title-display').innerText);
+          else if(document.activeElement.closest('.rm-sidebar-outline').querySelector('.rm-zoom-item-content'))
+            daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.rm-sidebar-outline').querySelector('.rm-zoom-item-content').innerText);
+        }
+      } else {
+        try {
+          daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-zoom-item-content').innerText);                        
+        } catch(e){
+          daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-title-display').innerText);              
+        }      
+      }      
+    } catch(e) {}
+    return daily_notes_page_date;
+  }
+  
   //https://github.com/wanasit/chrono/tree/v1.x.x
   const chronoCustomParser = new chrono.Parser();
   chronoCustomParser.pattern = function () { return /DBOM|DEOM|DBOY|DEOY|DBONM|DEONM|DBONY|DEONY/i; };
@@ -90,15 +118,13 @@
       var yearOut;
     
       if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES']) {
-        var daily_notes_page_date = roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.rm-title-display').innerText);      
+        var daily_notes_page_date = roam42.dateProcessing.resolveDNPName()
         if(daily_notes_page_date) {
-          console.log('daily_notes_page_date',daily_notes_page_date)
           basisYear  = daily_notes_page_date.getFullYear();
-          basisMonth = daily_notes_page_date.getMonth();        }
+          basisMonth = daily_notes_page_date.getMonth();        
+        }
       } 
       
-      console.log(basisYear, basisMonth)
-    
       switch(match[0]){
         case "DBOM": //Beginning of this month
           yearOut = basisYear;
@@ -164,13 +190,12 @@
     else {
       if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES']) {
         //if using DATEBASISDAILYNOTES, see if we are on DNP and handle accordingly
-        var daily_notes_page_date = null;
-        daily_notes_page_date = roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.rm-title-display').innerText);
+        var daily_notes_page_date = roam42.dateProcessing.resolveDNPName();
         if(daily_notes_page_date)
           txt = customChrono42.parse( str_with_pages_removed, daily_notes_page_date );
         else
           txt = customChrono42.parse( str_with_pages_removed );
-      } else
+      } else 
         txt = customChrono42.parse( str_with_pages_removed);
     }
 

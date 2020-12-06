@@ -1,4 +1,4 @@
-/* globals roam42, roam42KeyboardLib */
+/* globals roam42, roam42KeyboardLib,chrono */
 
 (() => {
     roam42.smartBlocks.addCommands =  async (valueArray)=> {
@@ -178,7 +178,8 @@
 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDAYOFWEEK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandToProcess = match.replace('<%IFDAYOFWEEK:','').replace('%>','').trim();
-        var day = String(new Date().getDay());
+        // var day = String(new Date().getDay());
+        var day = String(chrono.parseDate(roam42.dateProcessing.parseTextForDates('today')).getDay());
         if(day=='0') day='7'; //sunday
         if(commandToProcess.replaceAll(' ','').split(',').includes(day)) 
           return ''; //
@@ -186,8 +187,9 @@
           return roam42.smartBlocks.exclusionBlockSymbol
       });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDAYOFMONTH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%IFDAYOFMONTH:','').replace('%>','').trim();
-        if(textToProcess.replaceAll(' ','').split(',').includes( String(new Date().getDate()) ) ) 
+        var commandToProcess = match.replace('<%IFDAYOFMONTH:','').replace('%>','').trim();
+        var day = String(chrono.parseDate(roam42.dateProcessing.parseTextForDates('today')).getDate());;
+        if(commandToProcess.replaceAll(' ','').split(',').includes( day ) ) 
           return ''; //
         else 
           return roam42.smartBlocks.exclusionBlockSymbol
