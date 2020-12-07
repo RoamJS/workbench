@@ -41,7 +41,7 @@
       valueArray.push({key: '<% BLOCKMENTIONSDATED: %> (SmartBlock Command)', icon:'gear', value: '<%BLOCKMENTIONSDATED:&&&%>',  processor:'static'});
       valueArray.push({key: '<% SEARCH: %> (SmartBlock Command)',             icon:'gear', value: '<%SEARCH:&&&%>',         processor:'static'});
       valueArray.push({key: '<% DATEBASISDAILYNOTES: %> (SmartBlock Command)',icon:'gear', value: '<%DATEBASISDAILYNOTES%>',processor:'static'});
-      valueArray.push({key: '<% DATEBASISTODY: %> (SmartBlock Command)',      icon:'gear', value: '<%DATEBASISTODY%>',      processor:'static'});
+      valueArray.push({key: '<% DATEBASISTODAY: %> (SmartBlock Command)',      icon:'gear', value: '<%DATEBASISTODAY%>',      processor:'static'});
       valueArray.push({key: '<% CURSOR: %> (SmartBlock Command)',             icon:'gear', value: '<%CURSOR%>',             processor:'static'});
       valueArray.push({key: '<% CLIPBOARDCOPY: %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static'});
       valueArray.push({key: '<% CLIPBOARDPASTETEXT: %> (SmartBlock Command)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
@@ -172,7 +172,7 @@
         return roam42.smartBlocks.exclusionBlockSymbol;   
       });
 
-      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATEBASISTODY)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATEBASISTODAY)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = false;
         return roam42.smartBlocks.exclusionBlockSymbol; 
       });
