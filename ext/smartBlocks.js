@@ -387,20 +387,23 @@
         var sbCommand = userCommands.find(e => e.key == commandName);
         await roam42.common.simulateMouseClick(block);
         await roam42.common.sleep(200);
+        var blockInfo = (await roam42.common.getBlockInfoByUID(block.id.substring( block.id.length -9)))[0][0].string;
         if(sbCommand==undefined){
           //no valid SB, highlight text
-          document.activeElement.setSelectionRange(blockText.search(command),blockText.search(command)+command.length+4)
+          document.activeElement.setSelectionRange(blockInfo.search(command),blockInfo.search(command)+command.length+4)
           roam42.help.displayMessage(commandName + ' is not a valid Roam42 SmartBlock',3000);
         } else {
-          //valid SB, remove it andrun it
-          var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;      
-          setValue.call(document.activeElement, blockText.replace(command,'') );
+          //valid SB, remove it andrun it          
+          console.log(command)
+          var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;   
+          var cursorLocation = blockInfo.search('{{' + command + '}}') +2;
+          setValue.call(document.activeElement, blockInfo.replace('{{' + command + '}}','  ') );
           var e = new Event('input', { bubbles: true });
           document.activeElement.dispatchEvent(e);          
           await roam42.common.sleep(200);
-          document.activeElement.setSelectionRange(blockText.search(command),blockText.search(command))
-          await roam42.common.sleep(100);        
-          await blocksToInsert({original: sbCommand});
+          document.activeElement.setSelectionRange(cursorLocation,cursorLocation);
+          await roam42.common.sleep(300);        
+         await blocksToInsert({original: sbCommand});
         }
       }      
     }

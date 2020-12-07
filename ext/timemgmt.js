@@ -505,7 +505,7 @@
   }
   
   roam42.q.smartBlocks.commands.search = async (requestString, textToProcess)=> {  
-    var limitOutputCount = Number(requestString.substring(0,requestString.search(',')));
+    var limitOutputCount = Number(requestString.substring(0,requestString.search(',')))+1;
     var queryParameters = requestString.substring(requestString.search(',')+1,requestString.length);
     var outputCounter = 0;
     var UIDS = [];
