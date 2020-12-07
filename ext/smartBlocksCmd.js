@@ -53,6 +53,7 @@
       valueArray.push({key: '<% IF: %> (SmartBlock Command)',                 icon:'gear', value: '<%IF:&&&%>',             processor:'static'});      
       valueArray.push({key: '<% THEN: %> (SmartBlock Command)',               icon:'gear', value: '<%THEN:&&&%>',           processor:'static'});      
       valueArray.push({key: '<% ELSE: %> (SmartBlock Command)',               icon:'gear', value: '<%ELSE:&&&%>',           processor:'static'});      
+      valueArray.push({key: '<% IFTHEN: %> (SmartBlock Command)',             icon:'gear', value: '<%IFTHEN:&&&%>',         processor:'static'});      
       valueArray.push({key: '<% IFDAYOFMONTH: %> (SmartBlock Command)',       icon:'gear', value: '<%IFDAYOFMONTH:&&&%>',   processor:'static'});
       valueArray.push({key: '<% IFDAYOFWEEK: %> (SmartBlock Command)',        icon:'gear', value: '<%IFDAYOFWEEK:&&&%>',    processor:'static'});
       valueArray.push({key: '<% INPUT: %> (SmartBlock Command)',              icon:'gear', value: '<%INPUT:&&&%>',          processor:'static'});
@@ -87,6 +88,7 @@
       let ifCommand = null;  // null if no IF, true process THEN, false process ELSE
       let exitCommandFound = false; //exit command included
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLEARVARS\%\>)/g, async (match, name)=>{
+        console.log('CLEARVARS')
         roam42.smartBlocks.activeWorkflow.vars = new Object();    
         return '';
       });
@@ -109,7 +111,15 @@
           return match + ''; //no results, return origional
         else
           return queryResults[0][0].string;
-      });      
+      });
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFTHEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%IFTHEN:','').replace('%>','');
+        try {
+          if(eval(textToProcess)==false) 
+            return roam42.smartBlocks.exclusionBlockSymbol;
+        } catch(e) { return '<%IF%> Failed with error: ' + e }
+        return '';   
+      });        
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%J:)/g, async (match, name)=>{
         return  match.replace('<%J:','<%JAVASCRIPT:')
       });      
@@ -241,6 +251,29 @@
           });
         }
       }      
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFTHEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%IFTHEN:','').replace('%>','');
+        try {
+          if(eval(textToProcess)) 
+            ifCommand = true;
+          else
+            ifCommand = false;
+        } catch(e) { return '<%IF%> Failed with error: ' + e }
+        return '';   
+      });      
+      if(ifCommand!=null){
+        if(ifCommand==true){
+          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%ELSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{return ''});          
+          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%THEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+            return match.replace('<%THEN:','').replace('%>','');
+          });
+        } else {
+          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%THEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{return ''});
+          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%ELSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+            return match.replace('<%ELSE:','').replace('%>','');
+          });
+        }
+      }            
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%FOCUSONBLOCK\%\>)/g, async (match, name)=>{
         //if assigned, will zoom to this location later
         roam42.smartBlocks.focusOnBlock = document.activeElement.id; //if CURSOR, then make this the position block in end
