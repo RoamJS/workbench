@@ -53,7 +53,7 @@
       valueArray.push({key: '<% IF: %> (SmartBlock Command)',                 icon:'gear', value: '<%IF:&&&%>',             processor:'static'});      
       valueArray.push({key: '<% THEN: %> (SmartBlock Command)',               icon:'gear', value: '<%THEN:&&&%>',           processor:'static'});      
       valueArray.push({key: '<% ELSE: %> (SmartBlock Command)',               icon:'gear', value: '<%ELSE:&&&%>',           processor:'static'});      
-      valueArray.push({key: '<% IFTHEN: %> (SmartBlock Command)',             icon:'gear', value: '<%IFTHEN:&&&%>',         processor:'static'});      
+      valueArray.push({key: '<% IFTRUE: %> (SmartBlock Command)',             icon:'gear', value: '<%IFTRUE:&&&%>',         processor:'static'});      
       valueArray.push({key: '<% IFDAYOFMONTH: %> (SmartBlock Command)',       icon:'gear', value: '<%IFDAYOFMONTH:&&&%>',   processor:'static'});
       valueArray.push({key: '<% IFDAYOFWEEK: %> (SmartBlock Command)',        icon:'gear', value: '<%IFDAYOFWEEK:&&&%>',    processor:'static'});
       valueArray.push({key: '<% INPUT: %> (SmartBlock Command)',              icon:'gear', value: '<%INPUT:&&&%>',          processor:'static'});
@@ -112,12 +112,12 @@
         else
           return queryResults[0][0].string;
       });
-      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFTHEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%IFTHEN:','').replace('%>','');
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFTRUE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var textToProcess = match.replace('<%IFTRUE:','').replace('%>','');
         try {
           if(eval(textToProcess)==false) 
             return roam42.smartBlocks.exclusionBlockSymbol;
-        } catch(e) { return '<%IF%> Failed with error: ' + e }
+        } catch(e) { return '<%IFTRUE%> Failed with error: ' + e }
         return '';   
       });        
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%J:)/g, async (match, name)=>{
