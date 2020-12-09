@@ -152,6 +152,8 @@
     }
 
     const blocksToInsert = item => {
+      //cleanup
+      document.querySelectorAll('.tribute-container').forEach(d=>d.remove());//cleanup old menu still in memory      
       setTimeout(async () => {        
         roam42.smartBlocks.sbBomb(item);
       }, 300); // end setTimeout
@@ -360,6 +362,7 @@
               }
               
             } // end IF
+
           
           //by default we don't use date references from the daily note pages.
           roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = false;          
@@ -373,22 +376,27 @@
       return " ";    
     };
     
+    roam42.smartBlocks.nextJump = ( forward=true )=> {
+      
+    } 
+    
     roam42.smartBlocks.buttonClickHandler = async (target)=>{
       if(target.tagName=='BUTTON') {
         var block = target.closest('.roam-block');
         var blockInfo = (await roam42.common.getBlockInfoByUID(block.id.substring( block.id.length -9)))[0][0].string;
         if(blockInfo.includes( target.textContent + ':42SmartBlock:' )) {
-          var commandInBlock = blockInfo.match(/{{(.+):42SmartBlock:(.+)?}}/); //param 2=workflowname, 3 params
-          var params = commandInBlock[2].split(':')
+          const regex = new RegExp(`{{((${target.textContent})(:42SmartBlock:)(.*?))}}`);
+          var commandInBlock = blockInfo.match(regex); //param 2=workflowname, 3 params
+          var params = commandInBlock[1].split(':')
           var userCommands = await roam42.smartBlocks.UserDefinedWorkflowsList();
-          var sbCommand = userCommands.find(e => e.key == params[0]);
+          var sbCommand = userCommands.find(e => e.key == params[2]);
           if(sbCommand==undefined){
             //no valid SB, highlight text
             roam42.help.displayMessage('<b>' + params[0] + '</b> - Cannot find this #42SmartBlock',3000);
           } else {          
           //valid SB, remove it andrun it    
           try { 
-            for(var v of params[1].split(',')) {
+            for(var v of params[3].split(',')) {
               var newVar = v.split('=');
               if(newVar.length)
                 roam42.smartBlocks.activeWorkflow.vars[newVar[0]] = newVar[1];
@@ -409,34 +417,6 @@
         }    
       }
       
-      // if(target.tagName=='BUTTON'  && target.textContent.includes('->')) {
-      //   var block = target.closest('.roam-block');
-      //   var command = target.textContent;
-      //   var blockText = block.innerText;
-      //   var userCommands = await roam42.smartBlocks.UserDefinedWorkflowsList();
-      //   var commandName = command.replace('->','').trim();
-      //   var sbCommand = userCommands.find(e => e.key == commandName);
-      //   await roam42.common.simulateMouseClick(block);
-      //   await roam42.common.sleep(200);
-      //   var blockInfo = (await roam42.common.getBlockInfoByUID(block.id.substring( block.id.length -9)))[0][0].string;
-      //   if(sbCommand==undefined){
-      //     //no valid SB, highlight text
-      //     document.activeElement.setSelectionRange(blockInfo.search(command),blockInfo.search(command)+command.length+4)
-      //     roam42.help.displayMessage(commandName + ' is not a valid Roam42 SmartBlock',3000);
-      //   } else {
-      //     //valid SB, remove it andrun it          
-      //     console.log(command)
-      //     var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;   
-      //     var cursorLocation = blockInfo.search('{{' + command + '}}') +2;
-      //     setValue.call(document.activeElement, blockInfo.replace('{{' + command + '}}','  ') );
-      //     var e = new Event('input', { bubbles: true });
-      //     document.activeElement.dispatchEvent(e);          
-      //     await roam42.common.sleep(200);
-      //     document.activeElement.setSelectionRange(cursorLocation,cursorLocation);
-      //     await roam42.common.sleep(300);        
-      //    await blocksToInsert({original: sbCommand});
-      //   }
-      // }      
     }
 
     roam42.smartBlocks.buttonClick = async (e) =>{
