@@ -1,4 +1,4 @@
-/* globals roam42, roam42KeyboardLib,chrono */
+/* globals roam42, roam42KeyboardLib,chrono, iziToast */
 
 (() => {
     roam42.smartBlocks.addCommands =  async (valueArray)=> {
@@ -61,6 +61,7 @@
       valueArray.push({key: '<% J: %> JavaScript Shortcut (SmartBlock Command)', icon:'gear', value: '<%J:&&&%>',     processor:'static'});            
       valueArray.push({key: '<% JAVASCRIPTASYNC: %> (SmartBlock Command)',    icon:'gear', value: '<%JAVASCRIPTASYNC:&&&%>',processor:'static'});            
       valueArray.push({key: '<% JA: %> JavaScript Async Shortcut (SmartBlock Command)', icon:'gear', value: '<%JA:&&&%>',processor:'static'});            
+      valueArray.push({key: '<% NOTIFICATION: %> (SmartBlock Command)', icon:'gear', value: '<%NOTIFICATION:&&&%>',processor:'static'});            
       valueArray.push({key: '<% NOBLOCKOUTPUT: %> (SmartBlock Command)',      icon:'gear', value: '<%NOBLOCKOUTPUT%>',      processor:'static'});
       valueArray.push({key: '<% PAGE: %> subcommand (SmartBlock Command)',    icon:'gear', value: '<%PAGE%>',               processor:'static'});
       valueArray.push({key: '<% RANDOMBLOCK: %> (SmartBlock Command)',        icon:'gear', value: '<%RANDOMBLOCK%>',        processor:'static'});
@@ -83,7 +84,7 @@
       valueArray.push({key: '<% CLEARVARS: %> (SmartBlock Command)',          icon:'gear', value: '<%CLEARVARS%>',          processor:'static'});
       roam42.smartBlocks.customCommands.forEach(v => valueArray.push(v));
     };
-
+    
     roam42.smartBlocks.proccessBlockWithSmartness = async (textToProcess)=>{
       let ifCommand = null;  // null if no IF, true process THEN, false process ELSE
       let exitCommandFound = false; //exit command included
@@ -251,29 +252,6 @@
           });
         }
       }      
-      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFTHEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%IFTHEN:','').replace('%>','');
-        try {
-          if(eval(textToProcess)) 
-            ifCommand = true;
-          else
-            ifCommand = false;
-        } catch(e) { return '<%IF%> Failed with error: ' + e }
-        return '';   
-      });      
-      if(ifCommand!=null){
-        if(ifCommand==true){
-          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%ELSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{return ''});          
-          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%THEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-            return match.replace('<%THEN:','').replace('%>','');
-          });
-        } else {
-          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%THEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{return ''});
-          textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%ELSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-            return match.replace('<%ELSE:','').replace('%>','');
-          });
-        }
-      }            
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%FOCUSONBLOCK\%\>)/g, async (match, name)=>{
         //if assigned, will zoom to this location later
         roam42.smartBlocks.focusOnBlock = document.activeElement.id; //if CURSOR, then make this the position block in end
@@ -339,6 +317,23 @@
           var commandToProcess = match.replace('<%TODOUNDATED:','').replace('%>','').trim();
           return await roam42.timemgmt.smartBlocks.commands.todoNotDated(commandToProcess,true);
         });
+        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOTIFICATION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+          var commandToProcess = match.replace('<%NOTIFICATION:','').replace('%>','').trim();      
+          var params = commandToProcess.split(',')
+          console.log(params)
+          iziToast.show({
+            message: params[1],
+            theme: 'dark',
+            progressBar: true,
+            animateInside: true,
+            close: true,  
+            timeout: Number(params[0]*1000),  
+            closeOnClick: true,  
+            displayMode: 2  
+          });  
+          return ''
+        });
+        
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SMARTBLOCK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%SMARTBLOCK:','').replace('%>','').trim();
           var userCommands = await roam42.smartBlocks.UserDefinedWorkflowsList();
