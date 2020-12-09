@@ -383,6 +383,9 @@
     roam42.smartBlocks.buttonClickHandler = async (target)=>{
       if(target.tagName=='BUTTON') {
         var block = target.closest('.roam-block');
+        if (!block) {
+          return;
+        }
         var blockInfo = (await roam42.common.getBlockInfoByUID(block.id.substring( block.id.length -9)))[0][0].string;
         if(blockInfo.includes( target.textContent + ':42SmartBlock:' )) {
           const regex = new RegExp(`{{((${target.textContent})(:42SmartBlock:)(.*?))}}`);
