@@ -89,7 +89,6 @@
       let ifCommand = null;  // null if no IF, true process THEN, false process ELSE
       let exitCommandFound = false; //exit command included
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLEARVARS\%\>)/g, async (match, name)=>{
-        console.log('CLEARVARS')
         roam42.smartBlocks.activeWorkflow.vars = new Object();    
         return '';
       });
@@ -230,9 +229,9 @@
       }); 
       
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IF:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-        var textToProcess = match.replace('<%IF:','').replace('%>','');
+        var commandToProcess = match.replace('<%IF:','').replace('%>','');
         try {
-          if(eval(textToProcess)) 
+          if(eval(commandToProcess)) 
             ifCommand = true;
           else
             ifCommand = false;
@@ -254,7 +253,7 @@
       }      
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%FOCUSONBLOCK\%\>)/g, async (match, name)=>{
         //if assigned, will zoom to this location later
-        roam42.smartBlocks.focusOnBlock = document.activeElement.id; //if CURSOR, then make this the position block in end
+        roam42.smartBlocks.activeWorkflow.focusOnBlock = document.activeElement.id; //if CURSOR, then make this the position block in end
         return ''; 
       });       
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RESOLVEBLOCKREFATEND:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
@@ -320,17 +319,7 @@
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOTIFICATION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%NOTIFICATION:','').replace('%>','').trim();      
           var params = commandToProcess.split(',')
-          console.log(params)
-          iziToast.show({
-            message: params[1],
-            theme: 'dark',
-            progressBar: true,
-            animateInside: true,
-            close: true,  
-            timeout: Number(params[0]*1000),  
-            closeOnClick: true,  
-            displayMode: 2  
-          });  
+          iziToast.show({message:params[1],timeout:Number(params[0]*1000),theme:'dark',progressBar:true,animateInside:true,close:true,closeOnClick:true,displayMode:2});  
           return ''
         });
         

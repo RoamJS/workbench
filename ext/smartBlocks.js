@@ -32,8 +32,11 @@
       let sbList = await roam42.common.getBlocksReferringToThisPage("42SmartBlock");
       let results = [];
       for(var sb of sbList ) {
+        try {
           var sKey =  await roam42.common.replaceAsync(sb[0].string,"#42SmartBlock", ()=>{return ''});
-          results.push({  key: sKey.trim(),  value: sb[0].uid,processor:'blocks'});
+          if(sKey.trim()!='')
+            results.push({  key: sKey.trim(),  value: sb[0].uid,processor:'blocks'});          
+        } catch(e) {}
       }
       return results = await roam42.common.sortObjectByKey(results);
     };
@@ -153,7 +156,6 @@
 
     const blocksToInsert = item => {
       //cleanup
-      document.querySelectorAll('.tribute-container').forEach(d=>d.remove());//cleanup old menu still in memory      
       setTimeout(async () => {        
         roam42.smartBlocks.sbBomb(item);
       }, 300); // end setTimeout
@@ -432,9 +434,12 @@
     roam42.smartBlocks.activeTributeTextAreaId = '';
     roam42.smartBlocks.tributeMenuTrigger = '';
     roam42.smartBlocks.scanForNewTextAreas = (mutationList, observer) => {
+            
       var ta = document.querySelector("textarea.rm-block-input");
       if (!ta || ta.getAttribute("r42sb") != null) return; //no text area or this text box is already r42 active
 
+      document.querySelectorAll('.tribute-container').forEach(d=>d.remove());//cleanup old menu still in memory      
+      
       ta.setAttribute("r42sb", "active");
       
       //tribute is the autocomplete dropdown that appears in a text area

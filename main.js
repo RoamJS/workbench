@@ -27,7 +27,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2020-12-09 (BeebleBrox) ';
+  roam42.buildID = 'Roam<sup>42</sup> 2020-12-10a (BeebleBrox) ';
   
   roam42.host    = document.currentScript.src.replace('main.js','');
 
