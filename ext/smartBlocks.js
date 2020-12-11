@@ -77,6 +77,8 @@
         },25)      
       },50)
     }
+    roam42.smartBlocks.insertSnippetIntoBlock = insertSnippetIntoBlock;
+    
     
     const applyViewType = async (node)=>{
       //applies the document type for the bullet level
@@ -190,15 +192,13 @@
         }      
         try {          
             roam42.smartBlocks.textBoxObserver.disconnect(); //stop observing blocks during insertion
-            if(item.original.processor=='date')   insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() );
-            if(item.original.processor=='function') await item.original.value();
-            if(item.original.processor=='static') {
-              insertSnippetIntoBlock( item.original.value, false );
               if(item.original.help && roam42.smartBlocks.SmartBlockPopupHelpEnabled){
                 roam42.help.displayMessage('<img height="22px" src="https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Fgear.png?v=1605994815962">'+
                                            ' ' + item.original.help,20000);
               }
-            }
+            if(item.original.processor=='date')   insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() );
+            if(item.original.processor=='function') await item.original.value();
+            if(item.original.processor=='static') insertSnippetIntoBlock( item.original.value, false );
             if(item.original.processor=='randomblock') insertSnippetIntoBlock( '((' + await roam42.common.getRandomBlock(1) + '))' );
             if(item.original.processor=='randompage') insertSnippetIntoBlock(await roam42.smartBlocks.getRandomPage());
             if(item.original.processor=='blocks') {
