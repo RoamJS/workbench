@@ -37,51 +37,97 @@
                       }});
       
       valueArray.push({key: 'sb42 (SmartBlock Command)',                     icon:'gear', value: '#42SmartBlock',          processor:'static'});
-      valueArray.push({key: '<% BLOCKMENTIONS: %> (SmartBlock Command)',      icon:'gear', value: '<%BLOCKMENTIONS:&&&%>',  processor:'static'});
-      valueArray.push({key: '<% BLOCKMENTIONSDATED: %> (SmartBlock Command)', icon:'gear', value: '<%BLOCKMENTIONSDATED:&&&%>',  processor:'static'});
-      valueArray.push({key: '<% SEARCH: %> (SmartBlock Command)',             icon:'gear', value: '<%SEARCH:&&&%>',         processor:'static'});
-      valueArray.push({key: '<% DATEBASISDAILYNOTES: %> (SmartBlock Command)',icon:'gear', value: '<%DATEBASISDAILYNOTES%>',processor:'static'});
-      valueArray.push({key: '<% DATEBASISTODAY: %> (SmartBlock Command)',      icon:'gear', value: '<%DATEBASISTODAY%>',      processor:'static'});
-      valueArray.push({key: '<% CURSOR: %> (SmartBlock Command)',             icon:'gear', value: '<%CURSOR%>',             processor:'static'});
-      valueArray.push({key: '<% CLIPBOARDCOPY: %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static'});
-      valueArray.push({key: '<% CLIPBOARDPASTETEXT: %> (SmartBlock Command)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static'});
-      valueArray.push({key: '<% CONCAT: %> (SmartBlock Command)',             icon:'gear', value: '<%CONCAT:&&&%>',           processor:'static'});
-      valueArray.push({key: '<% CURRENTBLOCKREF: %> (SmartBlock Command)',    icon:'gear', value: '<%CURRENTBLOCKREF%>',    processor:'static'});
-      valueArray.push({key: '<% DATE: %> (SmartBlock Command)',               icon:'gear', value: '<%DATE:&&&%>',           processor:'static'});
-      valueArray.push({key: '<% EXIT: %> (SmartBlock Command)',               icon:'gear', value: '<%EXIT%>',       processor:'static'});
-      valueArray.push({key: '<% FOCUSONBLOCK: %> (SmartBlock Command)',       icon:'gear', value: '<%FOCUSONBLOCK%>',       processor:'static'});
-      valueArray.push({key: '<% IF: %> (SmartBlock Command)',                 icon:'gear', value: '<%IF:&&&%>',             processor:'static'});      
-      valueArray.push({key: '<% THEN: %> (SmartBlock Command)',               icon:'gear', value: '<%THEN:&&&%>',           processor:'static'});      
-      valueArray.push({key: '<% ELSE: %> (SmartBlock Command)',               icon:'gear', value: '<%ELSE:&&&%>',           processor:'static'});      
-      valueArray.push({key: '<% IFTRUE: %> (SmartBlock Command)',             icon:'gear', value: '<%IFTRUE:&&&%>',         processor:'static'});      
-      valueArray.push({key: '<% IFDAYOFMONTH: %> (SmartBlock Command)',       icon:'gear', value: '<%IFDAYOFMONTH:&&&%>',   processor:'static'});
-      valueArray.push({key: '<% IFDAYOFWEEK: %> (SmartBlock Command)',        icon:'gear', value: '<%IFDAYOFWEEK:&&&%>',    processor:'static'});
-      valueArray.push({key: '<% INPUT: %> (SmartBlock Command)',              icon:'gear', value: '<%INPUT:&&&%>',          processor:'static'});
-      valueArray.push({key: '<% JAVASCRIPT: %> (SmartBlock Command)',         icon:'gear', value: '<%JAVASCRIPT:&&&%>',     processor:'static'});            
-      valueArray.push({key: '<% J: %> JavaScript Shortcut (SmartBlock Command)', icon:'gear', value: '<%J:&&&%>',     processor:'static'});            
-      valueArray.push({key: '<% JAVASCRIPTASYNC: %> (SmartBlock Command)',    icon:'gear', value: '<%JAVASCRIPTASYNC:&&&%>',processor:'static'});            
-      valueArray.push({key: '<% JA: %> JavaScript Async Shortcut (SmartBlock Command)', icon:'gear', value: '<%JA:&&&%>',processor:'static'});            
-      valueArray.push({key: '<% NOTIFICATION: %> (SmartBlock Command)', icon:'gear', value: '<%NOTIFICATION:&&&%>',processor:'static'});            
-      valueArray.push({key: '<% NOBLOCKOUTPUT: %> (SmartBlock Command)',      icon:'gear', value: '<%NOBLOCKOUTPUT%>',      processor:'static'});
-      valueArray.push({key: '<% PAGE: %> subcommand (SmartBlock Command)',    icon:'gear', value: '<%PAGE%>',               processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCK: %> (SmartBlock Command)',        icon:'gear', value: '<%RANDOMBLOCK%>',        processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCKFROM: %> (SmartBlock Command)',    icon:'gear', value: '<%RANDOMBLOCKFROM:&&&%>',processor:'static'});
-      valueArray.push({key: '<% RANDOMBLOCKMENTION: %> (SmartBlock Command)', icon:'gear', value: '<%RANDOMBLOCKMENTION:&&&%>',processor:'static'});
-      valueArray.push({key: '<% RANDOMPAGE: %> (SmartBlock Command)',         icon:'gear', value: '<%RANDOMPAGE%>',         processor:'static'});
-      valueArray.push({key: '<% RESOLVEBLOCKREF: %> (SmartBlock Command)',    icon:'gear', value: '<%RESOLVEBLOCKREF:&&&%>',processor:'static'});
-      valueArray.push({key: '<% RESOLVEBLOCKREFATEND: %> (SmartBlock Command)',    icon:'gear', value: '<%RESOLVEBLOCKREFATEND:&&&%>',processor:'static'});
-      valueArray.push({key: '<% SMARTBLOCK: %> (SmartBlock Command)',         icon:'gear', value: '<%SMARTBLOCK:&&&%>',processor:'static'});
-      valueArray.push({key: '<% TIME: %> (SmartBlock Command)',               icon:'gear', value: '<%TIME%>',               processor:'static'});
-      valueArray.push({key: '<% TIMEAMPM: %> (SmartBlock Command)',           icon:'gear', value: '<%TIMEAMPM%>',           processor:'static'});
-      valueArray.push({key: '<% TODOTODAY: %> (SmartBlock Command)',          icon:'gear', value: '<%TODOTODAY:20&&&%>',    processor:'static'});
-      valueArray.push({key: '<% TODOOVERDUE: %> (SmartBlock Command)',        icon:'gear', value: '<%TODOOVERDUE:20&&&%>',  processor:'static'});
-      valueArray.push({key: '<% TODOOVERDUEDNP: %> (SmartBlock Command)',     icon:'gear', value: '<%TODOOVERDUEDNP:20&&&%>',  processor:'static'});
-      valueArray.push({key: '<% TODOFUTURE: %> (SmartBlock Command)',         icon:'gear', value: '<%TODOFUTURE:20&&&%>',  processor:'static'});
-      valueArray.push({key: '<% TODOFUTUREDNP: %> (SmartBlock Command)',      icon:'gear', value: '<%TODOFUTUREDNP:20&&&%>',  processor:'static'});
-      valueArray.push({key: '<% TODOUNDATED: %> (SmartBlock Command)',        icon:'gear', value: '<%TODOUNDATED:20&&&%>',  processor:'static'});
-      valueArray.push({key: '<% GET: %> (SmartBlock Command)',                icon:'gear', value: '<%GET:&&&%>',            processor:'static'});
-      valueArray.push({key: '<% SET: %> (SmartBlock Command)',                icon:'gear', value: '<%SET:&&&%>',            processor:'static'});
-      valueArray.push({key: '<% CLEARVARS: %> (SmartBlock Command)',          icon:'gear', value: '<%CLEARVARS%>',          processor:'static'});
+      valueArray.push({key: '<% BLOCKMENTIONS: %> (SmartBlock Command)',      icon:'gear', value: '<%BLOCKMENTIONS:&&&%>',  processor:'static',
+                             help:'<b>BLOCKMENTIONS</b><br/>Returns list of blocks mentioned<br/><br/>1: Max blocks to return<br/>2: Page or Tag Name<br/>3: (opt) filtering '});
+      valueArray.push({key: '<% BLOCKMENTIONSDATED: %> (SmartBlock Command)', icon:'gear', value: '<%BLOCKMENTIONSDATED:&&&%>',  processor:'static',
+                             help:'<b>BLOCKMENTIONSDATED</b><br/>Returns list of blocks mentioned<br/> based on date range<br/>' +
+                                   '<br/>1: Max blocks to return<br/>2: Page or Tag Name<br/>3: Start Date<br/>4. End Date<br/>5: Sort (ASC,DESC,NONE)<br/>6: (opt) filtering '});
+      valueArray.push({key: '<% SEARCH: %> (SmartBlock Command)',             icon:'gear', value: '<%SEARCH:&&&%>',         processor:'static',
+                             help:'<b>SEARCH</b><br/>Search all blocks for string of text<br/><br/>1: Max blocks to return<br/>2: String for search (case-sensitive)<br/>3: (opt) filtering '});
+      valueArray.push({key: '<% DATEBASISDAILYNOTES %> (SmartBlock Command)',icon:'gear', value: '<%DATEBASISDAILYNOTES%>',processor:'static',
+                             help:'<b>DATEBASISDAILYNOTES</b><br/>Time machine mode<br/>uses DNP as context'});
+      valueArray.push({key: '<% DATEBASISTODAY %> (SmartBlock Command)',      icon:'gear', value: '<%DATEBASISTODAY%>',      processor:'static',
+                             help:'<b>DATEBASISTODAY</b><br/>Time machine mode<br/>uses DNP as context'});
+      valueArray.push({key: '<% CURSOR %> (SmartBlock Command)',             icon:'gear', value: '<%CURSOR%>',             processor:'static',
+                             help:'<b>CURSOR</b><br/>Defines where cursor<br/> should be located after<br/> the workflow completes.'});
+      valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static',
+                             help:'<b>CLIPBOAD</b><br/>Gets the text of the clipboard as text'});
+      valueArray.push({key: '<% CLIPBOARDPASTETEXT: %> (SmartBlock Command)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static',
+                             help:'<b>CLIPBOARDPASTETEXT</b><br/>Writes text to the clipboard<br/><br/>1: text'});
+      valueArray.push({key: '<% CONCAT: %> (SmartBlock Command)',             icon:'gear', value: '<%CONCAT:&&&%>',         processor:'static',
+                             help:'<b>CONCAT</b><br/>Combines a comma separed list<br/> of strings ont one string<br/><br/>1: comma separated list'});
+      valueArray.push({key: '<% CURRENTBLOCKREF: %> (SmartBlock Command)',    icon:'gear', value: '<%CURRENTBLOCKREF%>',    processor:'static',
+                             help:'<b>CURRENTBLOCKREF</b><br/>Returns the block UID<br/> for the current block'});
+      valueArray.push({key: '<% DATE: %> (SmartBlock Command)',               icon:'gear', value: '<%DATE:&&&%>',           processor:'static',
+                             help:'<b>DATE</b><br/>Returns a Roam formatted<br/>dated page reference.<br/><br/>1: NLP expression like:<br/>today<br/>tomorrow<br/>Last Friday<br/>in one week<br/>DBOM, DEOM<br/>DBONM,DEONM<br/>DBOY,DEOY<br/>DBONY, DEONY'});
+      valueArray.push({key: '<% EXIT %> (SmartBlock Command)',               icon:'gear', value: '<%EXIT%>',               processor:'static',
+                             help:'<b>EXIT</b><br/>Stops the workflow from<br/>going further after<br/>completing the current block'});
+      valueArray.push({key: '<% FOCUSONBLOCK %> (SmartBlock Command)',       icon:'gear', value: '<%FOCUSONBLOCK%>',       processor:'static',
+                             help:'<b>FOCUSONBLOCK</b><br/>Will focus on the<br/>current block after the<br/>workflow finshes. '});
+      valueArray.push({key: '<% IF: %> (SmartBlock Command)',                 icon:'gear', value: '<%IF:&&&%>',             processor:'static',
+                             help:'<b>IF</b><br/>Evaluates a condition for true.<br/>Use with THEN & ELSE.<br/><br/>1: Logic to be evaluated<br/>'});
+      valueArray.push({key: '<% THEN: %> (SmartBlock Command)',               icon:'gear', value: '<%THEN:&&&%>',           processor:'static',
+                             help:'<b>THEN</b><br/>Used with IF when<br/>IF is true<br/><br/>1: Text to be inserted'});
+      valueArray.push({key: '<% ELSE: %> (SmartBlock Command)',               icon:'gear', value: '<%ELSE:&&&%>',           processor:'static',
+                             help:'<b>ELSE</b><br/>Used with IF when<br/>IF is false<br/><br/>1: Text to be inserted'});
+      valueArray.push({key: '<% IFTRUE: %> (SmartBlock Command)',             icon:'gear', value: '<%IFTRUE:&&&%>',         processor:'static',
+                             help:'<b>IFTRUE</b><br/>Test if parameter is true<br/>If true, the block<br/> is output<br/><br/>1: Logic to be evaluated'});
+      valueArray.push({key: '<% IFDAYOFMONTH: %> (SmartBlock Command)',       icon:'gear', value: '<%IFDAYOFMONTH:&&&%>',   processor:'static',
+                             help:'<b>IFDAYOFMONTH</b><br/>Compares today\'s date<br/><br/><br/>1: Comma separated list of days<br/> Example: 5,10,15'});
+      valueArray.push({key: '<% IFDAYOFWEEK: %> (SmartBlock Command)',        icon:'gear', value: '<%IFDAYOFWEEK:&&&%>',    processor:'static',
+                             help:'<b>IFDAYOFWEEK</b><br/>Compares today\'s date<br/><br/><br/>1: Comma separated list<br/>of days of week<br/>1 is Monday<br/> 7 is Sunday <br/> Example: 1,3'});
+      valueArray.push({key: '<% INPUT: %> (SmartBlock Command)',              icon:'gear', value: '<%INPUT:&&&%>',          processor:'static',
+                             help:'<b>INPUT</b><br/>Prompts user for input<br/>which will then be<br/>inserted into block<br/><br/>1: text to display in prompt. <br/>Add a @@ followed by <br/>text for a default value<br/>'});
+      valueArray.push({key: '<% JAVASCRIPT: %> (SmartBlock Command)',         icon:'gear', value: '<%JAVASCRIPT:&&&%>',     processor:'static',
+                             help:'<b>JAVASCRIPT</b><br/>JavaScript code to run<br/><br/>1. JavaScipt code'});
+      valueArray.push({key: '<% J: %> JavaScript Shortcut (SmartBlock Command)', icon:'gear', value: '<%J:&&&%>',           processor:'static',
+                             help:'<b>J</b><br/>JavaScript code to run<br/><br/>1. JavaScipt code'});
+      valueArray.push({key: '<% JAVASCRIPTASYNC: %> (SmartBlock Command)',    icon:'gear', value: '<%JAVASCRIPTASYNC:&&&%>',processor:'static',
+                             help:'<b>JAVASCRIPTASYNC</b><br/>Asynchronous JavaScript code to run<br/><br/>1. JavaScipt code'});
+      valueArray.push({key: '<% JA: %> JavaScript Async Shortcut (SmartBlock Command)', icon:'gear', value: '<%JA:&&&%>',   processor:'static',
+                             help:'<b>JA</b><br/>Asynchronous JavaScript code to run<br/><br/>1. JavaScipt code'});
+      valueArray.push({key: '<% NOTIFICATION: %> (SmartBlock Command)', icon:'gear', value: '<%NOTIFICATION:&&&%>',         processor:'static',
+                             help:'<b>NOTIFICATION</b><br/>Displays notification window<br/><br/>1: Seconds<br/>2: Message'});
+      valueArray.push({key: '<% NOBLOCKOUTPUT: %> (SmartBlock Command)',      icon:'gear', value: '<%NOBLOCKOUTPUT%>',      processor:'static',
+                             help:'<b>NOBLOCKOUTPUT</b><br/>No content output from a block'});
+      valueArray.push({key: '<% PAGE %> subcommand (SmartBlock Command)',    icon:'gear', value: '<%PAGE%>',               processor:'static',
+                             help:'<b>PAGE</b><br/>For commands that support<br/>the PAGE directive, a <br/>page reference is outpu'});
+      valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock Command)',        icon:'gear', value: '<%RANDOMBLOCK%>',        processor:'static',
+                             help:'<b>RANDOMBLOCK</b><br/>Returns random block from graph'});
+      valueArray.push({key: '<% RANDOMBLOCKFROM: %> (SmartBlock Command)',    icon:'gear', value: '<%RANDOMBLOCKFROM:&&&%>',processor:'static',
+                             help:'<b>RANDOMBLOCKFROM</b><br/>Returns a random child<br/> block from a page<br/> or block ref<br/><br/>1: Page name or UID'});
+      valueArray.push({key: '<% RANDOMBLOCKMENTION: %> (SmartBlock Command)',icon:'gear',value:'<%RANDOMBLOCKMENTION:&&&%>',processor:'static',
+                             help:'<b>RANDOMBLOCKMENTION</b><br/>Returns random block where<br/>page ref mentioned<br/><br/>1: Page name without [[]] or #'});
+      valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock Command)',         icon:'gear', value: '<%RANDOMPAGE%>',         processor:'static',
+                             help:'<b>RANDOMPAGE</b><br/>Returns random page from graph'});
+      valueArray.push({key: '<% RESOLVEBLOCKREF: %> (SmartBlock Command)',    icon:'gear', value: '<%RESOLVEBLOCKREF:&&&%>',processor:'static',
+                             help:'<b>RESOLVEBLOCKREF</b><br/>Convert block ref to text<br/><br/>1. Block reference'});
+      valueArray.push({key: '<% RESOLVEBLOCKREFATEND: %> (SmartBlock Command)',icon:'gear',value: '<%RESOLVEBLOCKREFATEND:&&&%>',processor:'static',
+                             help:'<b>RESOLVEBLOCKREFATEND</b><br/>Convert block ref<br/> to text, as last<br/> step in processing block<br/><br/>1. Block reference'});
+      valueArray.push({key: '<% SMARTBLOCK: %> (SmartBlock Command)',         icon:'gear', value: '<%SMARTBLOCK:&&&%>',processor:'static',
+                             help:'<b>SMARTBLOCK (Experimental)</b><br/>Runs another SmartBlock<br/><br/>1. SmartBlock name'});
+      valueArray.push({key: '<% TIME %> (SmartBlock Command)',               icon:'gear', value: '<%TIME%>',               processor:'static',
+                             help:'<b>TIME</b><br/>Returns time in 24 hour format'});
+      valueArray.push({key: '<% TIMEAMPM: %> (SmartBlock Command)',           icon:'gear', value: '<%TIMEAMPM%>',           processor:'static',
+                             help:'<b>TIMEAMPM</b><br/>Returns time in AM/PM format.'});
+      valueArray.push({key: '<% TODOTODAY: %> (SmartBlock Command)',          icon:'gear', value: '<%TODOTODAY:20&&&%>',    processor:'static',
+                             help:'<b>TODOTODAY</b><br/>Returns a list of block refs<br/> of TODOs for today<br/><br/>1. Max # blocks'});
+      valueArray.push({key: '<% TODOOVERDUE: %> (SmartBlock Command)',        icon:'gear', value: '<%TODOOVERDUE:20&&&%>',  processor:'static',
+                             help:'<b>TODOOVERDUE</b><br/>Returns a list of block refs<br/> of TODOs that are Overdue<br/><br/>1.  Max # blocks'});
+      valueArray.push({key: '<% TODOOVERDUEDNP: %> (SmartBlock Command)',     icon:'gear', value: '<%TODOOVERDUEDNP:20&&&%>',  processor:'static',
+                             help:'<b>TODOOVERDUEDNP</b><br/>Returns a list of block refs<br/> of TODOs that are Overdue<br/>including DNP TODOs<br/><br/>1.  Max # blocks'});
+      valueArray.push({key: '<% TODOFUTURE: %> (SmartBlock Command)',         icon:'gear', value: '<%TODOFUTURE:20&&&%>',  processor:'static',
+                             help:'<b>TODOFUTURE</b><br/>Returns a list of block refs<br/> of TODOs that are due<br/> in the future<br/><br/>1.  Max # blocks'});
+      valueArray.push({key: '<% TODOFUTUREDNP: %> (SmartBlock Command)',      icon:'gear', value: '<%TODOFUTUREDNP:20&&&%>',  processor:'static',
+                             help:'<b>TODOFUTUREDNP</b><br/>Returns a list of block refs<br/> of TODOs that are <br/>due in the future<br/>including DNP TODOs<br/><br/>1.  Max # blocks'});
+      valueArray.push({key: '<% TODOUNDATED: %> (SmartBlock Command)',        icon:'gear', value: '<%TODOUNDATED:20&&&%>',  processor:'static',
+                             help:'<b>TODOUNDATED</b><br/>Returns a list of block refs<br/> of TODOs with no date<br/><br/>1. Max # blocks'});
+      valueArray.push({key: '<% GET: %> (SmartBlock Command)',                icon:'gear', value: '<%GET:&&&%>',            processor:'static',
+                             help:'<b>GET</b><br/>Returns a variable<br/><br/>1. Variable name'});
+      valueArray.push({key: '<% SET: %> (SmartBlock Command)',                icon:'gear', value: '<%SET:&&&%>',            processor:'static',
+                             help:'<b>SET</b><br/>Create a variable in memory<br/><br/>1. Variable name<br/>2: Value of variable'});
+      valueArray.push({key: '<% CLEARVARS: %> (SmartBlock Command)',          icon:'gear', value: '<%CLEARVARS%>',          processor:'static',
+                             help:'<b>CLEARVARS</b><br/>Clears all <br/>variables from memory'});
       roam42.smartBlocks.customCommands.forEach(v => valueArray.push(v));
     };
     
@@ -276,7 +322,13 @@
         roam42.smartBlocks.activeWorkflow.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
         return '';   
       });
-
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOTIFICATION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var commandToProcess = match.replace('<%NOTIFICATION:','').replace('%>','').trim();      
+        var params = commandToProcess.split(',');
+        iziToast.show({message:params[1],timeout:Number(params[0]*1000),theme:'dark',progressBar:true,animateInside:true,close:true,closeOnClick:true,displayMode:2});  
+        return ''
+      });
+      
       //MULTIBLOCK commands
       //shoud not be run if the block is flagged for nooutput
       if(!textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol)) { 
@@ -316,13 +368,6 @@
           var commandToProcess = match.replace('<%TODOUNDATED:','').replace('%>','').trim();
           return await roam42.timemgmt.smartBlocks.commands.todoNotDated(commandToProcess,true);
         });
-        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOTIFICATION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-          var commandToProcess = match.replace('<%NOTIFICATION:','').replace('%>','').trim();      
-          var params = commandToProcess.split(',')
-          iziToast.show({message:params[1],timeout:Number(params[0]*1000),theme:'dark',progressBar:true,animateInside:true,close:true,closeOnClick:true,displayMode:2});  
-          return ''
-        });
-        
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SMARTBLOCK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%SMARTBLOCK:','').replace('%>','').trim();
           var userCommands = await roam42.smartBlocks.UserDefinedWorkflowsList();
