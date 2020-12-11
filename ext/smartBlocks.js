@@ -16,17 +16,21 @@
   roam42.smartBlocks.exitBlockCommand     = 'SBEXITSBEXITSBEXIT'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.replaceFirstBlock    = 'SBRPLCSBRPLCSBRPLC'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.customCommands = [];
+  roam42.smartBlocks.SmartBlockPopupHelpEnabled = true;
   
   roam42.smartBlocks.initialize = async ()=>{
     var smartBlockTrigger = ";;";
     //determine if user has created a custom trigger
     let customTrigger = await roam42.settings.get("SmartBlockTrigger");
-
     if(customTrigger!=null && customTrigger.length>0) {
       var newTrigger = customTrigger.replaceAll('\"','').trim();
       if(newTrigger.length>0)
         smartBlockTrigger = customTrigger;
     }
+    var popupHelpEnabled = await roam42.settings.get("SmartBlockPopupHelp")
+    if(popupHelpEnabled!=null & popupHelpEnabled=='disabled')
+      roam42.smartBlocks.SmartBlockPopupHelpEnabled = false;
+    
     
     roam42.smartBlocks.UserDefinedWorkflowsList = async () => {
       let sbList = await roam42.common.getBlocksReferringToThisPage("42SmartBlock");
@@ -188,7 +192,13 @@
             roam42.smartBlocks.textBoxObserver.disconnect(); //stop observing blocks during insertion
             if(item.original.processor=='date')   insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() );
             if(item.original.processor=='function') await item.original.value();
-            if(item.original.processor=='static') insertSnippetIntoBlock( item.original.value, false );
+            if(item.original.processor=='static') {
+              insertSnippetIntoBlock( item.original.value, false );
+              if(item.original.help && roam42.smartBlocks.SmartBlockPopupHelpEnabled){
+                roam42.help.displayMessage('<img height="22px" src="https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Fgear.png?v=1605994815962">'+
+                                           ' ' + item.original.help,20000);
+              }
+            }
             if(item.original.processor=='randomblock') insertSnippetIntoBlock( '((' + await roam42.common.getRandomBlock(1) + '))' );
             if(item.original.processor=='randompage') insertSnippetIntoBlock(await roam42.smartBlocks.getRandomPage());
             if(item.original.processor=='blocks') {
@@ -352,13 +362,15 @@
                if(skipCursorRelocation==false) {
                 roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeWorkflow.startingBlockTextArea));
                   setTimeout(()=>{
-                  if(document.activeElement.value.includes('<%CURSOR%>'))    {
-                    var newValue = document.querySelector('textarea.rm-block-input').value;
-                    document.activeElement.value = '';
-                    insertSnippetIntoBlock(newValue);
-                  }
-                  else
-                    document.activeElement.setSelectionRange(document.activeElement.value.length,document.activeElement.value.length);                              
+                  try {
+                    if(document.activeElement.value.includes('<%CURSOR%>'))    {
+                      var newValue = document.querySelector('textarea.rm-block-input').value;
+                      document.activeElement.value = '';
+                      insertSnippetIntoBlock(newValue);
+                    }
+                    else
+                      document.activeElement.setSelectionRange(document.activeElement.value.length,document.activeElement.value.length);                    
+                    } catch(e) {}
                   },200);                
                }
               }
