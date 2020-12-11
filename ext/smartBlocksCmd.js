@@ -27,7 +27,7 @@
       valueArray.push({key: 'Serendipity - R a n d o m Block (42)', value: '', icon:'random',    processor:'randomblock'});
       valueArray.push({key: 'Serendipity - R a n d o m Page (42)', value: '',  icon:'random',   processor:'randompage'});
       valueArray.push({key: 'Horizontal Line (42)',   value: ':hiccup [:hr]',  icon:'hl',   processor:'static'});
-      valueArray.push({key: 'Workflow Starter (SmartBlock function)', icon:'gear', processor:'function', value: async ()=>{
+      valueArray.push({key: 'Workflow (SmartBlock Starter)', icon:'gear', processor:'function', value: async ()=>{
                         var workflowName = prompt("What is the name of the new workflow?")
                         roam42.common.setEmptyNodeValue( document.querySelector("textarea"), "#42SmartBlock " + workflowName );            
                         await roam42.common.sleep(200);
@@ -35,6 +35,13 @@
                         await roam42.common.sleep(200);
                         await roam42KeyboardLib.pressTab();
                       }});
+      valueArray.push({key: 'Button (SmartBlock Starter)', icon:'gear', processor:'function', value: async ()=>{
+                        var caption    = prompt("What is the name of the caption of the button?")
+                        if(!caption) return;
+                        var smartBlock = prompt("What is the name of the SmartBlock?")                        
+                        if(!smartBlock) return;
+                        roam42.smartBlocks.insertSnippetIntoBlock(`{{${caption}:42SmartBlock:${smartBlock}}}`);            
+                      }, help:'<b>SmartBlock Button</b><br/><br/>Button Syntax:<br>{{caption:42SmartBlock:Name of SmartBlock}}:<br>{{caption:42SmartBlock:Name of SmartBlock:var1=value1}}'});
       
       valueArray.push({key: 'sb42 (SmartBlock Command)',                     icon:'gear', value: '#42SmartBlock',          processor:'static'});
       valueArray.push({key: '<% BLOCKMENTIONS: %> (SmartBlock Command)',      icon:'gear', value: '<%BLOCKMENTIONS:&&&%>',  processor:'static',
