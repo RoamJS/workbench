@@ -27,7 +27,7 @@
 if( typeof window.roam42 == 'undefined' ) { 
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2020-12-11 (BeebleBrox) ';
+  roam42.buildID = 'Roam<sup>42</sup> 2020-12-12b (BeebleBrox) ';
   
   roam42.host    = document.currentScript.src.replace('main.js','');
 
@@ -73,6 +73,7 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addScriptToPage( 'JSCOOKIE',         roam42.host + 'dist/jscookie/js.cookie-3.0.0-rc.1.min.js'                                 );
     roam42.loader.addScriptToPage( 'MOUSETRAP',        roam42.host + 'dist/mousetrap/mousetrap-1.6.5.min.js' );
     roam42.loader.addScriptToPage( 'chrono',           roam42.host + 'dist/chrono/chrono-1.4.8.min.js' );
+    roam42.loader.addScriptToPage( 'dayjs',            roam42.host + 'dist/dayjs/dayjs.min.js' );
     roam42.loader.addScriptToPage( 'jsFlatpickr',      roam42.host + 'dist/flatpickr/flatpickr-4.6.6.min.js' );
        roam42.loader.addCSSToPage( 'cssFlatpckr',      roam42.host + 'dist/flatpickr/flatpickr.min.css' );
        roam42.loader.addCSSToPage( 'cssFlatpckrThme',  roam42.host + 'css/airbnb.css' );
