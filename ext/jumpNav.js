@@ -76,9 +76,20 @@
           if( event.target.tagName == 'TEXTAREA') {
             let uid = event.target.id.substring( event.target.id.length -9)
             switch(handler)  {
-              case 'ctrl+j s':      // copy block ref as ref
-                navigator.clipboard.writeText(`[*](((${uid})))`);
-                roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied: [*](((${uid})))`,2000);
+              case 'ctrl+j s':      // copy block ref as alias
+                setTimeout(async()=>{
+                  var selectedText = window.getSelection().toString();
+                  var formatToUse = await roam42.settings.get("CopyRefAsAliasFormat");
+                  var outputText = '';
+                  if(selectedText != '' && formatToUse) 
+                    outputText = formatToUse.replace('UID',`((${uid}))`).replace('SELECTEDTEXT',selectedText).trim();
+                  else if (selectedText != '')
+                    outputText = `"${selectedText}" [*](((${uid})))`;
+                  else
+                    outputText = `[*](((${uid})))`;                    
+                  navigator.clipboard.writeText(outputText);
+                  roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied:<br/> ${outputText}`,2000);                  
+                },10);
                 break;              
               case 'ctrl+j r':      // copy block ref
                 navigator.clipboard.writeText(`((${uid}))`) ;
@@ -204,13 +215,13 @@
                 })
                 break;          
               case 'ctrl+j v':
-                document.querySelectorAll('.rm-reference-item  .simple-bullet-outer').forEach( (element)=>{
+                document.querySelectorAll('.rm-reference-item  .block-expand').forEach( (element)=>{
                   roam42.common.simulateMouseClickRight(element);
                   document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click();
                 })
                 break;          
               case 'ctrl+j p':
-                document.querySelectorAll('.rm-reference-item  .simple-bullet-outer').forEach( (element)=>{
+                document.querySelectorAll('.rm-reference-item  .block-expand').forEach( (element)=>{
                   roam42.common.simulateMouseClickRight(element);
                   document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click();
                 })
@@ -251,55 +262,3 @@
 })();
 
 
-
-  //   roam42.jumpnav.displayJumpNavHelp = ()=> { 
-  //    try{ 
-  //     iziToast.destroy(); 
-  //     iziToast.show({
-  //       title: 'Roam42 Jump Nav Commands',
-  //       message: `
-  // <div style="position:absolute;top:-110px;right:-15px;z-index:1000;">
-  //   <img width="70px" src="${roam42.loader.logo2HC}"></img>
-  // </div>
-  // <br/>
-  // <pre style="max-width:320px">
-  // <b>Page</b>
-  //  t Top of page
-  //  b Bottom of page
-  //  e Expand all / c Collapse all
-  //  o Open this page in side bar
-  // <b>Linked/Unlinked Refs</b>
-  //  w Toggle Linked refs
-  //  z Toggle Unlinked refs
-  //  f Toggle Parents (page level) 
-  //  v Expand children / p Collapse  
-  // <b>Blocks</b>
-  //  r Copy block ref / s As alias
-  //  x Expand all / l Collapse all
-  //  i Insert block above / u below
-  //  k up a block / j down a block
-  //  d Delete block
-  //  1 Align left / 2 Center/ 3 right
-  //  4 Justify
-  //  a Reaction
-  // <b>Queries</b>
-  //  y Toggle Queries
-  // <b>Others</b>
-  //  n Toggle left sidebar
-  //  m Toggle right sidebar
-  //  q Roam42 Help
-  //  , Daily Notes Popup
-  //  . Dictionary
-  // </pre>
-  //         `.trim(),
-  //         theme: 'dark',
-  //         progressBar: true,
-  //         animateInside: true,
-  //         close: false,
-  //         timeout: 30000,
-  //         closeOnClick: true,
-  //         maxWidth: '320px',
-  //         displayMode: 2
-  //       });
-  //     } catch(e) {}    
-  //   };

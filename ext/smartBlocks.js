@@ -172,7 +172,7 @@
         //make sure we are in the textarea that started this insert (tribute menu may have closed focus on text area)
         var removeTributeTriggerSpacer=2;
         //by default we don't use date references from the daily note pages.
-        roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = false;
+        roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] = null;            //sets the date to override today
         
         if(document.activeElement.type !='textarea') {
           roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeTributeTextAreaId));          
@@ -378,8 +378,7 @@
             } // end IF
 
           
-          //by default we don't use date references from the daily note pages.
-          roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = false;          
+          roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] = null;            //sets the date to override today
           //start observing mutations again
           roam42.smartBlocks.textBoxObserver.observe(document, { childList: true, subtree: true });   
         } catch(e) {

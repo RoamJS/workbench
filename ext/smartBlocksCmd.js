@@ -51,10 +51,8 @@
                                    '<br/>1: Max blocks to return<br/>2: Page or Tag Name<br/>3: Start Date<br/>4. End Date<br/>5: Sort (ASC,DESC,NONE)<br/>6: (opt) filtering '});
       valueArray.push({key: '<% SEARCH: %> (SmartBlock Command)',             icon:'gear', value: '<%SEARCH:&&&%>',         processor:'static',
                              help:'<b>SEARCH</b><br/>Search all blocks for string of text<br/><br/>1: Max blocks to return<br/>2: String for search (case-sensitive)<br/>3: (opt) filtering '});
-      valueArray.push({key: '<% DATEBASISDAILYNOTES %> (SmartBlock Command)',icon:'gear', value: '<%DATEBASISDAILYNOTES%>',processor:'static',
-                             help:'<b>DATEBASISDAILYNOTES</b><br/>Time machine mode<br/>uses DNP as context'});
-      valueArray.push({key: '<% DATEBASISTODAY %> (SmartBlock Command)',      icon:'gear', value: '<%DATEBASISTODAY%>',      processor:'static',
-                             help:'<b>DATEBASISTODAY</b><br/>Time machine mode<br/>uses DNP as context'});
+      valueArray.push({key: '<% DATEBASIS: %> (SmartBlock Command)',icon:'gear', value: '<%DATEBASIS:&&&%>',processor:'static',
+                             help:'<b>DATEBASIS</b><br/>Time machine mode<br/><br/>1: Date basis for date commands<br/>DNP for daily page<br/>NLP for other dates<br/>Defaults to TODAY at start of<br/>each workflow '});
       valueArray.push({key: '<% CURSOR %> (SmartBlock Command)',             icon:'gear', value: '<%CURSOR%>',             processor:'static',
                              help:'<b>CURSOR</b><br/>Defines where cursor<br/> should be located after<br/> the workflow completes.'});
       valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static',
@@ -66,7 +64,7 @@
       valueArray.push({key: '<% CURRENTBLOCKREF: %> (SmartBlock Command)',    icon:'gear', value: '<%CURRENTBLOCKREF%>',    processor:'static',
                              help:'<b>CURRENTBLOCKREF</b><br/>Returns the block UID<br/> for the current block'});
       valueArray.push({key: '<% DATE: %> (SmartBlock Command)',               icon:'gear', value: '<%DATE:&&&%>',           processor:'static',
-                             help:'<b>DATE</b><br/>Returns a Roam formatted<br/>dated page reference.<br/><br/>1: NLP expression like:<br/>today<br/>tomorrow<br/>Last Friday<br/>in one week<br/>DBOM, DEOM<br/>DBONM,DEONM<br/>DBOY,DEOY<br/>DBONY, DEONY'});
+                             help:'<b>DATE</b><br/>Returns a Roam formatted<br/>dated page reference.<br/><br/>1: NLP expression<br/>2: optional: format for returned <br/>date, example: YYYY-MM-DD'});
       valueArray.push({key: '<% EXIT %> (SmartBlock Command)',               icon:'gear', value: '<%EXIT%>',               processor:'static',
                              help:'<b>EXIT</b><br/>Stops the workflow from<br/>going further after<br/>completing the current block'});
       valueArray.push({key: '<% FOCUSONBLOCK %> (SmartBlock Command)',       icon:'gear', value: '<%FOCUSONBLOCK%>',       processor:'static',
@@ -195,6 +193,17 @@
         } catch(e) { return '<%IFTRUE%> Failed with error: ' + e }
         return '';   
       });        
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATEBASIS)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var commandToProcess = match.replace('<%DATEBASIS:','').replace('%>','').trim();
+        if(commandToProcess=='DNP') 
+          roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] = 'DNP';     
+        else  {
+          roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] = null; //reset basis to default     
+          var dt = roam42.dateProcessing.parseTextForDates(commandToProcess).replace('[[','').replace(']]','');
+          roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] = chrono.parseDate(dt);
+        }
+        return roam42.smartBlocks.exclusionBlockSymbol;   
+      });      
 
       // IFTRUE prevents us from going forward if was FALSE
       if(!textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol))  {
@@ -252,25 +261,15 @@
         });           
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%DATE:','').replace('%>','').trim();
-          var params = commandToProcess.split(',');
-          if(params.length==1)   
+          if(!commandToProcess.includes(',')) //no formatting command, return a roam date   
            return roam42.dateProcessing.parseTextForDates(commandToProcess).trim();
           else {
-            var dt = roam42.dateProcessing.parseTextForDates(params[0]).trim();
-            dt = dt.replace('[[','').replace(']]','');
-            dt = dayjs(Date(dt)).format(params[1]);            
-            return dt;
+            //formatting command provided, return a format
+            var nlpText = commandToProcess.substring(0,commandToProcess.search(','));
+            var formatText = commandToProcess.substring(nlpText.length+1,commandToProcess.length);
+            var dt = roam42.dateProcessing.parseTextForDates(nlpText).trim().replace('[[','').replace(']]','');
+            return dayjs( chrono.parseDate(dt) ).format(formatText);
           }
-        });
-
-        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATEBASISDAILYNOTES)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-          roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = true;
-          return roam42.smartBlocks.exclusionBlockSymbol;   
-        });
-
-        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATEBASISTODAY)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-          roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES'] = false;
-          return roam42.smartBlocks.exclusionBlockSymbol; 
         });
 
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDAYOFWEEK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
