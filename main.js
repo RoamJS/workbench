@@ -102,7 +102,7 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addScriptToPage( "settings",          roam42.host + 'ext/settings.js');    
     roam42.loader.addScriptToPage( 'keyEvents',         roam42.host + 'common/keyevents.js'       );
     roam42.loader.addScriptToPage( 'jumpNav'  ,         roam42.host + 'ext/jumpNav.js'            );
-    roam42.loader.addScriptToPage( 'message-startup',   roam42.host + 'messages.js'               );
+    roam42.loader.addScriptToPage( 'message-startup',   roam42.host + 'common/messages.js'               );
 
     //extension modules
     roam42.loader.addScriptToPage( 'dateProcessing',    roam42.host + 'ext/dateProcessing.js'     );

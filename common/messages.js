@@ -24,6 +24,7 @@
       close: false,  
       timeout: delayTime,  
       closeOnClick: true,  
+      maxWidth:'300px',
       displayMode: 2  
     });  
   }

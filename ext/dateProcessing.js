@@ -116,14 +116,18 @@
       var dayOut;
       var monthOut;
       var yearOut;
-    
-      if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES']) {
+
+      //Use Daily Notes Page as reference point
+      if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] == 'DNP') {
         var daily_notes_page_date = roam42.dateProcessing.resolveDNPName()
         if(daily_notes_page_date) {
           basisYear  = daily_notes_page_date.getFullYear();
           basisMonth = daily_notes_page_date.getMonth();        
         }
-      } 
+      } else if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] != null) {
+          basisYear  = roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'].getFullYear();
+          basisMonth = roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'].getMonth();                
+      }
       
       switch(match[0]){
         case "DBOM": //Beginning of this month
@@ -183,19 +187,21 @@
   roam42.dateProcessing.parseTextForDates = (str, reference_date) => {
     var str_with_pages_removed = str.replace(/\[+\[[^)]+\]+\] */g, "");
     var txt = '';
-        
+
     if (reference_date) { //forces parsing to use a specific date
       txt = customChrono42.parse( str_with_pages_removed, reference_date )
     }
-    else {
-      if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISDAILYNOTES']) {
-        //if using DATEBASISDAILYNOTES, see if we are on DNP and handle accordingly
+    else {      
+      if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD']== 'DNP')  {
+        //if using DATEBASISMETHOD==DNP, see if we are on DNP and handle accordingly
         var daily_notes_page_date = roam42.dateProcessing.resolveDNPName();
         if(daily_notes_page_date)
           txt = customChrono42.parse( str_with_pages_removed, daily_notes_page_date );
         else
           txt = customChrono42.parse( str_with_pages_removed );
-      } else 
+      } else if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] != null) //use date provided by DATEBASIS command
+          txt = customChrono42.parse( str_with_pages_removed, roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] );        
+      else //default to today for calculation
         txt = customChrono42.parse( str_with_pages_removed);
     }
 
