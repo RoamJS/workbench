@@ -5,11 +5,71 @@
   roam42.timemgmt.smartBlocks = {};
   roam42.timemgmt.smartBlocks.commands = {};
   
+  roam42.timemgmt.outputTaskBlocks =  async (tasksToProcess,textToProcess,commandMatch,params)=> {
+    var outputCount = 0;
+    for(var block of tasksToProcess) {
+      var bOutputBlock = true;
+      if(params) {
+        var blockText = block.taskString.toLowerCase();
+        var bOutputBlock = false;
+        for(var t of params) {
+          var tokenText = t.toLowerCase(); 
+          console.log(tokenText)
+          if(tokenText.substring(0,1)=='-') {
+            if(tokenText.includes('|')) { //process NOT && NOR conditions
+              var searchFor = tokenText.substring(1,tokenText.length).toString();
+              for(var orT of searchFor.split('|')) 
+                if(blockText.includes(orT))  bOutputBlock = false;                            
+            } else {  // Process a NOT (no or condition)
+              var searchFor = tokenText.substring(1,tokenText.length);
+              if(blockText.includes(searchFor))  bOutputBlock = false;              
+            }
+          } // processing - NOT
+          else { //start process AND
+            if(tokenText.includes('|')) { //AND with OR
+              console.log(tokenText)
+              for(var orT of tokenText.split('|')) { 
+                console.log(orT, !blockText,blockText.includes(orT))
+                if(blockText.includes(orT))  bOutputBlock = true;                            
+              }
+            } else { // AND, but no OR
+              if(blockText.includes(tokenText)) bOutputBlock = true;
+            }
+          }
+        }
+      }
+      if(bOutputBlock) {
+        outputCount += 1;
+        var newText = textToProcess.replace(commandMatch,`((${block.taskUID}))`)
+        newText = await roam42.common.replaceAsync(newText, /(\<\%PAGE\%\>)/g, async (match, name)=>{
+          return `[[${block.pageTitle}]]`;
+        });
+        newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
+        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);
+      }
+    }
+    if(outputCount>0)
+      return roam42.smartBlocks.replaceFirstBlock;
+    else
+      return roam42.smartBlocks.exclusionBlockSymbol;    
+  }
+
+  var parseTodoRequestString =(requestString)=>{
+    var limitOutputCount = null;
+    var queryParameters  = null;
+    if(requestString.includes(',')) {
+      limitOutputCount = Number(requestString.substring(0,requestString.search(',')))+1;
+      queryParameters = (requestString.substring(requestString.search(',')+1,requestString.length)).split(',');
+    } else 
+      limitOutputCount=requestString;
+    return {limitCount: limitOutputCount, params: queryParameters};    
+  }  
+  
   roam42.timemgmt.getAllTasks = async ()=>{
     //returns array with format [{"uid":"","string":""},{"title":"","uid":""}] first is task, second is parent of task
     var todoUIDs = [];
     for(var task of await roam42.common.getBlocksReferringToThisPage('TODO')) 
-        todoUIDs.push(task[0].uid)
+      todoUIDs.push(task[0].uid)
     return await roam42.common.getPageNamesFromBlockUidList(todoUIDs);
   }
   
@@ -23,7 +83,7 @@
       if(taskString.substring(0,12)!='{{[[query]]:') { 
         if(outputCounter < limitOutputCount && taskString.includes('{{[[TODO]]}}') && taskString.includes(todayDate)) {
           outputCounter += 1;
-          outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title})
+          outputTODOs.push({taskUID: task[0].uid, taskString:task[0].string, pageTitle: task[1].title})
         }
       }
     }    
@@ -36,16 +96,12 @@
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);   
     await roam42.smartBlocks.outputArrayWrite()
   }
-
+  
   // DUE TODAY COMMAND to use in workflow
-  roam42.timemgmt.smartBlocks.commands.todosDueToday = async (limitOutputCount = 50)=> {
-    var firstBlock = '';
-    for(var task of await roam42.timemgmt.todosDueToday(limitOutputCount))
-      if(firstBlock=='')
-        firstBlock = `((${task.taskUID}))`;
-      else
-        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
-    return firstBlock;
+  roam42.timemgmt.smartBlocks.commands.todosDueToday = async (requestString, textToProcess, commandMatch)=> {
+    var request = parseTodoRequestString(requestString);
+    var results = await roam42.timemgmt.todosDueToday(request.limitCount);
+    return roam42.timemgmt.outputTaskBlocks(results, textToProcess, commandMatch, request.params);
   }
   
   // OVERDUE Used in menu to directly insert TODOS
@@ -60,15 +116,10 @@
   }
 
   // OVERDUE COMMAND to use in workflow
-  roam42.timemgmt.smartBlocks.commands.todosOverdue = async (limitOutputCount = 50, includeDNP=false)=> {
-    var firstBlock = '';
-    for(var task of await roam42.timemgmt.todosOverdue(limitOutputCount,true,includeDNP)) 
-      if(firstBlock=='')
-        firstBlock = `((${task.taskUID}))`;
-      else
-        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
-    return firstBlock;
-    
+  roam42.timemgmt.smartBlocks.commands.todosOverdue = async (requestString, includeDNP=false, textToProcess, commandMatch)=> {
+    var request = parseTodoRequestString(requestString);
+    var results = await roam42.timemgmt.todosOverdue(request.limitCount,true,includeDNP);
+    return roam42.timemgmt.outputTaskBlocks(results, textToProcess, commandMatch, request.params);
   }
   
 
@@ -104,14 +155,10 @@
   }  
   
   // FUTURE COMMAND to use in workflow
-  roam42.timemgmt.smartBlocks.commands.todosFuture = async (limitOutputCount = 50, includeDNP=false)=> {
-    var firstBlock = '';
-    for(var task of await roam42.timemgmt.todosFuture(limitOutputCount,true,includeDNP)) 
-      if(firstBlock=='')
-        firstBlock = `((${task.taskUID}))`;
-      else
-        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
-    return firstBlock;        
+  roam42.timemgmt.smartBlocks.commands.todosFuture = async (requestString, includeDNP=false, textToProcess, commandMatch)=> {
+    var request = parseTodoRequestString(requestString);
+    var results = await roam42.timemgmt.todosFuture(request.limitCount,true,includeDNP);
+    return roam42.timemgmt.outputTaskBlocks(results, textToProcess, commandMatch, request.params);    
   }  
 
   // UNDATED
@@ -126,17 +173,11 @@
   }
   
   // UNDATED COMMAND to use in workflow
-  roam42.timemgmt.smartBlocks.commands.todoNotDated = async (limitOutputCount = 50)=> {
-    var firstBlock = '';
-    for(var task of await roam42.timemgmt.todoNotDated(limitOutputCount)) 
-      if(firstBlock=='')
-        firstBlock = `((${task.taskUID}))`;
-      else
-        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);  
-    return firstBlock;        
-    
+  roam42.timemgmt.smartBlocks.commands.todoNotDated = async (requestString = 50, textToProcess, commandMatch)=> {
+    var request = parseTodoRequestString(requestString);
+    var results = await roam42.timemgmt.todoNotDated(request.limitCount);
+    return roam42.timemgmt.outputTaskBlocks(results, textToProcess, commandMatch, request.params);    
   }    
-  
   
   roam42.timemgmt.todosOverdue = async (limitOutputCount = 50, sortAscending=true, includeDNPTasks=true)=>{
     var yesterday = roam42.dateProcessing.testIfRoamDateAndConvert(roam42.dateProcessing.parseTextForDates('yesterday'));
@@ -159,7 +200,7 @@
                 if(testForDate && testForDate <= yesterday) {
                   outputCounter+=1;
                   taskWasOutputted=true;
-                  outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:testForDate})
+                  outputTODOs.push({taskUID: task[0].uid, taskString: task[0].string, pageTitle: task[1].title, date:testForDate})
                 }                 
               } catch(e) {}
             }
@@ -171,7 +212,7 @@
             var pageNameIsDate = roam42.dateProcessing.testIfRoamDateAndConvert(task[1].title);
             if(pageNameIsDate && pageNameIsDate <= yesterday) {
                   outputCounter+=1;
-                  outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:pageNameIsDate })
+                  outputTODOs.push({taskUID: task[0].uid, taskString: task[0].string, pageTitle: task[1].title, date:pageNameIsDate })
             }            
           } catch(e) {}
         } //end of includeDNPTasks
@@ -201,7 +242,7 @@
                 if(testForDate && testForDate >= tomorrow) {
                   outputCounter+=1;
                   taskWasOutputted=true;
-                  outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:testForDate})
+                  outputTODOs.push({taskUID: task[0].uid, taskString: task[0].string, pageTitle: task[1].title, date:testForDate})
                 }                 
               } catch(e) {}
             }
@@ -213,7 +254,7 @@
             var pageNameIsDate = roam42.dateProcessing.testIfRoamDateAndConvert(task[1].title);
             if(pageNameIsDate && pageNameIsDate >= tomorrow) {
                   outputCounter+=1;
-                  outputTODOs.push({taskUID: task[0].uid, pageTitle: task[1].title, date:pageNameIsDate })
+                  outputTODOs.push({taskUID: task[0].uid, taskString: task[0].string, pageTitle: task[1].title, date:pageNameIsDate })
             }            
           } catch(e) {}
         } //end of includeDNPTasks
@@ -244,7 +285,7 @@
         if(outputCounter < limitOutputCount && todoContainsDate==false){
           outputCounter+=1;
           var taskString = task[0].string.replace('{{[[TODO]]}}','').trim();
-          outputTODOs.push({taskUID: task[0].uid, taskSort:taskString, pageTitle: task[1].title})
+          outputTODOs.push({taskUID: task[0].uid, taskString: task[0].string, taskSort:taskString, pageTitle: task[1].title})
         }
         todoContainsDate = false;
       }

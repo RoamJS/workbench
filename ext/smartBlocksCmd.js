@@ -118,17 +118,17 @@
       valueArray.push({key: '<% TIMEAMPM: %> (SmartBlock Command)',           icon:'gear', value: '<%TIMEAMPM%>',           processor:'static',
                              help:'<b>TIMEAMPM</b><br/>Returns time in AM/PM format.'});
       valueArray.push({key: '<% TODOTODAY: %> (SmartBlock Command)',          icon:'gear', value: '<%TODOTODAY:20&&&%>',    processor:'static',
-                             help:'<b>TODOTODAY</b><br/>Returns a list of block refs<br/> of TODOs for today<br/><br/>1. Max # blocks'});
+                             help:'<b>TODOTODAY</b><br/>Returns a list of block refs<br/> of TODOs for today<br/><br/>1. Max # blocks<br/>2. optional filter values'});
       valueArray.push({key: '<% TODOOVERDUE: %> (SmartBlock Command)',        icon:'gear', value: '<%TODOOVERDUE:20&&&%>',  processor:'static',
-                             help:'<b>TODOOVERDUE</b><br/>Returns a list of block refs<br/> of TODOs that are Overdue<br/><br/>1.  Max # blocks'});
+                             help:'<b>TODOOVERDUE</b><br/>Returns a list of block refs<br/> of TODOs that are Overdue<br/><br/>1.  Max # blocks<br/>2. optional filter values'});
       valueArray.push({key: '<% TODOOVERDUEDNP: %> (SmartBlock Command)',     icon:'gear', value: '<%TODOOVERDUEDNP:20&&&%>',  processor:'static',
-                             help:'<b>TODOOVERDUEDNP</b><br/>Returns a list of block refs<br/> of TODOs that are Overdue<br/>including DNP TODOs<br/><br/>1.  Max # blocks'});
+                             help:'<b>TODOOVERDUEDNP</b><br/>Returns a list of block refs<br/> of TODOs that are Overdue<br/>including DNP TODOs<br/><br/>1.  Max # blocks<br/>2. optional filter values'});
       valueArray.push({key: '<% TODOFUTURE: %> (SmartBlock Command)',         icon:'gear', value: '<%TODOFUTURE:20&&&%>',  processor:'static',
-                             help:'<b>TODOFUTURE</b><br/>Returns a list of block refs<br/> of TODOs that are due<br/> in the future<br/><br/>1.  Max # blocks'});
+                             help:'<b>TODOFUTURE</b><br/>Returns a list of block refs<br/> of TODOs that are due<br/> in the future<br/><br/>1.  Max # blocks<br/>2. optional filter values'});
       valueArray.push({key: '<% TODOFUTUREDNP: %> (SmartBlock Command)',      icon:'gear', value: '<%TODOFUTUREDNP:20&&&%>',  processor:'static',
-                             help:'<b>TODOFUTUREDNP</b><br/>Returns a list of block refs<br/> of TODOs that are <br/>due in the future<br/>including DNP TODOs<br/><br/>1.  Max # blocks'});
+                             help:'<b>TODOFUTUREDNP</b><br/>Returns a list of block refs<br/> of TODOs that are <br/>due in the future<br/>including DNP TODOs<br/><br/>1.  Max # blocks<br/>2. optional filter values'});
       valueArray.push({key: '<% TODOUNDATED: %> (SmartBlock Command)',        icon:'gear', value: '<%TODOUNDATED:20&&&%>',  processor:'static',
-                             help:'<b>TODOUNDATED</b><br/>Returns a list of block refs<br/> of TODOs with no date<br/><br/>1. Max # blocks'});
+                             help:'<b>TODOUNDATED</b><br/>Returns a list of block refs<br/> of TODOs with no date<br/><br/>1. Max # blocks<br/>2. optional filter values'});
       valueArray.push({key: '<% GET: %> (SmartBlock Command)',                icon:'gear', value: '<%GET:&&&%>',            processor:'static',
                              help:'<b>GET</b><br/>Returns a variable<br/><br/>1. Variable name'});
       valueArray.push({key: '<% SET: %> (SmartBlock Command)',                icon:'gear', value: '<%SET:&&&%>',            processor:'static',
@@ -381,27 +381,27 @@
           });
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOTODAY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOTODAY:','').replace('%>','').trim();
-            return await roam42.timemgmt.smartBlocks.commands.todosDueToday(commandToProcess);
+            return await roam42.timemgmt.smartBlocks.commands.todosDueToday(commandToProcess,textToProcess,match);
           });      
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOOVERDUE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOOVERDUE:','').replace('%>','').trim();
-            return await roam42.timemgmt.smartBlocks.commands.todosOverdue(commandToProcess,false);
+            return await roam42.timemgmt.smartBlocks.commands.todosOverdue(commandToProcess,false,textToProcess, match);
           });            
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOOVERDUEDNP:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOOVERDUEDNP:','').replace('%>','').trim();
-            return await roam42.timemgmt.smartBlocks.commands.todosOverdue(commandToProcess,true);
+            return await roam42.timemgmt.smartBlocks.commands.todosOverdue(commandToProcess,true,textToProcess, match);
           });                  
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOFUTURE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOFUTURE:','').replace('%>','').trim();
-            return await roam42.timemgmt.smartBlocks.commands.todosFuture(commandToProcess,false);
+            return await roam42.timemgmt.smartBlocks.commands.todosFuture(commandToProcess,false,textToProcess, match);
           });            
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOFUTUREDNP:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOFUTUREDNP:','').replace('%>','').trim();
-            return await roam42.timemgmt.smartBlocks.commands.todosFuture(commandToProcess,true);
+            return await roam42.timemgmt.smartBlocks.commands.todosFuture(commandToProcess,true,textToProcess, match);
           });                  
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOUNDATED:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOUNDATED:','').replace('%>','').trim();
-            return await roam42.timemgmt.smartBlocks.commands.todoNotDated(commandToProcess,true);
+            return await roam42.timemgmt.smartBlocks.commands.todoNotDated(commandToProcess, textToProcess, match);
           });
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SMARTBLOCK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%SMARTBLOCK:','').replace('%>','').trim();
