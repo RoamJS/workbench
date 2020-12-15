@@ -555,6 +555,9 @@
       newText = await roam42.common.replaceAsync(newText, /(\<\%PAGE\%\>)/g, async (match, name)=>{
         return `[[${block[1].title}]]`;
       });
+      newText = await roam42.common.replaceAsync(newText, /(\<\%UID\%\>)/g, async (match, name)=>{
+        return `${block[0].uid}`;
+      });              
       newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);      
     }

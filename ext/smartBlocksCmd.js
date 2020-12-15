@@ -159,10 +159,29 @@
     roam42.smartBlocks.proccessBlockWithSmartness = async (textToProcess)=>{
       let ifCommand = null;  // null if no IF, true process THEN, false process ELSE
       let exitCommandFound = false; //exit command included
+
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%REPEAT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var blockCommand = await roam42.common.replaceAsync(textToProcess, /(\<\%GET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+          var commandToProcess = match.replace('<%GET:','').replace('%>','');
+          var vValue = roam42.smartBlocks.activeWorkflow.vars[commandToProcess];
+          return vValue;   
+        });              
+        var repeatCount;
+        await roam42.common.replaceAsync(blockCommand, /(\<\%REPEAT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+          repeatCount = match.replace('<%REPEAT:','').replace('%>','');
+          return ''
+        });
+        blockCommand = await roam42.common.replaceAsync(blockCommand, /(\<\%REPEAT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{return ''});
+        if(Number(repeatCount)>0) {
+          for(var i=0; i< Number(repeatCount); i++)
+            roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(blockCommand, true);
+        }
+        return roam42.smartBlocks.replaceFirstBlock;
+      });            
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLEARVARS\%\>)/g, async (match, name)=>{
         roam42.smartBlocks.activeWorkflow.vars = new Object();    
         return '';
-      });
+      });      
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%42SETTING:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandToProcess = match.replace('<%42SETTING:','').replace('%>','');
         var vValue = await roam42.settings.get(commandToProcess);
@@ -186,6 +205,7 @@
         var commandToProcess = match.replace('<%RESOLVEBLOCKREF:','').replace('%>','').trim();
         return roam42.smartBlocks.resolveBlockRef(commandToProcess);
       });
+      
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFTRUE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandToProcess = match.replace('<%IFTRUE:','').replace('%>','');
         try {
