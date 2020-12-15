@@ -97,6 +97,8 @@
                              help:'<b>NOBLOCKOUTPUT</b><br/>No content output from a block'});
       valueArray.push({key: '<% PAGE %> subcommand (SmartBlock Command)',    icon:'gear', value: '<%PAGE%>',               processor:'static',
                              help:'<b>PAGE</b><br/>For commands that support<br/>the PAGE directive, a <br/>page reference is outpu'});
+      valueArray.push({key: '<% UID %> subcommand (SmartBlock Command)',    icon:'gear', value: '<%UID%>',               processor:'static',
+                             help:'<b>UID</b><br/>For commands that support<br/>the UID directive, a <br/>Block ref UID  is outpu'});
       valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock Command)',        icon:'gear', value: '<%RANDOMBLOCK%>',        processor:'static',
                              help:'<b>RANDOMBLOCK</b><br/>Returns random block from graph'});
       valueArray.push({key: '<% RANDOMBLOCKFROM: %> (SmartBlock Command)',    icon:'gear', value: '<%RANDOMBLOCKFROM:&&&%>',processor:'static',
