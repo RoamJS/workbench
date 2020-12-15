@@ -15,6 +15,12 @@
       var result = await roam42.common.getRandomBlockFromPage(paramter);
     }
 
+    if (await roam42.common.isPageRef(paramter)) {
+      var block_info = await roam42.common.getBlockInfoByUID(paramter)
+      var page_title = block_info[0][0].title;
+      return await roam42.common.getRandomBlockFromPage(page_title);
+    }
+
     if (await roam42.common.isBlockRef(paramter)) {
       return await roam42.common.getRandomBlockFromBlock(paramter);
     }
@@ -29,6 +35,12 @@
       return await roam42.common.getRandomBlockMentioningPage(paramter);
     }
 
+    if (await roam42.common.isPageRef(paramter)) {
+      var block_info = await roam42.common.getBlockInfoByUID(paramter)
+      var page_title = block_info[0][0].title;
+      return await roam42.common.getRandomBlockMentioningPage(page_title);
+    }
+    
     if (await roam42.common.isBlockRef(paramter)) {
       return await roam42.common.getRandomBlockMentioningBlockRef(paramter);
     }

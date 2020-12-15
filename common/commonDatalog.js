@@ -58,10 +58,25 @@
       }
 
       var block_ref = await window.roamAlphaAPI.q(`
-          [:find ?e 
+          [:find (pull ?e [:block/string])
               :where [?e :block/uid "${uid}"]]`);
 
-      return block_ref.length > 0 ? true: false;
+      return (block_ref.length > 0 && block_ref[0][0] != null) ? true: false;
+    } catch(e) { return ''; }
+  } 
+
+  roam42.common.isPageRef = async (uid)=> {
+    try {   
+      if (uid.startsWith("((")) {
+        uid = uid.slice(2, uid.length);
+        uid = uid.slice(0, -2);      
+      }
+
+      var block_ref = await window.roamAlphaAPI.q(`
+          [:find (pull ?e [:node/title])
+              :where [?e :block/uid "${uid}"]]`);
+
+      return (block_ref.length > 0 && block_ref[0][0] != null) ? true: false;
     } catch(e) { return ''; }
   } 
 
