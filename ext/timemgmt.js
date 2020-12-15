@@ -11,32 +11,15 @@
       var bOutputBlock = true;
       if(params) {
         var blockText = block.taskString.toLowerCase();
-        var bOutputBlock = false;
         for(var t of params) {
           var tokenText = t.toLowerCase(); 
-          console.log(tokenText)
           if(tokenText.substring(0,1)=='-') {
-            if(tokenText.includes('|')) { //process NOT && NOR conditions
-              var searchFor = tokenText.substring(1,tokenText.length).toString();
-              for(var orT of searchFor.split('|')) 
-                if(blockText.includes(orT))  bOutputBlock = false;                            
-            } else {  // Process a NOT (no or condition)
-              var searchFor = tokenText.substring(1,tokenText.length);
-              if(blockText.includes(searchFor))  bOutputBlock = false;              
-            }
-          } // processing - NOT
-          else { //start process AND
-            if(tokenText.includes('|')) { //AND with OR
-              console.log(tokenText)
-              for(var orT of tokenText.split('|')) { 
-                console.log(orT, !blockText,blockText.includes(orT))
-                if(blockText.includes(orT))  bOutputBlock = true;                            
-              }
-            } else { // AND, but no OR
-              if(blockText.includes(tokenText)) bOutputBlock = true;
-            }
+            var searchFor = tokenText.substring(1,tokenText.length);
+            if(blockText.includes(searchFor)) bOutputBlock = false;                        
           }
-        }
+          else
+            if(!blockText.includes(tokenText)) bOutputBlock = false;
+        }        
       }
       if(bOutputBlock) {
         outputCount += 1;
@@ -44,6 +27,9 @@
         newText = await roam42.common.replaceAsync(newText, /(\<\%PAGE\%\>)/g, async (match, name)=>{
           return `[[${block.pageTitle}]]`;
         });
+        newText = await roam42.common.replaceAsync(newText, /(\<\%UID\%\>)/g, async (match, name)=>{
+          return `${block.taskUID}`;
+        });        
         newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
         await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);
       }
@@ -390,6 +376,9 @@
       newText = await roam42.common.replaceAsync(newText, /(\<\%PAGE\%\>)/g, async (match, name)=>{
         return `[[${block[1].title}]]`;
       });
+      newText = await roam42.common.replaceAsync(newText, /(\<\%UID\%\>)/g, async (match, name)=>{
+        return `${block[0].uid}`;
+      });              
       newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);      
     }
@@ -494,6 +483,9 @@
       newText = await roam42.common.replaceAsync(newText, /(\<\%PAGE\%\>)/g, async (match, name)=>{
         return `[[${block[1].title}]]`;
       });
+      newText = await roam42.common.replaceAsync(newText, /(\<\%UID\%\>)/g, async (match, name)=>{
+        return `${block[0].uid}`;
+      });       
       newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);      
     }
