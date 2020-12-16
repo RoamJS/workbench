@@ -16,9 +16,9 @@
 
   roam42.autocomplete.setAutoComplete_IsEnabled = (val)=>{
     if(val == true) {
-      Cookies.set('AutoComplete_IsEnabled', 'true'); 
+      Cookies.set('AutoComplete_IsEnabled', 'true', { expires: 365 }); 
     } else {
-      Cookies.set('AutoComplete_IsEnabled', 'false');     
+      Cookies.set('AutoComplete_IsEnabled', 'false', { expires: 365 });     
     }
   }
 

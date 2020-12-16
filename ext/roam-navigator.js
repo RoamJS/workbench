@@ -1,3 +1,5 @@
+/* globals roam42, Cookies, roamNavigatorSettings, iziToast */
+
 'use strict';
 {
   roam42.roamNavigator = {};
@@ -62,9 +64,9 @@
 
   const setRoamNavigator_IsEnabled = (val)=>{
     if(val == true) {
-      Cookies.set('RoamNavigator_IsEnabled', 'true') 
+      Cookies.set('RoamNavigator_IsEnabled', 'true', { expires: 365 }) 
     } else {
-      Cookies.set('RoamNavigator_IsEnabled', 'false')     
+      Cookies.set('RoamNavigator_IsEnabled', 'false', { expires: 365 })     
     }
   }
 
@@ -477,6 +479,7 @@
     // Add top level navigations to the list of navigateItems
     withClass(sidebar, 'log-button', (logButton) => {
       const text = logButton.innerText;
+      console.log(text)
       if (text === 'DAILY NOTES' ||
           text === DAILY_NOTES_KEY + '\nDAILY NOTES') {
         navigateItems.push({
@@ -491,8 +494,8 @@
           mustBeKeys: GRAPH_OVERVIEW_KEY,
           keepGoing: true,
         });
-      } else if (text === 'ALL PAGES' ||
-                 text === ALL_PAGES_KEY + '\nALL PAGES') {
+      } else if (text.includes('ALL PAGES') ||  
+                 text === ALL_PAGES_KEY + '\nALL PAGES') { //42 change - to make work on ipad
         navigateItems.push({
           element: logButton,
           mustBeKeys: ALL_PAGES_KEY,
@@ -762,6 +765,7 @@
     return onlyLinks || renderedAny;
   }
 
+
   function renderTip(key, option) {
     const prefix = key.slice(0, navigateKeysPressed.length);
     const rest = key.slice(navigateKeysPressed.length);
@@ -793,9 +797,9 @@
     }
     if (matchingClass('rm-block-text')(el) ||
         el.id === 'block-input-ghost') {
-      findParent(el, matchingClass('flex-h-box')).prepend(tip);
+      findParent(el, matchingClass('rm-block-main')).prepend(tip);
     } else if (matchingClass('bp3-button')(el)) {
-      const parent = findParent(el, matchingClass('flex-h-box'));
+      const parent = findParent(el, matchingClass('rm-block-main'));
       if (parent) {
         parent.firstElementChild.after(tip);
       } else {

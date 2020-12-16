@@ -74,7 +74,7 @@
 
 
   roam42.livePreview.setRoamLivePreviewState = (val)=>{
-    Cookies.set('RoamLivePreview_IsEnabled', val) 
+    Cookies.set('RoamLivePreview_IsEnabled', val, { expires: 365 }) 
     roam42.livePreview.roam42LivePreviewState = val
   }
 

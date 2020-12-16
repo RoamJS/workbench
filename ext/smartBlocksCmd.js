@@ -55,15 +55,15 @@
                              help:'<b>DATEBASIS</b><br/>Time machine mode<br/><br/>1: Date basis for date commands<br/>DNP for daily page<br/>NLP for other dates<br/>Defaults to TODAY at start of<br/>each workflow '});
       valueArray.push({key: '<% CURSOR %> (SmartBlock Command)',             icon:'gear', value: '<%CURSOR%>',             processor:'static',
                              help:'<b>CURSOR</b><br/>Defines where cursor<br/> should be located after<br/> the workflow completes.'});
-      valueArray.push({key: '<% CLIPBOARDCOPY %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static',
-                             help:'<b>CLIPBOAD</b><br/>Gets the text of the clipboard as text'});
-      valueArray.push({key: '<% CLIPBOARDPASTETEXT: %> (SmartBlock Command)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static',
-                             help:'<b>CLIPBOARDPASTETEXT</b><br/>Writes text to the clipboard<br/><br/>1: text'});
+      valueArray.push({key: '<% CLIPBOARDCOPY: %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static',
+                             help:'<b>CLIPBOARD</b><br/>Writes text to the clipboard<br/><br/>1: text'});
+      valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock Command)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static',
+                             help:'<b>CLIPBOARDPASTETEXT</b><br/>Gets the text of the clipboard as text'});
       valueArray.push({key: '<% CONCAT: %> (SmartBlock Command)',             icon:'gear', value: '<%CONCAT:&&&%>',         processor:'static',
                              help:'<b>CONCAT</b><br/>Combines a comma separed list<br/> of strings ont one string<br/><br/>1: comma separated list'});
       valueArray.push({key: '<% CURRENTBLOCKREF: %> (SmartBlock Command)',    icon:'gear', value: '<%CURRENTBLOCKREF%>',    processor:'static',
                              help:'<b>CURRENTBLOCKREF</b><br/>Returns the block UID<br/> for the current block'});
-      valueArray.push({key: '<% DATE: %> (SmartBlock Command)',               icon:'gear', value: '<%DATE:&&&%>',           processor:'static',
+      valueArray.push({key: '<% DATE: %> dd (SmartBlock Command)',               icon:'gear', value: '<%DATE:&&&%>',           processor:'static',
                              help:'<b>DATE</b><br/>Returns a Roam formatted<br/>dated page reference.<br/><br/>1: NLP expression<br/>2: optional: format for returned <br/>date, example: YYYY-MM-DD'});
       valueArray.push({key: '<% EXIT %> (SmartBlock Command)',               icon:'gear', value: '<%EXIT%>',               processor:'static',
                              help:'<b>EXIT</b><br/>Stops the workflow from<br/>going further after<br/>completing the current block'});
@@ -107,6 +107,8 @@
                              help:'<b>RANDOMBLOCKMENTION</b><br/>Returns random block where<br/>page ref mentioned<br/><br/>1: Page name without [[]] or #'});
       valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock Command)',         icon:'gear', value: '<%RANDOMPAGE%>',         processor:'static',
                              help:'<b>RANDOMPAGE</b><br/>Returns random page from graph'});
+      valueArray.push({key: '<% REPEAT: %> (SmartBlock Command)',    icon:'gear', value: '<%REPEAT:&&&%>',processor:'static',
+                             help:'<b>REPEAT</b><br/>Repeats the current block<br/> a number of specified times<br/><br/>1. Number of times for repeat'});  
       valueArray.push({key: '<% RESOLVEBLOCKREF: %> (SmartBlock Command)',    icon:'gear', value: '<%RESOLVEBLOCKREF:&&&%>',processor:'static',
                              help:'<b>RESOLVEBLOCKREF</b><br/>Convert block ref to text<br/><br/>1. Block reference'});
       valueArray.push({key: '<% RESOLVEBLOCKREFATEND: %> (SmartBlock Command)',icon:'gear',value: '<%RESOLVEBLOCKREFATEND:&&&%>',processor:'static',
