@@ -21,7 +21,7 @@
   }
 
   roam42.formatConverterUI.setLastFormat = (val)=>{
-    Cookies.set('formatConverterUI_lastFormat', val); 
+    Cookies.set('formatConverterUI_lastFormat', val, { expires: 365 }); 
   }  
       
   roam42.formatConverterUI.changeFormat = async ()=> {

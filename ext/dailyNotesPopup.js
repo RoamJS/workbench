@@ -109,7 +109,7 @@
           left:   this.panelDNP.currentData.left.replace('px','') ,
           top:    this.panelDNP.currentData.top.replace('px','') 
         };
-        Cookies.set('DNP_Parameters_Dimensions', JSON.stringify(UIValues));
+        Cookies.set('DNP_Parameters_Dimensions', JSON.stringify(UIValues), { expires: 365 });
     },
 
     addPanelEvents() {
