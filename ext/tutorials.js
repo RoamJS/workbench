@@ -24,7 +24,7 @@
       ],
       contentSize: {
         width:  590,
-        height: 405
+        height: 550
       },
       // resizeit: {
       //   disable: true
