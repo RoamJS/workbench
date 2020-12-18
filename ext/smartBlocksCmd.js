@@ -160,7 +160,6 @@
   
     roam42.smartBlocks.proccessBlockWithSmartness = async (textToProcess)=>{
       let ifCommand = null;  // null if no IF, true process THEN, false process ELSE
-      let exitCommandFound = false; //exit command included
 
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%REPEAT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var blockCommand = await roam42.common.replaceAsync(textToProcess, /(\<\%GET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
@@ -331,12 +330,6 @@
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOBLOCKOUTPUT\%\>)/g, async (match, name)=>{
           return roam42.smartBlocks.exclusionBlockSymbol;
         }); 
-        //test for EXIT command
-        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%EXIT\%\>)/g, async (match, name)=>{
-          exitCommandFound=true;
-          return roam42.smartBlocks.exitBlockCommand; 
-        }); 
-
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IF:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%IF:','').replace('%>','');
           try {
@@ -387,6 +380,13 @@
           iziToast.show({message:params[1],timeout:Number(params[0]*1000),theme:'dark',progressBar:true,animateInside:true,close:true,closeOnClick:true,displayMode:2});  
           return ''
         });
+        
+        //test for EXIT command
+        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%EXIT\%\>)/g, async (match, name)=>{
+          roam42.smartBlocks.exitTriggered=true;
+          return ''; 
+        }); 
+        if(roam42.smartBlocks.exitTriggered==true) return textToProcess;   //exit procesing
 
         //MULTIBLOCK commands
         //shoud not be run if the block is flagged for nooutput
@@ -443,10 +443,7 @@
       } //if ifTrueDefinedStopProcessing
 
       if(textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol))
-        if(exitCommandFound)
-          return roam42.smartBlocks.exclusionBlockSymbol && roam42.smartBlocks.exitBlockCommand; //skip this block and exit
-        else
-          return roam42.smartBlocks.exclusionBlockSymbol; //skip this block 
+        return roam42.smartBlocks.exclusionBlockSymbol; //skip this block 
       return textToProcess; //resert new text
     }
     

@@ -13,7 +13,6 @@
   roam42.smartBlocks.activeWorkflow.focusOnBlock = ''; // if set with <%FOCUSONBLOCK%> Will move to this block for focus mode after workflow
   roam42.smartBlocks.activeWorkflow.arrayToWrite = []; // use to output multiple blocks from a command
   roam42.smartBlocks.exclusionBlockSymbol = 'NOUTNOUTNOUTNOUT'; //used to indicate a block is not to be inserted
-  roam42.smartBlocks.exitBlockCommand     = 'SBEXITSBEXITSBEXIT'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.replaceFirstBlock    = 'SBRPLCSBRPLCSBRPLC'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.customCommands = [];
   roam42.smartBlocks.SmartBlockPopupHelpEnabled = true;
@@ -32,14 +31,18 @@
       roam42.smartBlocks.SmartBlockPopupHelpEnabled = false;
     
     
-    roam42.smartBlocks.UserDefinedWorkflowsList = async () => {
+    roam42.smartBlocks.UserDefinedWorkflowsList = async (hideWorkflow=false) => {
       let sbList = await roam42.common.getBlocksReferringToThisPage("42SmartBlock");
       let results = [];
       for(var sb of sbList ) {
         try {
-          var sKey =  await roam42.common.replaceAsync(sb[0].string,"#42SmartBlock", ()=>{return ''});
-          if(sKey.trim()!='')
-            results.push({  key: sKey.trim(),  value: sb[0].uid,processor:'blocks'});          
+          var sKey  = sb[0].string.replace('#42SmartBlock','');
+          var bHide = sKey.search('<%HIDE%>')>0 ? true : false;
+          sKey = sKey.replace('<%HIDE%>','').trim();
+          if(sKey.trim()!='') {
+            if(hideWorkflow==false || hideWorkflow==true && bHide == false) 
+              results.push({  key: sKey.trim(),  value: sb[0].uid,processor:'blocks'});        
+          }
         } catch(e) {}
       }
       return results = await roam42.common.sortObjectByKey(results);
@@ -163,7 +166,7 @@
     const blocksToInsert = item => {
       //cleanup
       setTimeout(async () => {        
-        roam42.smartBlocks.sbBomb(item);
+        roam42.smartBlocks.sbBomb(item,true);
       }, 300); // end setTimeout
       return ' ';        
     };
@@ -257,10 +260,10 @@
                     roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = insertText;                
                     roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = document.activeElement.id;
                     insertText = await roam42.smartBlocks.proccessBlockWithSmartness(insertText);
+
                     //test for EXIT command
-                    if( insertText.includes(roam42.smartBlocks.exitBlockCommand)) {
-                      roam42.smartBlocks.exitTriggered  = true; //forces workflow to stop after finishing his block
-                    }  
+                    if(roam42.smartBlocks.exitTriggered == true) return;  
+                    
                     if( !insertText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) {
                       if (firstBlock==true && document.activeElement.value.length>2) {
                         firstBlock = false;
@@ -334,9 +337,10 @@
                       await roam42.smartBlocks.outputArrayWrite()
                       
                       if(roam42.smartBlocks.exitTriggered==true) return;
-                      
+                                            
                       if (n.children) await loopStructure(n.children, level + 1);
-                    } 
+                    }  //end of exclsionBlockSymbol test
+                      
                   }
                 }; //END of LOOPSTRUCTURE
 
@@ -457,6 +461,7 @@
       var tribute = new Tribute({
         trigger: smartBlockTrigger,
         requireLeadingSpace: false,
+        itemClass: 'tribute-item',
         menuItemTemplate: function(item) {
           var img = '';
           switch(item.original.icon) {
@@ -483,7 +488,7 @@
         },
         menuItemLimit: 25,
         values:   async (text, cb) => {
-                    let results = await roam42.smartBlocks.UserDefinedWorkflowsList();
+                    let results = await roam42.smartBlocks.UserDefinedWorkflowsList(true);
                     await roam42.smartBlocks.addCommands( results );
                     cb( results );
                   },
