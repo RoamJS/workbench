@@ -132,41 +132,40 @@
     }
     
     roam42.smartBlocks.outputArrayWrite = async ()=> {
-        let blockInsertCounter = 0;
-        if(roam42.smartBlocks.activeWorkflow.arrayToWrite.length>0) {
-          for(let sb of roam42.smartBlocks.activeWorkflow.arrayToWrite) {
-            var textToInsert = sb.text;
-            if(sb.reprocess == true) textToInsert =  await roam42.smartBlocks.proccessBlockWithSmartness(textToInsert);
-            var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-            let txtarea = document.querySelector("textarea.rm-block-input");
-            setValue.call(txtarea, textToInsert );
-            var e = new Event('input', { bubbles: true });
-            txtarea.dispatchEvent(e);  
-            //PRESS ENTER 
-            {
-              let currentBlockId = document.querySelector('textarea.rm-block-input').id
+      let countOfblocksToInsert = roam42.smartBlocks.activeWorkflow.arrayToWrite.length
+      if(countOfblocksToInsert>0) {
+        let blocksInserted = 1;
+        for(let sb of roam42.smartBlocks.activeWorkflow.arrayToWrite) {
+          var textToInsert = sb.text;
+          if(sb.reprocess == true) textToInsert =  await roam42.smartBlocks.proccessBlockWithSmartness(textToInsert);
+          var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+          let txtarea = document.querySelector("textarea.rm-block-input");
+          setValue.call(txtarea, textToInsert );
+          var e = new Event('input', { bubbles: true });
+          txtarea.dispatchEvent(e);  
+          //PRESS ENTER 
+          if(blocksInserted!=countOfblocksToInsert){
+            blocksInserted+=1;
+            let currentBlockId = document.querySelector('textarea.rm-block-input').id
+            await roam42KeyboardLib.pressEnter(50);
+            await roam42.common.sleep(100);
+            if( currentBlockId == document.querySelector('textarea.rm-block-input').id ) {
               await roam42KeyboardLib.pressEnter(50);
-              await roam42.common.sleep(100);
-              if( currentBlockId == document.querySelector('textarea.rm-block-input').id ) {
-                await roam42KeyboardLib.pressEnter(50);
-              }
-            }          
-            blockInsertCounter += 1;
-            if(blockInsertCounter > 9) {  //SmartBlocks coffee break to allow Roam to catch its breath
-                blockInsertCounter = 0;
-                await roam42.common.sleep(100);                  
-            }            
-          }
-          //reset for next run
-          await roam42.common.sleep(100);
-          roam42.smartBlocks.activeWorkflow.arrayToWrite = [];
-        }      
+            }
+          }          
+          if(blocksInserted % 10 == 0) //SmartBlocks coffee break to allow Roam to catch its breath
+              await roam42.common.sleep(100);                  
+        }
+        //reset for next run
+        await roam42.common.sleep(100);
+        roam42.smartBlocks.activeWorkflow.arrayToWrite = [];
+      }      
     }
 
     const blocksToInsert = item => {
       //cleanup
       setTimeout(async () => {        
-        roam42.smartBlocks.sbBomb(item,true);
+        roam42.smartBlocks.sbBomb(item);
       }, 300); // end setTimeout
       return ' ';        
     };
@@ -235,6 +234,7 @@
                 var currentOutlineLevel = 1;
                 roam42.smartBlocks.activeWorkflow.focusOnBlock = '' // if set with <%FOCUSONBLOCK%> Will move to this block for focus mode after workflow
               
+                // LOOPSTRUCTURE ---------------
                 var loopStructure = async (parentNode, level) => {
 
                   if(roam42.smartBlocks.exitTriggered==true) return;                                                      
@@ -259,8 +259,10 @@
                     if (insertText == "") insertText = " "; //space needed in empty cell to maintaing indentation on empty blocks
                     roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = insertText;                
                     roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = document.activeElement.id;
-                    insertText = await roam42.smartBlocks.proccessBlockWithSmartness(insertText);
-
+                    
+                    if(insertText.match(/\<\%(.*)\%\>/)) //process if it has a command
+                      insertText = await roam42.smartBlocks.proccessBlockWithSmartness(insertText);
+                    
                     //test for EXIT command
                     if(roam42.smartBlocks.exitTriggered == true) return;  
                     
@@ -275,7 +277,14 @@
                         setValue.call(txtarea, front + insertText + back );
                         var e = new Event('input', { bubbles: true });
                         txtarea.dispatchEvent(e);                        
-                      } else {
+                        await roam42.common.sleep(100);
+                      } else {  
+                        if (firstBlock==false) {
+                          let currentBlockId = document.querySelector('textarea.rm-block-input').id
+                          await roam42KeyboardLib.pressEnter(150);
+                          if(currentBlockId==document.querySelector('textarea.rm-block-input').id ) await roam42KeyboardLib.pressEnter(50);
+                        }
+                        firstBlock=false;
                         let txtarea = document.querySelector("textarea.rm-block-input");
                         await roam42.common.replaceAsync(insertText, /(\<\%CURSOR\%\>)/g, async (match, name)=>{
                           roam42.smartBlocks.activeWorkflow.startingBlockTextArea = document.activeElement.id; //if CURSOR, then make this the position block in end
@@ -318,16 +327,6 @@
 
                       if(roam42.smartBlocks.exitTriggered==true) return;                                                      
 
-                      //PRESS ENTER 
-                      if(!insertText.includes(roam42.smartBlocks.replaceFirstBlock)) {
-                        let currentBlockId = document.querySelector('textarea.rm-block-input').id
-                        await roam42KeyboardLib.pressEnter(50);
-                        await roam42.common.sleep(100);
-                        if( currentBlockId == document.querySelector('textarea.rm-block-input').id ) {
-                          await roam42KeyboardLib.pressEnter(50);
-                        }
-                      }
-
                       blockInsertCounter += 1;
                       if(blockInsertCounter > 9) {  //SmartBlocks coffee break to allow Roam to catch its breath
                           blockInsertCounter = 0;
@@ -347,13 +346,7 @@
                 if (results[0][0].children){
                   await loopStructure(results[0][0].children, 1); //only process if has children
                 }
-                //delete last blok inserted
-                if(skipCursorRelocation==false){
-                  await roam42.common.sleep(100);                
-                  roam42.common.blockDelete(document.activeElement);
-                  await roam42.common.sleep(100);                
-                }
-                //Do a FOCUS on BLOCK
+
                 if(roam42.smartBlocks.activeWorkflow.focusOnBlock!='' && skipCursorRelocation==false) {
                   roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeWorkflow.focusOnBlock));   
                   await roam42.common.sleep(100);
