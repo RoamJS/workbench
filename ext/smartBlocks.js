@@ -12,6 +12,7 @@
   roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = '';            //the HTML Element ID of current point of execution
   roam42.smartBlocks.activeWorkflow.focusOnBlock = ''; // if set with <%FOCUSONBLOCK%> Will move to this block for focus mode after workflow
   roam42.smartBlocks.activeWorkflow.arrayToWrite = []; // use to output multiple blocks from a command
+  roam42.smartBlocks.activeWorkflow.onBlockExitCode = ''; //code executed at end of block  
   roam42.smartBlocks.exclusionBlockSymbol = 'NOUTNOUTNOUTNOUT'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.replaceFirstBlock    = 'SBRPLCSBRPLCSBRPLC'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.customCommands = [];
@@ -39,9 +40,10 @@
           var sKey  = sb[0].string.replace('#42SmartBlock','');
           var bHide = sKey.search('<%HIDE%>')>0 ? true : false;
           sKey = sKey.replace('<%HIDE%>','').trim();
+          sKey = sKey.replace('<%NOCURSOR%>','').trim();
           if(sKey.trim()!='') {
             if(hideWorkflow==false || hideWorkflow==true && bHide == false) 
-              results.push({  key: sKey.trim(),  value: sb[0].uid,processor:'blocks'});        
+              results.push({  key: sKey.trim(),  value: sb[0].uid, processor:'blocks', fullCommand: sb[0].string});        
           }
         } catch(e) {}
       }
@@ -207,6 +209,7 @@
             if(item.original.processor=='blocks') {
 
               var results = await roam42.common.getBlockInfoByUID( item.original.value, true );
+              var currentSmartBlockCommand = item.original.fullCommand;
               roam42.smartBlocks.activeWorkflow.name = item.original.key;
               roam42.smartBlocks.activeWorkflow.UID  = item.original.value;
               if(skipCursorRelocation==false) { 
@@ -216,18 +219,22 @@
               roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = '';
               roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = '';
               roam42.smartBlocks.activeWorkflow.arrayToWrite = [];
+              roam42.smartBlocks.activeWorkflow.onBlockExitCode = '';
               roam42.smartBlocks.exitTriggered = false; // if true will force the workflow to stop
               
               //loop through array outline and insert into Roam
               if (results[0][0].children.length == 1 && !results[0][0].children[0].children) {
                 //has no children, just insert text into block and safe it
                 var processedText = await roam42.smartBlocks.proccessBlockWithSmartness( results[0][0].children[0].string);
+                if(processedText.match(/\<\%(\s*[\S\s]*?)\%\>/)) //ONEXIT PROCESSING    
+                  processedText = await roam42.smartBlocks.processBlockAfterBlockInserted(processedText);                
                 roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = processedText;
                 roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = document.activeElement.id;
                 if( !processedText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) 
                   if(!processedText.includes(roam42.smartBlocks.replaceFirstBlock))
                     insertSnippetIntoBlock( processedText, true, removeTributeTriggerSpacer );
                 await roam42.smartBlocks.outputArrayWrite()
+                await roam42.smartBlocks.processBlockOnBlockExit()                
               } else {
                 //has children, start walking through the nodes and insert them
                 let blockInsertCounter = 0 //used to track how many inserts performed so we can take a coffee break at 19, to let Roam catch up
@@ -258,6 +265,8 @@
                     if( !insertText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) {
                       if (firstBlock==true && document.activeElement.value.length>2) {
                         firstBlock = false;
+                        if(insertText.match(/\<\%(\s*[\S\s]*?)\%\>/)) //ONEXIT PROCESSING    
+                          insertText = await roam42.smartBlocks.processBlockAfterBlockInserted(insertText);                        
                         var txtarea = document.querySelector("textarea.rm-block-input");
                         var strPos = txtarea.selectionStart;
                         var front = txtarea.value.substring(0, strPos);
@@ -267,6 +276,7 @@
                         var e = new Event('input', { bubbles: true });
                         txtarea.dispatchEvent(e);                        
                         await roam42.common.sleep(100);
+                        await roam42.smartBlocks.processBlockOnBlockExit()                
                       } else {  
                         if (firstBlock==false) {
                           let currentBlockId = document.querySelector('textarea.rm-block-input').id
@@ -286,16 +296,12 @@
                           }                          
                         }
                         firstBlock=false;
-                        let txtarea = document.activeElement; //  document.querySelector("textarea.rm-block-input");
-                        await roam42.common.replaceAsync(insertText, /(\<\%CURSOR\%\>)/g, async (match, name)=>{
-                          roam42.smartBlocks.activeWorkflow.startingBlockTextArea = document.activeElement.id; //if CURSOR, then make this the position block in end
-                        }); 
-                        insertText = await roam42.common.replaceAsync(insertText, /(\<\%FOCUSONBLOCK\%\>)/g, async (match, name)=>{
-                          //if assigned, will zoom to this location later
-                          roam42.smartBlocks.activeWorkflow.focusOnBlock = document.activeElement.id; //if CURSOR, then make this the position block in end
-                          return ''; 
-                        });                               
+
+                        if(insertText.match(/\<\%(\s*[\S\s]*?)\%\>/)) //ONEXIT PROCESSING    
+                          insertText = await roam42.smartBlocks.processBlockAfterBlockInserted(insertText);                        
+                        
                         //https://stackoverflow.com/questions/45659576/trigger-change-events-when-the-value-of-an-input-changed-programmatically-react
+                        let txtarea = document.querySelector("textarea.rm-block-input");
                         var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
                         setValue.call(txtarea, insertText );
                         var e = new Event('input', { bubbles: true });
@@ -340,6 +346,8 @@
                       }
                       
                       await roam42.smartBlocks.outputArrayWrite()
+
+                      await roam42.smartBlocks.processBlockOnBlockExit()                
                       
                       if(roam42.smartBlocks.exitTriggered==true) return;
                                             
@@ -368,7 +376,6 @@
                   setTimeout(()=>{
                     try {
                       if(document.activeElement.value.includes('<%CURSOR%>')) {
-                        console.log('CURSOR')
                         var newValue = document.querySelector('textarea.rm-block-input').value;
                         document.activeElement.value = '';
                         insertSnippetIntoBlock(newValue);
@@ -378,9 +385,8 @@
                     } catch(e) {}
                   },200);                
                }
-               // DEFOCUS 
-               if(roam42.smartBlocks.activeWorkflow.name.includes('<%DEFOCUS%>')){
-                 console.log('defocus')
+               // NOCURSOR - dont show a curosr after it runs 
+               if(currentSmartBlockCommand.includes('<%NOCURSOR%>')){
                   setTimeout(async ()=>{ //let other commands process before exiting block edit
                     await roam42KeyboardLib.pressEsc(50);
                     await roam42KeyboardLib.pressEsc(50);
