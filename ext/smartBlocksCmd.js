@@ -56,8 +56,8 @@
                              help:'<b>CURSOR</b><br/>Defines where cursor<br/> should be located after<br/> the workflow completes.'});
       valueArray.push({key: '<% CLIPBOARDCOPY: %> (SmartBlock Command)',      icon:'gear', value: '<%CLIPBOARDCOPY:&&&%>',  processor:'static',
                              help:'<b>CLIPBOARD</b><br/>Writes text to the clipboard<br/><br/>1: text'});
-      valueArray.push({key: '<% CLIPBOARDPASTETEXT %> (SmartBlock Command)', icon:'gear', value: '<%CLIPBOARDPASTETEXT%>', processor:'static',
-                             help:'<b>CLIPBOARDPASTETEXT</b><br/>Gets the text of the clipboard as text'});
+      valueArray.push({key: '<% DEFOCUS %> (SmartBlock Command)', icon:'gear', value: '<%DEFOCUS%>', processor:'static',
+                             help:'<b>DEFOCUS</b><br/>Only use in #42SmartBlock definition<br/>To exit out of edit mode<br/>after SmartBlock runs.'});
       valueArray.push({key: '<% CONCAT: %> (SmartBlock Command)',             icon:'gear', value: '<%CONCAT:&&&%>',         processor:'static',
                              help:'<b>CONCAT</b><br/>Combines a comma separed list<br/> of strings ont one string<br/><br/>1: comma separated list'});
       valueArray.push({key: '<% CURRENTBLOCKREF: %> (SmartBlock Command)',    icon:'gear', value: '<%CURRENTBLOCKREF%>',    processor:'static',
@@ -352,11 +352,6 @@
             });
           }
         }      
-        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%FOCUSONBLOCK\%\>)/g, async (match, name)=>{
-          //if assigned, will zoom to this location later
-          roam42.smartBlocks.activeWorkflow.focusOnBlock = document.activeElement.id; //if CURSOR, then make this the position block in end
-          return ''; 
-        });       
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RESOLVEBLOCKREFATEND:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%RESOLVEBLOCKREFATEND:','').replace('%>','').trim();
           return roam42.smartBlocks.resolveBlockRef(commandToProcess);
