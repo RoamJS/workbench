@@ -73,11 +73,12 @@
         if(newValue=='') newValue=' ';
         var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;      
         setValue.call(txtarea, newValue );
+        if(startPos>=0) document.activeElement.setSelectionRange(startPos,startPos)
         var e = new Event('input', { bubbles: true });
         txtarea.dispatchEvent(e);          
-        setTimeout(async()=>{
-          if(startPos>=0) document.activeElement.setSelectionRange(startPos,startPos)
-        },25)      
+//         setTimeout(async()=>{
+// //          if(startPos>=0) document.activeElement.setSelectionRange(startPos,startPos)
+//         },750)      
       },50)
     }
     roam42.smartBlocks.insertSnippetIntoBlock = insertSnippetIntoBlock;
@@ -241,18 +242,6 @@
                   let orderedNode = await roam42.common.sortObjectsByOrder(parentNode);
                   
                   for (var i = 0; i < orderedNode.length; i++) {
-                    //indent/unindent if needed
-                    if (currentOutlineLevel < level) {
-                      for (var inc = currentOutlineLevel; inc < level; inc++) {
-                        await roam42KeyboardLib.pressTab(50);
-                        currentOutlineLevel += 1;
-                      }
-                    } else if (currentOutlineLevel > level) {
-                      for (var inc = currentOutlineLevel; inc > level; inc--) {
-                        await roam42KeyboardLib.pressShiftTab(50);
-                        currentOutlineLevel -= 1;
-                      }
-                    }
                     var n = orderedNode[i];
                     //TEXT INSERTION HAPPENING HERE
                     var insertText = n.string;
@@ -260,7 +249,7 @@
                     roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = insertText;                
                     roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = document.activeElement.id;
                     
-                    if(insertText.match(/\<\%(.*)\%\>/)) //process if it has a command
+                    if(insertText.match(/\<\%(\s*[\S\s]*?)\%\>/)) //process if it has a command
                       insertText = await roam42.smartBlocks.proccessBlockWithSmartness(insertText);
                     
                     //test for EXIT command
@@ -283,12 +272,29 @@
                           let currentBlockId = document.querySelector('textarea.rm-block-input').id
                           await roam42KeyboardLib.pressEnter(150);
                           if(currentBlockId==document.querySelector('textarea.rm-block-input').id ) await roam42KeyboardLib.pressEnter(50);
+                          //indent/unindent if needed
+                          if (currentOutlineLevel < level) {
+                            for (var inc = currentOutlineLevel; inc < level; inc++) {
+                              await roam42KeyboardLib.pressTab(50);
+                              currentOutlineLevel += 1;
+                            }
+                          } else if (currentOutlineLevel > level) {
+                            for (var inc = currentOutlineLevel; inc > level; inc--) {
+                              await roam42KeyboardLib.pressShiftTab(50);
+                              currentOutlineLevel -= 1;
+                            }
+                          }                          
                         }
                         firstBlock=false;
-                        let txtarea = document.querySelector("textarea.rm-block-input");
+                        let txtarea = document.activeElement; //  document.querySelector("textarea.rm-block-input");
                         await roam42.common.replaceAsync(insertText, /(\<\%CURSOR\%\>)/g, async (match, name)=>{
                           roam42.smartBlocks.activeWorkflow.startingBlockTextArea = document.activeElement.id; //if CURSOR, then make this the position block in end
                         }); 
+                        insertText = await roam42.common.replaceAsync(insertText, /(\<\%FOCUSONBLOCK\%\>)/g, async (match, name)=>{
+                          //if assigned, will zoom to this location later
+                          roam42.smartBlocks.activeWorkflow.focusOnBlock = document.activeElement.id; //if CURSOR, then make this the position block in end
+                          return ''; 
+                        });                               
                         //https://stackoverflow.com/questions/45659576/trigger-change-events-when-the-value-of-an-input-changed-programmatically-react
                         var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
                         setValue.call(txtarea, insertText );
@@ -347,6 +353,7 @@
                   await loopStructure(results[0][0].children, 1); //only process if has children
                 }
 
+                // FOCUS on block
                 if(roam42.smartBlocks.activeWorkflow.focusOnBlock!='' && skipCursorRelocation==false) {
                   roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeWorkflow.focusOnBlock));   
                   await roam42.common.sleep(100);
@@ -359,19 +366,27 @@
                if(skipCursorRelocation==false) {
                 roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeWorkflow.startingBlockTextArea));
                   setTimeout(()=>{
-                  try {
-                    if(document.activeElement.value.includes('<%CURSOR%>'))    {
-                      var newValue = document.querySelector('textarea.rm-block-input').value;
-                      document.activeElement.value = '';
-                      insertSnippetIntoBlock(newValue);
-                    }
-                    else
-                      document.activeElement.setSelectionRange(document.activeElement.value.length,document.activeElement.value.length);                    
+                    try {
+                      if(document.activeElement.value.includes('<%CURSOR%>')) {
+                        console.log('CURSOR')
+                        var newValue = document.querySelector('textarea.rm-block-input').value;
+                        document.activeElement.value = '';
+                        insertSnippetIntoBlock(newValue);
+                      }
+                      else
+                        document.activeElement.setSelectionRange(document.activeElement.value.length,document.activeElement.value.length);                    
                     } catch(e) {}
                   },200);                
                }
-              }
-              
+               // DEFOCUS 
+               if(roam42.smartBlocks.activeWorkflow.name.includes('<%DEFOCUS%>')){
+                 console.log('defocus')
+                  setTimeout(async ()=>{ //let other commands process before exiting block edit
+                    await roam42KeyboardLib.pressEsc(50);
+                    await roam42KeyboardLib.pressEsc(50);
+                  },400);
+               }
+             }            
             } // end IF
 
           
@@ -386,10 +401,6 @@
       return " ";    
     };
     
-    roam42.smartBlocks.nextJump = ( forward=true )=> {
-      
-    } 
-    
     roam42.smartBlocks.buttonClickHandler = async (target)=>{
       if(target.tagName=='BUTTON') {
         var block = target.closest('.roam-block');
@@ -403,28 +414,47 @@
           var params = commandInBlock[1].split(':')
           var userCommands = await roam42.smartBlocks.UserDefinedWorkflowsList();
           var sbCommand = userCommands.find(e => e.key == params[2]);
+          console.log(sbCommand)
           if(sbCommand==undefined){
             //no valid SB, highlight text
             roam42.help.displayMessage('<b>' + params[0] + '</b> - Cannot find this #42SmartBlock',3000);
           } else {          
           //valid SB, remove it andrun it    
+          var removeButton = true;
           try { 
             for(var v of params[3].split(',')) {
               var newVar = v.split('=');
               if(newVar.length)
                 roam42.smartBlocks.activeWorkflow.vars[newVar[0]] = newVar[1];
+              if(newVar[0]=='42RemoveButton' && newVar[1]=='false')
+                removeButton = false;
             }
-          } catch(e) {};        
+          } catch(e) {};  
+          var results = await roam42.common.getBlockInfoByUID( sbCommand.value, true );
+          var paddingSpaces = '';
+          var paddingLength = 0;
+          //test if SB has children, if not, the insertion needs to be handled differently
+          if (results[0][0].children.length == 1 && !results[0][0].children[0].children) {
+            paddingSpaces = '  ';
+            paddingLength = 2;            
+          }
           await roam42.common.simulateMouseClick(block);
           await roam42.common.sleep(100);
           var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;   
-          var cursorLocation = blockInfo.search(commandInBlock[0]);
-          setValue.call(document.activeElement, blockInfo.replace(commandInBlock[0],'') );
+          var cursorLocation = null;
+          if(removeButton == true) {
+            cursorLocation = blockInfo.search(commandInBlock[0]) + paddingLength;
+            setValue.call(document.activeElement, blockInfo.replace(commandInBlock[0],paddingSpaces)); 
+          }
+          else {
+            cursorLocation = blockInfo.search(commandInBlock[0]) + commandInBlock[0].length + paddingLength;              
+            setValue.call(document.activeElement, blockInfo.replace(commandInBlock[0],commandInBlock[0] + paddingSpaces)); 
+          }
           var e = new Event('input', { bubbles: true });
           document.activeElement.dispatchEvent(e);          
-          await roam42.common.sleep(100);
+          await roam42.common.sleep(50);
           document.activeElement.setSelectionRange(cursorLocation,cursorLocation);
-          await roam42.common.sleep(100);        
+          await roam42.common.sleep(100);
           await blocksToInsert({original: sbCommand});
           }
         }    
