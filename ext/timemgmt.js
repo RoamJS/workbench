@@ -5,6 +5,24 @@
   roam42.timemgmt.smartBlocks = {};
   roam42.timemgmt.smartBlocks.commands = {};
   
+  roam42.timemgmt.breadCrumbsByUID = async (uid, separator = ' > ', includePageTitle=false) =>{
+    uid = uid.replace('((','').replace('))','');
+    var parents = await roam42.common.getBlockParentUids(uid);
+    var path = '';
+    if(parents.length>0) { // contains a path
+      if(includePageTitle)
+        path = '[[' + parents[0][1].title + ']]' + separator;
+      for(let block of parents)
+        path +=  '((' + block[0].uid + '))' + separator;
+      path = path.substring(0,path.length - separator.length);
+      return path;
+    } else if(includePageTitle){ //no path
+        var parent = await roam42.common.getPageNamesFromBlockUidList([uid]);
+        return '[[' + parent[0][1].title + ']]' + separator;
+    } else
+      return ''
+  }
+  
   roam42.timemgmt.outputTaskBlocks =  async (tasksToProcess,textToProcess,commandMatch,params)=> {
     var outputCount = 0;
     for(var block of tasksToProcess) {
@@ -30,6 +48,11 @@
         newText = await roam42.common.replaceAsync(newText, /(\<\%UID\%\>)/g, async (match, name)=>{
           return `${block.taskUID}`;
         });        
+        newText = await roam42.common.replaceAsync(newText, /(\<\%PATH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+          var commandToProcess = match.replace('<%PATH:','').replace('%>','');   
+          var vValue = roam42.timemgmt.breadCrumbsByUID(block.taskUID, commandToProcess);
+          return vValue;   
+        });              
         newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
         await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);
       }
@@ -168,7 +191,7 @@
   roam42.timemgmt.todosOverdue = async (limitOutputCount = 50, sortAscending=true, includeDNPTasks=true)=>{
     var yesterday = roam42.dateProcessing.testIfRoamDateAndConvert(roam42.dateProcessing.parseTextForDates('yesterday'));
     var outputTODOs = [];
-    var outputCounter = 1;
+    var outputCounter = 0;
     
     //STEPS: (1) loop through each tag to see if it is a date before today (2) Also check if page name is dated
     for(var task of await roam42.timemgmt.getAllTasks()) {
@@ -378,7 +401,12 @@
       });
       newText = await roam42.common.replaceAsync(newText, /(\<\%UID\%\>)/g, async (match, name)=>{
         return `${block[0].uid}`;
-      });              
+      });
+      newText = await roam42.common.replaceAsync(newText, /(\<\%PATH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var commandToProcess = match.replace('<%PATH:','').replace('%>','');   
+        var vValue = roam42.timemgmt.breadCrumbsByUID(block[0].uid, commandToProcess);
+        return vValue;   
+      });      
       newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);      
     }
@@ -485,7 +513,12 @@
       });
       newText = await roam42.common.replaceAsync(newText, /(\<\%UID\%\>)/g, async (match, name)=>{
         return `${block[0].uid}`;
-      });       
+      });
+      newText = await roam42.common.replaceAsync(newText, /(\<\%PATH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var commandToProcess = match.replace('<%PATH:','').replace('%>','');   
+        var vValue = roam42.timemgmt.breadCrumbsByUID(block[0].uid, commandToProcess);
+        return vValue;   
+      });      
       newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);      
     }
@@ -557,7 +590,12 @@
       });
       newText = await roam42.common.replaceAsync(newText, /(\<\%UID\%\>)/g, async (match, name)=>{
         return `${block[0].uid}`;
-      });              
+      });
+      newText = await roam42.common.replaceAsync(newText, /(\<\%PATH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+        var commandToProcess = match.replace('<%PATH:','').replace('%>','');   
+        var vValue = roam42.timemgmt.breadCrumbsByUID(block[0].uid, commandToProcess);
+        return vValue;   
+      });      
       newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);      
     }

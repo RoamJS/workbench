@@ -48,6 +48,8 @@
       valueArray.push({key: '<% BLOCKMENTIONSDATED: %> (SmartBlock Command)', icon:'gear', value: '<%BLOCKMENTIONSDATED:&&&%>',  processor:'static',
                              help:'<b>BLOCKMENTIONSDATED</b><br/>Returns list of blocks mentioned<br/> based on date range<br/>' +
                                    '<br/>1: Max blocks to return<br/>2: Page or Tag Name<br/>3: Start Date<br/>4. End Date<br/>5: Sort (ASC,DESC,NONE)<br/>6: (opt) filtering '});
+      valueArray.push({key: '<% BREADCRUMBS: %> (SmartBlock Command)',      icon:'gear', value: '<%BREADCRUMBS:&&&%>',  processor:'static',
+                             help:'<b>BREADCRUMBS</b><br/>Returns a list of<br/> parent block refs to a <br/>given block ref<br/><br/>1: Block reference<br/>2: Separator used between blok references'});      
       valueArray.push({key: '<% SEARCH: %> (SmartBlock Command)',             icon:'gear', value: '<%SEARCH:&&&%>',         processor:'static',
                              help:'<b>SEARCH</b><br/>Search all blocks for string of text<br/><br/>1: Max blocks to return<br/>2: String for search (case-sensitive)<br/>3: (opt) filtering '});
       valueArray.push({key: '<% DATEBASIS: %> (SmartBlock Command)',icon:'gear', value: '<%DATEBASIS:&&&%>',processor:'static',
@@ -106,6 +108,8 @@
                              help:'<b>ONBLOCKEXIT</b><br/>Asynchronous JavaScript code to <br/>run after a block has been<br/>processed by Roam42<br/>1. JavaScipt code<br/>Return value not processed'});
       valueArray.push({key: '<% PAGE %> subcommand (SmartBlock Command)',    icon:'gear', value: '<%PAGE%>',               processor:'static',
                              help:'<b>PAGE</b><br/>For commands that support<br/>the PAGE directive, a <br/>page reference is outpu'});
+      valueArray.push({key: '<% PATH: %> subcommand (SmartBlock Command)',                icon:'gear', value: '<%PATH:&&&%>',            processor:'static',
+                             help:'<b>PATH</b><br/>For supported commands returns the breadcrumb path<br/><br/>1. Separator between parent blocks'});
       valueArray.push({key: '<% UID %> subcommand (SmartBlock Command)',    icon:'gear', value: '<%UID%>',               processor:'static',
                              help:'<b>UID</b><br/>For commands that support<br/>the UID directive, a <br/>Block ref UID  is outpu'});
       valueArray.push({key: '<% RANDOMBLOCK %> (SmartBlock Command)',        icon:'gear', value: '<%RANDOMBLOCK%>',        processor:'static',
@@ -195,7 +199,6 @@
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%42SETTING:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandToProcess = match.replace('<%42SETTING:','').replace('%>','');
         var vValue = await roam42.settings.get(commandToProcess);
-        console.log(vValue)
         if(vValue==null) vValue = `--> Setting ${commandToProcess} not found in your graph <--`
         return vValue;   
       });      
@@ -279,7 +282,14 @@
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMPAGE\%\>)/g, async (match, name)=>{
           return await roam42.smartBlocks.getRandomPage();
         });
-        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIME\%\>)/g, async (match, name)=>{
+        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%BREADCRUMBS:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+          var textToProcess = match.replace('<%BREADCRUMBS:','').replace('%>','');
+          var blockUID  = textToProcess.substring(0,textToProcess.search(','));
+          var separator = textToProcess.substring(textToProcess.search(',')+1,);
+          var results = await roam42.timemgmt.breadCrumbsByUID(blockUID, separator, true);
+          return results;
+        });
+       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIME\%\>)/g, async (match, name)=>{
           return roam42.dateProcessing.getTime24Format()
         }); 
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIMEAMPM\%\>)/g, async (match, name)=>{
