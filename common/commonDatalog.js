@@ -2,6 +2,12 @@
 
 (()=>{
   
+  roam42.common.getBlockParentUids = async (uid) => {
+    try {
+      return await window.roamAlphaAPI.q(`[:find (pull ?block [{:block/parents [:block/uid]}]) :in $ [?block-uid ...] :where [?block :block/uid ?block-uid]]`,[uid]);
+    } catch (e) { return ''; }
+  }
+  
   roam42.common.getPageUidByTitle = async (title)=> {
     try {
       return await window.roamAlphaAPI.q(`[:find ?uid :where [?e :node/title "${title}"][?e :block/uid ?uid ] ]`)[0].toString();
