@@ -4,7 +4,10 @@
   
   roam42.common.getBlockParentUids = async (uid) => {
     try {
-      return await window.roamAlphaAPI.q(`[:find (pull ?block [{:block/parents [:block/uid]}]) :in $ [?block-uid ...] :where [?block :block/uid ?block-uid]]`,[uid]);
+      var parentUIDs = await window.roamAlphaAPI.q(`[:find (pull ?block [{:block/parents [:block/uid]}]) :in $ [?block-uid ...] :where [?block :block/uid ?block-uid]]`,[uid])[0][0];
+      var UIDS = parentUIDs.parents.map(e=> e.uid)
+      UIDS.shift();
+      return await roam42.common.getPageNamesFromBlockUidList(UIDS)
     } catch (e) { return ''; }
   }
   
@@ -195,7 +198,7 @@
   }
 
   window.roam42.common.testingReloadDatalog = () => {
-    roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'common/commonDatalog.js');
+    roam42.loader.addScriptToPage( "commonDatalog", roam42.host + 'common/commonDatalog.js');
   };  
 
 })();  

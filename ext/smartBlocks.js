@@ -421,7 +421,6 @@
           var params = commandInBlock[1].split(':')
           var userCommands = await roam42.smartBlocks.UserDefinedWorkflowsList();
           var sbCommand = userCommands.find(e => e.key == params[2]);
-          console.log(sbCommand)
           if(sbCommand==undefined){
             //no valid SB, highlight text
             roam42.help.displayMessage('<b>' + params[0] + '</b> - Cannot find this #42SmartBlock',3000);
