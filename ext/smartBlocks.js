@@ -2,7 +2,8 @@
 
 (() => {
   roam42.smartBlocks = {};
-  roam42.smartBlocks.activeWorkflow = {}
+  roam42.smartBlocks.activeWorkflow = {};
+  roam42.sb = (roam42.smartBlocks.activeWorkflow);
   roam42.smartBlocks.activeWorkflow.vars = new Object();  //used to store variables during running a Workflow  
   roam42.smartBlocks.activeWorkflow.name = ''; //name of currently running workflow  
   roam42.smartBlocks.activeWorkflow.UID  = ''; //uid where the SB originates from
@@ -77,10 +78,7 @@
         setValue.call(txtarea, newValue );
         if(startPos>=0) document.activeElement.setSelectionRange(startPos,startPos)
         var e = new Event('input', { bubbles: true });
-        txtarea.dispatchEvent(e);          
-//         setTimeout(async()=>{
-// //          if(startPos>=0) document.activeElement.setSelectionRange(startPos,startPos)
-//         },750)      
+        txtarea.dispatchEvent(e);
       },50)
     }
     roam42.smartBlocks.insertSnippetIntoBlock = insertSnippetIntoBlock;
@@ -201,7 +199,13 @@
               if(item.original.help && roam42.smartBlocks.SmartBlockPopupHelpEnabled){
                 roam42.help.displayMessage('<img height="22px" src="https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Fgear.png?v=1605994815962">'+
                                            ' ' + item.original.help,20000);
-              }
+              }          
+            var currentSmartBlockCommand = item.original.fullCommand + '';
+          
+            if(skipCursorRelocation==false) { 
+              roam42.smartBlocks.activeWorkflow.startingBlockTextArea = document.activeElement.id;
+              roam42.smartBlocks.activeWorkflow.startingBlockContents = document.activeElement.value;
+            }          
             if(item.original.processor=='date')   insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() );
             if(item.original.processor=='function') await item.original.value();
             if(item.original.processor=='static') insertSnippetIntoBlock( item.original.value, false );
@@ -210,13 +214,8 @@
             if(item.original.processor=='blocks') {
 
               var results = await roam42.common.getBlockInfoByUID( item.original.value, true );
-              var currentSmartBlockCommand = item.original.fullCommand;
               roam42.smartBlocks.activeWorkflow.name = item.original.key;
               roam42.smartBlocks.activeWorkflow.UID  = item.original.value;
-              if(skipCursorRelocation==false) { 
-                roam42.smartBlocks.activeWorkflow.startingBlockTextArea = document.activeElement.id;
-                roam42.smartBlocks.activeWorkflow.startingBlockContents = document.activeElement.value;
-              }
               roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = '';
               roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = '';
               roam42.smartBlocks.activeWorkflow.arrayToWrite = [];
@@ -227,15 +226,16 @@
               if (results[0][0].children.length == 1 && !results[0][0].children[0].children) {
                 //has no children, just insert text into block and safe it
                 var processedText = await roam42.smartBlocks.proccessBlockWithSmartness( results[0][0].children[0].string);
-                if(processedText.match(/\<\%(\s*[\S\s]*?)\%\>/)) //ONEXIT PROCESSING    
-                  processedText = await roam42.smartBlocks.processBlockAfterBlockInserted(processedText);                
+                processedText = await roam42.smartBlocks.processBlockAfterBlockInserted(processedText);                
                 roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = processedText;
                 roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = document.activeElement.id;
                 if( !processedText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) 
-                  if(!processedText.includes(roam42.smartBlocks.replaceFirstBlock))
-                    insertSnippetIntoBlock( processedText, true, removeTributeTriggerSpacer );
-                await roam42.smartBlocks.outputArrayWrite()
-                await roam42.smartBlocks.processBlockOnBlockExit()                
+                  if(!processedText.includes(roam42.smartBlocks.replaceFirstBlock)) { 
+                    await insertSnippetIntoBlock( processedText, true, removeTributeTriggerSpacer );
+                    await roam42.smartBlocks.processBlockAfterBlockInserted(processedText);
+                    await roam42.smartBlocks.processBlockOnBlockExit();   
+                  }                    
+                await roam42.smartBlocks.outputArrayWrite();
               } else {
                 //has children, start walking through the nodes and insert them
                 let blockInsertCounter = 0 //used to track how many inserts performed so we can take a coffee break at 19, to let Roam catch up
@@ -266,8 +266,7 @@
                     if( !insertText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) {
                       if (firstBlock==true && document.activeElement.value.length>2) {
                         firstBlock = false;
-                        if(insertText.match(/\<\%(\s*[\S\s]*?)\%\>/)) //ONEXIT PROCESSING    
-                          insertText = await roam42.smartBlocks.processBlockAfterBlockInserted(insertText);                        
+                        insertText = await roam42.smartBlocks.processBlockAfterBlockInserted(insertText);                        
                         var txtarea = document.querySelector("textarea.rm-block-input");
                         var strPos = txtarea.selectionStart;
                         var front = txtarea.value.substring(0, strPos);
@@ -298,8 +297,7 @@
                         }
                         firstBlock=false;
 
-                        if(insertText.match(/\<\%(\s*[\S\s]*?)\%\>/)) //ONEXIT PROCESSING    
-                          insertText = await roam42.smartBlocks.processBlockAfterBlockInserted(insertText);                        
+                        insertText = await roam42.smartBlocks.processBlockAfterBlockInserted(insertText);                        
                         
                         //https://stackoverflow.com/questions/45659576/trigger-change-events-when-the-value-of-an-input-changed-programmatically-react
                         let txtarea = document.querySelector("textarea.rm-block-input");
@@ -362,6 +360,9 @@
                   await loopStructure(results[0][0].children, 1); //only process if has children
                 }
 
+               }            
+
+                //END of processing of blocks in loop
                 // FOCUS on block
                 if(roam42.smartBlocks.activeWorkflow.focusOnBlock!='' && skipCursorRelocation==false) {
                   roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeWorkflow.focusOnBlock));   
@@ -393,9 +394,9 @@
                     await roam42KeyboardLib.pressEsc(50);
                   },400);
                }
-             }            
             } // end IF
-
+          
+          
           if(sbCallingSB==false)
             roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] = null;            //sets the date to override today
           //start observing mutations again
@@ -407,6 +408,8 @@
         } 
       return " ";    
     };
+    
+    
     
     roam42.smartBlocks.buttonClickHandler = async (target)=>{
       if(target.tagName=='BUTTON') {
