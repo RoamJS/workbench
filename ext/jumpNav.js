@@ -20,8 +20,6 @@
           // block align left,center, right, justify
           'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4', 'meta+j 1', 'meta+j 2', 'meta+j 3', 'meta+j 4',   'alt+j 1', 'alt+j 2', 'alt+j 3', 'alt+j 4',  
           // headings 1,2,3
-          'ctrl+j 5', 'ctrl+j 6', 'ctrl+j 7',           'meta+j 5', 'meta+j 6', 'meta+j 7',                'alt+j 5', 'alt+j 6', 'alt+j 7',   
-          // page: first node last node
           'ctrl+j t', 'ctrl+j b', 'ctrl+ t',              'meta+j t', 'meta+j b', 'meta+ t',                'alt+j t', 'alt+j b', 'alt+ t',          
           // page: expand/collapse open in side
           'ctrl+j e', 'ctrl+j c', 'ctrl+j o','ctrl+j y', 'meta+j e', 'meta+j c', 'meta+j o', 'meta+j y',    'alt+j e', 'alt+j c', 'alt+j o', 'alt+j y',
@@ -141,18 +139,6 @@
                 break;
               case 'ctrl+j 4':     // justify allign block
                 roam42.common.simulateMouseClick( document.querySelector('.bp3-popover-content .flex-h-box').childNodes[3] );
-                roam42KeyboardLib.pressEsc()
-                break;              
-              case 'ctrl+j 5':     // heading 1
-                roam42.common.simulateMouseClick( document.querySelectorAll('.bp3-popover-content .flex-h-box')[1].childNodes[0] );
-                roam42KeyboardLib.pressEsc()
-                break;              
-              case 'ctrl+j 6':     // heading 1
-                roam42.common.simulateMouseClick( document.querySelectorAll('.bp3-popover-content .flex-h-box')[1].childNodes[1] );
-                roam42KeyboardLib.pressEsc()
-                break;              
-              case 'ctrl+j 7':     // heading 1
-                roam42.common.simulateMouseClick( document.querySelectorAll('.bp3-popover-content .flex-h-box')[1].childNodes[2] );
                 roam42KeyboardLib.pressEsc()
                 break;              
             }

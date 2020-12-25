@@ -83,14 +83,20 @@
     }
     roam42.smartBlocks.insertSnippetIntoBlock = insertSnippetIntoBlock;
     
-    
-    const applyViewType = async (node)=>{
-      //applies the document type for the bullet level
+    const applyViewType = async (node)=>{    //applies the document type for the bullet level
       try {
-        var blockId = document.querySelector('textarea.rm-block-input').id;
-        var parentControlNode = document.querySelector('textarea.rm-block-input').parentNode;  
+        //test if the current view-type is the same as the applied type
+        var currentBlock = document.querySelector('textarea.rm-block-input');
+        try {
+          var currentViewType = currentBlock.parentElement.parentElement.querySelector('.rm-bullet').className;
+          if(node['view-type']=='bullet'   && currentViewType=='rm-bullet ') return; //trying to set to a bullet, but already a bullet
+          if(node['view-type']=='document' && currentViewType=='rm-bullet  opacity-none') return; //trying to set to a document, but already a document
+          if(node['view-type']=='numbered' && currentViewType=='rm-bullet  rm-bullet--numbered') return; //trying to set to a number, but already a number          
+        } catch(e) {}
+        var blockId = currentBlock.id;
+        var parentControlNode = currentBlock.parentNode;  
         roam42.common.simulateMouseClickRight(
-          document.querySelector('textarea.rm-block-input').closest('.flex-h-box').querySelector('.rm-bullet'))
+          currentBlock.closest('.rm-block-main').querySelector('.rm-bullet'))
         await roam42.common.sleep(500);
         var menuItem1 = document.querySelector('.bp3-popover-content > div> ul').childNodes[9].innerText;
         var menuItem2 = document.querySelector('.bp3-popover-content > div> ul').childNodes[10].innerText;
@@ -307,19 +313,13 @@
                         txtarea.dispatchEvent(e);  
                       }
                       
-                      //see if heading needs to be assigned (MUST DO THIS SLOWLY)
-                      if (n.heading) {
-                        var ev = {};
-                        ev.target = document.querySelector("textarea.rm-block-input");
-                        roam42.jumpnav.jumpCommand( ev, "ctrl+j " + (Number(n.heading) + 4) ); //base is 4
-                        await roam42KeyboardLib.pressEsc(1000);
-                      }
+                      if (n.heading) // apply HEADINGS
+                        await roam42KeyboardLib.simulateKey(Number(n.heading)+48,200,{ctrlKey:true,altKey:true}); //49 is key 1
                       
                       if(n['view-type']) 
                         await applyViewType(n);
                       
                       if (n["text-align"] && n["text-align"] != "left") {
-
                         var ev = {};
                         ev.target = document.querySelector("textarea.rm-block-input");
                         switch (n["text-align"]) {
@@ -364,15 +364,10 @@
 
                 //END of processing of blocks in loop
                 // FOCUS on block
-                if(roam42.smartBlocks.activeWorkflow.focusOnBlock!='' && skipCursorRelocation==false) {
-                  roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeWorkflow.focusOnBlock));   
-                  await roam42.common.sleep(100);
-                  let parentControlNode =  document.activeElement.parentNode;                    
-                  roam42.common.simulateMouseClickRight(parentControlNode.previousSibling.childNodes[1]);
-                  document.querySelector('.bp3-popover-content > div> ul').childNodes[1].childNodes[0].click();
-                  await roam42.common.sleep(100);
-                }
-                //SET cursor location
+                if(roam42.smartBlocks.activeWorkflow.focusOnBlock!='' && skipCursorRelocation==false) 
+                  await roam42KeyboardLib.simulateKey(79,200,{ctrlKey:true})
+
+              //SET cursor location
                if(skipCursorRelocation==false) {
                 roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeWorkflow.startingBlockTextArea));
                   setTimeout(()=>{

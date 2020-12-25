@@ -479,7 +479,6 @@
     // Add top level navigations to the list of navigateItems
     withClass(sidebar, 'log-button', (logButton) => {
       const text = logButton.innerText;
-      console.log(text)
       if (text === 'DAILY NOTES' ||
           text === DAILY_NOTES_KEY + '\nDAILY NOTES') {
         navigateItems.push({
