@@ -188,10 +188,11 @@
         blockCommand = await roam42.common.replaceAsync(blockCommand, /(\<\%REPEAT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{return ''});
         if(Number(repeatCount)>0) {
           for(var i=0; i< Number(repeatCount); i++)
-           roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(blockCommand, true);
+           await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(blockCommand, true);
         }
-        return roam42.smartBlocks.replaceFirstBlock;
+        return roam42.smartBlocks.exclusionBlockSymbol; // roam42.smartBlocks.replaceFirstBlock;
       });
+      if(textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol)) return ''
       
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLEARVARS\%\>)/g, async (match, name)=>{
         roam42.smartBlocks.activeWorkflow.vars = new Object();    
@@ -337,10 +338,7 @@
         for (const { value, processor } of roam42.smartBlocks.customCommands) {
           textToProcess = await roam42.common.replaceAsync(textToProcess, new RegExp(value, 'g'), processor); 
         }
-        //ALWAYS at end of process
-        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOBLOCKOUTPUT\%\>)/g, async (match, name)=>{
-          return roam42.smartBlocks.exclusionBlockSymbol;
-        }); 
+
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IF:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%IF:','').replace('%>','');
           try {
@@ -386,7 +384,10 @@
           roam42.smartBlocks.activeWorkflow.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
           return '';   
         });
-        
+        //ALWAYS at end of process
+        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOBLOCKOUTPUT\%\>)/g, async (match, name)=>{
+          return roam42.smartBlocks.exclusionBlockSymbol;
+        });         
         //test for EXIT command
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%EXIT\%\>)/g, async (match, name)=>{
           roam42.smartBlocks.exitTriggered=true;
@@ -448,12 +449,13 @@
         } //if for MULTIBLOCK
       } //if ifTrueDefinedStopProcessing
 
-      if(textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol))
-        return roam42.smartBlocks.exclusionBlockSymbol; //skip this block 
       return textToProcess; //resert new text
     }
     
     roam42.smartBlocks.processBlockAfterBlockInserted = async (textToProcess)=> {
+      if(!textToProcess.match(/\<\%(\s*[\S\s]*?)\%\>/)) //process if it has a command
+        return textToProcess
+      
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%UNINDENT\%\>)/g, async (match, name)=>{
         await roam42KeyboardLib.pressShiftTab(500);
         return ''; 

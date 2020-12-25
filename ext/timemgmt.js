@@ -78,7 +78,9 @@
     //returns array with format [{"uid":"","string":""},{"title":"","uid":""}] first is task, second is parent of task
     var todoUIDs = [];
     for(var task of await roam42.common.getBlocksReferringToThisPage('TODO')) 
-      todoUIDs.push(task[0].uid)
+      try {
+        todoUIDs.push(task[0].uid);
+      } catch(e) {}
     return await roam42.common.getPageNamesFromBlockUidList(todoUIDs);
   }
   
@@ -88,13 +90,15 @@
     var outputTODOs = [];
     var outputCounter = 1;
     for(var task of await roam42.timemgmt.getAllTasks()) {
-      var taskString = task[0].string + ' ';
-      if(taskString.substring(0,12)!='{{[[query]]:') { 
-        if(outputCounter < limitOutputCount && taskString.includes('{{[[TODO]]}}') && taskString.includes(todayDate)) {
-          outputCounter += 1;
-          outputTODOs.push({taskUID: task[0].uid, taskString:task[0].string, pageTitle: task[1].title})
-        }
-      }
+      try {
+        var taskString = task[0].string + ' ';
+        if(taskString.substring(0,12)!='{{[[query]]:') { 
+          if(outputCounter < limitOutputCount && taskString.includes('{{[[TODO]]}}') && taskString.includes(todayDate)) {
+            outputCounter += 1;
+            outputTODOs.push({taskUID: task[0].uid, taskString:task[0].string, pageTitle: task[1].title})
+          }
+        }        
+      } catch(e) {}
     }    
     return outputTODOs;
   }
@@ -102,7 +106,9 @@
   // DUE TODAY Used in menu to directly insert TODOS
   roam42.timemgmt.smartBlocks.todosDueToday = async ()=> {
     for(var task of await roam42.timemgmt.todosDueToday()) 
-      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);   
+      try {
+        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);      
+      } catch(e) {}
     await roam42.smartBlocks.outputArrayWrite()
   }
   
@@ -115,8 +121,11 @@
   
   // OVERDUE Used in menu to directly insert TODOS
   roam42.timemgmt.smartBlocks.todosOverdue = async ()=> {
-    for(var task of await roam42.timemgmt.todosOverdue(100,true,false)) 
-      await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);   
+    for(var task of await roam42.timemgmt.todosOverdue(100,true,false)) {
+      try {
+        await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);   
+      } catch(e) {}
+    }
     if(roam42.smartBlocks.activeWorkflow.arrayToWrite.length>10) {
       if(confirm("Would you like to insert " + roam42.smartBlocks.activeWorkflow.arrayToWrite.length + " blocks refs with Overdue TODOS?"))
         await roam42.smartBlocks.outputArrayWrite()
