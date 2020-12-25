@@ -85,10 +85,14 @@
     try {
       if(document.activeElement.type=='textarea') {
         if(document.activeElement.closest('.roam-article')!=null) {
-          if(document.activeElement.closest('.roam-article').querySelector('.rm-title-display'))
-            daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.roam-article').querySelector('.rm-title-display').innerText);          
-          else if(document.activeElement.closest('.roam-article').querySelector('.rm-zoom-item-content'))  
-            daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.roam-article').querySelector('.rm-zoom-item-content').innerText);
+          var page = document.querySelector('.rm-block-text')
+          daily_notes_page_date = chrono.parseDate(page.id.substring(page.id.search('body-outline-')+13,page.id.length-10))
+          
+          //document.activeElement.id.substring(document.activeElement.id.search('body-outline-')+13,document.activeElement.id.length-10)
+          // if(document.activeElement.closest('.roam-article').querySelector('.rm-title-display'))
+          //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.roam-article').querySelector('.rm-title-display').innerText);          
+          // else if(document.activeElement.closest('.roam-article').querySelector('.rm-zoom-item-content'))  
+          //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.roam-article').querySelector('.rm-zoom-item-content').innerText);
         } else if(document.activeElement.closest('.sidebar-content')!=null) {
           //inside the sidebar
           if(document.activeElement.closest('.rm-sidebar-outline').querySelector('h1.rm-title-display'))
@@ -97,11 +101,11 @@
             daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.rm-sidebar-outline').querySelector('.rm-zoom-item-content').innerText);
         }
       } else {
-        try {
-          daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-zoom-item-content').innerText);                        
-        } catch(e){
-          daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-title-display').innerText);              
-        }      
+        // try {
+        //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-zoom-item-content').innerText);                        
+        // } catch(e){
+        //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-title-display').innerText);              
+        // }      
       }      
     } catch(e) {}
     return daily_notes_page_date;
