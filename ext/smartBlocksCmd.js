@@ -249,6 +249,7 @@
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JA:)/g, async (match, name)=>{
           return  match.replace('<%JA:','<%JAVASCRIPTASYNC:')
         });
+        //gives JS a hook into current text to be output
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','').trim();
           if(scriptToRun.substring(0,13)=='```javascript')
@@ -263,7 +264,7 @@
           var AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
           var results = await new AsyncFunction(scriptToRun.toString())();
           return results;
-        });           
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%INPUT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%INPUT:','').replace('%>','');
           if(commandToProcess.includes('\%\%')) {
@@ -468,6 +469,7 @@
         var commandToProcess = match.replace('<%CURRENTBLOCKREF:','').replace('%>','');
         let UID = document.querySelector("textarea.rm-block-input").id;
         roam42.smartBlocks.activeWorkflow.vars[commandToProcess]='((' + UID.substring( UID.length -9) + '))';
+        roam42.smartBlocks.activeWorkflow.forceDelayAferNewBlock = 900;
         return '';
       });                        
       await roam42.common.replaceAsync(textToProcess, /(\<\%CURSOR\%\>)/g, async (match, name)=>{

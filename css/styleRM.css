@@ -276,7 +276,7 @@
  opacity: 0.3;
 }
 
-.rm-page-ref-tag[data-tag="42SmartBlock"]:before {
+.rm-page-ref--tag[data-tag="42SmartBlock"]:before {
     display:inline-block;
     height:14px;
   	width:24px;
