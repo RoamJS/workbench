@@ -14,6 +14,7 @@
   roam42.smartBlocks.activeWorkflow.focusOnBlock = ''; // if set with <%FOCUSONBLOCK%> Will move to this block for focus mode after workflow
   roam42.smartBlocks.activeWorkflow.arrayToWrite = []; // use to output multiple blocks from a command
   roam42.smartBlocks.activeWorkflow.onBlockExitCode = ''; //code executed at end of block  
+  roam42.smartBlocks.activeWorkflow.forceDelayAferNewBlock = 0; //used by CURRENTBLOCKREF to force a delay after enter so roam can sync changes from  previouis enter    
   roam42.smartBlocks.exclusionBlockSymbol = 'NOUTNOUTNOUTNOUT'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.replaceFirstBlock    = 'SBRPLCSBRPLCSBRPLC'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.customCommands = [];
@@ -263,6 +264,11 @@
                     roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = insertText;                
                     roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = document.activeElement.id;
                     
+                    if(roam42.smartBlocks.activeWorkflow.forceDelayAferNewBlock>0) { //used by CURRENTREFBLOCK
+                      await roam42.common.sleep(roam42.smartBlocks.activeWorkflow.forceDelayAferNewBlock);
+                      roam42.smartBlocks.activeWorkflow.forceDelayAferNewBlock=0;
+                    }
+                    
                     if(insertText.match(/\<\%(\s*[\S\s]*?)\%\>/)) //process if it has a command
                       insertText = await roam42.smartBlocks.proccessBlockWithSmartness(insertText);
                     
@@ -288,6 +294,7 @@
                           let currentBlockId = document.querySelector('textarea.rm-block-input').id
                           await roam42KeyboardLib.pressEnter(150);
                           if(currentBlockId==document.querySelector('textarea.rm-block-input').id ) await roam42KeyboardLib.pressEnter(50);
+
                           //indent/unindent if needed
                           if (currentOutlineLevel < level) {
                             for (var inc = currentOutlineLevel; inc < level; inc++) {
@@ -311,6 +318,7 @@
                         setValue.call(txtarea, insertText );
                         var e = new Event('input', { bubbles: true });
                         txtarea.dispatchEvent(e);  
+
                       }
                       
                       if (n.heading) // apply HEADINGS
