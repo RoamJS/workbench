@@ -321,9 +321,13 @@
 
                       }
                       
-                      if (n.heading) // apply HEADINGS
+                      if (n.heading) { // apply HEADINGS
+                        // windows and chrome os
                         await roam42KeyboardLib.simulateKey(Number(n.heading)+48,200,{ctrlKey:true,altKey:true}); //49 is key 1
-                      
+                        // mac OS
+                        await roam42KeyboardLib.simulateKey(Number(n.heading)+48,200,{metaKey:true,altKey:true}); //49 is key 1
+                      }
+                        
                       if(n['view-type']) 
                         await applyViewType(n);
                       
