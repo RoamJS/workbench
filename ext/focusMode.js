@@ -22,21 +22,21 @@
   };
 
   roam42.focusMode.active = () => {return false;};
-  
+
   roam42.focusMode.toggle = () => {};
 
   function readSetting(name=null, initial=null) {
-      return [['nothing'], 
+      return [['nothing'],
       ['current'],
       ['current', 'children'],
       ['current', 'parent', 'children']]; // todo: for now, it's a fixed cyclic logic.
     }
 
-  const updateFocusMode = (mutationsList=null) => { 
+  const updateFocusMode = (mutationsList=null) => {
     if(mutationsList !== null && mutationsList[0].target.tagName === "TEXTAREA"){
       return;
-    }  
-    const text_area = document.querySelector("textarea.rm-block-input.rm-block-text");      
+    }
+    const text_area = document.querySelector("textarea.rm-block-input.rm-block-text");
       var currentBlock = null;
       if (text_area !== null) {
         currentBlock = text_area.parentNode.parentNode.parentNode.parentNode;
@@ -45,7 +45,7 @@
       } else {
         removeFocusModeClass();
       }
-      
+
   };
 
 const findParent = (currentBlock) => {
@@ -88,7 +88,7 @@ const findChildren = (currentBlock) => {
   if(firstChildBlock){
     childrenBlocks.push(firstChildBlock.querySelector('div').querySelector(".roam-block"));
     var siblings = findSiblings(firstChildBlock);
-    childrenBlocks = childrenBlocks.concat(siblings);  
+    childrenBlocks = childrenBlocks.concat(siblings);
   }
   return childrenBlocks;
 }
@@ -114,7 +114,7 @@ const selectBlocksByFocusModeState = (currentBlock) => {
           break;
         case "children":
           relatedBlocks[blockType] = findChildren(currentBlock);
-          break;        
+          break;
         default:
           break;
       }
@@ -133,7 +133,7 @@ const setFocusModeClass = (blockType_blocks) => {
         blocks.forEach(block => {
           removeClassByPrefix(block, 'roam42-focusmode-rest-');
           block.classList.add('roam42-focusmode-current-block');
-        });        
+        });
         break;
       case "parent":
         blocks.forEach(block => {
@@ -152,7 +152,7 @@ const setFocusModeClass = (blockType_blocks) => {
           removeClassByPrefix(block, 'roam42-focusmode-rest-');
           block.classList.add('roam42-focusmode-children-block');
         });
-        break;        
+        break;
       case "nothing":
         removeFocusModeClass();
         break;

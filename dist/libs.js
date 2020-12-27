@@ -98,7 +98,7 @@ e=document.activeElement,f=d.is(e),g=d.has(e).length>0,b.isMsie()&&(f||g)&&(a.pr
 //plugin: relative time 1.9.7
 !function(r,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):r.dayjs_plugin_relativeTime=t()}(this,function(){"use strict";return function(y,r,p){y=y||{};var r=r.prototype,v={future:"in %s",past:"%s ago",s:"a few seconds",m:"a minute",mm:"%d minutes",h:"an hour",hh:"%d hours",d:"a day",dd:"%d days",M:"a month",MM:"%d months",y:"a year",yy:"%d years"};p.en.relativeTime=v;function e(r,t,e,n){for(var o,d=e.$locale().relativeTime||v,i=y.thresholds||[{l:"s",r:44,d:"second"},{l:"m",r:89},{l:"mm",r:44,d:"minute"},{l:"h",r:89},{l:"hh",r:21,d:"hour"},{l:"d",r:35},{l:"dd",r:25,d:"day"},{l:"M",r:45},{l:"MM",r:10,d:"month"},{l:"y",r:17},{l:"yy",d:"year"}],u=i.length,a=0;a<u;a+=1){var f=i[a];f.d&&(o=n?p(r).diff(e,f.d,!0):e.diff(r,f.d,!0));var s=(y.rounding||Math.round)(Math.abs(o)),l=0<o;if(s<=f.r||!f.r){s<=1&&0<a&&(f=i[a-1]);var h=d[f.l],m="string"==typeof h?h.replace("%d",s):h(s,t,f.l,l);break}}if(t)return m;var c=l?d.future:d.past;return"function"==typeof c?c(m):c.replace("%s",m)}r.to=function(r,t){return e(r,t,this,!0)},r.from=function(r,t){return e(r,t,this)};function t(r){return r.$u?p.utc():p()}r.toNow=function(r){return this.to(t(this),r)},r.fromNow=function(r){return this.from(t(this),r)}}});
 
-//plugin: custom format 
+//plugin: custom format
 !function(t,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):t.dayjs_plugin_customParseFormat=e()}(this,function(){"use strict";var t,e={LTS:"h:mm:ss A",LT:"h:mm A",L:"MM/DD/YYYY",LL:"MMMM D, YYYY",LLL:"MMMM D, YYYY h:mm A",LLLL:"dddd, MMMM D, YYYY h:mm A"},n=function(t,n){return t.replace(/(\[[^\]]+])|(LTS?|l{1,4}|L{1,4})/g,function(t,r,i){var o=i&&i.toUpperCase();return r||n[i]||e[i]||n[o].replace(/(\[[^\]]+])|(MMMM|MM|DD|dddd)/g,function(t,e,n){return e||n.slice(1)})})},r=/(\[[^[]*\])|([-:/.()\s]+)|(A|a|YYYY|YY?|MM?M?M?|Do|DD?|hh?|HH?|mm?|ss?|S{1,3}|z|ZZ?)/g,i=/\d\d/,o=/\d\d?/,s=/\d*[^\s\d-:/()]+/;var a=function(t){return function(e){this[t]=+e}},f=[/[+-]\d\d:?(\d\d)?/,function(t){(this.zone||(this.zone={})).offset=function(t){if(!t)return 0;var e=t.match(/([+-]|\d\d)/g),n=60*e[1]+(+e[2]||0);return 0===n?0:"+"===e[0]?-n:n}(t)}],u=function(e){var n=t[e];return n&&(n.indexOf?n:n.s.concat(n.f))},h=function(e,n){var r,i=t.meridiem;if(i){for(var o=1;o<=24;o+=1)if(e.indexOf(i(o,0,n))>-1){r=o>12;break}}else r=e===(n?"pm":"PM");return r},d={A:[s,function(t){this.afternoon=h(t,!1)}],a:[s,function(t){this.afternoon=h(t,!0)}],S:[/\d/,function(t){this.milliseconds=100*+t}],SS:[i,function(t){this.milliseconds=10*+t}],SSS:[/\d{3}/,function(t){this.milliseconds=+t}],s:[o,a("seconds")],ss:[o,a("seconds")],m:[o,a("minutes")],mm:[o,a("minutes")],H:[o,a("hours")],h:[o,a("hours")],HH:[o,a("hours")],hh:[o,a("hours")],D:[o,a("day")],DD:[i,a("day")],Do:[s,function(e){var n=t.ordinal,r=e.match(/\d+/);if(this.day=r[0],n)for(var i=1;i<=31;i+=1)n(i).replace(/\[|\]/g,"")===e&&(this.day=i)}],M:[o,a("month")],MM:[i,a("month")],MMM:[s,function(t){var e=u("months"),n=(u("monthsShort")||e.map(function(t){return t.substr(0,3)})).indexOf(t)+1;if(n<1)throw new Error;this.month=n%12||n}],MMMM:[s,function(t){var e=u("months").indexOf(t)+1;if(e<1)throw new Error;this.month=e%12||e}],Y:[/[+-]?\d+/,a("year")],YY:[i,function(t){t=+t,this.year=t+(t>68?1900:2e3)}],YYYY:[/\d{4}/,a("year")],Z:f,ZZ:f};var c=function(e,i,o){try{var s=function(e){for(var i=(e=n(e,t&&t.formats)).match(r),o=i.length,s=0;s<o;s+=1){var a=i[s],f=d[a],u=f&&f[0],h=f&&f[1];i[s]=h?{regex:u,parser:h}:a.replace(/^\[|\]$/g,"")}return function(t){for(var e={},n=0,r=0;n<o;n+=1){var s=i[n];if("string"==typeof s)r+=s.length;else{var a=s.regex,f=s.parser,u=t.substr(r),h=a.exec(u)[0];f.call(e,h),t=t.replace(h,"")}}return function(t){var e=t.afternoon;if(void 0!==e){var n=t.hours;e?n<12&&(t.hours+=12):12===n&&(t.hours=0),delete t.afternoon}}(e),e}}(i)(e),a=s.year,f=s.month,u=s.day,h=s.hours,c=s.minutes,m=s.seconds,l=s.milliseconds,M=s.zone,Y=new Date,v=u||(a||f?1:Y.getDate()),p=a||Y.getFullYear(),D=0;a&&!f||(D=f>0?f-1:Y.getMonth());var y=h||0,L=c||0,g=m||0,$=l||0;return M?new Date(Date.UTC(p,D,v,y,L,g,$+60*M.offset*1e3)):o?new Date(Date.UTC(p,D,v,y,L,g,$)):new Date(p,D,v,y,L,g,$)}catch(t){return new Date("")}};return function(e,n,r){r.p.customParseFormat=!0;var i=n.prototype,o=i.parse;i.parse=function(e){var n=e.date,i=e.utc,s=e.args;this.$u=i;var a=s[1];if("string"==typeof a){var f=!0===s[2],u=!0===s[3],h=f||u,d=s[2];u&&(d=s[2]),f||(t=d?r.Ls[d]:this.$locale()),this.$d=c(n,a,i),this.init(),d&&!0!==d&&(this.$L=this.locale(d).$L),h&&n!==this.format(a)&&(this.$d=new Date("")),t=void 0}else if(a instanceof Array)for(var m=a.length,l=1;l<=m;l+=1){s[1]=a[l-1];var M=r.apply(this,s);if(M.isValid()){this.$d=M.$d,this.$L=M.$L,this.init();break}l===m&&(this.$d=new Date(""))}else o.call(this,e)}}});
 
 //plugin: object suppport
@@ -140,25 +140,25 @@ e=document.activeElement,f=d.is(e),g=d.has(e).length>0,b.isMsie()&&(f||g)&&(a.pr
 setTimeout(()=>{
   dayjs.extend(window.dayjs_plugin_advancedFormat);
   dayjs.extend(window.dayjs_plugin_weekOfYear);
-  dayjs.extend(window.dayjs_plugin_isBetween);  
-  dayjs.extend(window.dayjs_plugin_isSameOrBefore);  
-  dayjs.extend(window.dayjs_plugin_isSameOrAfter);  
-  dayjs.extend(window.dayjs_plugin_isToday);  
-  dayjs.extend(window.dayjs_plugin_isTomorrow);  
-  dayjs.extend(window.dayjs_plugin_isYesterday);  
-  
-  dayjs.extend(window.dayjs_plugin_relativeTime); 
-  dayjs.extend(window.dayjs_plugin_customParseFormat); 
-  dayjs.extend(window.dayjs_plugin_objectSupport); 
-  dayjs.extend(window.dayjs_plugin_utc); 
-  dayjs.extend(window.dayjs_plugin_quarterOfYear); 
-  dayjs.extend(window.dayjs_plugin_minMax); 
+  dayjs.extend(window.dayjs_plugin_isBetween);
+  dayjs.extend(window.dayjs_plugin_isSameOrBefore);
+  dayjs.extend(window.dayjs_plugin_isSameOrAfter);
+  dayjs.extend(window.dayjs_plugin_isToday);
+  dayjs.extend(window.dayjs_plugin_isTomorrow);
+  dayjs.extend(window.dayjs_plugin_isYesterday);
+
+  dayjs.extend(window.dayjs_plugin_relativeTime);
+  dayjs.extend(window.dayjs_plugin_customParseFormat);
+  dayjs.extend(window.dayjs_plugin_objectSupport);
+  dayjs.extend(window.dayjs_plugin_utc);
+  dayjs.extend(window.dayjs_plugin_quarterOfYear);
+  dayjs.extend(window.dayjs_plugin_minMax);
   dayjs.extend(window.dayjs_plugin_calendar);
   dayjs.extend(window.dayjs_plugin_localeData);
   dayjs.extend(window.dayjs_plugin_localizedFormat);
-  dayjs.extend(window.dayjs_plugin_updateLocale); 
-  dayjs.extend(window.dayjs_plugin_weekday); 
-  dayjs.extend(window.dayjs_plugin_duration); 
-  dayjs.extend(window.dayjs_plugin_timezone); 
-  
+  dayjs.extend(window.dayjs_plugin_updateLocale);
+  dayjs.extend(window.dayjs_plugin_weekday);
+  dayjs.extend(window.dayjs_plugin_duration);
+  dayjs.extend(window.dayjs_plugin_timezone);
+
 },2000);

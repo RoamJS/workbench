@@ -3,7 +3,7 @@
 'use strict';
 {
   roam42.roamNavigator = {};
-   
+
   // Set to true to enable debug logging.
   const DEBUG = false;
 
@@ -64,14 +64,14 @@
 
   const setRoamNavigator_IsEnabled = (val)=>{
     if(val == true) {
-      Cookies.set('RoamNavigator_IsEnabled', 'true', { expires: 365 }) 
+      Cookies.set('RoamNavigator_IsEnabled', 'true', { expires: 365 })
     } else {
-      Cookies.set('RoamNavigator_IsEnabled', 'false', { expires: 365 })     
+      Cookies.set('RoamNavigator_IsEnabled', 'false', { expires: 365 })
     }
   }
 
-  let roamNavigatorEnabled = getRoamNavigator_IsEnabled()  
-  
+  let roamNavigatorEnabled = getRoamNavigator_IsEnabled()
+
   const roamNavigatorStatusToast = ()=> {
     var status = getRoamNavigator_IsEnabled()
     iziToast.show({
@@ -79,28 +79,28 @@
       theme: 'dark',
       title: 'Deep Jump Navigation',
       message: 'Status:',
-      position: 'bottomRight', 
+      position: 'bottomRight',
       progressBarColor: 'rgb(0, 255, 184)',
-      displayMode: 2,  
+      displayMode: 2,
       buttons: [
       ['<button>Enabled</button>', function (instance, toast) {
           setRoamNavigator_IsEnabled(true)
           roamNavigatorEnabled = true
           instance.hide({transitionOut: 'fadeOutUp'}, toast, 'buttonName');
-      }, status], 
+      }, status],
       ['<button>Disabled</button>', function (instance, toast) {
           setRoamNavigator_IsEnabled(false)
           roamNavigatorEnabled = false
           instance.hide({transitionOut: 'fadeOutDown'}, toast, 'buttonName');
-      }, !status], 
+      }, !status],
       ]
     })
   }
-  
+
   window.roamNavigatorStatusToast = roamNavigatorStatusToast
 
   //Roam42: End
-  
+
   // Set to true to activate navigation mode when body is focused.
   const ACTIVATE_ON_NO_FOCUS =
         readSetting('activate-on-no-focus', false);
@@ -155,9 +155,9 @@
       // Ignore keystrokes pressed with modifier keys, as they might
       // be used by other extensions.
 
-// ROAM42 MOD START      
+// ROAM42 MOD START
       if (!roamNavigatorEnabled) { return }  //navigator disabled, don't go further
-      
+
       if (ev.ctrlKey ||
           (ev.altKey && (isNavigating() || ev.key !== START_NAVIGATE_KEY))) {
 // ROAM42 MOD END
@@ -419,7 +419,7 @@
   // overrides the keyboard handler such that it temporarily expects a
   // key.
   function setupNavigate(onlyLinks) {
-    updateBreadcrumbs();      
+    updateBreadcrumbs();
     // ensureSidebarOpen();
     if (!matchingClass(NAVIGATE_CLASS)(document.body)) {
       document.body.classList.add(NAVIGATE_CLASS);
@@ -493,7 +493,7 @@
           mustBeKeys: GRAPH_OVERVIEW_KEY,
           keepGoing: true,
         });
-      } else if (text.includes('ALL PAGES') ||  
+      } else if (text.includes('ALL PAGES') ||
                  text === ALL_PAGES_KEY + '\nALL PAGES') { //42 change - to make work on ipad
         navigateItems.push({
           element: logButton,
@@ -682,7 +682,7 @@
             uid = link.innerText;
           } else if (matchingClass('rm-alias')(link)) {
             el = link;
-            uid = link.innerText;            
+            uid = link.innerText;
           } else {
             const hrefAttr = link.attributes['href'];
             if (hrefAttr) {

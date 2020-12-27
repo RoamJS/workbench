@@ -2,12 +2,12 @@
 
 
 
-// roam42.quickRef 
+// roam42.quickRef
 (()=>{
-  
+
   roam42.quickRef = {};
-  
-  if( window === window.parent ) { 
+
+  if( window === window.parent ) {
 
     roam42.quickRef.component = {
 
@@ -21,9 +21,9 @@
           return true
         }
       },
-      
+
       toggleQuickReference() {
-          if ( this.rqrQuickReferencePanel_isInitiallyPositioned == false ) { 
+          if ( this.rqrQuickReferencePanel_isInitiallyPositioned == false ) {
             this.rqrQuickReferencePanel_isInitiallyPositioned = true;
           }
           if ( document.querySelector('#rqrQuickReferencePanel').style.visibility == "hidden"  ) {
@@ -32,7 +32,7 @@
               iframe.focus();
           } else {
               document.querySelector('#rqrQuickReferencePanel').style.visibility="hidden";
-          }        
+          }
       },
 
       initialize() {
@@ -45,10 +45,10 @@
           // borderRadius: '.8rem',
           headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:300px;color:white !important;padding-top:2px;">Quick Reference for Roam<sup>42</sup> and Roam</div>',
           iconfont: [
-            'bp3-button bp3-minimal bp3-small bp3-icon-small-minus', 
-            'bp3-button bp3-minimal bp3-small bp3-icon-chevron-down',  
-            'bp3-button bp3-minimal bp3-small bp3-icon-chevron-up', 
-            'custom-maximize', 
+            'bp3-button bp3-minimal bp3-small bp3-icon-small-minus',
+            'bp3-button bp3-minimal bp3-small bp3-icon-chevron-down',
+            'bp3-button bp3-minimal bp3-small bp3-icon-chevron-up',
+            'custom-maximize',
             'bp3-button bp3-minimal bp3-small bp3-icon-cross'
           ],
           contentSize: {
@@ -72,8 +72,8 @@
           position: {
             my: 'right-bottom',
             at: 'right-bottom',
-            offsetX: -10, 
-            offsetY: -10 
+            offsetX: -10,
+            offsetY: -10
           }
           })
 
@@ -95,10 +95,10 @@
           ? "onmessage"
           : "message";
 
-        eventerRQR(messageEvent, function (e) {	
+        eventerRQR(messageEvent, function (e) {
           if (e.data === "roamquickrefclosewindow" || e.message === "roamquickrefclosewindow") {
             document.querySelector('#rqrQuickReferencePanel').style.visibility='hidden'
-          }		
+          }
         });
 
       } //initialize
@@ -107,5 +107,5 @@
     } //rmQuickRefenceSystem
 
   }
-  
+
 })();

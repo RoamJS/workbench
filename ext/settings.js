@@ -8,12 +8,12 @@
     for(let s of customTrigger) {
       if(s[0].string.toString().includes(settingName)) {
         result = s[0].string.toString().replace('#42Setting ','').replace('#[[42Setting]] ','').replace(settingName,'').trim();
-        break;        
+        break;
       }
-    }    
+    }
     return result;
   }
-  
+
   window.roam42.settings.testingReload= () => {
     roam42.loader.addScriptToPage( "settings", roam42.host + 'ext/settings.js');
     setTimeout(async ()=>  console.log( await roam42.settings.get("SmartBlockTrigger") ),1000)

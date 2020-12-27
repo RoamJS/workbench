@@ -1,24 +1,24 @@
-/* globals roam42, jsPanel, roam42KeyboardLib, flatpickr, setEmptyNodeValue, getRoamDate, 
-           chrono, iziToast, tippy, shiftKeyDownTracker 
+/* globals roam42, jsPanel, roam42KeyboardLib, flatpickr, setEmptyNodeValue, getRoamDate,
+           chrono, iziToast, tippy, shiftKeyDownTracker
 */
 // INFO: Provides a quick way to jump between daily notes pages using a calendar
 // Datepicker based on: https://flatpickr.js.org/
 
 
-// roam42.jumpToDate 
+// roam42.jumpToDate
 (()=>{
-  
+
   roam42.jumpToDate = {};
-  
+
   roam42.jumpToDate.component = {
 
     rqrJumpToDatePanel: '',
     flCalendar: [],
 
-    keyboardHandler(ev) {    
+    keyboardHandler(ev) {
       if( ev.altKey==true  && ev.shiftKey==true  && ev.code=='KeyJ' ) {
         ev.preventDefault();
-            this.jumpToDate();            
+            this.jumpToDate();
         return true;
       }
 
@@ -49,7 +49,7 @@
         }
         return true
       }
-      
+
     }, // addEventListener
 
 
@@ -77,7 +77,7 @@
       let jumpDate = chrono.parseDate( document.querySelector('.rm-title-display').innerText );
       let directionTip ='';
       let calIcon ='';
-      if( jumpDate!=null) { 
+      if( jumpDate!=null) {
         if ( bForward ) {
           jumpDate.setDate(jumpDate.getDate()+1);
           directionTip='bounceInRight';
@@ -86,7 +86,7 @@
           directionTip='bounceInLeft';
         }
         this.navigateUIToDate(jumpDate, false);
-      }  
+      }
 
       try {
         iziToast.destroy();
@@ -102,20 +102,20 @@
           timeout: 1500,
           closeOnClick: true,
           displayMode: 2
-        });      
+        });
       } catch(e) {}
     },
-    
+
     //Toggles the date picker display
-    jumpToDate(){    
-      roam42KeyboardLib.simulateKey(16); //this fixes some bug with shift    
+    jumpToDate(){
+      roam42KeyboardLib.simulateKey(16); //this fixes some bug with shift
       this.flCalendar.clear();
-      this.flCalendar.setDate(new Date());    
-      this.rqrJumpToDatePanel.reposition({ 
+      this.flCalendar.setDate(new Date());
+      this.rqrJumpToDatePanel.reposition({
         my: 'right-top',
         at: 'right-top',
-        offsetX: -10, 
-        offsetY: 45 
+        offsetX: -10,
+        offsetY: 45
       });
 
       var jump = document.querySelector('#rqrJumpToDatePanel');
@@ -123,19 +123,19 @@
 
       if ( jump.style.visibility == 'hidden' | jump.style.visibility == ''  ) {
           jump.style.visibility='visible';
-          jInput.style.visibility='visible';  
+          jInput.style.visibility='visible';
       } else {
           this.flCalendar.close()
           jump.style.visibility='hidden';
-          jInput.style.visibility='hidden';  
+          jInput.style.visibility='hidden';
           return
-      }    
+      }
 
       jInput.placeholder = 'Jump to date';
       jInput.style.visibility='visible';
       jInput.focus();
       roam42KeyboardLib.pressDownKey();
-      roam42KeyboardLib.simulateKey(16); //this fixes some bug with shift        
+      roam42KeyboardLib.simulateKey(16); //this fixes some bug with shift
     }, //jumpToDate
 
     jumpToDateFromButton() {
@@ -143,7 +143,7 @@
       if( jump.style.visibility=='hidden' || jump.style.visibility=='') {
         setTimeout( ()=>{
           this.jumpToDate();
-        }, 100 )    
+        }, 100 )
       } else {
         jump.style.visibility=='hidden'; //close Jump to date
       }
@@ -162,14 +162,14 @@
       roam42.common.setEmptyNodeValue( inPut, roam42.dateProcessing.getRoamDate( destinationDate ) );
       setTimeout(()=>{
        if( roam42.keyevents.shiftKeyDownTracker==true && useShiftKey==true ) {
-          roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});   
+          roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});
         } else {
           roam42KeyboardLib.pressEnter();
         }
         setTimeout(()=>{
           roam42.common.setEmptyNodeValue( inPut,'' );
-        },250);             
-      },1000);   
+        },250);
+      },1000);
     }, //navigateUIToDate
 
     initialize()  {
@@ -180,9 +180,9 @@
           jump.id='roam42-button-jumptodate';
           jump.className = 'bp3-button bp3-minimal bp3-small bp3-icon-pivot';
           jump.setAttribute('style','position:relative;left:2px');
-          jump.onclick = ()=>{ this.jumpToDateFromButton()};  
+          jump.onclick = ()=>{ this.jumpToDateFromButton()};
         var spacer = document.createElement("div");
-          spacer.setAttribute('style','flex: 0 0 3px');    
+          spacer.setAttribute('style','flex: 0 0 3px');
         document.querySelector('.roam-topbar .flex-h-box').appendChild(spacer);
         document.querySelector('.roam-topbar .flex-h-box').appendChild(jump);
 
@@ -226,8 +226,8 @@
           </div>
           `.trim()
       });
-      
-  
+
+
       this.rqrJumpToDatePanel.options.onbeforeclose.push(function() {
         document.querySelector('#rqrJumpToDatePanel').style.visibility='hidden';
         document.querySelector('#jumptoDateInput').style.visibility='hidden';
@@ -250,7 +250,7 @@
         },500);
       })
 
-      
+
     }, //initialize()
 
 

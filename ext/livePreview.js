@@ -2,15 +2,15 @@
 /* globals  roam42, Cookies , iziToast */
 
 // Live preview has 3 states:
-// 1 = preview page links 
+// 1 = preview page links
 // 2 = preview page links & blocks
 // 0 = live preview off
 
 
 
-// roam42.livePreview 
+// roam42.livePreview
 (()=>{
-  
+
   roam42.livePreview = {};
 
   roam42.livePreview.roam42LivePreviewState = 0 //off by default
@@ -74,7 +74,7 @@
 
 
   roam42.livePreview.setRoamLivePreviewState = (val)=>{
-    Cookies.set('RoamLivePreview_IsEnabled', val, { expires: 365 }) 
+    Cookies.set('RoamLivePreview_IsEnabled', val, { expires: 365 })
     roam42.livePreview.roam42LivePreviewState = val
   }
 
@@ -85,21 +85,21 @@
       theme: 'dark',
       title: 'Live preview',
       message: 'Status:',
-      position: 'bottomRight', 
+      position: 'bottomRight',
       progressBarColor: 'rgb(0, 255, 184)',
       buttons: [
       ['<button>Enable</button>', function (instance, toast) {
           roam42.livePreview.setRoamLivePreviewState(1);
           instance.hide({transitionOut: 'fadeOutUp'}, toast, 'buttonName');
-      }, (status==1)], 
+      }, (status==1)],
       ['<button>Enable with block refs</button>', function (instance, toast) {
           roam42.livePreview.setRoamLivePreviewState(2);
           instance.hide({transitionOut: 'fadeOutDown'}, toast, 'buttonName');
-      }, (status==2)], 
+      }, (status==2)],
       ['<button>Disable</button>', function (instance, toast) {
           roam42.livePreview.setRoamLivePreviewState(0)
           instance.hide( {transitionOut:'fadeOutDown'}, toast, 'buttonName');
-      }, (status==0) ]       
+      }, (status==0) ]
       ]
     })
 
@@ -191,7 +191,7 @@
         iframe.style.borderRadius = '8px';
         iframe.id = 'roam42-live-preview-iframe';
         const styleNode = document.createElement('style');
-  
+
         styleNode.innerHTML = `
           div.roam-app > div.flex-h-box {
             margin-left: 10px !important;
@@ -224,7 +224,7 @@
               display: none !important;
           }
         `;
-        
+
         iframe.onload = (event) => {
           event.target.contentDocument.body.appendChild(styleNode);
         };
@@ -276,14 +276,14 @@
         document.addEventListener('mouseover', (e) => {
           // if( e.ctrlKey == false ) { return }
           if( e.ctrlKey == false && roam42.livePreview.roam42LivePreviewState == 0 ) { return };
-          let pageIsBlock = false;          
+          let pageIsBlock = false;
           let target = e.target;
 
-          let isPageRef = false; 
+          let isPageRef = false;
           let isPageRefTag = target.classList.contains('rm-page-ref-tag');
           let isPageRefNameSpace = target.classList.contains('rm-page-ref-namespace-color');
           let text = '';
-          
+
 
           if ( isPageRefTag ) {                                   // # tag
             isPageRef = true;
@@ -295,17 +295,17 @@
               text = target.parentElement.getAttribute('data-link-uid');
             }
           }
-         
+
           //finds odd scenario like: [[[[book]]/smart notes]]
-          if( isPageRef == false && target.classList.length==0 && 
-               target.parentElement.classList.contains('rm-page-ref') && 
+          if( isPageRef == false && target.classList.length==0 &&
+               target.parentElement.classList.contains('rm-page-ref') &&
                target.parentElement.parentElement.hasAttribute('data-link-uid')  ){
               isPageRef = true;
               pageIsBlock = true;
               text = target.parentElement.parentElement.getAttribute('data-link-uid')
-          }          
-          
-          
+          }
+
+
           if ( isPageRef == false && isPageRefNameSpace ) {
             isPageRef = true;
             text = target.parentElement.getAttribute('data-link-title')
@@ -313,13 +313,13 @@
 
           if (isPageRef == false && target.classList.contains('rm-alias-page') ) {
             isPageRef = true;
-            text = target.title.replace('page: ','') 
+            text = target.title.replace('page: ','')
           }
           if (isPageRef == false && target.classList.contains('rm-ref-page-view-title') ) {
             isPageRef = true;
             text = target.innerText
             specialDelayMouseOut = true
-            setTimeout(()=> specialDelayMouseOut = false, delayTimer+specialDelayTimeOutAmount)          
+            setTimeout(()=> specialDelayMouseOut = false, delayTimer+specialDelayTimeOutAmount)
           }
 
           if ( !isPageRef  && !isPageRefTag && target.classList.length == 0 && target.parentNode.classList.contains('rm-page-ref') ) {
@@ -341,7 +341,7 @@
               target = target.parentElement;
             }
           } catch(e) {}
-          
+
           //preview BLOCK references
           if ( isPageRef == false && (  e.ctrlKey == true || roam42.livePreview.roam42LivePreviewState == 2 ) && ( target.classList.contains('rm-block-ref') || target.classList.contains('rm-alias-block') ) ) {
             pageIsBlock = true;
@@ -359,7 +359,7 @@
             specialDelayMouseOut = true;
             setTimeout(()=> specialDelayMouseOut = false, delayTimer+specialDelayTimeOutAmount);
           }
- 
+
           // remove '#' for page tags
           if (isPageRef) {
             hoveredElement = target;
@@ -369,7 +369,7 @@
             const isVisible = (pageUrl) =>
               document.querySelector(`[src="${pageUrl}"]`).style.opacity === '1';
             if ((!isAdded(url) || !isVisible(url)) && previewIframe) {
-              setTimeout(()=> {previewIframe.src  = url}, 100)              
+              setTimeout(()=> {previewIframe.src  = url}, 100)
               previewIframe.style.pointerEvents = 'none';
               if(window.roam42LivePreview) {
                 previewIframe.style.height = window.roam42LivePreview.height == undefined  ? '500px' : window.roam42LivePreview.height
@@ -381,7 +381,7 @@
              }
             if (!popupTimeout) {
               popupTimeout = window.setTimeout(() => {
-                previewIframe.contentDocument.querySelector('.roam-article').scrollIntoView()                            
+                previewIframe.contentDocument.querySelector('.roam-article').scrollIntoView()
                 if (previewIframe) {
                   previewIframe.style.opacity = '1';
                   previewIframe.style.pointerEvents = 'all';
@@ -409,7 +409,7 @@
           }
         });
         document.addEventListener('mouseout', (e) => {
-          
+
           if(specialDelayMouseOut){
             hoveredElement = null
             return
@@ -434,7 +434,7 @@
               //   if (scrollContainer) {
               //     scrollContainer.scrollTop = 0;
               //   }
-              // }            
+              // }
               iframe.style.pointerEvents = 'none';
               iframe.style.opacity = '0';
               iframe.style.height = '0';
@@ -443,7 +443,7 @@
             if (popper) {
               popper.destroy();
               popper = null;
-            }                      
+            }
           } else {
             //console.log('out', target, event);
           }
@@ -451,5 +451,5 @@
       };
       enableLivePreview()
     }
-  
+
 })();
