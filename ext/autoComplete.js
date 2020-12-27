@@ -1,11 +1,11 @@
 /* globals roam42, Mousetrap, Cookies, simulateMouseClick, iziToast  */
 
 
-// roam42.autocomplete 
+// roam42.autocomplete
 (()=>{
-  
+
   roam42.autocomplete = {};
-  
+
   roam42.autocomplete.getAutoComplete_IsEnabled = ()=>{
     if( Cookies.get('AutoComplete_IsEnabled') === 'false' ) {
       return false
@@ -16,9 +16,9 @@
 
   roam42.autocomplete.setAutoComplete_IsEnabled = (val)=>{
     if(val == true) {
-      Cookies.set('AutoComplete_IsEnabled', 'true', { expires: 365 }); 
+      Cookies.set('AutoComplete_IsEnabled', 'true', { expires: 365 });
     } else {
-      Cookies.set('AutoComplete_IsEnabled', 'false', { expires: 365 });     
+      Cookies.set('AutoComplete_IsEnabled', 'false', { expires: 365 });
     }
   }
 
@@ -29,7 +29,7 @@
       theme: 'dark',
       title: 'Autocomplete',
       message: 'Status:',
-      position: 'bottomRight', 
+      position: 'bottomRight',
       progressBarColor: 'rgb(0, 255, 184)',
       buttons: [
       ['<button>Enabled</button>', function (instance, toast) {
@@ -40,12 +40,12 @@
             theme: 'dark',
             progressBar: true,
             animateInside: true,
-            close: false,  
-            timeout: 10000,  
-            closeOnClick: true,  
-            displayMode: 2  
-          })          
-      }, status], 
+            close: false,
+            timeout: 10000,
+            closeOnClick: true,
+            displayMode: 2
+          })
+      }, status],
       ['<button>Disabled</button>', function (instance, toast) {
           roam42.autocomplete.setAutoComplete_IsEnabled(false)
           instance.hide({transitionOut: 'fadeOutDown'}, toast, 'buttonName');
@@ -55,18 +55,18 @@
               theme: 'dark',
               progressBar: true,
               animateInside: true,
-              close: false,  
-              timeout: 10000,  
-              closeOnClick: true,  
-              displayMode: 2  
-            })          
+              close: false,
+              timeout: 10000,
+              closeOnClick: true,
+              displayMode: 2
+            })
           },500)
-      }, !status], 
+      }, !status],
       ]
-    });  
+    });
   }
 
-  roam42.autocomplete.loadAutoComplete = ()=> {  
+  roam42.autocomplete.loadAutoComplete = ()=> {
     if(roam42.autocomplete.getAutoComplete_IsEnabled() == true ) {
       Mousetrap(document.getElementById("find-or-create-input")).bind('shift+space',()=>{
         setTimeout(()=>{
@@ -79,9 +79,9 @@
         if(document.querySelector(".bp3-elevation-3")){
           setTimeout(()=>{
             if( document.querySelector('.rm-autocomplete-result').parentElement.childElementCount > 1) {
-              document.querySelector(".bp3-elevation-3").childNodes[1].click();        
+              document.querySelector(".bp3-elevation-3").childNodes[1].click();
             } else {
-              document.querySelector(".bp3-elevation-3").childNodes[0].click();  
+              document.querySelector(".bp3-elevation-3").childNodes[0].click();
             }
             setTimeout(()=> document.execCommand("insertText",false," "),100);
           },200)

@@ -19,7 +19,7 @@
   -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.35);
   -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.35);
   box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.35);
-}   
+}
 
 
 #dnaborder {
@@ -165,7 +165,7 @@
 #jumptoDateInput {
   left:       10px;
   top:        10px;
-  position:   relative; 
+  position:   relative;
   border:     0px solid;
 }
 
@@ -209,7 +209,7 @@
   background: black !important;
 }
 
-.roam42-privacy-block img { 
+.roam42-privacy-block img {
   display:none;
 }
 

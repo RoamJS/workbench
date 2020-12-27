@@ -40,7 +40,7 @@
       var page_title = block_info[0][0].title;
       return await roam42.common.getRandomBlockMentioningPage(page_title);
     }
-    
+
     if (await roam42.common.isBlockRef(paramter)) {
       return await roam42.common.getRandomBlockMentioningBlockRef(paramter);
     }
@@ -52,7 +52,7 @@
     var randomBlockParam = textToProcess.replace('<%RANDOMBLOCK:','').replace('%>','').trim();
     return '((' + await roam42.common.getRandomBlock(1) + '))'
   }
-  
+
   window.roam42.smartBlocks.testingReloadRandomBlocks = () => {
     roam42.loader.addScriptToPage( "smartBlocksRB", roam42.host + 'ext/smartBlocksRB.js');
   };

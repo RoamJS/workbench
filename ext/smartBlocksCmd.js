@@ -4,8 +4,8 @@
     roam42.smartBlocks.addCommands =  async (valueArray)=> {
       //DATE COMMANDS
       valueArray.push({key: 'today (42)',      icon:'time',     value: 'today',     processor:'date'});
-      valueArray.push({key: 'tomorrow (42)',   icon:'time',    value: 'tomorrow', processor:'date'});      
-      valueArray.push({key: 'yesterday (42)',  icon:'time',     value: 'yesterday', processor:'date'});      
+      valueArray.push({key: 'tomorrow (42)',   icon:'time',    value: 'tomorrow', processor:'date'});
+      valueArray.push({key: 'yesterday (42)',  icon:'time',     value: 'yesterday', processor:'date'});
       ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].forEach(  (e)=>{
         valueArray.push({key: `${e} (42)`,       icon:'time',   value: `${e}`,      processor:'date'});
         valueArray.push({key: `Last ${e} (42)`,  icon:'time',   value: `Last ${e}`, processor:'date'});
@@ -22,13 +22,13 @@
 
       valueArray.push({key: 'Block Mentions List (42)', icon:'list',   value: roam42.q.smartBlocks.blockMentions,   processor:'function'});
       valueArray.push({key: 'Search - plain text (42)', icon:'list',   value: roam42.q.smartBlocks.search,   processor:'function'});
-      
-      
+
+
       valueArray.push({key: 'Serendipity - R a n d o m Block (42)', value: '', icon:'random',    processor:'randomblock'});
       valueArray.push({key: 'Serendipity - R a n d o m Page (42)', value: '',  icon:'random',   processor:'randompage'});
       valueArray.push({key: 'Workflow (SmartBlock Starter)', icon:'gear', processor:'function', value: async ()=>{
                         var workflowName = prompt("What is the name of the new workflow?")
-                        roam42.common.setEmptyNodeValue( document.querySelector("textarea"), "#42SmartBlock " + workflowName );            
+                        roam42.common.setEmptyNodeValue( document.querySelector("textarea"), "#42SmartBlock " + workflowName );
                         await roam42.common.sleep(200);
                         await roam42KeyboardLib.pressEnter();
                         await roam42.common.sleep(200);
@@ -37,11 +37,11 @@
       valueArray.push({key: 'Button (SmartBlock Starter)', icon:'gear', processor:'function', value: async ()=>{
                         var caption    = prompt("What is the name of the caption of the button?")
                         if(!caption) return;
-                        var smartBlock = prompt("What is the name of the SmartBlock?")                        
+                        var smartBlock = prompt("What is the name of the SmartBlock?")
                         if(!smartBlock) return;
-                        roam42.smartBlocks.insertSnippetIntoBlock(`{{${caption}:42SmartBlock:${smartBlock}}}`);            
+                        roam42.smartBlocks.insertSnippetIntoBlock(`{{${caption}:42SmartBlock:${smartBlock}}}`);
                       }, help:'<b>SmartBlock Button</b><br/><br/>Button Syntax:<br>{{caption:42SmartBlock:Name of SmartBlock}}:<br>{{caption:42SmartBlock:Name of SmartBlock:var1=value1}}'});
-      
+
       valueArray.push({key: '42sb (SmartBlock Command)',                     icon:'gear', value: '#42SmartBlock',          processor:'static'});
       valueArray.push({key: '<% BLOCKMENTIONS: %> (SmartBlock Command)',      icon:'gear', value: '<%BLOCKMENTIONS:&&&%>',  processor:'static',
                              help:'<b>BLOCKMENTIONS</b><br/>Returns list of blocks mentioned<br/><br/>1: Max blocks to return<br/>2: Page or Tag Name<br/>3: (opt) filtering '});
@@ -49,7 +49,7 @@
                              help:'<b>BLOCKMENTIONSDATED</b><br/>Returns list of blocks mentioned<br/> based on date range<br/>' +
                                    '<br/>1: Max blocks to return<br/>2: Page or Tag Name<br/>3: Start Date<br/>4. End Date<br/>5: Sort (ASC,DESC,NONE)<br/>6: (opt) filtering '});
       valueArray.push({key: '<% BREADCRUMBS: %> (SmartBlock Command)',      icon:'gear', value: '<%BREADCRUMBS:&&&%>',  processor:'static',
-                             help:'<b>BREADCRUMBS</b><br/>Returns a list of<br/> parent block refs to a <br/>given block ref<br/><br/>1: Block reference<br/>2: Separator used between blok references'});      
+                             help:'<b>BREADCRUMBS</b><br/>Returns a list of<br/> parent block refs to a <br/>given block ref<br/><br/>1: Block reference<br/>2: Separator used between blok references'});
       valueArray.push({key: '<% SEARCH: %> (SmartBlock Command)',             icon:'gear', value: '<%SEARCH:&&&%>',         processor:'static',
                              help:'<b>SEARCH</b><br/>Search all blocks for string of text<br/><br/>1: Max blocks to return<br/>2: String for search (case-sensitive)<br/>3: (opt) filtering '});
       valueArray.push({key: '<% DATEBASIS: %> (SmartBlock Command)',icon:'gear', value: '<%DATEBASIS:&&&%>',processor:'static',
@@ -121,7 +121,7 @@
       valueArray.push({key: '<% RANDOMPAGE %> (SmartBlock Command)',         icon:'gear', value: '<%RANDOMPAGE%>',         processor:'static',
                              help:'<b>RANDOMPAGE</b><br/>Returns random page from graph'});
       valueArray.push({key: '<% REPEAT: %> (SmartBlock Command)',    icon:'gear', value: '<%REPEAT:&&&%>',processor:'static',
-                             help:'<b>REPEAT</b><br/>Repeats the current block<br/> a number of specified times<br/><br/>1. Number of times for repeat'});  
+                             help:'<b>REPEAT</b><br/>Repeats the current block<br/> a number of specified times<br/><br/>1. Number of times for repeat'});
       valueArray.push({key: '<% RESOLVEBLOCKREF: %> (SmartBlock Command)',    icon:'gear', value: '<%RESOLVEBLOCKREF:&&&%>',processor:'static',
                              help:'<b>RESOLVEBLOCKREF</b><br/>Convert block ref to text<br/><br/>1. Block reference'});
       valueArray.push({key: '<% RESOLVEBLOCKREFATEND: %> (SmartBlock Command)',icon:'gear',value: '<%RESOLVEBLOCKREFATEND:&&&%>',processor:'static',
@@ -158,19 +158,19 @@
     roam42.smartBlocks.resolveBlockRef = async (blockref)=>{
       if(blockref.includes('[[')) {
         blockref = blockref.replace('#[[','');
-        blockref = await roam42.common.replaceAsync(blockref, /\[\[/g, async (match, name)=>{return ''});        
-        blockref = await roam42.common.replaceAsync(blockref, /\]\]/g, async (match, name)=>{return ''});        
+        blockref = await roam42.common.replaceAsync(blockref, /\[\[/g, async (match, name)=>{return ''});
+        blockref = await roam42.common.replaceAsync(blockref, /\]\]/g, async (match, name)=>{return ''});
         return blockref;
       } else {
         blockref = blockref.replace('((','').replace('))','').trim();
         var queryResults = await roam42.common.getBlockInfoByUID(blockref);
-        if(queryResults==null) 
+        if(queryResults==null)
           return blockref + ''; //no results, return origional
         else
-          return queryResults[0][0].string;              
+          return queryResults[0][0].string;
       }
-    }  
-  
+    }
+
     roam42.smartBlocks.proccessBlockWithSmartness = async (textToProcess)=>{
       let ifCommand = null;  // null if no IF, true process THEN, false process ELSE
 
@@ -178,8 +178,8 @@
         var blockCommand = await roam42.common.replaceAsync(textToProcess, /(\<\%GET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%GET:','').replace('%>','');
           var vValue = roam42.smartBlocks.activeWorkflow.vars[commandToProcess];
-          return vValue;   
-        });              
+          return vValue;
+        });
         var repeatCount;
         await roam42.common.replaceAsync(blockCommand, /(\<\%REPEAT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           repeatCount = match.replace('<%REPEAT:','').replace('%>','');
@@ -193,33 +193,33 @@
         return roam42.smartBlocks.exclusionBlockSymbol; // roam42.smartBlocks.replaceFirstBlock;
       });
       if(textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol)) return ''
-      
+
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLEARVARS\%\>)/g, async (match, name)=>{
-        roam42.smartBlocks.activeWorkflow.vars = new Object();    
+        roam42.smartBlocks.activeWorkflow.vars = new Object();
         return '';
-      });      
+      });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%42SETTING:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandToProcess = match.replace('<%42SETTING:','').replace('%>','');
         var vValue = await roam42.settings.get(commandToProcess);
         if(vValue==null) vValue = `--> Setting ${commandToProcess} not found in your graph <--`
-        return vValue;   
-      });      
+        return vValue;
+      });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%GET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandToProcess = match.replace('<%GET:','').replace('%>','');
         var vValue = roam42.smartBlocks.activeWorkflow.vars[commandToProcess];
         if(vValue==undefined) vValue = `--> Variable ${commandToProcess} not SET <--`
-        return vValue;   
+        return vValue;
       });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLIPBOARDPASTETEXT\%\>)/g, async (match, name)=>{
         var cb = await navigator.clipboard.readText();
-        await roam42.common.sleep(50);        
+        await roam42.common.sleep(50);
         return cb;
-      });            
+      });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RESOLVEBLOCKREF:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandToProcess = match.replace('<%RESOLVEBLOCKREF:','').replace('%>','').trim();
         return roam42.smartBlocks.resolveBlockRef(commandToProcess);
       });
-      
+
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFTRUE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandToProcess = match.replace('<%IFTRUE:','').replace('%>','');
         try {
@@ -227,25 +227,25 @@
             return roam42.smartBlocks.exclusionBlockSymbol;
           }
         } catch(e) { return '<%IFTRUE%> Failed with error: ' + e }
-        return '';   
+        return '';
       });
 
       // IFTRUE prevents us from going forward if was FALSE
       if(!textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol))  {
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATEBASIS)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%DATEBASIS:','').replace('%>','').trim();
-          if(commandToProcess=='DNP') 
-            roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] = 'DNP';     
+          if(commandToProcess=='DNP')
+            roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] = 'DNP';
           else  {
-            roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] = null; //reset basis to default     
+            roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] = null; //reset basis to default
             var dt = roam42.dateProcessing.parseTextForDates(commandToProcess).replace('[[','').replace(']]','');
             roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] = chrono.parseDate(dt);
           }
-          return roam42.smartBlocks.exclusionBlockSymbol;   
-        });        
+          return roam42.smartBlocks.exclusionBlockSymbol;
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%J:)/g, async (match, name)=>{
           return  match.replace('<%J:','<%JAVASCRIPT:')
-        });      
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JA:)/g, async (match, name)=>{
           return  match.replace('<%JA:','<%JAVASCRIPTASYNC:')
         });
@@ -253,14 +253,14 @@
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var scriptToRun = match.replace('<%JAVASCRIPT:','').replace('%>','').trim();
           if(scriptToRun.substring(0,13)=='```javascript')
-            scriptToRun = scriptToRun.substring(13,scriptToRun.length-3);   
+            scriptToRun = scriptToRun.substring(13,scriptToRun.length-3);
           var results = new Function(scriptToRun.toString())();
           return results;
-        });           
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%JAVASCRIPTASYNC:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var scriptToRun = match.replace('<%JAVASCRIPTASYNC:','').replace('%>','').trim();
           if(scriptToRun.substring(0,13)=='```javascript')
-            scriptToRun = scriptToRun.substring(13,scriptToRun.length-3); 
+            scriptToRun = scriptToRun.substring(13,scriptToRun.length-3);
           var AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
           var results = await new AsyncFunction(scriptToRun.toString())();
           return results;
@@ -271,19 +271,19 @@
             var splitPrompt = commandToProcess.split('\%\%');
             return prompt( splitPrompt[0],  splitPrompt[1] )
           } else {
-            return prompt(commandToProcess.toString());        
+            return prompt(commandToProcess.toString());
           }
         });
         //Random block command
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCK\%\>)/g, async (match, name)=>{
           return '((' + await roam42.common.getRandomBlock(1) + '))';
-        }); 
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKFROM:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           return '((' + await roam42.smartBlocks.getRandomBlocksFrom(match) + '))';
-        });       
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMBLOCKMENTION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           return '((' + await roam42.smartBlocks.getRandomBlocksMention(match) + '))';
-        }); 
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RANDOMPAGE\%\>)/g, async (match, name)=>{
           return await roam42.smartBlocks.getRandomPage();
         });
@@ -296,13 +296,13 @@
         });
        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIME\%\>)/g, async (match, name)=>{
           return roam42.dateProcessing.getTime24Format()
-        }); 
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIMEAMPM\%\>)/g, async (match, name)=>{
           return roam42.dateProcessing.getTimeAPPMFormat();
-        });           
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%DATE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%DATE:','').replace('%>','').trim();
-          if(!commandToProcess.includes(',')) //no formatting command, return a roam date   
+          if(!commandToProcess.includes(',')) //no formatting command, return a roam date
            return roam42.dateProcessing.parseTextForDates(commandToProcess).trim();
           else {
             //formatting command provided, return a format
@@ -317,19 +317,19 @@
           var commandToProcess = match.replace('<%IFDAYOFWEEK:','').replace('%>','').trim();
           var day = String(chrono.parseDate(roam42.dateProcessing.parseTextForDates('today')).getDay());
           if(day=='0') day='7'; //sunday
-          if(commandToProcess.replaceAll(' ','').split(',').includes(day)) 
+          if(commandToProcess.replaceAll(' ','').split(',').includes(day))
             return ''; //
-          else 
+          else
             return roam42.smartBlocks.exclusionBlockSymbol
         });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDAYOFMONTH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%IFDAYOFMONTH:','').replace('%>','').trim();
           var day = String(chrono.parseDate(roam42.dateProcessing.parseTextForDates('today')).getDate());;
-          if(commandToProcess.replaceAll(' ','').split(',').includes( day ) ) 
+          if(commandToProcess.replaceAll(' ','').split(',').includes( day ) )
             return ''; //
-          else 
+          else
             return roam42.smartBlocks.exclusionBlockSymbol
-        });                  
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLIPBOARDCOPY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var textToWrite = match.replace('<%CLIPBOARDCOPY:','').replace('%>','');
           await navigator.clipboard.writeText( textToWrite );
@@ -337,22 +337,22 @@
         });
         // process CUSTOM commands
         for (const { value, processor } of roam42.smartBlocks.customCommands) {
-          textToProcess = await roam42.common.replaceAsync(textToProcess, new RegExp(value, 'g'), processor); 
+          textToProcess = await roam42.common.replaceAsync(textToProcess, new RegExp(value, 'g'), processor);
         }
 
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IF:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%IF:','').replace('%>','');
           try {
-            if(eval(commandToProcess)) 
+            if(eval(commandToProcess))
               ifCommand = true;
             else
               ifCommand = false;
           } catch(e) { return '<%IF%> Failed with error: ' + e }
-          return '';   
-        });      
+          return '';
+        });
         if(ifCommand!=null){
           if(ifCommand==true){
-            textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%ELSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{return ''});          
+            textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%ELSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{return ''});
             textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%THEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
               return match.replace('<%THEN:','').replace('%>','');
             });
@@ -362,43 +362,43 @@
               return match.replace('<%ELSE:','').replace('%>','');
             });
           }
-        }      
+        }
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CONCAT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
          var commandToProcess = match.replace('<%CONCAT:','').replace('%>','');
          commandToProcess = await roam42.common.replaceAsync(commandToProcess, /\\,/g, async (match, name)=>'&&comma;;');
          commandToProcess = await roam42.common.replaceAsync(commandToProcess, /,/g,   async (match, name)=>'');
          commandToProcess = await roam42.common.replaceAsync(commandToProcess, /\&\&comma\;\;/g,   async (match, name)=>',');
          return commandToProcess;
-        });      
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%RESOLVEBLOCKREFATEND:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%RESOLVEBLOCKREFATEND:','').replace('%>','').trim();
           return roam42.smartBlocks.resolveBlockRef(commandToProcess);
         });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOTIFICATION:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-          var commandToProcess = match.replace('<%NOTIFICATION:','').replace('%>','').trim();      
+          var commandToProcess = match.replace('<%NOTIFICATION:','').replace('%>','').trim();
           var params = commandToProcess.split(',');
-          iziToast.show({message:params[1],timeout:Number(params[0]*1000),theme:'dark',progressBar:true,animateInside:true,close:true,closeOnClick:true,displayMode:2});  
+          iziToast.show({message:params[1],timeout:Number(params[0]*1000),theme:'dark',progressBar:true,animateInside:true,close:true,closeOnClick:true,displayMode:2});
           return ''
         });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SET:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var textToProcess = match.replace('<%SET:','').replace('%>','');
           roam42.smartBlocks.activeWorkflow.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
-          return '';   
+          return '';
         });
         //ALWAYS at end of process
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOBLOCKOUTPUT\%\>)/g, async (match, name)=>{
           return roam42.smartBlocks.exclusionBlockSymbol;
-        });         
+        });
         //test for EXIT command
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%EXIT\%\>)/g, async (match, name)=>{
           roam42.smartBlocks.exitTriggered=true;
-          return ''; 
-        }); 
+          return '';
+        });
         if(roam42.smartBlocks.exitTriggered==true) return textToProcess;   //exit procesing
 
         //MULTIBLOCK commands
         //shoud not be run if the block is flagged for nooutput
-        if(!textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol)) { 
+        if(!textToProcess.includes(roam42.smartBlocks.exclusionBlockSymbol)) {
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%BLOCKMENTIONS:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandParameters = match.replace('<%BLOCKMENTIONS:','').replace('%>','');
             return await roam42.q.smartBlocks.commands.blockMentions(commandParameters, textToProcess);
@@ -414,23 +414,23 @@
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOTODAY:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOTODAY:','').replace('%>','').trim();
             return await roam42.timemgmt.smartBlocks.commands.todosDueToday(commandToProcess,textToProcess,match);
-          });      
+          });
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOOVERDUE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOOVERDUE:','').replace('%>','').trim();
             return await roam42.timemgmt.smartBlocks.commands.todosOverdue(commandToProcess,false,textToProcess, match);
-          });            
+          });
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOOVERDUEDNP:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOOVERDUEDNP:','').replace('%>','').trim();
             return await roam42.timemgmt.smartBlocks.commands.todosOverdue(commandToProcess,true,textToProcess, match);
-          });                  
+          });
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOFUTURE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOFUTURE:','').replace('%>','').trim();
             return await roam42.timemgmt.smartBlocks.commands.todosFuture(commandToProcess,false,textToProcess, match);
-          });            
+          });
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOFUTUREDNP:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOFUTUREDNP:','').replace('%>','').trim();
             return await roam42.timemgmt.smartBlocks.commands.todosFuture(commandToProcess,true,textToProcess, match);
-          });                  
+          });
           textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TODOUNDATED:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
             var commandToProcess = match.replace('<%TODOUNDATED:','').replace('%>','').trim();
             return await roam42.timemgmt.smartBlocks.commands.todoNotDated(commandToProcess, textToProcess, match);
@@ -452,18 +452,18 @@
 
       return textToProcess; //resert new text
     }
-    
+
     roam42.smartBlocks.processBlockAfterBlockInserted = async (textToProcess)=> {
       if(!textToProcess.match(/\<\%(\s*[\S\s]*?)\%\>/)) //process if it has a command
         return textToProcess
-      
+
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%UNINDENT\%\>)/g, async (match, name)=>{
         await roam42KeyboardLib.pressShiftTab(500);
-        return ''; 
-      });      
+        return '';
+      });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%INDENT\%\>)/g, async (match, name)=>{
         await roam42KeyboardLib.pressTab(500);
-        return ''; 
+        return '';
       });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTBLOCKREF:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var commandToProcess = match.replace('<%CURRENTBLOCKREF:','').replace('%>','');
@@ -471,25 +471,25 @@
         roam42.smartBlocks.activeWorkflow.vars[commandToProcess]='((' + UID.substring( UID.length -9) + '))';
         roam42.smartBlocks.activeWorkflow.forceDelayAferNewBlock = 900;
         return '';
-      });                        
+      });
       await roam42.common.replaceAsync(textToProcess, /(\<\%CURSOR\%\>)/g, async (match, name)=>{
         roam42.smartBlocks.activeWorkflow.startingBlockTextArea = document.activeElement.id; //if CURSOR, then make this the position block in end
-      }); 
+      });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%FOCUSONBLOCK\%\>)/g, async (match, name)=>{
         //if assigned, will zoom to this location later
         roam42.smartBlocks.activeWorkflow.focusOnBlock = document.activeElement.id; //if CURSOR, then make this the position block in end
-        return ''; 
+        return '';
       });
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%ONBLOCKEXIT:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
         var scriptToRun = match.replace('<%ONBLOCKEXIT:','').replace('%>','').trim();
         if(scriptToRun.substring(0,13)=='```javascript')
-          scriptToRun = scriptToRun.substring(13,scriptToRun.length-3); 
+          scriptToRun = scriptToRun.substring(13,scriptToRun.length-3);
         roam42.smartBlocks.activeWorkflow.onBlockExitCode = scriptToRun;
         return '';
-      });                  
+      });
       return textToProcess;
     }
-    
+
     roam42.smartBlocks.processBlockOnBlockExit = async ()=>{
       if(roam42.smartBlocks.activeWorkflow.onBlockExitCode!='') {
         var AsyncFunction = Object.getPrototypeOf(async function(){}).constructor

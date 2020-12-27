@@ -95,7 +95,7 @@
 
           tmp = replace_variables(tmp)
 
-          // remove first 
+          // remove first
           tmp = tmp.replace(/^\s*- /, '').split("\n");
 
           // process first line
@@ -117,7 +117,7 @@
 
               if (line == '') line = ' ';
               roam42.common.setEmptyNodeValue(elem, line)
-             if (line.includes('#')) { 
+             if (line.includes('#')) {
                await KeyboardLib.delay(250);
                await KeyboardLib.pressEnter();
              }
@@ -169,7 +169,7 @@
 
               if (line == '') line = ' ';
               roam42.common.setEmptyNodeValue(elem, line)
-             if (line.includes('#')) { 
+             if (line.includes('#')) {
                await KeyboardLib.delay(250);
                await KeyboardLib.pressEnter();
              }

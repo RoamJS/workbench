@@ -1,7 +1,7 @@
 /* globals roam42 */
 
 (()=>{
-  
+
   roam42.common.getBlockParentUids = async (uid) => {
     try {
       var parentUIDs = await window.roamAlphaAPI.q(`[:find (pull ?block [{:block/parents [:block/uid]}]) :in $ [?block-uid ...] :where [?block :block/uid ?block-uid]]`,[uid])[0][0];
@@ -10,16 +10,16 @@
       return await roam42.common.getPageNamesFromBlockUidList(UIDS)
     } catch (e) { return ''; }
   }
-  
+
   roam42.common.getPageUidByTitle = async (title)=> {
     try {
       return await window.roamAlphaAPI.q(`[:find ?uid :where [?e :node/title "${title}"][?e :block/uid ?uid ] ]`)[0].toString();
     } catch(e) { return ''; }
-  } 
-  
+  }
+
   roam42.common.getBlockByPhrase = async (search_phrase)=> {
     var blocks = await window.roamAlphaAPI.q(`[:find (pull ?e [:block/uid :block/string] ) :where [?e :block/string ?contents][(clojure.string/includes? ?contents "${search_phrase}")]]`);
-    return blocks;    
+    return blocks;
   }
 
   roam42.common.currentPageUID = async ()=> {
@@ -29,17 +29,17 @@
     } else {
       uid = await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date()))
     }
-    return uid;    
+    return uid;
   }
-  
+
   roam42.common.getBlockInfoByUID = async (uid, withChildren=false)=>{
     try {
-      let q = `[:find (pull ?page 
-                     [:node/title :block/string :block/uid :block/heading :block/props 
+      let q = `[:find (pull ?page
+                     [:node/title :block/string :block/uid :block/heading :block/props
                       :entity/attrs :block/open :block/text-align :children/view-type
-                      :block/order 
+                      :block/order
                       ${withChildren ? '{:block/children ...}' : '' }
-                     ]) 
+                     ])
                   :where [?page :block/uid "${uid}"]  ]`;
         var results = await window.roamAlphaAPI.q(q);
         if(results.length == 0 ) return null;
@@ -48,22 +48,22 @@
         return null;
       }
   }
- 
+
   roam42.common.isPage = async (title)=> {
-    try {   
+    try {
       var page = await window.roamAlphaAPI.q(`
-          [:find ?e 
+          [:find ?e
               :where [?e :node/title "${title}"]]`);
 
       return page.length > 0 ? true: false;
     } catch(e) { return ''; }
-  } 
+  }
 
   roam42.common.isBlockRef = async (uid)=> {
-    try {   
+    try {
       if (uid.startsWith("((")) {
         uid = uid.slice(2, uid.length);
-        uid = uid.slice(0, -2);      
+        uid = uid.slice(0, -2);
       }
 
       var block_ref = await window.roamAlphaAPI.q(`
@@ -72,13 +72,13 @@
 
       return (block_ref.length > 0 && block_ref[0][0] != null) ? true: false;
     } catch(e) { return ''; }
-  } 
+  }
 
   roam42.common.isPageRef = async (uid)=> {
-    try {   
+    try {
       if (uid.startsWith("((")) {
         uid = uid.slice(2, uid.length);
-        uid = uid.slice(0, -2);      
+        uid = uid.slice(0, -2);
       }
 
       var block_ref = await window.roamAlphaAPI.q(`
@@ -87,7 +87,7 @@
 
       return (block_ref.length > 0 && block_ref[0][0] != null) ? true: false;
     } catch(e) { return ''; }
-  } 
+  }
 
   roam42.common.getPageNamesFromBlockUidList =async  (blockUidList)=> {
     //blockUidList ex ['sdfsd', 'ewfawef']
@@ -100,23 +100,23 @@
                                      (ancestor ?block ?page)]`;
     var results = await window.roamAlphaAPI.q(query, blockUidList, rule);
     return results;
-  }  
-  
+  }
+
   roam42.common.getBlocksReferringToThisPage = async (title)=> {
-    try {   
+    try {
       return await window.roamAlphaAPI.q(`
-          [:find (pull ?refs [:block/string :block/uid {:block/children ...}]) 
+          [:find (pull ?refs [:block/string :block/uid {:block/children ...}])
               :where [?refs :block/refs ?title][?title :node/title "${title}"]]`);
     } catch(e) { return ''; }
-  } 
+  }
 
   roam42.common.getBlocksReferringToThisBlockRef = async (uid)=> {
-    try {   
+    try {
       return await window.roamAlphaAPI.q(`
-          [:find (pull ?refs [:block/string :block/uid {:block/children ...}]) 
+          [:find (pull ?refs [:block/string :block/uid {:block/children ...}])
               :where [?refs :block/refs ?block][?block :block/uid "${uid}"]]`);
     } catch(e) { return ''; }
-  } 
+  }
 
   roam42.common.pageExists = async (page_title)=>{
     var results = await window.roamAlphaAPI.q(`[:find ?e :where [?e :node/title "${page_title}"]]`);
@@ -136,7 +136,7 @@
     var results = await window.roamAlphaAPI.q(`[:find [(rand 1 ?blocks)] :where [?e :block/uid ?blocks]]`);
     return results
   }
-  
+
   roam42.common.getRandomBlockMentioningPage = async (page_title)=>{
     var results = await roam42.common.getBlocksReferringToThisPage(page_title);
     if (results.length == 0) {
@@ -150,9 +150,9 @@
   roam42.common.getRandomBlockMentioningBlockRef = async (block_ref)=>{
     if (block_ref.startsWith("((")) {
       block_ref = block_ref.slice(2, block_ref.length);
-      block_ref = block_ref.slice(0, -2);      
+      block_ref = block_ref.slice(0, -2);
     }
-    
+
     var results = await roam42.common.getBlocksReferringToThisBlockRef(block_ref);
     if (results.length == 0) {
       return "";
@@ -180,7 +180,7 @@
   roam42.common.getRandomBlockFromBlock = async (uid)=>{
     if (uid.startsWith("((")) {
       uid = uid.slice(2, uid.length);
-      uid = uid.slice(0, -2);      
+      uid = uid.slice(0, -2);
     }
 
     var rule = '[[(ancestor ?b ?a)[?a :block/children ?b]][(ancestor ?b ?a)[?parent :block/children ?b ](ancestor ?parent ?a) ]]';
@@ -199,6 +199,6 @@
 
   window.roam42.common.testingReloadDatalog = () => {
     roam42.loader.addScriptToPage( "commonDatalog", roam42.host + 'common/commonDatalog.js');
-  };  
+  };
 
-})();  
+})();

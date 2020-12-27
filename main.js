@@ -1,4 +1,4 @@
-/* global  roam42, loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent, 
+/* global  roam42, loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent,
            rmQuickRefenceSystem, device, displayStartup,
            loadAutoComplete, iziToast
 */
@@ -16,23 +16,23 @@
   roam42.common            shared commands
   roam42.dateProcessing    Date functions
   roam42.privacyMode       Redacts content from your Roam
-  roam42.formatConverter   converts current page to various formats   
-  roam42.formatConverterUI UI to roam42.formatConverter    
-  roam42.smartBlocks       SmartBlocks engine    
+  roam42.formatConverter   converts current page to various formats
+  roam42.formatConverterUI UI to roam42.formatConverter
+  roam42.smartBlocks       SmartBlocks engine
   roam42.KeyboardLib       imported from another library. so letting it stand as its own object
 */
 
 
 ;(()=>{});
 
-if( typeof window.roam42 == 'undefined' ) { 
+if( typeof window.roam42 == 'undefined' ) {
 
   window.roam42     =   {};
   roam42.buildID = 'Roam<sup>42</sup> 2020-12-27 (Charlie) ';
-  
+
   roam42.host    = document.currentScript.src.replace('main.js','');
 
-  // roam42.loader 
+  // roam42.loader
   (()=>{
     roam42.loader =  {};
 
@@ -43,7 +43,7 @@ if( typeof window.roam42 == 'undefined' ) {
       try { document.getElementById(tagId).remove() } catch(e){};  //Delete any existing reference
       if(disabledFeatures && disabledFeatures.indexOf(tagId) > -1) { return }; //Exit if disabled
       Object.assign(element, { type:typeT, async:false, tagId:tagId } );
-      document.getElementsByTagName('head')[0].appendChild(element);  
+      document.getElementsByTagName('head')[0].appendChild(element);
     }
 
     roam42.loader.logo2HC = 'https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2F42logo-2hc.png?v=1599851355892';
@@ -76,7 +76,7 @@ if( typeof window.roam42 == 'undefined' ) {
        roam42.loader.addCSSToPage( 'styleRM',           roam42.host + 'css/styleRM.css'           );
     roam42.loader.addScriptToPage( 'commonFunctions',   roam42.host + 'common/commonFunctions.js' );
     roam42.loader.addScriptToPage( 'commonDatalog',     roam42.host + 'common/commonDatalog.js  ' );
-    roam42.loader.addScriptToPage( "settings",          roam42.host + 'ext/settings.js');    
+    roam42.loader.addScriptToPage( "settings",          roam42.host + 'ext/settings.js');
     roam42.loader.addScriptToPage( 'keyEvents',         roam42.host + 'common/keyevents.js'       );
     roam42.loader.addScriptToPage( 'jumpNav'  ,         roam42.host + 'ext/jumpNav.js'            );
     roam42.loader.addScriptToPage( 'message-startup',   roam42.host + 'common/messages.js'               );
@@ -102,13 +102,13 @@ if( typeof window.roam42 == 'undefined' ) {
       roam42.loader.addScriptToPage( 'lookupUI',          roam42.host + 'ext/typeaheadUI.js'      );
       roam42.loader.addScriptToPage( 'typeAheadData',     roam42.host + 'ext/typeaheadData.js'    );
       roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
-      roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');      
+      roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
       roam42.loader.addScriptToPage( 'livePreview',       roam42.host + 'ext/livePreview.js'  );
       roam42.loader.addScriptToPage( 'dailyNote',         roam42.host + 'ext/dailyNotesPopup.js' );
 //      roam42.loader.addScriptToPage( 'focuesMode',        roam42.host + 'ext/focusMode.js'  );
     }
 
-    // Give the libraries a few seconds to get comfy in their new home 
+    // Give the libraries a few seconds to get comfy in their new home
     // and then let the extension dance, that is to say,
     // begin initializing the environment with all the cool tools
     setTimeout(async ()=>{
@@ -118,9 +118,9 @@ if( typeof window.roam42 == 'undefined' ) {
       try { roam42.quickRef.component.initialize();        } catch(e){};
       try { await roam42.smartBlocks.initialize();               } catch(e){};
       roam42.autocomplete.loadAutoComplete();
-      roam42.jumpnav.loadJumpNav();      
+      roam42.jumpnav.loadJumpNav();
       try {
-        if ( device.mobile() == false && window === window.parent  ) { 
+        if ( device.mobile() == false && window === window.parent  ) {
           try { roam42.dailyNotesPopup.component.initialize(); } catch(e){};
         }
       } catch(e) {}

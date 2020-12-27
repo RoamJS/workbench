@@ -1,23 +1,23 @@
 /* globals roam42, roam42KeyboardLib, roam42   */
 
-// roam42.common 
+// roam42.common
 (()=>{
-  
+
   roam42.common = {};
-  
+
   roam42.common.sleep = m => new Promise(r => setTimeout(r, m))
-    
+
   roam42.common.baseUrl = () => {
     const url = new URL(window.location.href);
     const parts = url.hash.split('/');
     url.hash = parts.slice(0, 3).concat(['page']).join('/');
     return url;
   };
-  
+
   roam42.common.currentPageNameInfo = ()=> {
     //return {pageName:'', pageUID:'', DNPDate:''}
   }
-  
+
     roam42.common.navigateUiTo = async function (destinationPage, useShiftKey=false) {
       var uid = await window.roamAlphaAPI.q("[:find ?uid :in $ ?a :where [?e :node/title ?a] [?e :block/uid ?uid]]", destinationPage).flat()[0]
       //page exists, go to it
@@ -31,19 +31,19 @@
         roam42.common.setEmptyNodeValue( inPut, destinationPage );
         setTimeout(()=>{
          if( roam42.keyevents.shiftKeyDownTracker==true && useShiftKey==true ) {
-            roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});   
+            roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});
           } else {
             roam42KeyboardLib.pressEnter();
           }
           setTimeout(()=>{
             roam42.common.setEmptyNodeValue( inPut,'' );
-          },500);             
-          
+          },500);
+
         },1500)
-      },100);   
+      },100);
     }, //navigateUIToDate
-  
-  
+
+
   roam42.common.sortObjectByKey = async o => {
     return o.sort(function(a, b) {
       return a.key.localeCompare(b.key);
@@ -54,8 +54,8 @@
     return o.sort(function(a, b) {
       return a.order - b.order;
     });
-  };  
-  
+  };
+
   roam42.common.asyncQuerySelector = async (node, query) => {
     try {
       return await (query ? node.querySelector(query) : node);
@@ -63,14 +63,14 @@
       console.error(`Cannot find ${query ? `${query} in`: ''} ${node}.`, error);
       return null;
     }
-  };    
+  };
 
-      
+
   roam42.common.sidebarRightToggle = ()=>{
     try {
         document.getElementsByClassName("bp3-icon-more")[0].click();
-        document.getElementsByClassName("bp3-text-overflow-ellipsis bp3-fill")[0].click();     
-    } catch(e) {console.log(e)}    
+        document.getElementsByClassName("bp3-text-overflow-ellipsis bp3-fill")[0].click();
+    } catch(e) {console.log(e)}
   }
 
   roam42.common.sidebarLeftToggle = ()=> {
@@ -86,7 +86,7 @@
       setTimeout(()=>{
         document.getElementsByClassName("bp3-icon-menu-open")[0].click();
       },100);
-    }     
+    }
   }
 
   //https://stackoverflow.com/questions/40091000/simulate-click-event-on-react-element
@@ -147,7 +147,7 @@
   }
 
   // updates an empty text area with a new value. This function does some additional work
-  // because the textarea in roam is managed by React component, and it wasn't being triggered to 
+  // because the textarea in roam is managed by React component, and it wasn't being triggered to
   // update when inserting a value
   roam42.common.setEmptyNodeValue = (element, value) => {
     const e = new Event('input', { bubbles: true });
@@ -230,7 +230,7 @@
     } catch (error) {
       return Promise.reject(error);
     }
-  };  
+  };
 
   roam42.common.blockDelete = (block)=> {
     if (block.localName == "textarea") {
@@ -239,27 +239,27 @@
   }
 
   roam42.common.blockInsertBelow = (block)=>{
-    //Block is the HTMLElement of the currently selected block  
+    //Block is the HTMLElement of the currently selected block
     if (block.localName == "textarea") {
       block.selectionStart = block.value.length;
       block.selectionEnd   = block.value.length;
-      roam42KeyboardLib.pressEnter()      
+      roam42KeyboardLib.pressEnter()
     }
   }
 
    roam42.common.blockInsertAbove = (block)=> {
-    //Block is the HTMLElement of the currently selected block  
+    //Block is the HTMLElement of the currently selected block
     if (block.localName == "textarea") {
       var blockEmpty =  block.value.length>0 ? false : true;
       block.selectionStart =0;
       block.selectionEnd = 0;
-      roam42KeyboardLib.pressEnter()      
+      roam42KeyboardLib.pressEnter()
   //    if(blockEmpty){setTimeout(()=>{ roam42KeyboardLib.simulateKey(38) },250) };  //up arrow
     }
   }
-  
+
   roam42.common.startOfWeek = (date)=> {
-    var diff = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);  
+    var diff = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);
     return new Date(date.setDate(diff));
   }
 
@@ -267,8 +267,8 @@
 
   window.roam42.common.testingReloadCommon = () => {
     roam42.loader.addScriptToPage( "Common", roam42.host + 'common/commonFunctions.js');
-  };  
-   
-  
+  };
 
-})();  
+
+
+})();

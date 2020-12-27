@@ -1,22 +1,22 @@
 /* globals roam42, chrono,kbMapDateProcessing, setEmptyNodeValue */
 
-// roam42.dailyNotesPopup 
+// roam42.dailyNotesPopup
 (()=>{
-  
+
   roam42.dateProcessing = {};
-  
+
   roam42.dateProcessing.monthsDateProcessing = [
     'January','February','March','April','May','June',
     'July','August','September','October','November','December'];
-  
-  
+
+
   //return a real date if the date is a roam date, ex: [[November 1st, 2020]], otherwise returns nulll
   roam42.dateProcessing.testIfRoamDateAndConvert = (strDate)=> {
     strDate = strDate.replace('[[','').replace(']]','');
     var testMonth = roam42.dateProcessing.monthsDateProcessing.includes(strDate.match(/[A-z]+/)[0])
     var testDay   = ['st, ', 'th, ', 'nd, ', 'rd, '].some(v => strDate.includes(v));
     var testYear  = isNaN(strDate.substring(strDate.length-4,strDate.length))
-    if(testDay && testMonth && testYear !=true) 
+    if(testDay && testMonth && testYear !=true)
       return chrono.parseDate(strDate)
     else
       return null
@@ -37,9 +37,9 @@
       hours = hours ? hours : 12; // the hour '0' should be '12'
       minutes = minutes < 10 ? '0'+minutes : minutes;
       var strTime = hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(0,2) + ' ' + ampm;
-      return strTime;      
+      return strTime;
   }
-  
+
   roam42.dateProcessing.nthDate = d => {
     if (d > 3 && d < 21) return 'th';
     switch (d % 10) {
@@ -87,11 +87,11 @@
         if(document.activeElement.closest('.roam-article')!=null) {
           var page = document.querySelector('.rm-block-text')
           daily_notes_page_date = chrono.parseDate(page.id.substring(page.id.search('body-outline-')+13,page.id.length-10))
-          
+
           //document.activeElement.id.substring(document.activeElement.id.search('body-outline-')+13,document.activeElement.id.length-10)
           // if(document.activeElement.closest('.roam-article').querySelector('.rm-title-display'))
-          //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.roam-article').querySelector('.rm-title-display').innerText);          
-          // else if(document.activeElement.closest('.roam-article').querySelector('.rm-zoom-item-content'))  
+          //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.roam-article').querySelector('.rm-title-display').innerText);
+          // else if(document.activeElement.closest('.roam-article').querySelector('.rm-zoom-item-content'))
           //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.roam-article').querySelector('.rm-zoom-item-content').innerText);
         } else if(document.activeElement.closest('.sidebar-content')!=null) {
           //inside the sidebar
@@ -102,19 +102,19 @@
         }
       } else {
         // try {
-        //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-zoom-item-content').innerText);                        
+        //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-zoom-item-content').innerText);
         // } catch(e){
-        //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-title-display').innerText);              
-        // }      
-      }      
+        //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-title-display').innerText);
+        // }
+      }
     } catch(e) {}
     return daily_notes_page_date;
   }
-  
+
   //https://github.com/wanasit/chrono/tree/v1.x.x
   const chronoCustomParser = new chrono.Parser();
   chronoCustomParser.pattern = function () { return /DBOM|DEOM|DBOY|DEOY|DBONM|DEONM|DBONY|DEONY/i; };
-  chronoCustomParser.extract = function(text, ref, match, opt) { 
+  chronoCustomParser.extract = function(text, ref, match, opt) {
       var basisYear  = new Date().getFullYear();
       var basisMonth = new Date().getMonth();
       var dayOut;
@@ -126,13 +126,13 @@
         var daily_notes_page_date = roam42.dateProcessing.resolveDNPName()
         if(daily_notes_page_date) {
           basisYear  = daily_notes_page_date.getFullYear();
-          basisMonth = daily_notes_page_date.getMonth();        
+          basisMonth = daily_notes_page_date.getMonth();
         }
       } else if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] != null) {
           basisYear  = roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'].getFullYear();
-          basisMonth = roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'].getMonth();                
+          basisMonth = roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'].getMonth();
       }
-      
+
       switch(match[0]){
         case "DBOM": //Beginning of this month
           yearOut = basisYear;
@@ -173,16 +173,16 @@
           yearOut = basisYear+1;
           monthOut= 12;
           dayOut  = new Date(yearOut, monthOut, 0).getDate();
-          break;      
+          break;
       }
-    
+
      return new chrono.ParsedResult({
           ref: ref,
           text: match[0],
           index: match.index,
           start: { day: dayOut, month: monthOut, year: yearOut }
-      });        
-    
+      });
+
   };
 
   var customChrono42 = new chrono.Chrono();
@@ -195,7 +195,7 @@
     if (reference_date) { //forces parsing to use a specific date
       txt = customChrono42.parse( str_with_pages_removed, reference_date )
     }
-    else {      
+    else {
       if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD']== 'DNP')  {
         //if using DATEBASISMETHOD==DNP, see if we are on DNP and handle accordingly
         var daily_notes_page_date = roam42.dateProcessing.resolveDNPName();
@@ -204,7 +204,7 @@
         else
           txt = customChrono42.parse( str_with_pages_removed );
       } else if (roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] != null) //use date provided by DATEBASIS command
-          txt = customChrono42.parse( str_with_pages_removed, roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] );        
+          txt = customChrono42.parse( str_with_pages_removed, roam42.smartBlocks.activeWorkflow.vars['DATEBASISMETHOD'] );
       else //default to today for calculation
         txt = customChrono42.parse( str_with_pages_removed);
     }
@@ -213,7 +213,7 @@
       txt.forEach(function(element) {
         var roamDate = '';
         try {
-          if ( element.tags.ENTimeExpressionParser === true || 
+          if ( element.tags.ENTimeExpressionParser === true ||
                element.tags.ZHTimeExpressionParser === true   ) {
               roamDate = roam42.dateProcessing.format_time(element.start.date());
             if(element.end) {
@@ -244,6 +244,6 @@
 
   window.roam42.dateProcessing.testingDateProcessing = () => {
     roam42.loader.addScriptToPage( "smartBlocksRB", roam42.host + 'ext/dateProcessing.js');
-  };  
-  
+  };
+
 })();

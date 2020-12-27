@@ -1,4 +1,4 @@
-# Welcome to Roam42 
+# Welcome to Roam42
 A delightfully fun and powerful collection of power user tools for Roam by https://roamresearch.com/
 
 For more information, go to this page:

@@ -10,11 +10,11 @@
   roam42.typeAhead.typeaheadResult = d => {
     return   `<div class="th-item">
                 <div class="th-term"> ${d.word}       </div>
-                <div class="th-def">  ${d.definition} </div> 
-            </div>`    
-  } 
+                <div class="th-def">  ${d.definition} </div>
+            </div>`
+  }
 
-  roam42.typeAhead.displayDataInToast = d => { 
+  roam42.typeAhead.displayDataInToast = d => {
     let display = `<b>${d.word}</b><br/> ${d.definition}`
     iziToast.show({
       message:  display,
@@ -25,7 +25,7 @@
       timeout: 60000,
       closeOnClick: true,
       displayMode: 2
-    });  
+    });
 
   }
 

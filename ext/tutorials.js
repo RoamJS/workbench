@@ -1,14 +1,14 @@
 /* globals roam42, jsPanel */
 
-// roam42.tutorials 
+// roam42.tutorials
 (()=>{
-  
+
   roam42.tutorials = {};
-  
+
   roam42.tutorials.show = ()=> {
     // if already open, do nothing
     if(document.querySelector('#r42Tutorials')) return;
-    
+
     jsPanel.create({
       id: 'r42Tutorials',
       headerControls: {
@@ -16,10 +16,10 @@
       },
       headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:300px;color:white !important;padding-top:2px;">Tutorials for Roam<sup>42</sup> and Roam</div>',
       iconfont: [
-        'bp3-button bp3-minimal bp3-small bp3-icon-small-minus', 
-        'bp3-button bp3-minimal bp3-small bp3-icon-chevron-down',  
-        'bp3-button bp3-minimal bp3-small bp3-icon-chevron-up', 
-        'custom-maximize', 
+        'bp3-button bp3-minimal bp3-small bp3-icon-small-minus',
+        'bp3-button bp3-minimal bp3-small bp3-icon-chevron-down',
+        'bp3-button bp3-minimal bp3-small bp3-icon-chevron-up',
+        'custom-maximize',
         'bp3-button bp3-minimal bp3-small bp3-icon-cross'
       ],
       contentSize: {
@@ -43,23 +43,23 @@
       position: {
         my: 'left-bottom',
         at: 'left-bottom',
-        offsetX: +10, 
-        offsetY: -10 
+        offsetX: +10,
+        offsetY: -10
       }
-    })    
+    })
 
   }
-  
-  
+
+
 
   roam42.tutorials.testingReload = ()=>{
-    try {  
+    try {
       document.querySelector('#r42Tutorials').remove()
-    } catch(e) {}  
+    } catch(e) {}
     roam42.loader.addScriptToPage( 'roam42Tutorials',  roam42.host + 'ext/tutorials.js'    )
     setTimeout(()=>{
-        roam42.tutorials.show() 
+        roam42.tutorials.show()
     }, 500)
   }
-  
+
 })();
