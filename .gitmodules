@@ -1,0 +1,3 @@
+[submodule "ext/roam-navigator"]
+	path = ext/roam-navigator
+	url = git@github.com:mgsloan/roam-navigator.git
