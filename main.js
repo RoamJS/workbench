@@ -1,6 +1,6 @@
 /* global  roam42, loadKeyEvents, loadTypeAhead, loadJumpNav, jumpToDateComponent,
            rmQuickRefenceSystem, device, displayStartup,
-           loadAutoComplete
+           loadAutoComplete, iziToast
 */
 
 /* roam42 namespace structure
@@ -28,7 +28,7 @@
 if( typeof window.roam42 == 'undefined' ) {
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2020-12-26b (Charlie) ';
+  roam42.buildID = 'Roam<sup>42</sup> 2020-12-27 (Charlie) ';
 
   roam42.host    = document.currentScript.src.replace('main.js','');
 
@@ -125,6 +125,34 @@ if( typeof window.roam42 == 'undefined' ) {
         }
       } catch(e) {}
       try { roam42.roam42Menu.initialize();                } catch(e){};
+      
+      
+var htmlMessage = `<b>Roam42 Announcement</b><br/><br/>
+TESTERS VERSION OF ROAM42<br/><br/>
+This message will only appear for the next 24 hours and will then be removed.<br/></br>
+The trigger for SmartBlocks is being changed from ';;' to 'jj'. This is for important technical
+reasons that I will explain later. Sorry for this change. 
+<br/><br/>
+SmartBlocks trigger is now jj. This can be customized to a different keystroke with these instructions:
+<a href="https://roamresearch.com/#/app/roamhacker/page/tR8l3fAAD" target="_blank">Link to custom trigger instructions</a>.
+<br/><br/>
+--RoamHacker
+`;
+      
+    iziToast.show({
+      message: htmlMessage,
+      color: 'yellow',
+      progressBar: true,
+      animateInside: true,
+      close: true,  
+      timeout: 90000,  
+      closeOnClick: true,  
+      maxWidth:'300px',
+      displayMode: 2  
+    });  
+
+      
+      
     }, 6000);
 
   })();

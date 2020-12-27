@@ -21,7 +21,7 @@
   roam42.smartBlocks.SmartBlockPopupHelpEnabled = true;
 
   roam42.smartBlocks.initialize = async ()=>{
-    var smartBlockTrigger = ";;";
+    var smartBlockTrigger = "jj";
     //determine if user has created a custom trigger
     let customTrigger = await roam42.settings.get("SmartBlockTrigger");
     if(customTrigger!=null && customTrigger.length>0) {
