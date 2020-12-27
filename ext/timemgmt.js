@@ -328,8 +328,11 @@
   //BLOCKMENTIONS
   var tagQuery = async (pageRef)=>{
     var results = [];
-    for(var block of await roam42.common.getBlocksReferringToThisPage(pageRef))
-      results.push({uid: block[0].uid, text:block[0].string})
+    for(var block of await roam42.common.getBlocksReferringToThisPage(pageRef)){
+      try {
+        results.push({uid: block[0].uid, text:block[0].string})        
+      } catch(e) {}
+    }
     return results
   }
 
@@ -469,34 +472,36 @@
     var queryDates = [];
     var outputCounter = 0;
     for(var block of await roam42.common.getPageNamesFromBlockUidList(UIDS)) {
-      var blockText = block[0].string;
-      var outputThisBlock = false;
-      if(outputCounter < limitOutputCount && blockText.substring(0,12)!='{{[[query]]:') {
-        //testing for 2 conditions:
-        // 1 if it has a date in range return
-        // if user wants undated, return those with no date
-        var pageRefs = blockText.replace(`[[${pageRefName}]]`,'').match(/\[\[(\s*[\S\s]*?)\]\]/g)
-        if(pageRefs!=null) {
-          for(let ref of pageRefs) {
-            try {
-              var testForDate =  roam42.dateProcessing.testIfRoamDateAndConvert(ref);
-              if(bReturnUndatedTodos==false) { //skip this block, it has a date
-                if(testForDate && startDate<=testForDate && endDate>=testForDate )
-                  outputThisBlock=true; //has a date, and dates should be outut
-              }
-              else
-                if(!testForDate) outputThisBlock = true; //if not a date, write out (user requested not dated)
-            } catch(e) {}
+      try{
+        var blockText = block[0].string;
+        var outputThisBlock = false;
+        if(outputCounter < limitOutputCount && blockText.substring(0,12)!='{{[[query]]:') {
+          //testing for 2 conditions:
+          // 1 if it has a date in range return
+          // if user wants undated, return those with no date
+          var pageRefs = blockText.replace(`[[${pageRefName}]]`,'').match(/\[\[(\s*[\S\s]*?)\]\]/g)
+          if(pageRefs!=null) {
+            for(let ref of pageRefs) {
+              try {
+                var testForDate =  roam42.dateProcessing.testIfRoamDateAndConvert(ref);
+                if(bReturnUndatedTodos==false) { //skip this block, it has a date
+                  if(testForDate && startDate<=testForDate && endDate>=testForDate )
+                    outputThisBlock=true; //has a date, and dates should be outut
+                }
+                else
+                  if(!testForDate) outputThisBlock = true; //if not a date, write out (user requested not dated)
+              } catch(e) {}
+            }
           }
+          else //no page refs at all
+            if(bReturnUndatedTodos) outputThisBlock = true;
         }
-        else //no page refs at all
-          if(bReturnUndatedTodos) outputThisBlock = true;
-      }
-      if(outputThisBlock){
-        outputCounter+=1;
-        block[0].date = testForDate;
-        queryDates.push(block)
-      }
+        if(outputThisBlock){
+          outputCounter+=1;
+          block[0].date = testForDate;
+          queryDates.push(block)
+        }
+      } catch(e) {}
      } //end of for
 
     if(bReturnCount==true) return queryDates.length; //return count and exit
