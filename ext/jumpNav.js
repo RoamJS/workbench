@@ -20,6 +20,8 @@
           // block align left,center, right, justify
           'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4', 'meta+j 1', 'meta+j 2', 'meta+j 3', 'meta+j 4',   'alt+j 1', 'alt+j 2', 'alt+j 3', 'alt+j 4',
           // headings 1,2,3
+          'ctrl+j 5', 'ctrl+j 6', 'ctrl+j 7',           'meta+j 5', 'meta+j 6', 'meta+j 7',                'alt+j 5', 'alt+j 6', 'alt+j 7',   
+          // page: first node last node      
           'ctrl+j t', 'ctrl+j b', 'ctrl+ t',              'meta+j t', 'meta+j b', 'meta+ t',                'alt+j t', 'alt+j b', 'alt+ t',
           // page: expand/collapse open in side
           'ctrl+j e', 'ctrl+j c', 'ctrl+j o','ctrl+j y', 'meta+j e', 'meta+j c', 'meta+j o', 'meta+j y',    'alt+j e', 'alt+j c', 'alt+j o', 'alt+j y',
@@ -99,7 +101,7 @@
         }
 
         // BLOCKS: fun with blocks
-        if(['ctrl+j x', 'ctrl+j l', 'ctrl+j s', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4', 'ctrl+j 5', 'ctrl+j 6', 'ctrl+j 7' ].includes(handler)) {
+        if(['ctrl+j x', 'ctrl+j l', 'ctrl+j s', 'ctrl+j r', 'ctrl+j a',  'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4'].includes(handler)) {
           var locFacts = roam42.common.saveLocationParametersOfTextArea(event.target);
           var parentControlNode = '';
           if( document.getElementById(locFacts.id).parentNode.parentNode.tagName == 'DIV') {
@@ -146,6 +148,26 @@
           },100)
           return false
         }
+    
+        // Headings
+        if(['ctrl+j 5', 'ctrl+j 6', 'ctrl+j 7' ].includes(handler)) {
+          switch(handler)  {
+            case 'ctrl+j 5':     // heading 1
+              roam42KeyboardLib.simulateKey(49,200,{ctrlKey:true,altKey:true}); //49 is key 1
+              roam42KeyboardLib.simulateKey(49,200,{metaKey:true,altKey:true}); //49 is key 1 // mac OS                  
+              break;              
+            case 'ctrl+j 6':     // heading 2
+              roam42KeyboardLib.simulateKey(50,200,{ctrlKey:true,altKey:true}); //49 is key 1
+              roam42KeyboardLib.simulateKey(50,200,{metaKey:true,altKey:true}); //49 is key 1 // mac OS
+              break;              
+            case 'ctrl+j 7':     // heading 3
+              roam42KeyboardLib.simulateKey(51,200,{ctrlKey:true,altKey:true}); //49 is key 1
+              roam42KeyboardLib.simulateKey(51,200,{metaKey:true,altKey:true}); //49 is key 1 // mac OS
+            break;                   
+          }
+          return false
+        }
+    
 
         // PAGE: Paging all Hitchhikers
         if(['ctrl+j e', 'ctrl+j c', 'ctrl+j o'].includes(handler)) {
