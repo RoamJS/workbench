@@ -77,7 +77,12 @@
         if(newValue=='') newValue=' ';
         var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
         setValue.call(txtarea, newValue );
-        if(startPos>=0) document.activeElement.setSelectionRange(startPos,startPos)
+        console.log(startPos)
+        if(startPos>=0) { 
+          await roam42.common.sleep(500);
+          document.activeElement.setSelectionRange(startPos,startPos);
+          console.log('hi')
+        }
         var e = new Event('input', { bubbles: true });
         txtarea.dispatchEvent(e);
       },50)
@@ -397,6 +402,7 @@
                // NOCURSOR - dont show a curosr after it runs
                if(currentSmartBlockCommand.includes('<%NOCURSOR%>')){
                   setTimeout(async ()=>{ //let other commands process before exiting block edit
+                    await roam42.common.sleep(500);
                     await roam42KeyboardLib.pressEsc(50);
                     await roam42KeyboardLib.pressEsc(50);
                   },400);
@@ -468,7 +474,7 @@
           }
           var e = new Event('input', { bubbles: true });
           document.activeElement.dispatchEvent(e);
-          await roam42.common.sleep(50);
+          await roam42.common.sleep(200);
           document.activeElement.setSelectionRange(cursorLocation,cursorLocation);
           await roam42.common.sleep(100);
           await blocksToInsert({original: sbCommand});
@@ -557,7 +563,8 @@
       roam42.smartBlocks.initialize = {};
     } catch (e) {}
     roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocks.js');
-    setTimeout(()=>roam42.loader.addScriptToPage( 'smartBlocksCmd',roam42.host + 'ext/smartBlocksCmd.js'), 3000)
-    setTimeout(()=>roam42.smartBlocks.initialize(), 5000)
+    setTimeout(()=>roam42.loader.addScriptToPage( 'smartBlocksCmd',roam42.host + 'ext/smartBlocksCmd.js'), 3000);
+    setTimeout(()=>roam42.smartBlocks.initialize(), 5000);
+    setTimeout(()=>roam42.timemgmt.testingReload(), 4000);
   };
 })();

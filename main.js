@@ -28,7 +28,7 @@
 if( typeof window.roam42 == 'undefined' ) {
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2020-12-28 (Charlie) ';
+  roam42.buildID = 'Roam<sup>42</sup> 2020-12-28a (Charlie) ';
 
   roam42.host    = document.currentScript.src.replace('main.js','');
 
@@ -76,10 +76,9 @@ if( typeof window.roam42 == 'undefined' ) {
        roam42.loader.addCSSToPage( 'styleRM',           roam42.host + 'css/styleRM.css'           );
     roam42.loader.addScriptToPage( 'commonFunctions',   roam42.host + 'common/commonFunctions.js' );
     roam42.loader.addScriptToPage( 'commonDatalog',     roam42.host + 'common/commonDatalog.js  ' );
-    roam42.loader.addScriptToPage( "settings",          roam42.host + 'ext/settings.js');
-    roam42.loader.addScriptToPage( 'keyEvents',         roam42.host + 'common/keyevents.js'       );
+    roam42.loader.addScriptToPage( "settings",          roam42.host + 'ext/settings.js'           );
     roam42.loader.addScriptToPage( 'jumpNav'  ,         roam42.host + 'ext/jumpNav.js'            );
-    roam42.loader.addScriptToPage( 'message-startup',   roam42.host + 'common/messages.js'               );
+    roam42.loader.addScriptToPage( 'message-startup',   roam42.host + 'common/messages.js'        );
 
     //extension modules
     roam42.loader.addScriptToPage( 'dateProcessing',    roam42.host + 'ext/dateProcessing.js'     );
@@ -98,60 +97,47 @@ if( typeof window.roam42 == 'undefined' ) {
 
     //Do not load in iframe windows
     if( window === window.parent  ){
-      roam42.loader.addScriptToPage( 'quickReference',    roam42.host + 'ext/quickRef.js'  );
+      roam42.loader.addScriptToPage( 'quickReference',    roam42.host + 'ext/quickRef.js'         );
       roam42.loader.addScriptToPage( 'lookupUI',          roam42.host + 'ext/typeaheadUI.js'      );
       roam42.loader.addScriptToPage( 'typeAheadData',     roam42.host + 'ext/typeaheadData.js'    );
-      roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
+      roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js'  );
       roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
-      roam42.loader.addScriptToPage( 'livePreview',       roam42.host + 'ext/livePreview.js'  );
-      roam42.loader.addScriptToPage( 'dailyNote',         roam42.host + 'ext/dailyNotesPopup.js' );
+      roam42.loader.addScriptToPage( 'livePreview',       roam42.host + 'ext/livePreview.js'      );
+      roam42.loader.addScriptToPage( 'dailyNote',         roam42.host + 'ext/dailyNotesPopup.js'  );
 //      roam42.loader.addScriptToPage( 'focuesMode',        roam42.host + 'ext/focusMode.js'  );
     }
+    roam42.loader.addScriptToPage( 'keyEvents',         roam42.host + 'common/keyevents.js'       );
 
     // Give the libraries a few seconds to get comfy in their new home
     // and then let the extension dance, that is to say,
     // begin initializing the environment with all the cool tools
-    setTimeout(async ()=>{
-      roam42.keyevents.loadKeyEvents();
-      try { roam42.jumpToDate.component.initialize();      } catch(e){};
-      try { roam42.typeAhead.loadTypeAhead();              } catch(e){};
-      try { roam42.quickRef.component.initialize();        } catch(e){};
-      try { await roam42.smartBlocks.initialize();               } catch(e){};
-      roam42.autocomplete.loadAutoComplete();
-      roam42.jumpnav.loadJumpNav();
-      try {
-        if ( device.mobile() == false && window === window.parent  ) {
-          try { roam42.dailyNotesPopup.component.initialize(); } catch(e){};
-        }
-      } catch(e) {}
-      try { roam42.roam42Menu.initialize();                } catch(e){};
-            
-// var htmlMessage = `<b>Roam42 Announcement</b><br/><br/>
-// TESTERS VERSION OF ROAM42<br/><br/>
-// This message will only appear for the next 24 hours and will then be removed.<br/></br>
-// The trigger for SmartBlocks is being changed from ';;' to 'jj'. This is for important technical
-// reasons that I will explain later. Sorry for this change. 
-// <br/><br/>
-// SmartBlocks trigger is now jj. This can be customized to a different keystroke with these instructions:
-// <a href="https://roamresearch.com/#/app/roamhacker/page/tR8l3fAAD" target="_blank">Link to custom trigger instructions</a>.
-// <br/><br/>
-// --RoamHacker
-// `;
-      
-//     iziToast.show({
-//       message: htmlMessage,
-//       color: 'yellow',
-//       progressBar: true,
-//       animateInside: true,
-//       close: true,  
-//       timeout: 90000,  
-//       closeOnClick: true,  
-//       maxWidth:'300px',
-//       displayMode: 2  
-//     });  
-      
-    }, 6000);
 
+    var loadingCounter = 0;
+    
+    const interval = setInterval( ()=> {
+      if (roam42.keyevents) {
+        clearInterval(interval);
+        roam42.keyevents.loadKeyEvents();
+        try { roam42.jumpToDate.component.initialize(); } catch(e){};
+        try { roam42.typeAhead.loadTypeAhead(); } catch(e){};
+        try { roam42.quickRef.component.initialize(); } catch(e){};
+        try { setTimeout(async()=> {await roam42.smartBlocks.initialize()},100); } catch(e){};
+        roam42.autocomplete.loadAutoComplete();
+        roam42.jumpnav.loadJumpNav();
+        try {
+          if ( device.mobile() == false && window === window.parent  ) {
+            try { roam42.dailyNotesPopup.component.initialize(); } catch(e){};
+          }
+        } catch(e) {}
+        try { roam42.roam42Menu.initialize();                } catch(e){};          
+      } else {
+        if(loadingCounter>60)
+          clearInterval(interval);
+        else
+          loadingCounter += 1;
+      }
+    }, 1000);
+    
   })();
 
 }
