@@ -77,11 +77,9 @@
         if(newValue=='') newValue=' ';
         var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
         setValue.call(txtarea, newValue );
-        console.log(startPos)
         if(startPos>=0) { 
           await roam42.common.sleep(500);
           document.activeElement.setSelectionRange(startPos,startPos);
-          console.log('hi')
         }
         var e = new Event('input', { bubbles: true });
         txtarea.dispatchEvent(e);

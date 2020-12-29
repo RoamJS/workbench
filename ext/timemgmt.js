@@ -5,15 +5,16 @@
   roam42.timemgmt.smartBlocks = {};
   roam42.timemgmt.smartBlocks.commands = {};
 
-  roam42.timemgmt.breadCrumbsByUID = async (uid, separator = ' > ', includePageTitle=false) =>{
+  roam42.timemgmt.breadCrumbsByUID = async (uid, separator = ' > ', includePageTitle=false,  includePath=true) =>{
     uid = uid.replace('((','').replace('))','');
     var parents = await roam42.common.getBlockParentUids(uid);
     var path = '';
     if(parents.length>0) { // contains a path
       if(includePageTitle)
         path = '[[' + parents[0][1].title + ']]' + separator;
-      for(let block of parents)
-        path +=  '((' + block[0].uid + '))' + separator;
+      if(includePath)
+        for(let block of parents)
+          path +=  '((' + block[0].uid + '))' + separator;
       path = path.substring(0,path.length - separator.length);
       return path;
     } else if(includePageTitle){ //no path
