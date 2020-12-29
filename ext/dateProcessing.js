@@ -85,14 +85,16 @@
     try {
       if(document.activeElement.type=='textarea') {
         if(document.activeElement.closest('.roam-article')!=null) {
-          var page = document.querySelector('.rm-block-text')
-          daily_notes_page_date = chrono.parseDate(page.id.substring(page.id.search('body-outline-')+13,page.id.length-10))
-
-          //document.activeElement.id.substring(document.activeElement.id.search('body-outline-')+13,document.activeElement.id.length-10)
-          // if(document.activeElement.closest('.roam-article').querySelector('.rm-title-display'))
-          //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.roam-article').querySelector('.rm-title-display').innerText);
-          // else if(document.activeElement.closest('.roam-article').querySelector('.rm-zoom-item-content'))
-          //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.roam-article').querySelector('.rm-zoom-item-content').innerText);
+          var page = document.activeElement;
+          // try to resolve dates in best way possible
+          //first by URL - most reliable
+          daily_notes_page_date = chrono.parseDate(page.id.substring(page.id.search('body-outline-')+13,page.id.length-10));
+          // that didn't work, try by block id, also fairly accurate, but not always
+          if(daily_notes_page_date==null)
+            daily_notes_page_date = chrono.parseDate(window.location.hash.substring(window.location.hash.length-10,window.location.hash.length));
+          // last attempt, try to use the rm-title-display class
+          if(daily_notes_page_date==null)
+            daily_notes_page_date = document.activeElement.closest('.roam-log-page').querySelector('.rm-title-display').innerText;
         } else if(document.activeElement.closest('.sidebar-content')!=null) {
           //inside the sidebar
           if(document.activeElement.closest('.rm-sidebar-outline').querySelector('h1.rm-title-display'))
@@ -100,12 +102,6 @@
           else if(document.activeElement.closest('.rm-sidebar-outline').querySelector('.rm-zoom-item-content'))
             daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.activeElement.closest('.rm-sidebar-outline').querySelector('.rm-zoom-item-content').innerText);
         }
-      } else {
-        // try {
-        //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-zoom-item-content').innerText);
-        // } catch(e){
-        //   daily_notes_page_date =roam42.dateProcessing.testIfRoamDateAndConvert(document.querySelector('.roam-article .rm-title-display').innerText);
-        // }
       }
     } catch(e) {}
     return daily_notes_page_date;

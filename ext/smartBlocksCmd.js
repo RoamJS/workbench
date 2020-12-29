@@ -290,8 +290,15 @@
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%BREADCRUMBS:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var textToProcess = match.replace('<%BREADCRUMBS:','').replace('%>','');
           var blockUID  = textToProcess.substring(0,textToProcess.search(','));
-          var separator = textToProcess.substring(textToProcess.search(',')+1,);
-          var results = await roam42.timemgmt.breadCrumbsByUID(blockUID, separator, true);
+          var separator = textToProcess.substring(textToProcess.search(',')+1,);          
+          var results = null;
+          if(blockUID.substring(0,1)=='+') { //page name only
+            results = await roam42.timemgmt.breadCrumbsByUID(blockUID.substring(1,blockUID.length), separator, true,  false);
+          } else if(blockUID.substring(0,1)=='-') { //page name only
+            results = await roam42.timemgmt.breadCrumbsByUID(blockUID.substring(1,blockUID.length), separator, false, true);
+          } else {
+            results = await roam42.timemgmt.breadCrumbsByUID(blockUID, separator, true,  true);
+          }
           return results;
         });
        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%TIME\%\>)/g, async (match, name)=>{
