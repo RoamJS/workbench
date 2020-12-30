@@ -59,6 +59,7 @@
     }
 
     const insertSnippetIntoBlock = async ( textToInsert, removeIfCursor = true, startPosistionOffset=2 )=> {
+      console.log('removeIfCursor',removeIfCursor)
       setTimeout(async()=>{
         var txtarea = document.activeElement;
         var strPos = txtarea.selectionStart;
@@ -77,12 +78,13 @@
         if(newValue=='') newValue=' ';
         var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
         setValue.call(txtarea, newValue );
-        if(startPos>=0) { 
-          await roam42.common.sleep(500);
-          document.activeElement.setSelectionRange(startPos,startPos);
-        }
+        console.log('new value set')
         var e = new Event('input', { bubbles: true });
         txtarea.dispatchEvent(e);
+        if(startPos>=0) { 
+          await roam42.common.sleep(700);
+          document.activeElement.setSelectionRange(startPos,startPos);
+        }
       },50)
     }
     roam42.smartBlocks.insertSnippetIntoBlock = insertSnippetIntoBlock;
