@@ -7,7 +7,7 @@
       valueArray.push({key: 'tomorrow (42)',   icon:'time',    value: 'tomorrow', processor:'date'});
       valueArray.push({key: 'yesterday (42)',  icon:'time',     value: 'yesterday', processor:'date'});
       ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].forEach(  (e)=>{
-        valueArray.push({key: `${e} (42)`,       icon:'time',   value: `${e}`,      processor:'date'});
+        valueArray.push({key: `This ${e} (42)`,  icon:'time',   value: `This ${e}`,      processor:'date'});
         valueArray.push({key: `Last ${e} (42)`,  icon:'time',   value: `Last ${e}`, processor:'date'});
         valueArray.push({key: `Next ${e} (42)`,  icon:'time',   value: `Next ${e}`, processor:'date'});
       });
