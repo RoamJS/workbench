@@ -58,7 +58,7 @@
       await roam42.smartBlocks.activeWorkflow.arrayToWrite.push({'text': blockText, reprocess: reprocessBlock  });
     }
 
-    const insertSnippetIntoBlock = async ( textToInsert, removeIfCursor = true, startPosistionOffset=2 )=> {
+    const insertSnippetIntoBlock = async ( textToInsert, removeIfCursor = true, startPosistionOffset=2, caretRepositionDelay=100 )=> {
       setTimeout(async()=>{
         var txtarea = document.activeElement;
         var strPos = txtarea.selectionStart;
@@ -80,8 +80,8 @@
         var e = new Event('input', { bubbles: true });
         txtarea.dispatchEvent(e);
         if(startPos>=0) { 
-          await roam42.common.sleep(700);
-          document.activeElement.setSelectionRange(startPos,startPos);
+          await roam42.common.sleep(caretRepositionDelay);
+          document.activeElement.setSelectionRange(startPos,startPos);          
         }
       },50)
     }
@@ -216,11 +216,11 @@
               roam42.smartBlocks.activeWorkflow.startingBlockTextArea = document.activeElement.id;
               roam42.smartBlocks.activeWorkflow.startingBlockContents = document.activeElement.value;
             }
-            if(item.original.processor=='date')   insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() );
-            if(item.original.processor=='function') await item.original.value();
-            if(item.original.processor=='static') insertSnippetIntoBlock( item.original.value, false );
-            if(item.original.processor=='randomblock') insertSnippetIntoBlock( '((' + await roam42.common.getRandomBlock(1) + '))' );
-            if(item.original.processor=='randompage') insertSnippetIntoBlock(await roam42.smartBlocks.getRandomPage());
+            if(item.original.processor=='date')  {skipCursorRelocation=true; insertSnippetIntoBlock( await roam42.dateProcessing.parseTextForDates(item.original.value).trim() )};
+            if(item.original.processor=='function') {skipCursorRelocation=true; await item.original.value()};
+            if(item.original.processor=='static') {skipCursorRelocation=true; insertSnippetIntoBlock( item.original.value, false )};
+            if(item.original.processor=='randomblock') {skipCursorRelocation=true; insertSnippetIntoBlock( '((' + await roam42.common.getRandomBlock(1) + '))' )};
+            if(item.original.processor=='randompage') {skipCursorRelocation=true; insertSnippetIntoBlock(await roam42.smartBlocks.getRandomPage())};
             if(item.original.processor=='blocks') {
 
               var results = await roam42.common.getBlockInfoByUID( item.original.value, true );
@@ -235,13 +235,14 @@
               //loop through array outline and insert into Roam
               if (results[0][0].children.length == 1 && !results[0][0].children[0].children) {
                 //has no children, just insert text into block and safe it
+                skipCursorRelocation=true;
                 var processedText = await roam42.smartBlocks.proccessBlockWithSmartness( results[0][0].children[0].string);
-                processedText = await roam42.smartBlocks.processBlockAfterBlockInserted(processedText);
+                // processedText = await roam42.smartBlocks.processBlockAfterBlockInserted(processedText);
                 roam42.smartBlocks.activeWorkflow.currentSmartBlockBlockBeingProcessed = processedText;
                 roam42.smartBlocks.activeWorkflow.currentSmartBlockTextArea = document.activeElement.id;
                 if( !processedText.includes(roam42.smartBlocks.exclusionBlockSymbol) )
                   if(!processedText.includes(roam42.smartBlocks.replaceFirstBlock)) {
-                    await insertSnippetIntoBlock( processedText, true, removeTributeTriggerSpacer );
+                    await insertSnippetIntoBlock( processedText, true, removeTributeTriggerSpacer, 1000 );
                     await roam42.smartBlocks.processBlockAfterBlockInserted(processedText);
                     await roam42.smartBlocks.processBlockOnBlockExit();
                   }
@@ -391,9 +392,9 @@
                         var newValue = document.querySelector('textarea.rm-block-input').value;
                         document.activeElement.value = '';
                         insertSnippetIntoBlock(newValue);
-                      }
-                      else
+                      } else {
                         document.activeElement.setSelectionRange(document.activeElement.value.length,document.activeElement.value.length);
+                      }
                     } catch(e) {}
                   },200);
                }
