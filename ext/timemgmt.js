@@ -25,9 +25,9 @@
   }
 
   roam42.timemgmt.outputTaskBlocks =  async (tasksToProcess,textToProcess,commandMatch,params,maxToReturn=10000)=> {
-    let outputCount = 1;
+    let outputCount = 0;
     for(let block of tasksToProcess) {
-      if( outputCount <= maxToReturn ) { 
+      if( outputCount <= maxToReturn -1 ) { 
         let bOutputBlock = true;
         if(params) {
           let blockText = block.taskString.toLowerCase();
@@ -41,9 +41,7 @@
               if(!blockText.includes(tokenText)) bOutputBlock = false;
           }
         } 
-        if(bOutputBlock == true && outputCount <= maxToReturn) {
-          console.log('prepare to write', outputCount, 'bOutputBlock ' + bOutputBlock, bOutputBlock == true && outputCount <= maxToReturn)
-            
+        if(bOutputBlock == true && outputCount <= maxToReturn-1) {
           outputCount  += 1;
           let newText = textToProcess.replace(commandMatch,`((${block.taskUID}))`)
           newText = await roam42.common.replaceAsync(newText, /(\<\%PAGE\%\>)/g, async (match, name)=>{
@@ -62,11 +60,11 @@
         }
       } 
     } // end FOR
-    return '';
-    // if(outputCount>=)
-    //   return roam42.smartBlocks.replaceFirstBlock;
-    // else
-    //   return roam42.smartBlocks.exclusionBlockSymbol;
+     // return '';
+    if(outputCount>=1)
+      return roam42.smartBlocks.replaceFirstBlock;
+    else
+      return roam42.smartBlocks.exclusionBlockSymbol;
   }
 
   var parseTodoRequestString =(requestString)=>{
