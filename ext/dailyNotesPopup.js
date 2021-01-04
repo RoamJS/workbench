@@ -5,19 +5,29 @@
 (()=>{
 
   roam42.dailyNotesPopup = {};
+  roam42.dailyNotesPopup.state = 'on';   
 
   roam42.dailyNotesPopup.component =  {
     panelDNP:             undefined,
     idPanelDNP:           'jsPanelDNP',
 
-    initialize() {
-
+    async initialize() {
+      roam42.dailyNotesPopup.state = await roam42.settings.get('DailyNotePopup');
+      
+      if( roam42.dailyNotesPopup.state == 'off') 
+        return;
+      
+      var baseUrl = roam42.common.baseUrl().href.replace('page','');
+      
+      if(roam42.dailyNotesPopup.state == 'optimized')
+        baseUrl = baseUrl + '?disablejs=true';
+      
       this.panelDNP = jsPanel.create({
         id: this.idPanelDNP,
         header: 'auto-show-hide',
         headerControls: { smallify: 'remove', maximize: 'remove' },
         content: `<div style="position:absolute;left:1px;top:1px;right:1px;bottom:1px;">
-                  <iframe src="${roam42.common.baseUrl().href.replace('page','')}" id="iframePanelDNP" style="top:-1px;left:-1px;width:100%;height:100%; border:0px solid white"></iframe>
+                  <iframe src="${baseUrl}" id="iframePanelDNP" style="top:-1px;left:-1px;width:100%;height:100%; border:0px solid white"></iframe>
                   </div>` ,
         headerTitle: '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:200px;color:white !important;padding-top:2px;">Daily Notes</div>',
         iconfont: [
