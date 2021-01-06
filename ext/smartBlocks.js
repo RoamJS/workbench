@@ -149,23 +149,25 @@
         for(let sb of roam42.smartBlocks.activeWorkflow.arrayToWrite) {
           var textToInsert = sb.text;
           if(sb.reprocess == true) textToInsert =  await roam42.smartBlocks.proccessBlockWithSmartness(textToInsert);
-          var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-          let txtarea = document.querySelector("textarea.rm-block-input");
-          setValue.call(txtarea, textToInsert );
-          var e = new Event('input', { bubbles: true });
-          txtarea.dispatchEvent(e);
-          //PRESS ENTER
-          if(blocksInserted!=countOfblocksToInsert){
-            blocksInserted+=1;
-            let currentBlockId = document.querySelector('textarea.rm-block-input').id
-            await roam42KeyboardLib.pressEnter(50);
-            await roam42.common.sleep(100);
-            if( currentBlockId == document.querySelector('textarea.rm-block-input').id ) {
+          if(!textToInsert.includes(roam42.smartBlocks.exclusionBlockSymbol)) {   
+            var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+            let txtarea = document.querySelector("textarea.rm-block-input");
+            setValue.call(txtarea, textToInsert );
+            var e = new Event('input', { bubbles: true });
+            txtarea.dispatchEvent(e);
+            //PRESS ENTER
+            if(blocksInserted!=countOfblocksToInsert){
+              blocksInserted+=1;
+              let currentBlockId = document.querySelector('textarea.rm-block-input').id
               await roam42KeyboardLib.pressEnter(50);
-            }
-          }
-          if(blocksInserted % 10 == 0) //SmartBlocks coffee break to allow Roam to catch its breath
               await roam42.common.sleep(100);
+              if( currentBlockId == document.querySelector('textarea.rm-block-input').id ) {
+                await roam42KeyboardLib.pressEnter(50);
+              }
+            }
+            if(blocksInserted % 10 == 0) //SmartBlocks coffee break to allow Roam to catch its breath
+                await roam42.common.sleep(100);
+          }
         }
         //reset for next run
         await roam42.common.sleep(100);
@@ -401,7 +403,7 @@
                // NOCURSOR - dont show a curosr after it runs
                if(currentSmartBlockCommand.includes('<%NOCURSOR%>')){
                   setTimeout(async ()=>{ //let other commands process before exiting block edit
-                    await roam42.common.sleep(500);
+                    // await roam42.common.sleep(500);
                     await roam42KeyboardLib.pressEsc(50);
                     await roam42KeyboardLib.pressEsc(50);
                   },400);
