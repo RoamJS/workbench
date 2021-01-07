@@ -426,10 +426,11 @@
       newText = await roam42.smartBlocks.proccessBlockWithSmartness(newText);
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(newText,false);
     }
+		console.log(results.length)
     if(results.length>0)
       return roam42.smartBlocks.replaceFirstBlock;
     else
-      return '';
+      return roam42.smartBlocks.exclusionBlockSymbol;
   }
 
   //returns date range. Params:
@@ -543,7 +544,7 @@
     if(sortedQueryDates.length>0)
       return roam42.smartBlocks.replaceFirstBlock;
     else
-      return '';
+      return roam42.smartBlocks.exclusionBlockSymbol;
   }
 
   //SEARCH
