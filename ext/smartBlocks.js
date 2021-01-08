@@ -380,11 +380,15 @@
 
                }
 
-                //END of processing of blocks in loop
-                // FOCUS on block
-                if(roam42.smartBlocks.activeWorkflow.focusOnBlock!='' && skipCursorRelocation==false)
-                  await roam42KeyboardLib.simulateKey(79,200,{ctrlKey:true})
-
+							//END of processing of blocks in loop
+							// FOCUS on block
+							if(roam42.smartBlocks.activeWorkflow.focusOnBlock!='' && skipCursorRelocation==false){
+								await roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeWorkflow.focusOnBlock));
+								await roam42.common.sleep(200)
+								await roam42KeyboardLib.simulateKey(79,200,{ctrlKey:true})
+								await roam42.common.sleep(200)
+							}
+							
               //SET cursor location
                if(skipCursorRelocation==false) {
                 roam42.common.simulateMouseClick(document.getElementById(roam42.smartBlocks.activeWorkflow.startingBlockTextArea));
