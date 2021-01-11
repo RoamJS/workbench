@@ -3,7 +3,8 @@ A delightfully fun and powerful collection of power user tools for Roam by https
 
 For more information, go to this page:
 
-[Roam42 Help](https://roamresearch.com/#/app/roamhacker/page/jI-X_cwaf)
+* [Roam42 Help](https://roamresearch.com/#/app/roamhacker/page/jI-X_cwaf)
+* [SmartBlocks Builders Guide](https://roamresearch.com/#/app/roamhacker/page/GH0401tnt)
 
 # Credits
 Roam42 is built on the open-source work of other greater coders.
