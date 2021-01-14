@@ -132,12 +132,12 @@ if( typeof window.roam42 == 'undefined' ) {
         } catch(e) {}
         try { roam42.roam42Menu.initialize();                } catch(e){};          
       } else {
-        if(loadingCounter>60)
+        if(loadingCounter>30)
           clearInterval(interval);
         else
           loadingCounter += 1;
       }
-    }, 1000);
+    }, 2000);
     
   })();
 
