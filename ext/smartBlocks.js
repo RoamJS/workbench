@@ -183,7 +183,7 @@
       return ' ';
     };
 
-    roam42.smartBlocks.sbBomb = async (item, skipCursorRelocation=false, sbCallingSB=false)=>{
+    roam42.smartBlocks.sbBomb = async (item, skipCursorRelocation=false, sbCallingSB=false, sbButton=false)=>{
         //make sure we are in the textarea that started this insert (tribute menu may have closed focus on text area)
         var removeTributeTriggerSpacer=2;
         //by default we don't use date references from the daily note pages.
@@ -283,11 +283,12 @@
 
                     if( !insertText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) {
                       if (firstBlock==true && document.activeElement.value.length>2) {
+												//block contains text already
                         firstBlock = false;
                         insertText = await roam42.smartBlocks.processBlockAfterBlockInserted(insertText);
                         var txtarea = document.querySelector("textarea.rm-block-input");
                         var strPos = txtarea.selectionStart;
-                        var front = txtarea.value.substring(0, strPos);
+                        var front = sbCallingSB || sbButton ? txtarea.value.substring(0, strPos) : txtarea.value.substring(0, strPos-2);
                         var back = txtarea.value.substring(strPos, txtarea.value.length);
                         var setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
                         setValue.call(txtarea, front + insertText + back );
@@ -482,7 +483,8 @@
           await roam42.common.sleep(200);
           document.activeElement.setSelectionRange(cursorLocation,cursorLocation);
           await roam42.common.sleep(100);
-          await blocksToInsert({original: sbCommand});
+					await roam42.smartBlocks.sbBomb({original: sbCommand}, false, false, true)
+          // await blocksToInsert({original: sbCommand});
           }
         }
       }
