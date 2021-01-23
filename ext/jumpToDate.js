@@ -151,15 +151,20 @@
 
     async navigateUIToDate(destinationDate, useShiftKey) {
       var dDate = roam42.dateProcessing.getRoamDate( destinationDate )
-      var uid = await window.roamAlphaAPI.q("[:find ?uid :in $ ?a :where [?e :node/title ?a] [?e :block/uid ?uid]]", dDate).flat()[0]
-      //page exists, go to it
+      var uid = await roam42.common.getPageUidByTitle(dDate); 
+			if(uid=='') {
+				await roam42.common.createPage(dDate);
+				await roam42.common.sleep(100);
+				uid = await roam42.common.getPageUidByTitle(dDate);
+			}
+			//page exists, go to it
       if(uid !=  undefined  && (useShiftKey==false || roam42.keyevents.shiftKeyDownTracker==false && useShiftKey==true) ) {
         document.location.href= this.baseUrl() + '/page/' + uid;
         return;
       }
       let inPut =  document.getElementById('find-or-create-input');
       inPut.focus();
-      roam42.common.setEmptyNodeValue( inPut, roam42.dateProcessing.getRoamDate( destinationDate ) );
+      roam42.common.setEmptyNodeValue( inPut, dDate );
       setTimeout(()=>{
        if( roam42.keyevents.shiftKeyDownTracker==true && useShiftKey==true ) {
           roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});
