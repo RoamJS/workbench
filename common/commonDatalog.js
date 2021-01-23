@@ -2,6 +2,46 @@
 
 (()=>{
 
+	roam42.common.createBlock = async (parent_uid, block_order, block_string)=> {
+		return window.roamAlphaAPI.createBlock(
+						{	location: {	"parent-uid": parent_uid, order: block_order }, 
+							block: 		{ string: block_string}
+						});
+	}
+
+	roam42.common.batchCreateBlocks = async (parent_uid, starting_block_order, string_array_to_insert)=> {
+		await string_array_to_insert.forEach( async (item, counter) => {
+				await roam42.common.createBlock(parent_uid, counter+starting_block_order, item.toString()) 
+		});
+	}
+
+	roam42.common.moveBlock = async (parent_uid, block_order, block_to_move_uid)=> {
+		return window.roamAlphaAPI.moveBlock(
+						{	location: {	"parent-uid": parent_uid, order: block_order }, 
+							block: 		{ uid: block_to_move_uid}
+						});
+	}	
+	roam42.common.updateBlock = async (block_uid, block_string)=> {
+		return window.roamAlphaAPI.updateBlock(
+						{	block: { uid: block_uid, string: block_string} });
+	}
+
+	roam42.common.deleteBlock = async (block_uid)=> {
+		return window.roamAlphaAPI.deleteBlock({block:{uid:block_uid}});
+	}
+	
+	roam42.common.createPage = async (page_title)=> {
+		return window.roamAlphaAPI.createPage({page:{title:page_title}});
+	}
+
+	roam42.common.updatePage = async (page_uid, page_new_title)=> {
+		return window.roamAlphaAPI.updatePage({page:{uid:page_uid, title: page_new_title}});
+	}		
+
+	roam42.common.deletePage = async (page_uid)=> {
+		return window.roamAlphaAPI.deletePage({page:{uid:page_uid}});
+	}		
+
   roam42.common.getBlockParentUids = async (uid) => {
     try {
       var parentUIDs = await window.roamAlphaAPI.q(`[:find (pull ?block [{:block/parents [:block/uid]}]) :in $ [?block-uid ...] :where [?block :block/uid ?block-uid]]`,[uid])[0][0];
