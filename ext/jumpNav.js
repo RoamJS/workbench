@@ -44,9 +44,10 @@
 
        //GOTO top/bottom of page
         if(['ctrl+j t', 'ctrl+j b'].includes(handler)) {
-            var articleContent = roam42.common.getArticleOfCurrentPage();
-            handler=='ctrl+j b' || handler=='˚' ? roam42.common.simulateMouseClick(articleContent[ articleContent.length-1 ]) : roam42.common.simulateMouseClick(articleContent[0]);
-          return false
+            var articleContent = document.querySelector(".rm-block-children").querySelectorAll('.roam-block-container');
+            handler=='ctrl+j b' || handler=='˚' ? roam42.common.simulateMouseClick(articleContent[ articleContent.length-1 ].querySelector('.rm-block-text')) : roam42.common.simulateMouseClick(articleContent[0].querySelector('.rm-block-text'));
+						setTimeout(()=>{ document.activeElement.setSelectionRange(document.activeElement.value.length,document.activeElement.value.length) },50);
+					return false
         }
 
         if(['ctrl+j j', 'ctrl+j k', 'ctrl+j i', 'ctrl+j u', 'ctrl+j d'].includes(handler)) {

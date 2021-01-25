@@ -46,7 +46,7 @@
     try {
       var parentUIDs = await window.roamAlphaAPI.q(`[:find (pull ?block [{:block/parents [:block/uid]}]) :in $ [?block-uid ...] :where [?block :block/uid ?block-uid]]`,[uid])[0][0];
       var UIDS = parentUIDs.parents.map(e=> e.uid)
-      UIDS.shift();
+			UIDS.shift();
       return await roam42.common.getPageNamesFromBlockUidList(UIDS)
     } catch (e) { return ''; }
   }
@@ -72,13 +72,14 @@
     return uid;
   }
 
-  roam42.common.getBlockInfoByUID = async (uid, withChildren=false)=>{
+  roam42.common.getBlockInfoByUID = async (uid, withChildren=false, withParents=false)=>{
     try {
       let q = `[:find (pull ?page
-                     [:node/title :block/string :block/uid :block/heading :block/props
+                     [:node/title :block/string :block/uid :block/heading :block/props 
                       :entity/attrs :block/open :block/text-align :children/view-type
                       :block/order
                       ${withChildren ? '{:block/children ...}' : '' }
+                      ${withParents ? '{:block/parents ...}' : '' }
                      ])
                   :where [?page :block/uid "${uid}"]  ]`;
         var results = await window.roamAlphaAPI.q(q);
