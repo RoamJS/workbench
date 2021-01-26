@@ -484,7 +484,7 @@
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTPAGENAME\%\>)/g, async (match) => {
         const container = document.activeElement.closest(".roam-log-page") 
           || document.activeElement.closest(".rm-sidebar-outline") 
-          || document.activeElement.closest(".rm-zoom") 
+          || document.activeElement.closest(".roam-article") 
           || document;
         const heading = container.getElementsByClassName("rm-title-display")[0] 
           || container.getElementsByClassName("rm-zoom-item-content")[0];
