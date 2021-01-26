@@ -66,6 +66,8 @@
                              help:'<b>CONCAT</b><br/>Combines a comma separated list<br/> of strings into one string<br/><br/>1: comma separated list'});
       valueArray.push({key: '<% CURRENTBLOCKREF: %> (SmartBlock Command)',    icon:'gear', value: '<%CURRENTBLOCKREF:&&&%>',    processor:'static',
                              help:'<b>CURRENTBLOCKREF</b><br/>Sets a variable to the <br/>block UID for the current block<br/><br/>1. Variable name'});
+      valueArray.push({key: '<% CURRENTPAGENAME: %> (SmartBlock Command)',    icon:'gear', value: '<%CURRENTPAGENAME%>',    processor:'static',
+                             help:'<b>CURRENTPAGENAME</b><br/>Returns the current page name the smart block is running in.'});
       valueArray.push({key: '<% DATE: %> dd (SmartBlock Command)',               icon:'gear', value: '<%DATE:&&&%>',           processor:'static',
                              help:'<b>DATE</b><br/>Returns a Roam formatted<br/>dated page reference.<br/><br/>1: NLP expression<br/>2: optional: format for returned <br/>date, example: YYYY-MM-DD'});
       valueArray.push({key: '<% EXIT %> (SmartBlock Command)',               icon:'gear', value: '<%EXIT%>',               processor:'static',
@@ -478,6 +480,17 @@
         roam42.smartBlocks.activeWorkflow.vars[commandToProcess]='((' + UID.substring( UID.length -9) + '))';
         roam42.smartBlocks.activeWorkflow.forceDelayAferNewBlock = 900;
         return '';
+      });
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTPAGENAME\%\>)/g, async (match) => {
+        const container = document.activeElement.closest(".roam-log-page") 
+          || document.activeElement.closest(".rm-sidebar-outline") 
+          || document.activeElement.closest(".rm-zoom") 
+          || document;
+        const heading = container.getElementsByClassName("rm-title-display")[0] 
+          || container.getElementsByClassName("rm-zoom-item-content")[0];
+        return Array.from(heading.childNodes).find(
+          (n) => n.nodeName === "#text" || n.nodeName === "SPAN"
+        ).textContent;
       });
       await roam42.common.replaceAsync(textToProcess, /(\<\%CURSOR\%\>)/g, async (match, name)=>{
         roam42.smartBlocks.activeWorkflow.startingBlockTextArea = document.activeElement.id; //if CURSOR, then make this the position block in end
