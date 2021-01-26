@@ -322,7 +322,13 @@
 
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDAYOFWEEK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%IFDAYOFWEEK:','').replace('%>','').trim();
-          var day = String(chrono.parseDate(roam42.dateProcessing.parseTextForDates('today')).getDay());
+          var day = '';
+					try { //try for "smart date" in context
+						day = String(chrono.parseDate(roam42.dateProcessing.parseTextForDates('today')).getDay());
+					} catch(e) {
+						// fall back to today
+						day = String(chrono.parseDate('today').getDay());
+					}
           if(day=='0') day='7'; //sunday
           if(commandToProcess.replaceAll(' ','').split(',').includes(day))
             return ''; //
@@ -331,7 +337,13 @@
         });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDAYOFMONTH:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%IFDAYOFMONTH:','').replace('%>','').trim();
-          var day = String(chrono.parseDate(roam42.dateProcessing.parseTextForDates('today')).getDate());;
+          var day = '';
+					try { //try for "smart date" in context
+						day = String(chrono.parseDate(roam42.dateProcessing.parseTextForDates('today')).getDate());
+					} catch(e) {
+						// fall back to today
+						day = String(chrono.parseDate('today').getDate());
+					}
           if(commandToProcess.replaceAll(' ','').split(',').includes( day ) )
             return ''; //
           else
