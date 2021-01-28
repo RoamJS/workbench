@@ -212,6 +212,18 @@
         if(vValue==undefined) vValue = `--> Variable ${commandToProcess} not SET <--`
         return vValue;
       });
+      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTPAGENAME\%\>)/g, async (match) => {
+        const container = document.activeElement.closest(".roam-log-page") 
+          || document.activeElement.closest(".rm-sidebar-outline") 
+          || document.activeElement.closest(".roam-article") 
+          || document;
+        const heading = container.getElementsByClassName("rm-title-display")[0] 
+          || container.getElementsByClassName("rm-zoom-item-content")[0];
+        return  Array.from(heading.childNodes).find(
+          (n) => n.nodeName === "#text" || n.nodeName === "SPAN"
+        ).textContent;
+				return x;
+      });			
       textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CLIPBOARDPASTETEXT\%\>)/g, async (match, name)=>{
         var cb = await navigator.clipboard.readText();
         await roam42.common.sleep(50);
@@ -492,17 +504,6 @@
         roam42.smartBlocks.activeWorkflow.vars[commandToProcess]='((' + UID.substring( UID.length -9) + '))';
         roam42.smartBlocks.activeWorkflow.forceDelayAferNewBlock = 900;
         return '';
-      });
-      textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%CURRENTPAGENAME\%\>)/g, async (match) => {
-        const container = document.activeElement.closest(".roam-log-page") 
-          || document.activeElement.closest(".rm-sidebar-outline") 
-          || document.activeElement.closest(".roam-article") 
-          || document;
-        const heading = container.getElementsByClassName("rm-title-display")[0] 
-          || container.getElementsByClassName("rm-zoom-item-content")[0];
-        return Array.from(heading.childNodes).find(
-          (n) => n.nodeName === "#text" || n.nodeName === "SPAN"
-        ).textContent;
       });
       await roam42.common.replaceAsync(textToProcess, /(\<\%CURSOR\%\>)/g, async (match, name)=>{
         roam42.smartBlocks.activeWorkflow.startingBlockTextArea = document.activeElement.id; //if CURSOR, then make this the position block in end

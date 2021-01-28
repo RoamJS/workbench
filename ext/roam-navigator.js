@@ -1590,7 +1590,7 @@
         container.appendChild(breadcrumbSpan);
       }
 
-      const topbar = selectUnique(document, '.roam-topbar > .flex-h-box');
+      const topbar = selectUnique(document, '.roam-topbar > .rm-files-dropzone >  .flex-h-box');
       if (topbar) {
         const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open'];
         const sidebarButton = getUniqueClass(topbar, buttonClasses);
@@ -2100,7 +2100,7 @@
     '  display: inline;',
     '  margin-top: -14px;',
     '}',
-    '.' + BREADCRUMBS_CLASS + ' .' + LINK_HINT_CLASS + ' {',
+    '.' + BREADCRUMBS_CLASS + ' .' + HINT_CLASS + ' {',
     '  margin-top: -2px;',
     '  margin-left: 5px;',
     '}',

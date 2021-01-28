@@ -2,15 +2,18 @@
 
 (()=>{
 
-	// roam42.common.createBlockBelow = ()=> {
-
-	// }
-
 	roam42.common.createBlock = async (parent_uid, block_order, block_string)=> {
 		return window.roamAlphaAPI.createBlock(
 						{	location: {	"parent-uid": parent_uid, order: block_order }, 
 							block: 		{ string: block_string}
 						});
+	}
+
+	roam42.common.createSiblingBlock = async (fromUID, newBlockText, bBelow = true )=> {
+		//fromUID -- adds at sibling level below this block {order: 2, parentUID: "szmOXpDwT"}
+		var blockInfo = await roam42.common.getDirectBlockParentUid(fromUID);
+		var orderValue = bBelow ?  1 : 0;
+		return await roam42.common.createBlock( blockInfo.parentUID, Number(blockInfo.order) + orderValue, newBlockText );
 	}
 
 	roam42.common.batchCreateBlocks = async (parent_uid, starting_block_order, string_array_to_insert)=> {
@@ -46,20 +49,23 @@
 		return window.roamAlphaAPI.deletePage({page:{uid:page_uid}});
 	}		
 
-	// //returns the direct parent block
-  // roam42.common.getDirectBlockParentUid = async (uid) => {
-	// 	var parentBlockUID = '';
-  //   try {
-  //     var parentUIDs = await window.roamAlphaAPI.q(`[:find (pull ?block [{:block/parents [:block/uid]}] ) :in $ [?block-uid ...] :where [?block :block/uid ?block-uid]]`,[uid])[0][0];
-	// 		if(parentUIDs.parents.length>1) {
-	// 			//this is a child block of a block
-	// 			var UIDS = await roam42.common.getPageNamesFromBlockUidList( parentUIDs.parents.map(e=> e.uid) );
-	// 			parentBlockUID = UIDS[UIDS.length-1][0].uid;
-  // 		} else 
-	// 			parentBlockUID = parentUIDs.parents[0].uid; //this is a root level block, and the parent block is the page
-	//   } catch (e) { return ''; }
-	// 	return parentBlockUID;
-  // }
+
+	//returns the direct parent block  {order: 2, parentUID: "szmOXpDwT"}
+  roam42.common.getDirectBlockParentUid = async (uid) => {
+		var parentBlockUID = '';
+    try {
+      var parentUIDs = await window.roamAlphaAPI.q(`[:find (pull ?block [{:block/parents [:block/uid]}] ) :in $ [?block-uid ...] :where [?block :block/uid ?block-uid]]`,[uid])[0][0];
+			if(parentUIDs.parents.length>1) {
+				//this is a child block of a block
+				var UIDS = await roam42.common.getPageNamesFromBlockUidList( parentUIDs.parents.map(e=> e.uid) );
+				parentBlockUID = UIDS[UIDS.length-1][0].uid;
+  		} else 
+				parentBlockUID = parentUIDs.parents[0].uid; //this is a root level block, and the parent block is the page
+	  } catch (e) { return ''; }
+		let orderPosition = await window.roamAlphaAPI.q(`[:find ?b :where [?e :block/order ?b] [?e :block/uid "${uid}"]]`);
+		orderPosition = orderPosition.length == 0 ? 0 : orderPosition[0][0];
+		return { order: orderPosition , parentUID: parentBlockUID };
+  }
 
 	//gets all parent blocks up to the root
   roam42.common.getBlockParentUids = async (uid) => {
