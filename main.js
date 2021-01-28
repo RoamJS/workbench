@@ -28,7 +28,7 @@
 if( typeof window.roam42 == 'undefined' ) {
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2021-01-28 (Charlie) ';
+  roam42.buildID = 'Roam<sup>42</sup> 2021-01-28b (Charlie) ';
 
   roam42.host    = document.currentScript.src.replace('main.js','');
 
@@ -60,6 +60,7 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addCSSToPage = (tagId, cssToAdd)=> {
       addElementToPage(Object.assign(document.createElement('link'),{href:cssToAdd, rel: 'stylesheet'} ) , tagId, 'text/css');
     }
+
 
   })();
 
