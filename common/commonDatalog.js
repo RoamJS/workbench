@@ -10,42 +10,52 @@
 	}
 
 	roam42.common.createBlock = async (parent_uid, block_order, block_string)=> {
-		return window.roamAlphaAPI.createBlock(
-						{	location: {	"parent-uid": parent_uid, order: block_order }, 
-							block: 		{ string: block_string}
-						});
+		parent_uid = parent_uid.replace('((','').replace('))','');
+		let newUid = roam42.common.createUid();
+		await window.roamAlphaAPI.createBlock(
+					{	location: {	"parent-uid": parent_uid, order: block_order }, 
+						block: 		{ string: block_string.toString() , uid: newUid}
+					});
+		await roam42.common.sleep(10); //seems a brief pause is need for DB to register the write
+		return newUid;
 	}
 
 	roam42.common.createSiblingBlock = async (fromUID, newBlockText, bBelow = true )=> {
 		//fromUID -- adds at sibling level below this block {order: 2, parentUID: "szmOXpDwT"}
+		//this is not an efficient method for bulk inserting
+		fromUID = fromUID.replace('((','').replace('))','');
 		var blockInfo = await roam42.common.getDirectBlockParentUid(fromUID);
 		var orderValue = bBelow ?  1 : 0;
-		return await roam42.common.createBlock( blockInfo.parentUID, Number(blockInfo.order) + orderValue, newBlockText );
+		return await roam42.common.createBlock( blockInfo.parentUID, Number(blockInfo.order) + orderValue, newBlockText.toString() );
 	}
 
 	roam42.common.batchCreateBlocks = async (parent_uid, starting_block_order, string_array_to_insert)=> {
+		parent_uid = parent_uid.replace('((','').replace('))','');
 		await string_array_to_insert.forEach( async (item, counter) => {
 				await roam42.common.createBlock(parent_uid, counter+starting_block_order, item.toString()) 
 		});
 	}
 
 	roam42.common.moveBlock = async (parent_uid, block_order, block_to_move_uid)=> {
+		parent_uid = parent_uid.replace('((','').replace('))','');
 		return window.roamAlphaAPI.moveBlock(
 						{	location: {	"parent-uid": parent_uid, order: block_order }, 
 							block: 		{ uid: block_to_move_uid}
 						});
 	}	
 	roam42.common.updateBlock = async (block_uid, block_string)=> {
+		block_uid = block_uid.replace('((','').replace('))','');
 		return window.roamAlphaAPI.updateBlock(
-						{	block: { uid: block_uid, string: block_string} });
+						{	block: { uid: block_uid, string: block_string.toString() } });
 	}
 
 	roam42.common.deleteBlock = async (block_uid)=> {
+		block_uid = block_uid.replace('((','').replace('))','');
 		return window.roamAlphaAPI.deleteBlock({block:{uid:block_uid}});
 	}
 	
 	roam42.common.createPage = async (page_title)=> {
-		return window.roamAlphaAPI.createPage({page:{title:page_title}});
+		return window.roamAlphaAPI.createPage({page:{title:page_title.toString() }});
 	}
 
 	roam42.common.updatePage = async (page_uid, page_new_title)=> {
