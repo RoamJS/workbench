@@ -188,8 +188,8 @@
           jump.onclick = ()=>{ this.jumpToDateFromButton()};
         var spacer = document.createElement("div");
           spacer.setAttribute('style','flex: 0 0 3px');
-        document.querySelector('.roam-topbar .flex-h-box').appendChild(spacer);
-        document.querySelector('.roam-topbar .flex-h-box').appendChild(jump);
+        document.querySelector('.rm-topbar').appendChild(spacer);
+        document.querySelector('.rm-topbar').appendChild(jump);
 
       } catch(e) {
         console.log('could not add toolbar buton - see module jump-to-date.js ');

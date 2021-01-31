@@ -289,8 +289,10 @@
 
   roam42.privacyMode.toggle = ()=>{
       roam42.privacyMode.toggleChildIframes();
-      document.getElementById('roam42-live-preview-iframe').contentWindow.roam42.privacyMode.toggleChildIframes();
-      document.getElementById('iframePanelDNP').contentWindow.roam42.privacyMode.toggleChildIframes();
+			try {
+				document.getElementById('roam42-live-preview-iframe').contentWindow.roam42.privacyMode.toggleChildIframes();
+				document.getElementById('iframePanelDNP').contentWindow.roam42.privacyMode.toggleChildIframes();
+			} catch(e) {}
   }
 
   roam42.privacyMode.toggleChildIframes = ()=> {

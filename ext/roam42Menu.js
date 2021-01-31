@@ -19,8 +19,8 @@
     var spacer = document.createElement("div");
       spacer.id="roam42-menu-spacer"
       spacer.setAttribute('style','flex: 0 0 3px');
-    document.querySelector('.roam-topbar .flex-h-box').appendChild(spacer);
-    document.querySelector('.roam-topbar .flex-h-box').appendChild(menu);
+    document.querySelector('.rm-topbar').appendChild(spacer);
+    document.querySelector('.rm-topbar').appendChild(menu);
 
     roam42.roam42Menu.tippy = tippy('#roam42-menu', {
       allowHTML: true,
@@ -213,8 +213,8 @@
     } catch(e) {}
     roam42.loader.addScriptToPage( 'roam42Menu',  roam42.host + 'ext/roam42Menu.js'    )
     setTimeout(()=>{
-      roam42.roam42Menu.Initialize()
-    }, 500)
+      roam42.roam42Menu.initialize()
+    }, 2000)
   }
 
 
