@@ -9,6 +9,8 @@
 		return nanoid(9);
 	}
 
+	//API DOCS: https://roamresearch.com/#/app/help/page/0Xd0lmIrF
+
 	roam42.common.createBlock = async (parent_uid, block_order, block_string)=> {
 		parent_uid = parent_uid.replace('((','').replace('))','');
 		let newUid = roam42.common.createUid();
@@ -43,10 +45,10 @@
 							block: 		{ uid: block_to_move_uid}
 						});
 	}	
-	roam42.common.updateBlock = async (block_uid, block_string)=> {
+	roam42.common.updateBlock = async (block_uid, block_string, block_expanded=true )=> {
 		block_uid = block_uid.replace('((','').replace('))','');
 		return window.roamAlphaAPI.updateBlock(
-						{	block: { uid: block_uid, string: block_string.toString() } });
+						{	block: { uid: block_uid, string: block_string.toString(), open: block_expanded } });
 	}
 
 	roam42.common.deleteBlock = async (block_uid)=> {
@@ -67,21 +69,15 @@
 	}		
 
 
-	//returns the direct parent block  {order: 2, parentUID: "szmOXpDwT"}
+	//returns the direct parent block  {order: 2, parentUID: "szmOXpDwT"} 
   roam42.common.getDirectBlockParentUid = async (uid) => {
-		var parentBlockUID = '';
-    try {
-      var parentUIDs = await window.roamAlphaAPI.q(`[:find (pull ?block [{:block/parents [:block/uid]}] ) :in $ [?block-uid ...] :where [?block :block/uid ?block-uid]]`,[uid])[0][0];
-			if(parentUIDs.parents.length>1) {
-				//this is a child block of a block
-				var UIDS = await roam42.common.getPageNamesFromBlockUidList( parentUIDs.parents.map(e=> e.uid) );
-				parentBlockUID = UIDS[UIDS.length-1][0].uid;
-  		} else 
-				parentBlockUID = parentUIDs.parents[0].uid; //this is a root level block, and the parent block is the page
-	  } catch (e) { return ''; }
-		let orderPosition = await window.roamAlphaAPI.q(`[:find ?b :where [?e :block/order ?b] [?e :block/uid "${uid}"]]`);
-		orderPosition = orderPosition.length == 0 ? 0 : orderPosition[0][0];
-		return { order: orderPosition , parentUID: parentBlockUID };
+		var r = await window.roamAlphaAPI.q(`[:find ?uid ?order 
+							:where  [?cur_block :block/uid "${uid}"]
+											[?cur_block :block/order ?order]
+											[?parent :block/children ?cur_block]
+											[?parent :block/uid ?uid]
+											[?cur_block :block/page ?page]]`);
+		return r.length>0 ? {order: r[0][1], parentUID: r[0][0] } : null;
   }
 
 	//gets all parent blocks up to the root
