@@ -21,9 +21,6 @@
   if(roam42.livePreview.browserWidth==null)  roam42.livePreview.browserWidth  = '500px';
   if(roam42.livePreview.delay==null)         roam42.livePreview.delay = '100';
   
-
-	console.log('roam42.livePreview.state', roam42.livePreview.state)
-
   if( roam42.livePreview.state == 'off' || roam42.livePreview.state == null) {
 		roam42.livePreview.state = 'off';
     return;
