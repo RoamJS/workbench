@@ -5,18 +5,21 @@
 (()=>{
 
   roam42.dailyNotesPopup = {};
-  roam42.dailyNotesPopup.state = 'on';   
 
   roam42.dailyNotesPopup.component =  {
     panelDNP:             undefined,
     idPanelDNP:           'jsPanelDNP',
 
     async initialize() {
-      roam42.dailyNotesPopup.state = await roam42.settings.get('DailyNotePopup');
+      var loadState = await roam42.settings.get('DailyNotePopup'); //if null, feature not loaded
+			console.log(roam42.dailyNotesPopup.state)
       
-      if( roam42.dailyNotesPopup.state == 'off') 
-        return;
-      
+      if( loadState == null) {
+				roam42.dailyNotesPopup.state = 'off'; //default state
+				return;
+			} else
+				roam42.dailyNotesPopup.state = loadState;
+
       var baseUrl = roam42.common.baseUrl().href.replace('page','');
       
       if(roam42.dailyNotesPopup.state == 'optimized')
@@ -90,9 +93,9 @@
                display: none !important;
             }
   */
-            #buffer{
-               display: none !important;
-            }
+            .intercom-lightweight-app {
+							display: none;
+						}
             .roam-article {
               padding: 3px 20px 20px !important;
             }

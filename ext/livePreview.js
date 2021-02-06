@@ -21,8 +21,13 @@
   if(roam42.livePreview.browserWidth==null)  roam42.livePreview.browserWidth  = '500px';
   if(roam42.livePreview.delay==null)         roam42.livePreview.delay = '100';
   
-  if( roam42.livePreview.state == 'off') 
+
+	console.log('roam42.livePreview.state', roam42.livePreview.state)
+
+  if( roam42.livePreview.state == 'off' || roam42.livePreview.state == null) {
+		roam42.livePreview.state = 'off';
     return;
+	}
 
   roam42.livePreview.roam42LivePreviewState = 0 //off by default
 
@@ -34,13 +39,13 @@
       let msg = ''
       switch (roam42.livePreview.getRoamLivePreviewState()) {
         case 1:
-          msg = 'Enabled'
+          msg = 'Active'
           break;
         case 2:
-          msg = 'Enabled with block refs'
+          msg = 'Active with block refs'
           break;
         default:
-          msg = 'Disabled'
+          msg = 'Inactive'
           break;
       }
       iziToast.destroy();
@@ -99,15 +104,15 @@
       position: 'bottomRight',
       progressBarColor: 'rgb(0, 255, 184)',
       buttons: [
-      ['<button>Enable</button>', function (instance, toast) {
+      ['<button>Active</button>', function (instance, toast) {
           roam42.livePreview.setRoamLivePreviewState(1);
           instance.hide({transitionOut: 'fadeOutUp'}, toast, 'buttonName');
       }, (status==1)],
-      ['<button>Enable with block refs</button>', function (instance, toast) {
+      ['<button>Active with block refs</button>', function (instance, toast) {
           roam42.livePreview.setRoamLivePreviewState(2);
           instance.hide({transitionOut: 'fadeOutDown'}, toast, 'buttonName');
       }, (status==2)],
-      ['<button>Disable</button>', function (instance, toast) {
+      ['<button>Inactive</button>', function (instance, toast) {
           roam42.livePreview.setRoamLivePreviewState(0)
           instance.hide( {transitionOut:'fadeOutDown'}, toast, 'buttonName');
       }, (status==0) ]
@@ -232,9 +237,9 @@
               left: 0px !important;
               width: 100% !important;
           }
-          #buffer {
-              display: none !important;
-          }
+					.intercom-lightweight-app {
+						display: none;
+					}
           iframe {
               display: none !important;
           }
@@ -295,7 +300,7 @@
           let target = e.target;
 
           let isPageRef = false;
-          let isPageRefTag = target.classList.contains('rm-page-ref-tag');
+          let isPageRefTag = target.classList.contains('rm-page-ref');
           let isPageRefNameSpace = target.classList.contains('rm-page-ref-namespace-color');
           let text = '';
 
@@ -330,7 +335,7 @@
             isPageRef = true;
             text = target.title.replace('page: ','')
           }
-          if (isPageRef == false && target.classList.contains('rm-ref-page-view-title') ) {
+          if (isPageRef == false && target.classList.contains('rm-page__title') ) {
             isPageRef = true;
             text = target.innerText
             specialDelayMouseOut = true
@@ -397,7 +402,7 @@
              }
             if (!popupTimeout) {
               popupTimeout = window.setTimeout(() => {
-                previewIframe.contentDocument.querySelector('.roam-article').scrollIntoView()
+                previewIframe.contentDocument.querySelector('.rm-topbar').scrollIntoView()
                 if (previewIframe) {
                   previewIframe.style.opacity = '1';
                   previewIframe.style.pointerEvents = 'all';
