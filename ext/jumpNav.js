@@ -52,11 +52,11 @@
 
         if(['ctrl+j j', 'ctrl+j k', 'ctrl+j i', 'ctrl+j u', 'ctrl+j d'].includes(handler)) {
             switch(handler)  {
-              case 'ctrl+j j':  //down arrow
-                roam42KeyboardLib.simulateKey(40)
+              case 'ctrl+j j':  //go to previous block
+                roam42.common.moveCursorToPreviousBlock(event.srcElement);
                 break;
-              case 'ctrl+j k': //up arrow
-                roam42KeyboardLib.simulateKey(38) //up arrow
+              case 'ctrl+j k': //go to next block
+								roam42.common.moveCursorToNextBlock(event.srcElement);
                 break;
               case 'ctrl+j i': // Insert block above
                 roam42.common.blockInsertAbove(event.srcElement);

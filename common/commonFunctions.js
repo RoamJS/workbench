@@ -18,30 +18,30 @@
     //return {pageName:'', pageUID:'', DNPDate:''}
   }
 
-    roam42.common.navigateUiTo = async function (destinationPage, useShiftKey=false) {
-      var uid = await window.roamAlphaAPI.q("[:find ?uid :in $ ?a :where [?e :node/title ?a] [?e :block/uid ?uid]]", destinationPage).flat()[0]
-      //page exists, go to it
-      if(uid !=  undefined  && useShiftKey==false ) {
-        document.location.href= this.baseUrl().href + '/' + uid;
-        return true;
-      }
-      setTimeout(()=>{
-        let inPut =  document.getElementById('find-or-create-input');
-        inPut.focus();
-        roam42.common.setEmptyNodeValue( inPut, destinationPage );
-        setTimeout(()=>{
-         if( roam42.keyevents.shiftKeyDownTracker==true && useShiftKey==true ) {
-            roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});
-          } else {
-            roam42KeyboardLib.pressEnter();
-          }
-          setTimeout(()=>{
-            roam42.common.setEmptyNodeValue( inPut,'' );
-          },500);
+	roam42.common.navigateUiTo = async function (destinationPage, useShiftKey=false) {
+		var uid = await window.roamAlphaAPI.q("[:find ?uid :in $ ?a :where [?e :node/title ?a] [?e :block/uid ?uid]]", destinationPage).flat()[0]
+		//page exists, go to it
+		if(uid !=  undefined  && useShiftKey==false ) {
+			document.location.href= this.baseUrl().href + '/' + uid;
+			return true;
+		}
+		setTimeout(()=>{
+			let inPut =  document.getElementById('find-or-create-input');
+			inPut.focus();
+			roam42.common.setEmptyNodeValue( inPut, destinationPage );
+			setTimeout(()=>{
+				if( roam42.keyevents.shiftKeyDownTracker==true && useShiftKey==true ) {
+					roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});
+				} else {
+					roam42KeyboardLib.pressEnter();
+				}
+				setTimeout(()=>{
+					roam42.common.setEmptyNodeValue( inPut,'' );
+				},500);
 
-        },1500)
-      },100);
-    }, //navigateUIToDate
+			},1500)
+		},100);
+	}, //navigateUIToDate
 
 
   roam42.common.sortObjectByKey = async o => {
@@ -242,6 +242,35 @@
   //    if(blockEmpty){setTimeout(()=>{ roam42KeyboardLib.simulateKey(38) },250) };  //up arrow
     }
   }
+
+	roam42.common.moveCursorToNextBlock = (block)=>{
+		//Block is the HTMLElement of the currently selected block
+		if (block.localName == "textarea") {
+			setTimeout(async ()=>{
+				block.selectionStart = block.value.length;
+				block.selectionEnd   = block.value.length;
+				await roam42KeyboardLib.simulateKey(40) //up arrow
+				let newLocation = document.activeElement;
+				newLocation.selectionStart = newLocation.value.length;
+				newLocation.selectionEnd   = newLocation.value.length;
+			},10);
+
+		}
+	}  
+
+   roam42.common.moveCursorToPreviousBlock = (block)=> {
+    //Block is the HTMLElement of the currently selected block
+    if (block.localName == "textarea") {
+			setTimeout(async ()=>{
+				block.selectionStart =0;
+				block.selectionEnd = 0;
+				await roam42KeyboardLib.simulateKey(38) //up arrow
+				let newLocation = document.activeElement;
+				newLocation.selectionStart = newLocation.value.length;
+				newLocation.selectionEnd   = newLocation.value.length;
+			},10);
+		}
+	}
 
   roam42.common.startOfWeek = (date)=> {
     var diff = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);
