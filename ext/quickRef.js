@@ -15,7 +15,7 @@
       rqrQuickReferencePanel_isInitiallyPositioned: false,
 
       keyboardHandler(ev) {
-        if( ev.ctrlKey==true  && ev.shiftKey==true  && ev.code=='KeyH' ) {
+        if( ev.ctrlKey==true  && ev.shiftKey==true  && ev.code=='KeyQ' ) {
           ev.preventDefault();
           this.toggleQuickReference()
           return true
