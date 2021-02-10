@@ -35,6 +35,9 @@
           'ctrl+j n','ctrl+j m',                      'meta+j n', 'meta+j m',                   'alt+j n', 'alt+j m',
           // daily notes and lookup
           'ctrl+j ,','ctrl+j .',                      'meta+j ,', 'meta+j .',                   'alt+j ,', 'alt+j .',
+					// go to parent block
+          'ctrl+j g',                      						'meta+j g', 															'alt+j g',
+					
       ], (event, handler)=>  roam42.jumpnav.jumpCommand(event, handler) )
   }
 
@@ -50,7 +53,7 @@
 					return false
         }
 
-        if(['ctrl+j j', 'ctrl+j k', 'ctrl+j i', 'ctrl+j u', 'ctrl+j d'].includes(handler)) {
+        if(['ctrl+j j', 'ctrl+j k', 'ctrl+j i', 'ctrl+j u', 'ctrl+j d', 'ctrl+j g'].includes(handler)) {
             switch(handler)  {
               case 'ctrl+j j':  //go to next block
   							roam42.common.moveCursorToNextBlock(event.srcElement);
@@ -66,6 +69,15 @@
                 break;
               case 'ctrl+j d': //  delete block
                 roam42.common.blockDelete(event.srcElement);
+                break;
+              case 'ctrl+j g': //  go to parent block
+								setTimeout(async()=> {
+									await roam42.common.simulateMouseClick(event.target.closest('.rm-block-children').parentElement.querySelector('.roam-block'));
+									await roam42.common.sleep(50);
+									let newLocation = document.activeElement;
+									newLocation.selectionStart = newLocation.value.length;
+									newLocation.selectionEnd   = newLocation.value.length;
+								},10);
                 break;
             }
           return false;
