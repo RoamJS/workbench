@@ -36,7 +36,7 @@
           // daily notes and lookup
           'ctrl+j ,','ctrl+j .',                      'meta+j ,', 'meta+j .',                   'alt+j ,', 'alt+j .',
 					// go to parent block
-          'ctrl+j g',                      						'meta+j g', 															'alt+j g',
+          'ctrl+j g','ctrl+j ;','ctrl+j \'',  'meta+j g', 'meta+j ;', 'meta+j \'', 'alt+j g', 'alt+j ;', 'alt+j \'',
 					
       ], (event, handler)=>  roam42.jumpnav.jumpCommand(event, handler) )
   }
@@ -53,7 +53,7 @@
 					return false
         }
 
-        if(['ctrl+j j', 'ctrl+j k', 'ctrl+j i', 'ctrl+j u', 'ctrl+j d', 'ctrl+j g'].includes(handler)) {
+        if([ 'ctrl+j j', 'ctrl+j k', 'ctrl+j i', 'ctrl+j u', 'ctrl+j d', 'ctrl+j g', 'ctrl+j ;', 'ctrl+j \'' ].includes(handler)) {
             switch(handler)  {
               case 'ctrl+j j':  //go to next block
   							roam42.common.moveCursorToNextBlock(event.srcElement);
@@ -77,6 +77,29 @@
 									let newLocation = document.activeElement;
 									newLocation.selectionStart = newLocation.value.length;
 									newLocation.selectionEnd   = newLocation.value.length;
+								},10);
+                break;
+              case 'ctrl+j ;': //  previous sibling
+								console.log('previoussibl')
+								setTimeout(async()=> {
+									try {
+										await roam42.common.simulateMouseClick(event.target.closest('.roam-block-container').previousSibling.querySelector('.roam-block'));
+										await roam42.common.sleep(50);
+										let newLocation = document.activeElement;
+										newLocation.selectionStart = newLocation.value.length;
+										newLocation.selectionEnd   = newLocation.value.length;
+									 } catch(e){}
+								},10);
+                break;
+              case 'ctrl+j \'': //  next sibling
+								setTimeout(async()=> {
+									try{
+										await roam42.common.simulateMouseClick(event.target.closest('.roam-block-container').nextSibling.querySelector('.roam-block'));
+										await roam42.common.sleep(50);
+										let newLocation = document.activeElement;
+										newLocation.selectionStart = newLocation.value.length;
+										newLocation.selectionEnd   = newLocation.value.length;
+									} catch(e) {}
 								},10);
                 break;
             }
