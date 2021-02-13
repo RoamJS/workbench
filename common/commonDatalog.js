@@ -62,7 +62,7 @@
 		    }
 		 }
 
-		 var newBlockRefString = "(("+parentBlockUID+"))"
+		 var newBlockRefString = "(("+parent_uid+"))"
 		 roam42.common.updateBlock(block_to_move_uid, newBlockRefString, true);
 	}
 	
