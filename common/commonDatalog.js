@@ -51,6 +51,21 @@
 						{	block: { uid: block_uid, string: block_string.toString(), open: block_expanded } });
 	}
 
+	roam42.common.replaceBlock = async (parent_uid, block_order, block_to_move_uid)=> {
+		 parent_uid = parent_uid.replace('((','').replace('))','');
+		 var refInfo = await roam42.common.getBlockInfoByUID(block_to_move_uid, true, false);
+
+		 window.roamAlphaAPI.updateBlock( { block: { uid: parent_uid, string: refInfo[0][0].string.toString(), open: refInfo[0][0].open } })
+		 if (refInfo[0][0].hasOwnProperty('children')) {
+		    for (var i=0; i<refInfo[0][0].children.length; i++) {
+		      window.roamAlphaAPI.moveBlock( { location: { "parent-uid": parent_uid, order: block_order }, block: { uid: refInfo[0][0].children[i].uid} });
+		    }
+		 }
+
+		 var newBlockRefString = "(("+parentBlockUID+"))"
+		 roam42.common.updateBlock(block_to_move_uid, newBlockRefString, true);
+	}
+	
 	roam42.common.deleteBlock = async (block_uid)=> {
 		block_uid = block_uid.replace('((','').replace('))','');
 		return window.roamAlphaAPI.deleteBlock({block:{uid:block_uid}});
