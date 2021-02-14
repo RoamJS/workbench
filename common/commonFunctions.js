@@ -217,10 +217,27 @@
     }
   };
 
+	roam42.common.currentActiveBlockUID = ()=> {
+    if (document.activeElement.localName == "textarea") 
+			return document.activeElement.id.slice(-9);
+		else
+			return null;
+	}
+
   roam42.common.blockDelete = (block)=> {
-		var uid = block.id.substring(block.id.length-9,block.id.length);
-    if (block.localName == "textarea") 
-			setTimeout(async ()=>{ await roam42KeyboardLib.pressEsc().then(async () => await roam42KeyboardLib.pressBackspace()) },10)
+		if (block.localName == "textarea") {
+			setTimeout(async ()=>{
+				await roam42.common.moveCursorToPreviousBlock(block);
+				await roam42.common.sleep(50);
+				await roam42.common.deleteBlock( block.id.slice(-9) );
+			},10)
+		}
+
+		//TODO move to previous block at end
+
+		// var uid = block.id.substring(block.id.length-9,block.id.length);
+    // if (block.localName == "textarea") 
+		// 	setTimeout(async ()=>{ await roam42KeyboardLib.pressEsc().then(async () => await roam42KeyboardLib.pressBackspace()) },10)
   }
 
   roam42.common.blockInsertBelow = (block)=>{

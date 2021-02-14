@@ -184,11 +184,11 @@
         var jump = document.createElement("div");
           jump.id='roam42-button-jumptodate';
           jump.className = 'bp3-button bp3-minimal bp3-small bp3-icon-pivot';
-          jump.setAttribute('style','position:relative;left:2px');
+         // jump.setAttribute('style','position:relative;left:2px');
           jump.onclick = ()=>{ this.jumpToDateFromButton()};
-        var spacer = document.createElement("div");
-          spacer.setAttribute('style','flex: 0 0 3px');
-        document.querySelector('.rm-topbar').appendChild(spacer);
+        //var spacer = document.createElement("div");
+        //  spacer.setAttribute('style','flex: 0 0 3px');
+        //document.querySelector('.rm-topbar').appendChild(spacer);
         document.querySelector('.rm-topbar').appendChild(jump);
 
       } catch(e) {

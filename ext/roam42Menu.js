@@ -10,17 +10,33 @@
     if( window != window.parent ) {
       return; //don't load if in a iframe
     }
+		await roam42.roam42Menu.createMenu();
 
+		var trackTopbarUpdate = false;
+		document.querySelector('.rm-topbar').addEventListener("DOMNodeInserted", ()=> {
+				if(trackTopbarUpdate==false) {
+					trackTopbarUpdate = true;
+					setTimeout(()=>{		
+						document.querySelector('.rm-topbar').appendChild(document.querySelector('#roam42-button-jumptodate'));
+						document.querySelector('.rm-topbar').appendChild(document.querySelector('#roam42-menu-spacer'));
+						document.querySelector('.rm-topbar').appendChild(document.querySelector('#roam42-menu'));
+						trackTopbarUpdate = false;
+					}, 100);
+				}
+			}, false); //end of event hanlder
+  }
+
+	roam42.roam42Menu.createMenu = async ()=>{
     //create menu item
     var menu = document.createElement("div");
         menu.id='roam42-menu';
         menu.className = 'bp3-button bp3-minimal bp3-small bp3-icon-vertical-distribution';
-        menu.setAttribute('style','position:relative;left:2px');
+        menu.setAttribute('style','left:2px;');
     var spacer = document.createElement("div");
       spacer.id="roam42-menu-spacer"
-      spacer.setAttribute('style','flex: 0 0 3px');
-    document.querySelector('.rm-topbar').appendChild(spacer);
-    document.querySelector('.rm-topbar').appendChild(menu);
+      spacer.setAttribute('style','flex: 0 0 3px;');
+		document.querySelector('.rm-topbar').appendChild(spacer);
+		document.querySelector('.rm-topbar').appendChild(menu);
 
     roam42.roam42Menu.tippy = tippy('#roam42-menu', {
       allowHTML: true,
@@ -30,17 +46,19 @@
       trigger: 'click',
       position: 'auto',
       onShow(instance) {
-        setTimeout(()=>{
+        setTimeout(async ()=>{
           var elem = document.getElementById(instance.popper.id).firstElementChild
           if(window.innerWidth < elem.getBoundingClientRect().right ) elem.style.left = '-' + Number(elem.style.width.replace('px','')) + 'px';
-          instance.setContent( roam42.roam42Menu.displayMenu() )
+          instance.setContent( await roam42.roam42Menu.displayMenu() )
         },50)
       },
       onMount(instance) {
-        var bck = document.querySelector('#roam42-menu + div .tippy-box')
-            bck.style.width="240px";
-            bck.classList.add('bp3-popover');
-            instance.setContent( roam42.roam42Menu.displayMenu() ); //force content in for sizing
+				setTimeout(async ()=>{
+					var bck = document.querySelector('#roam42-menu + div .tippy-box')
+					bck.style.width="240px";
+					bck.classList.add('bp3-popover');
+					instance.setContent( await roam42.roam42Menu.displayMenu() ); //force content in for sizing
+				},50)
       },
     });
 
@@ -49,15 +67,14 @@
       allowHTML: true,
       arrow: false,
       theme: 'light-border',
-    });
+    });		
+	}
 
-  }
-
-  roam42.roam42Menu.displayMenu = ()=>{
+  roam42.roam42Menu.displayMenu = async ()=>{
     let menu = '';
     menu += `<div class="bp3-popover-content"><ul class="bp3-menu">`;
-    
-    if( roam42.dailyNotesPopup != undefined && roam42.dailyNotesPopup.state != 'off' ) {
+
+    if( roam42.dailyNotesPopup.state != 'off' && roam42.dailyNotesPopup.state != undefined ) {
       menu += `<li class="">
                    <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.dailyNotesPopup.component.toggleVisible();">

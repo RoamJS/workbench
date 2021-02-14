@@ -12,8 +12,7 @@
 
     async initialize() {
       var loadState = await roam42.settings.get('DailyNotePopup'); //if null, feature not loaded
-			console.log(roam42.dailyNotesPopup.state)
-      
+
       if( loadState == null) {
 				roam42.dailyNotesPopup.state = 'off'; //default state
 				return;

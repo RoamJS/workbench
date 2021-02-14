@@ -28,7 +28,7 @@
 if( typeof window.roam42 == 'undefined' ) {
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2021-02-11 (Charlie) ';
+  roam42.buildID = 'Roam<sup>42</sup> 2021-02-14 (Charlie) ';
 
   roam42.host    = document.currentScript.src.replace('main.js','');
 
@@ -127,11 +127,11 @@ if( typeof window.roam42 == 'undefined' ) {
         roam42.autocomplete.loadAutoComplete();
         roam42.jumpnav.loadJumpNav();
         try {
-          if ( device.mobile() == false && window === window.parent  ) {
+          if ( window === window.parent  ) {
             try { await roam42.dailyNotesPopup.component.initialize(); } catch(e){};
           }
         } catch(e) {}
-        try { roam42.roam42Menu.initialize();                } catch(e){};          
+        try {  setTimeout(async ()=>{await roam42.roam42Menu.initialize()},1000) } catch(e){};          
       } else {
         if(loadingCounter>30)
           clearInterval(interval);
