@@ -48,6 +48,9 @@
       case 'html_Simple':
         clipboardConvertedText =  await   roam42.formatConverter.formatter.htmlSimple(uid);
         break;
+      case 'html_Markdown_Github_flatten':
+        clipboardConvertedText =  await   roam42.formatConverter.formatter.htmlMarkdownFlatten(uid);
+        break;
     }
     formatConverterUITextArea.value = clipboardConvertedText;
     formatConverterUITextArea.scrollLeft = 0;
@@ -109,6 +112,7 @@
           <option value="markdown_Github">GitHub Flavored Markdown</option>
           <option value="markdown_Github_flatten">GitHub Flavored Markdown - flatten</option>
           <option value="html_Simple">HTML</option>
+          <option value="html_Markdown_Github_flatten">HTML after Markdown Flattening</option>
         </select>
         <div style="float:right"><div title="Refresh view based on current page" class="bp3-button bp3-minimal bp3-small bp3-icon-refresh" onclick="roam42.formatConverterUI.changeFormat()"></div></div>
         <div style="float:right"><div title="Copy to clipboard" class="bp3-button bp3-minimal bp3-small bp3-icon-clipboard" onclick="roam42.formatConverterUI.copyToClipboard()"></div></div>
