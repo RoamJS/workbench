@@ -228,36 +228,32 @@
 		if (block.localName == "textarea") {
 			setTimeout(async ()=>{
 				await roam42.common.moveCursorToPreviousBlock(block);
-				await roam42.common.sleep(50);
+				await roam42.common.sleep(100);
 				await roam42.common.deleteBlock( block.id.slice(-9) );
-			},10)
+			},50)
 		}
-
-		//TODO move to previous block at end
-
-		// var uid = block.id.substring(block.id.length-9,block.id.length);
-    // if (block.localName == "textarea") 
-		// 	setTimeout(async ()=>{ await roam42KeyboardLib.pressEsc().then(async () => await roam42KeyboardLib.pressBackspace()) },10)
   }
 
   roam42.common.blockInsertBelow = (block)=>{
     //Block is the HTMLElement of the currently selected block
-    if (block.localName == "textarea") {
-      block.selectionStart = block.value.length;
-      block.selectionEnd   = block.value.length;
-      roam42KeyboardLib.pressEnter()
-    }
+		if (block.localName == "textarea") {
+			setTimeout(async ()=>{
+				let newUID  =	await roam42.common.createSiblingBlock(block.id.slice(-9), '', true );
+				await roam42.common.sleep(50);
+				roam42.common.simulateMouseClick(document.querySelector(`div[id$='${newUID}']`))
+			},50);
+		}
   }
 
    roam42.common.blockInsertAbove = (block)=> {
     //Block is the HTMLElement of the currently selected block
-    if (block.localName == "textarea") {
-      var blockEmpty =  block.value.length>0 ? false : true;
-      block.selectionStart =0;
-      block.selectionEnd = 0;
-      roam42KeyboardLib.pressEnter()
-  //    if(blockEmpty){setTimeout(()=>{ roam42KeyboardLib.simulateKey(38) },250) };  //up arrow
-    }
+		if (block.localName == "textarea") {
+			setTimeout(async ()=>{
+				let newUID  =	await roam42.common.createSiblingBlock(block.id.slice(-9), '', false );
+				await roam42.common.sleep(50);
+				roam42.common.simulateMouseClick(document.querySelector(`div[id$='${newUID}']`))
+			},50);
+		}
   }
 
 	roam42.common.moveCursorToNextBlock = (block)=>{
