@@ -242,6 +242,50 @@
             </html>`;
   }
 
+  roam42.formatConverter.formatter.htmlMarkdownFlatten = async (uid)=> {
+    var md =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub, true );
+    marked.setOptions({
+      gfm: true,
+      xhtml: false,
+      pedantic: false,
+    });
+    md = md.replaceAll('- [ ] [', '- [ ]&nbsp;&nbsp;['); //fixes odd isue of task and alis on same line
+    md = md.replaceAll('- [x] [', '- [x]&nbsp;['); //fixes odd isue of task and alis on same line
+    md = md.replaceAll(/\{\{\youtube\: (.+?)\}\} /g, (str,lnk)=>{
+      lnk = lnk.replace('youtube.com/','youtube.com/embed/');
+      lnk = lnk.replace('youtu.be/','youtube.com/embed/');
+      lnk = lnk.replace('watch?v=','');
+      return `<iframe width="560" height="315" class="embededYoutubeVieo" src="${lnk}" frameborder="0"></iframe>`
+    });
+
+
+    //lATEX handling
+   md = md.replace(/  \- (\$\$)/g, '\n\n$1'); //Latex is centered
+    const tokenizer = {
+      codespan(src) {
+        var match = src.match(/\$\$(.*?)\$\$/);
+        if (match) {
+          var str = match[0];
+              str = str.replaceAll('<br>',' ');
+              str = str.replaceAll('<br/>',' ');
+              str = `<div>${str}</div>`;
+          return { type: 'text', raw: match[0],text: str };
+        }
+        // return false to use original codespan tokenizer
+        return false;
+      }
+    };
+    marked.use({ tokenizer });
+    md = marked(md)
+
+    return  `<html>\n
+              <head>
+              </head>
+              <body>\n${md}\n
+              </body>\n
+            </html>`;
+  }
+  
   var output = '';
 
   roam42.formatConverter.iterateThroughTree = async (uid, formatterFunction, flatten )=>{
