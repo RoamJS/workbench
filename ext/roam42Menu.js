@@ -163,6 +163,14 @@
                 </a>
               </li>`;
 
+		menu += `<li class="">
+						<a class="bp3-menu-item bp3-popover-dismiss">
+							<div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.stats.displayGraphStats()">
+									<div class="bp3-button bp3-minimal bp3-small bp3-icon-database"></div>
+									Graph DB Stats
+							</div>
+						</a>
+					</li>`;
 
     // TOGGLE features
 
@@ -205,7 +213,6 @@
                 </a>
               </li>`;
         }
-
 
     menu += `<hr style="margin:0px; margin-top:5px; padding:0px">`;
     menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;">

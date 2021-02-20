@@ -28,7 +28,7 @@
 if( typeof window.roam42 == 'undefined' ) {
 
   window.roam42     =   {};
-  roam42.buildID = 'Roam<sup>42</sup> 2021-02-17 (Charlie) ';
+  roam42.buildID = 'Roam<sup>42</sup> 2021-02-20 (Charlie) ';
 
   roam42.host    = document.currentScript.src.replace('main.js','');
 
@@ -96,6 +96,7 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addScriptToPage( 'smartBlocksCmd',    roam42.host + 'ext/smartBlocksCmd.js'     );
     roam42.loader.addScriptToPage( 'smartBlocksRB',     roam42.host + 'ext/smartBlocksRB.js'      );
     roam42.loader.addScriptToPage( 'timemgmt',          roam42.host + 'ext/timemgmt.js'           );
+    roam42.loader.addScriptToPage( 'stats',          		roam42.host + 'ext/stats.js'           );
 
     //Do not load in iframe windows
     if( window === window.parent  ){
