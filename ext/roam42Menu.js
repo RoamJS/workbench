@@ -165,7 +165,7 @@
 
 		menu += `<li class="">
 						<a class="bp3-menu-item bp3-popover-dismiss">
-							<div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.stats.displayGraphStats()">
+							<div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide();roam42.stats.displayGraphStats()">
 									<div class="bp3-button bp3-minimal bp3-small bp3-icon-database"></div>
 									Graph DB Stats
 							</div>

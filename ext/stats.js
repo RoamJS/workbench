@@ -5,21 +5,50 @@
 
 	//some stats based on work of zsolt: https://roamresearch.com/#/app/Zsolt-Blog/page/WUn5PuTDV
 
-	const queryNonCodeBlocks = '[:find (count ?s) . :with ?e  :where [?e :block/string ?s]  (not (or [(clojure.string/starts-with? ?s "```")] [(clojure.string/starts-with? ?s ":q ")]  [(clojure.string/starts-with? ?s "{{")]))]';
+	const queryNonCodeBlocks = `[:find (count ?s) . :with ?e  :where [?e :block/string ?s]  
+					(not (or [(clojure.string/starts-with? ?s "${String.fromCharCode(96,96,96)}")] 
+									 [(clojure.string/starts-with? ?s "{{")]
+ 	 								 [(clojure.string/starts-with? ?s "<%")]
+  								 [(clojure.string/starts-with? ?s ":q ")]))]`;
 
-	const queryNonCodeBlockCharacters = '[:find (sum ?size) . :with ?e :where (or-join [?s ?e] (and [?e :block/string ?s] (not (or [(clojure.string/starts-with? ?s "```")] [(clojure.string/starts-with? ?s ":q ")] [(clojure.string/starts-with? ?s "{{")]))) [?e :node/title ?s]) [(count ?s) ?size]]';
+	const queryNonCodeBlockCharacters = `[:find (sum ?size) . :with ?e :where  
+					(or-join [?s ?e] (and [?e :block/string ?s] 
+					(not (or [(clojure.string/starts-with? ?s "${String.fromCharCode(96,96,96)}")] 
+									 [(clojure.string/starts-with? ?s "{{")]
+ 	 								 [(clojure.string/starts-with? ?s "<%")]
+  								 [(clojure.string/starts-with? ?s ":q ")]))) 
+					[?e :node/title ?s]) [(count ?s) ?size]]`;
 
-	const queryNonCodeBlockWords = '[:find (sum ?n) . :with ?e :where (or-join [?s ?e] (and [?e :block/string ?s] (not (or [(clojure.string/starts-with? ?s "```")] [(clojure.string/starts-with? ?s "{{")] [(clojure.string/starts-with? ?s ":q ")]))) [?e :node/title ?s])  [(re-pattern "[^ ]+") ?pattern] [(re-seq ?pattern ?s) ?w] [(count ?w) ?n]]';
 
-	const queryCodeBlocks = '[:find (count ?s) . :with ?e  :where [?e :block/string ?s] (or [(clojure.string/starts-with? ?s "```")] [(clojure.string/starts-with? ?s ":q ")] [(clojure.string/starts-with? ?s "{{")])]';
+let queryNonCodeBlockWords = `[:find (sum ?n) :with ?e :where (or-join [?s ?e]
+	            (and [?e :block/string ?s]
+								(not (or [(clojure.string/starts-with? ?s "${String.fromCharCode(96,96,96)}")]
+												[(clojure.string/starts-with? ?s "{{")]
+												[(clojure.string/starts-with? ?s "<%")]
+												[(clojure.string/starts-with? ?s ":q ")])))
+								[?e :node/title ?s])
+							[(re-pattern "${String.fromCharCode(91,92,92,119,39,93,43)}") ?pattern]
+							[(re-seq ?pattern ?s) ?w]
+							[(count ?w) ?n]]`;
 
-	const queryCodeBlockCharacters =  '[:find (sum ?size) . :with ?e :where [?e :block/string ?s] (or [(clojure.string/starts-with? ?s "```")] [(clojure.string/starts-with? ?s ":q ")] [(clojure.string/starts-with? ?s "{{")]) [(count ?s) ?size]]';
+	const queryCodeBlocks = `[:find (count ?s) . :with ?e  :where [?e :block/string ?s] 
+					(or  [(clojure.string/starts-with? ?s "${String.fromCharCode(96,96,96)}")]
+							 [(clojure.string/starts-with? ?s "{{")]
+							 [(clojure.string/starts-with? ?s "<%")]
+							 [(clojure.string/starts-with? ?s ":q ")])]`;
 
-	const queryBlockquotes = '[:find (count ?s) . :with ?e :where [?e :block/string ?s][(clojure.string/starts-with? ?s "> ")]]';
+	const queryCodeBlockCharacters = `[:find (sum ?size) . :with ?e :where [?e :block/string ?s] 
+					(or  [(clojure.string/starts-with? ?s "${String.fromCharCode(96,96,96)}")]
+							 [(clojure.string/starts-with? ?s "{{")]
+							 [(clojure.string/starts-with? ?s "<%")]
+							 [(clojure.string/starts-with? ?s ":q ")]) 
+					[(count ?s) ?size]]`;
 
-	const queryFireBaseAttachements='[:find (count ?e) . :where [?e :block/string ?s][(clojure.string/includes? ?s "https://firebasestorage.googleapis.com")]]';
+	const queryBlockquotes = `[:find (count ?s) . :with ?e :where [?e :block/string ?s][(clojure.string/starts-with? ?s "> ")]]`;
 
-	const queryExternalLinks = '[:find (count ?e) . :where [?e :block/string ?s] (not [(clojure.string/includes? ?s "https://firebasestorage.googleapis.com")]) (or [(clojure.string/includes? ?s "https://")] [(clojure.string/includes? ?s "https://")])]';
+	const queryFireBaseAttachements= `[:find (count ?e) . :where [?e :block/string ?s][(clojure.string/includes? ?s "https://firebasestorage.googleapis.com")]]`;
+
+	const queryExternalLinks = `[:find (count ?e) . :where [?e :block/string ?s] (not [(clojure.string/includes? ?s "https://firebasestorage.googleapis.com")]) (or [(clojure.string/includes? ?s "https://")] [(clojure.string/includes? ?s "https://")])]`;
 
 	roam42.stats.displayGraphStats = async ()=> {		
 		console.log('roam42.stats.displayGraphStats')
