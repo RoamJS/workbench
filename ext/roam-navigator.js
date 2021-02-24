@@ -1,5 +1,3 @@
-/* globals roam42, Cookies, roamNavigatorSettings, iziToast */
-
 'use strict';
 {
   roam42.roamNavigator = {};

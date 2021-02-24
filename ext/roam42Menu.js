@@ -1,5 +1,3 @@
-/* globals   roam42, tippy, getRoamNavigator_IsEnabled     */
-
 // roam42.roam42Menu
 (()=>{
 

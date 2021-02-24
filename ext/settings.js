@@ -1,5 +1,4 @@
-/* globals roam42 */
-
+//roam42 settings.js
 (() => {
   roam42.settings = {};
   roam42.settings.get = async (settingName)=> {

@@ -1,4 +1,4 @@
-/* global roam42, Bloodhound, displayDataInToast, insertDataIntoNode, typeaheadQueryURL, typeaheadResult, typeaheadDisplayField */
+//roam42 typeaheadUI.js
 
 /*
    Library that provides dynamic search is based on https://twitter.github.io/typeahead.js
@@ -7,7 +7,6 @@
    make it easier for others to configure the data portion to the specifics of their REST API
 */
 
-// roam42.typeAhead
 (()=>{
 
   roam42.typeAhead = {};

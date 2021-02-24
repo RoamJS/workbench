@@ -1,4 +1,4 @@
-/* globals roam42, insertAtCaret, iziToast */
+//roam42 typeAhead.js
 
 //this is a test API based on the wordnet DB. This illustrates calling into a REST API
 

@@ -1,5 +1,3 @@
-/* globals roam42       */
-
 // roam42.privacyMode
 (()=>{
   roam42.privacyMode = {};

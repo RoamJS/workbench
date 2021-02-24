@@ -1,5 +1,3 @@
- /* globals roam42, Mousetrap, jsPanel, displayMessage, marked, Cookies */
-
 //TODO
 // Find all block refs and convert them to their nomral output
 

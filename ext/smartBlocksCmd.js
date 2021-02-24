@@ -1,4 +1,4 @@
-/* globals roam42, roam42KeyboardLib,chrono, iziToast, dayjs */
+//roam42 smartBlockCmds.js
 
 (() => {
     roam42.smartBlocks.addCommands =  async (valueArray)=> {

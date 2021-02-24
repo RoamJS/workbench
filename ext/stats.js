@@ -1,6 +1,6 @@
-//based on typeahead http://www.runningcoder.org/jquerytypeahead/documentation/
+//roam42 stat.js
 
-;(async ()=>{
+(async ()=>{
 	roam42.stats = {};
 
 	//some stats based on work of zsolt: https://roamresearch.com/#/app/Zsolt-Blog/page/WUn5PuTDV

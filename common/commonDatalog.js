@@ -1,4 +1,4 @@
-/* globals roam42 */
+//roam42 commonDatalog.js
 
 (()=>{
 

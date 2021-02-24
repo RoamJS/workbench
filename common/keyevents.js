@@ -1,11 +1,5 @@
-/* global roam42, sidebarLeftToggle, setEmptyNodeValue, typeAheadLookup
-  keyboardHandlerMessages, keyboardHandlerLivePreview
-*/
-
-
-//CONFIGURE SHORTCUT KEYS for use in the application
-
 // roam42.keyevents
+//CONFIGURE SHORTCUT KEYS for use in the application
 (()=>{
 
   roam42.keyevents = {};

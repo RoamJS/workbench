@@ -1,6 +1,3 @@
-/* globals roam42, jsPanel, roam42KeyboardLib, flatpickr, setEmptyNodeValue, getRoamDate,
-           chrono, iziToast, tippy, shiftKeyDownTracker
-*/
 // INFO: Provides a quick way to jump between daily notes pages using a calendar
 // Datepicker based on: https://flatpickr.js.org/
 

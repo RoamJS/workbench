@@ -1,4 +1,4 @@
-/* globals roam42, jsPanel */
+//roam42 tutorials.js
 
 // roam42.tutorials
 (()=>{

@@ -1,4 +1,3 @@
-/* globals roam42, Mousetrap,getPageUidByTitle, marked*/
 /* Contributor: https://twitter.com/leekeifon1 */
 
 (() => {

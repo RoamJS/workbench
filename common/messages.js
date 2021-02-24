@@ -1,7 +1,3 @@
-/*   globals roam42, iziToast, getRoamNavigator_IsEnabled, logo2HC,
-     getRoamLivePreviewState, getAutoComplete_IsEnabled
-*/
-
 // roam42.help
 (()=>{
   roam42.help = {};

@@ -1,4 +1,4 @@
-/* globals roam42, roam42KeyboardLib, Tribute */
+// roam42 smartBlocks.js
 
 (() => {
   roam42.smartBlocks = {};

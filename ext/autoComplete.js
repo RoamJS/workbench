@@ -1,6 +1,3 @@
-/* globals roam42, Mousetrap, Cookies, simulateMouseClick, iziToast  */
-
-
 // roam42.autocomplete
 (()=>{
 

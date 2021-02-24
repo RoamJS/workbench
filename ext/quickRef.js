@@ -1,7 +1,3 @@
-/* globals roam42, jsPanel */
-
-
-
 // roam42.quickRef
 (()=>{
 

@@ -1,5 +1,3 @@
-/* globals roam42, roam42KeyboardLib, roam42   */
-
 // roam42.common
 (()=>{
 

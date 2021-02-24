@@ -1,4 +1,4 @@
-/* globals roam42, chrono */
+//roam42 timemgmt.js
 
 (() => {
   roam42.timemgmt = {};
@@ -223,13 +223,16 @@
                   outputCounter+=1;
                   taskWasOutputted=true;
                   outputTODOs.push({taskUID: task[0].uid, taskString: task[0].string, pageTitle: task[1].title, date:testForDate})
-                }
+                } else if(testForDate && testForDate > yesterday) {
+									taskWasOutputted = true; //fake writing out so the DNP date is not checked. this happens when a block
+																					 //has a date in that is not overdue. 
+								}
               } catch(e) {}
             }
           } //end of testForPages!=null
         }
         //This task has no date, but check if it is on a DNP, thus inherits the date
-        if(includeDNPTasks && taskWasOutputted==false) {
+				if(includeDNPTasks && taskWasOutputted==false) {
           try {
             var pageNameIsDate = roam42.dateProcessing.testIfRoamDateAndConvert(task[1].title);
             if(pageNameIsDate && pageNameIsDate <= yesterday) {

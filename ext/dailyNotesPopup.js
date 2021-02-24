@@ -1,6 +1,3 @@
-/* globals roam42, jsPanel, Mousetrap, Cookies , simulateMouseOver   */
-
-
 // roam42.dailyNotesPopup
 (()=>{
 

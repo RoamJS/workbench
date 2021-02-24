@@ -1,6 +1,4 @@
- /* globals roam42, Mousetrap,getPageUidByTitle, marked*/
-
-(()=>{
+ (()=>{
   roam42.formatConverter = {};
   roam42.formatConverter.formatter = {};
   roam42.formatConverter.currentPageName = '';
