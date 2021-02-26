@@ -72,7 +72,7 @@
     let menu = '';
     menu += `<div class="bp3-popover-content"><ul class="bp3-menu">`;
 
-    if( roam42.dailyNotesPopup.state != 'off' && roam42.dailyNotesPopup.state != undefined ) {
+    if( roam42.dailyNotesPopup && roam42.dailyNotesPopup.state != undefined && roam42.dailyNotesPopup.state != 'off'  ) {
       menu += `<li class="">
                    <a class="bp3-menu-item bp3-popover-dismiss">
                     <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.dailyNotesPopup.component.toggleVisible();">

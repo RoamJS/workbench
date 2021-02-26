@@ -7,7 +7,6 @@
 
   roam42.keyevents.loadKeyEvents = ()=> {
 
-
     document.addEventListener('keydown', (ev)=> {
 
       //console.log('alt: ' + ev.altKey  + '  shift: ' + ev.shiftKey + '  ctrl: ' + ev.ctrlKey + '   code: ' + ev.code)

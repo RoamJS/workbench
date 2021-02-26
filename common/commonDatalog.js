@@ -3,20 +3,17 @@
 (()=>{
 
 	roam42.common.createUid = ()=>{
-		//based on https://github.com/ai/nanoid#js version 3.1.2
-		//Roam Research confirmed this library, 9 characters long
-		let nanoid=(t=21)=>{let e="",r=crypto.getRandomValues(new Uint8Array(t));for(;t--;){let n=63&r[t];e+=n<36?n.toString(36):n<62?(n-26).toString(36).toUpperCase():n<63?"_":"-"}return e};
-		return nanoid(9);
+		return roamAlphaAPI.util.generateUID();
 	}
 
 	//API DOCS: https://roamresearch.com/#/app/help/page/0Xd0lmIrF
 
 	roam42.common.createBlock = async (parent_uid, block_order, block_string)=> {
 		parent_uid = parent_uid.replace('((','').replace('))','');
-		let newUid = roam42.common.createUid();
+		let newUid = roamAlphaAPI.util.generateUID();
 		await window.roamAlphaAPI.createBlock(
 					{	location: {	"parent-uid": parent_uid, order: block_order }, 
-						block: 		{ string: block_string.toString() , uid: newUid}
+						block: 		{ string: block_string.toString(), uid: newUid }
 					});
 		await roam42.common.sleep(10); //seems a brief pause is need for DB to register the write
 		return newUid;
@@ -45,6 +42,7 @@
 							block: 		{ uid: block_to_move_uid}
 						});
 	}	
+
 	roam42.common.updateBlock = async (block_uid, block_string, block_expanded=true )=> {
 		block_uid = block_uid.replace('((','').replace('))','');
 		return window.roamAlphaAPI.updateBlock(
