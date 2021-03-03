@@ -74,7 +74,6 @@
 								},10);
                 break;
               case 'ctrl+j ;': //  previous sibling
-								console.log('previoussibl')
 								setTimeout(async()=> {
 									try {
 										await roam42.common.simulateMouseClick(event.target.closest('.roam-block-container').previousSibling.querySelector('.roam-block'));
