@@ -35,6 +35,13 @@
       ], (event, handler)=>  roam42.jumpnav.jumpCommand(event, handler) )
   }
 
+	roam42.jumpnav.jumpCommandByActiveElement = (handler)=> {
+		//use this for calls from other functions without an event handler
+		let event = {};
+		event.target = document.activeElement;
+		roam42.jumpnav.jumpCommand(event, handler);
+	};
+
   roam42.jumpnav.jumpCommand = (event, handler)=> {
         handler = handler.replace('meta','ctrl')
         handler = handler.replace('alt', 'ctrl')
@@ -102,30 +109,28 @@
 
         // BLOCKS references: fun with blocks
         if(['ctrl+j s', 'ctrl+j r'].includes(handler)) {
-          if( event.target.tagName == 'TEXTAREA') {
-            let uid = event.target.id.substring( event.target.id.length -9)
-            switch(handler)  {
-              case 'ctrl+j s':      // copy block ref as alias
-                setTimeout(async()=>{
-                  var selectedText = window.getSelection().toString();
-                  var formatToUse = await roam42.settings.get("CopyRefAsAliasFormat");
-                  var outputText = '';
-                  if(selectedText != '' && formatToUse)
-                    outputText = formatToUse.replace('UID',`((${uid}))`).replace('SELECTEDTEXT',selectedText).trim();
-                  else if (selectedText != '')
-                    outputText = `"${selectedText}" [*](((${uid})))`;
-                  else
-                    outputText = `[*](((${uid})))`;
-                  navigator.clipboard.writeText(outputText);
-                  roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied:<br/> ${outputText}`,2000);
-                },10);
-                break;
-              case 'ctrl+j r':      // copy block ref
-                navigator.clipboard.writeText(`((${uid}))`) ;
-                roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied: ((${uid}))`,2000);
-                break;
-            }
-          }
+					let uid = event.target.id.substring( event.target.id.length -9)
+					switch(handler)  {
+						case 'ctrl+j s':      // copy block ref as alias
+							setTimeout(async()=>{
+								var selectedText = window.getSelection().toString();
+								var formatToUse = await roam42.settings.get("CopyRefAsAliasFormat");
+								var outputText = '';
+								if(selectedText != '' && formatToUse)
+									outputText = formatToUse.replace('UID',`((${uid}))`).replace('SELECTEDTEXT',selectedText).trim();
+								else if (selectedText != '')
+									outputText = `"${selectedText}" [*](((${uid})))`;
+								else
+									outputText = `[*](((${uid})))`;
+								navigator.clipboard.writeText(outputText);
+								roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied:<br/> ${outputText}`,2000);
+							},10);
+							break;
+						case 'ctrl+j r':      // copy block ref
+							navigator.clipboard.writeText(`((${uid}))`) ;
+							roam42.help.displayMessage(`<b>Roam<sup>42</sup></b><br/>Copied: ((${uid}))`,2000);
+							break;
+					}
           return false;
         }
 

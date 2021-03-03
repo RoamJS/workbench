@@ -37,11 +37,12 @@
 
 		roam42.cp.active = roam42.cp.getIsEnabled();
 		
-		let inputFieldFocusOutListener = (e)=>{ if(roam42.cp.visible) roam42.cp.toggleVisible() };
 		roam42.cp.UI_Visible = false;
 		roam42.cp.triggeredState = {}; //tracks state of when the CP was triggered
-		roam42.cp.triggeredState.activeElement = null;
-		roam42.cp.triggeredState.selectedNodes = null;	
+		roam42.cp.triggeredState.activeElementId  = null;
+		roam42.cp.triggeredState.selectedNodes  = null;	
+		roam42.cp.triggeredState.activeElementSelectionStart = null;
+		roam42.cp.triggeredState.activeElementSelectionEnd   = null;
 		roam42.cp.keystate = {};			//tracks key state of CP input control
 		roam42.cp._sources = [];			//sources for looking up and returning commands
 		roam42.cp._commands = [];			//commands visible in CP
@@ -55,26 +56,40 @@
 									var results = [];
 									if( query.length == 0 ) {
 										iMax = roam42.cp._commands.length<20 ? roam42.cp._commands.length-1 : 19;
-										for(let i = 0; i < iMax; i++) 
-											await results.push(roam42.cp._commands[i]);
+										for(let i = 0; i < iMax; i++) {
+											if( roam42.cp._commands[i].context == '*' )
+												await results.push(roam42.cp._commands[i]);
+										}
 									} else {
-										if(roam42.cp._sources.length>0) 
-											await roam42.cp._sources.forEach(async(source)=>{ console.log(await source.sourceCallBack(query,results))} );
+										if(roam42.cp._sources.length>0) {
+											let context = '*'; //default to anywhere
+											if( roam42.cp.triggeredState.activeElementId != null) context ='-'; //context: textarea
+											if( roam42.cp.triggeredState.selectedNodes.length > 0) context ='+'; //context: multiple nodes
+											await roam42.cp._sources.forEach(async(source)=>{ await source.sourceCallBack(context, query, results) } );
+										}
 									}
+
 									asyncResults( results );
 								}			
 			 }
 		);
 
+		// perform command
 		$('#roam42-cp-input').bind('typeahead:select',  
-			(ev, suggestion)=> {
-				switch(suggestion.type) {
-					case "cmd":
-						$('#roam42-cp-input').typeahead('close');
-						roam42.cp.toggleVisible();
-						setTimeout( async ()=>{ await suggestion.cmd(suggestion) }, 150);
-						break;
-				}
+				(ev, suggestion)=> {
+					$('#roam42-cp-input').typeahead('close');
+					roam42.cp.toggleVisible();
+					setTimeout( async()=>{
+						switch(suggestion.context) {
+							case '-': //textarea block edit
+								await roam42KeyboardLib.pressEsc(100);
+								await restoreCurrentBlockSelection();
+								break
+							case '+': //multipe blocks selected
+								break
+						}
+						await suggestion.cmd(suggestion);
+					},200);
 		});
 
 		$('#roam42-cp-input').on('keydown', function(e) { roam42.cp.keystate = e; if(e.key == 'Escape') inputFieldFocusOutListener(); } );
@@ -89,11 +104,28 @@
 		Mousetrap.bind( roam42.cp.keyboardShortcut ,()=>{ 
 				if(!roam42.cp.active) return;
 				//capture States
-				roam42.cp.triggeredState.activeElement = document.activeElement.type == 'textarea' ? document.activeElement : null;
+				roam42.cp.triggeredState.activeElementId = document.activeElement.type == 'textarea' ? document.activeElement.id : null;
+				roam42.cp.triggeredState.activeElementSelectionStart = document.activeElement.selectionStart;
+				roam42.cp.triggeredState.activeElementSelectionEnd   = document.activeElement.selectionEnd;
 				roam42.cp.triggeredState.selectedNodes = document.querySelectorAll('.block-highlight-blue .roam-block');	
 				roam42.cp.toggleVisible(); 
 			return false; 
 		});
+
+		let restoreCurrentBlockSelection = async()=>{
+			roam42.common.simulateMouseClick( document.getElementById( roam42.cp.triggeredState.activeElementId ) );
+			await roam42.common.sleep(150);
+			document.activeElement.selectionStart = roam42.cp.triggeredState.activeElementSelectionStart;
+			document.activeElement.selectionEnd   = roam42.cp.triggeredState.activeElementSelectionEnd;
+		};
+
+		let inputFieldFocusOutListener = (e)=>{ 
+			if(roam42.cp.UI_Visible) {
+				roam42.cp.toggleVisible();
+				if( roam42.cp.triggeredState.activeElementId != null ) setTimeout(async ()=>{restoreCurrentBlockSelection()}, 200);
+			}
+		};
+
 		try{ document.querySelector('#roam42-cp-input').removeEventListener('focusout', inputFieldFocusOutListener) } catch(e) {};
 		document.querySelector('#roam42-cp-input').addEventListener('focusout', inputFieldFocusOutListener);
 
@@ -121,17 +153,18 @@
 			}
 
 
-			await roam42.cp.sourceAdd( "Built-in Roam commands", async (query, results)=>{
-					let queryLowerCase = query.toLowerCase();
-					results = await roam42.cp._commands.forEach(async(el)=>{
-						if(el.searchText.includes(queryLowerCase))
+			await roam42.cp.sourceAdd( "Built-in Roam commands", async (context, query, results)=>{
+				let queryLowerCase = query.toLowerCase();
+				results = await roam42.cp._commands.forEach(async(el)=>{
+					if( el.searchText.includes(queryLowerCase))
+						if( el.context == '*' || el.context == context ) //applies to all contexts, so include
 							await results.push(el);
-					});
+				});
 			});
 
 			const openPageInRoam = async (cmdInfo)=> roam42.common.navigateUiTo(cmdInfo.display, roam42.cp.keystate.shiftKey);
 
-			await roam42.cp.sourceAdd( "Page Name Navigation Commands", async (query, results)=>{
+			await roam42.cp.sourceAdd( "Page Name Navigation Commands", async (context, query, results)=>{
 					let pagequery = `[:find ?title ?uid ?edit-time
 													:in $ ?title-fragment
 													:where  [?e :node/title ?title]
@@ -142,7 +175,7 @@
 					let pages = await window.roamAlphaAPI.q(pagequery,'(?i)'+query);
 					if(pages && pages.length>0) {
 						//let sortedPages = pages.sort( (a, b) => parseFloat(b[2]) - parseFloat(a[2]) );
-						await pages.forEach(async(page)=> await results.push({ display: page[0], cmd: openPageInRoam,  type:'cmd', pageInfo: page }));
+						await pages.forEach(async(page)=> await results.push({ display: page[0], cmd: openPageInRoam,  context: '*', pageInfo: page }));
 					}
 			});
 
@@ -152,8 +185,6 @@
 			// Format for command array
 			// display: text displayed in search
 			// cmd: command to be run depending on its type
-			// type: command type
-			//			cmd = execute Javasript command
 			// context: command works in the defined context
 			//				  * = anywhere
 			//					- = from a textarea
@@ -162,20 +193,19 @@
 				display: 'Daily Notes', 
 				cmd: ()=>{ roam42.common.navigateUiTo( roam42.dateProcessing.getRoamDate(new Date()), roam42.cp.keystate.shiftKey ) }, 
 				searchText: 'dailynotes',
-				type: "cmd",
 				context: '*'
 			});
 
 			roam42.cp.commandAddRunFromAnywhere = async ( textToDisplay, callbackFunction )=> {
-				roam42.cp._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), cmd: callbackFunction, type: 'cmd', context: '*' } );
+				roam42.cp._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), cmd: callbackFunction, context: '*' } );
 			}
 
 			roam42.cp.commandAddRunFromBlock = ( textToDisplay, callbackFunction )=> {
-				roam42.cp._commands.push( { display: textToDisplay, cmd: callbackFunction, type: 'cmd', context: '-' } );
+				roam42.cp._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), cmd: callbackFunction, context: '-' } );
 			}
 
 			roam42.cp.commandAddRunFromMultiBlockSelection = ( textToDisplay, callbackFunction )=> {
-				roam42.cp._commands.push( { display: textToDisplay, cmd: callbackFunction, type: 'cmd', context: '-' } );
+				roam42.cp._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), cmd: callbackFunction, context: '-' } );
 			}
 
 
@@ -190,6 +220,14 @@
 				try{ roam42.cp.commandAddRunFromAnywhere("Roam42 Help", roam42.quickRef.component.toggleQuickReference) } catch(e) {}
 				try{ roam42.cp.commandAddRunFromAnywhere("Roam42 Tutorials", roam42.tutorials.show) } catch(e) {}
 				try{ roam42.cp.commandAddRunFromAnywhere("Roam42 Graph DB Stats", roam42.stats.displayGraphStats) } catch(e) {}
+
+				roam42.cp.commandAddRunFromBlock('Heading 1 (Alt+Shift+1)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j 5')} );
+				roam42.cp.commandAddRunFromBlock('Heading 2 (Alt+Shift+2)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j 6')} );
+				roam42.cp.commandAddRunFromBlock('Heading 3 (Alt+Shift+3)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j 7')} );
+
+				roam42.cp.commandAddRunFromBlock('Copy Block Reference - Jump Nav (Meta-j r)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j r')} );
+				roam42.cp.commandAddRunFromBlock('Copy Block Reference as alias - Jump Nav (Meta-j s)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j s')} );
+
 
 				roam42.cp.commandAddRunFromAnywhere("Reload Command Palette", ()=>{ roam42.cp.testReload() });
 
