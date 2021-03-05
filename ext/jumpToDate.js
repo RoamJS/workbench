@@ -26,7 +26,7 @@
           setTimeout( async ()=> {
             await roam42KeyboardLib.pressEsc();
             this.moveForwardToDate(false);
-          },300 )
+          },300) 
         } else {
             this.moveForwardToDate(false);
         }
@@ -69,7 +69,6 @@
       //Return the element that corresponds to that index.
       return weekdays[day];
     },
-
     moveForwardToDate(bForward){
       let jumpDate = chrono.parseDate( document.querySelector('.rm-title-display').innerText );
       let directionTip ='';
@@ -251,6 +250,7 @@
           this.flCalendar.clear();
         },500);
       })
+
 
 
     }, //initialize()
