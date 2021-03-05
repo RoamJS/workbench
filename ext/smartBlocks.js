@@ -41,6 +41,8 @@
         try {
           var sKey  = sb[0].string.replace('#42SmartBlock','');
           var bHide = sKey.search('<%HIDE%>')>0 ? true : false;
+
+
           sKey = sKey.replace('<%HIDE%>','').trim();
           sKey = sKey.replace('<%NOCURSOR%>','').trim();
           if(sKey.trim()!='') {

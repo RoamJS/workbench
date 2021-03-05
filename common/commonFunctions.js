@@ -23,7 +23,6 @@
 			await roam42.common.sleep(50);
 			uid = await await roam42.common.getPageUidByTitle(destinationPage);
 		}
-
 		if( openInSideBar==false ) 
 			document.location.href= this.baseUrl().href + '/' + uid;
 		else
