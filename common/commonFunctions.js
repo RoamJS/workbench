@@ -16,29 +16,18 @@
     //return {pageName:'', pageUID:'', DNPDate:''}
   }
 
-	roam42.common.navigateUiTo = async function (destinationPage, useShiftKey=false) {
-		var uid = await window.roamAlphaAPI.q("[:find ?uid :in $ ?a :where [?e :node/title ?a] [?e :block/uid ?uid]]", destinationPage).flat()[0]
-		//page exists, go to it
-		if(uid !=  undefined  && useShiftKey==false ) {
-			document.location.href= this.baseUrl().href + '/' + uid;
-			return true;
+	roam42.common.navigateUiTo = async function (destinationPage, openInSideBar=false) {
+		var uid = await roam42.common.getPageUidByTitle(destinationPage);
+		if(uid == '')  {
+			await roam42.common.createPage( destinationPage );
+			await roam42.common.sleep(50);
+			uid = await await roam42.common.getPageUidByTitle(destinationPage);
 		}
-		setTimeout(()=>{
-			let inPut =  document.getElementById('find-or-create-input');
-			inPut.focus();
-			roam42.common.setEmptyNodeValue( inPut, destinationPage );
-			setTimeout(()=>{
-				if( roam42.keyevents.shiftKeyDownTracker==true && useShiftKey==true ) {
-					roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});
-				} else {
-					roam42KeyboardLib.pressEnter();
-				}
-				setTimeout(()=>{
-					roam42.common.setEmptyNodeValue( inPut,'' );
-				},500);
 
-			},1500)
-		},100);
+		if( openInSideBar==false ) 
+			document.location.href= this.baseUrl().href + '/' + uid;
+		else
+			await roamAlphaAPI.ui.rightSidebar.addWindow( { window: { "block-uid": uid, type: "outline" }} ) 
 	}, //navigateUIToDate
 
 

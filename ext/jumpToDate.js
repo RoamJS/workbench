@@ -147,30 +147,10 @@
 
     async navigateUIToDate(destinationDate, useShiftKey) {
       var dDate = roam42.dateProcessing.getRoamDate( destinationDate )
-      var uid = await roam42.common.getPageUidByTitle(dDate); 
-			if(uid=='') {
-				await roam42.common.createPage(dDate);
-				await roam42.common.sleep(100);
-				uid = await roam42.common.getPageUidByTitle(dDate);
-			}
-			//page exists, go to it
-      if(uid !=  undefined  && (useShiftKey==false || roam42.keyevents.shiftKeyDownTracker==false && useShiftKey==true) ) {
-        document.location.href= this.baseUrl() + '/page/' + uid;
-        return;
-      }
-      let inPut =  document.getElementById('find-or-create-input');
-      inPut.focus();
-      roam42.common.setEmptyNodeValue( inPut, dDate );
-      setTimeout(()=>{
-       if( roam42.keyevents.shiftKeyDownTracker==true && useShiftKey==true ) {
-          roam42KeyboardLib.simulateKey(13,100,{  shiftKey:true});
-        } else {
-          roam42KeyboardLib.pressEnter();
-        }
-        setTimeout(()=>{
-          roam42.common.setEmptyNodeValue( inPut,'' );
-        },250);
-      },1000);
+      if( useShiftKey==false || roam42.keyevents.shiftKeyDownTracker==false && useShiftKey==true ) 
+				await roam42.common.navigateUiTo(dDate,false);
+      else 
+				await roam42.common.navigateUiTo(dDate,true);
     }, //navigateUIToDate
 
     initialize()  {
