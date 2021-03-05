@@ -51,11 +51,11 @@
 
 		$('#roam42-cp-input').typeahead(
 			{ hint: false, highlight: true, minLength: 0, autoselect: true },
-			{ name: 'basicnav', display: 'display', limit:20, async: true, 
+			{ name: 'basicnav', display: 'display', limit:25, async: true, 
 				source: async (query, syncResults, asyncResults)=> {
 									var results = [];
 									if( query.length == 0 ) {
-										iMax = roam42.cp._commands.length<20 ? roam42.cp._commands.length-1 : 19;
+										iMax = roam42.cp._commands.length<25 ? roam42.cp._commands.length-1 : 25;
 										for(let i = 0; i < iMax; i++) {
 											if( roam42.cp._commands[i].context == '*' )
 												await results.push(roam42.cp._commands[i]);
@@ -262,16 +262,16 @@
 						background-color: #555;
 						box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
 						height: 30px;
-						width:350px;
+						width:450px;
 						z-index: 1000;
 					}
 
 					#roam42-cp-container .typeahead {
-						line-height:14px !important;
-						font-size: 12pt !important;
+						line-height:12px !important;
+						font-size: 10pt !important;
 						height: 14px !important;
 						border-radius: 0px;
-						width: 343px;
+						width: 443px;
 						padding-left: 3px !important;
 						background-color: #777;
 						color: #ddd !important;
@@ -290,7 +290,7 @@
 						left:-4px !important;
 						padding-top: 0px !important;
 						padding-bottom: 0px !important;
-						width:350px;
+						width:450px;
 					}
 
 					#roam42-cp-container .tt-highlight {
@@ -298,8 +298,8 @@
 					}
 					
 					#roam42-cp-container .tt-suggestion {
-						line-height:16px;
-						font-size: 12pt;
+						line-height:12px;
+						font-size: 10pt;
 						padding-left: 7px !important;
 					}
 
