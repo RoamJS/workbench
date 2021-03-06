@@ -573,7 +573,6 @@
     } catch (e) {}
     roam42.loader.addScriptToPage( "smartBlocks", roam42.host + 'ext/smartBlocks.js');
     setTimeout(()=>roam42.loader.addScriptToPage( 'smartBlocksCmd',roam42.host + 'ext/smartBlocksCmd.js'), 3000);
-    setTimeout(()=>roam42.smartBlocks.initialize(), 5000);
-    setTimeout(()=>roam42.timemgmt.testingReload(), 4000);
+    setTimeout(()=>roam42.smartBlocks.initialize(), 2000);
   };
 })();

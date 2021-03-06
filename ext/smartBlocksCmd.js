@@ -132,6 +132,8 @@
                              help:'<b>42SETTING</b><br/>Returns a value for a #42Setting<br/><br/>1. Setting name'});
       valueArray.push({key: '<% SMARTBLOCK: %> (SmartBlock Command)',         icon:'gear', value: '<%SMARTBLOCK:&&&%>',processor:'static',
                              help:'<b>SMARTBLOCK (Experimental)</b><br/>Runs another SmartBlock<br/><br/>1. SmartBlock name'});
+      valueArray.push({key: '<% OPENPAGE: %> (SmartBlock Command)',               icon:'gear', value: '<%OPENPAGE:&&&%>',               processor:'static',
+                             help:'<b>OPENPAGE</b><br/>Opens or creates a page'});
       valueArray.push({key: '<% TIME %> (SmartBlock Command)',               icon:'gear', value: '<%TIME%>',               processor:'static',
                              help:'<b>TIME</b><br/>Returns time in 24 hour format'});
       valueArray.push({key: '<% TIMEAMPM: %> (SmartBlock Command)',           icon:'gear', value: '<%TIMEAMPM%>',           processor:'static',
@@ -418,6 +420,58 @@
           roam42.smartBlocks.activeWorkflow.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
           return '';
         });
+        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%OPENPAGE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+          var commandToProcess = match.replace('<%OPENPAGE:','').replace('%>','').trim();
+					if(commandToProcess.substring(0,2)=='[[' && commandToProcess.substring(commandToProcess.length-2,commandToProcess.length) == ']]')
+						commandToProcess = commandToProcess.substring(2,commandToProcess.length-2);
+					if(commandToProcess.length>255)
+						commandToProcess = commandToProcess.substring(0,254);
+					await roam42.common.navigateUiTo(commandToProcess);
+					await roam42.common.sleep(250);
+					if(textToProcess.includes('<%GOTOBLOCK')) {
+        		await roam42.common.replaceAsync(textToProcess, /(\<\%GOTOBLOCK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+		          let location = match.replace('<%GOTOBLOCK:','').replace('%>','').trim();
+							let blocks = document.querySelectorAll('.rm-block-text');
+							let targetBlock = null; 
+							if(location == '1') //go to first block
+								targetBlock = blocks[0];
+							else if (location == '-1') //go to last block
+								targetBlock = blocks[blocks.length-1];
+							if( targetBlock !=null) {
+								await roam42.common.simulateMouseClick( targetBlock );
+								await roam42.common.sleep(150);
+								document.activeElement.selectionStart = document.activeElement.value.length-1;
+							 	document.activeElement.selectionEnd   = document.activeElement.value.length-1;
+								await roam42.common.sleep(150);
+							}
+						});
+					}
+          return roam42.smartBlocks.exclusionBlockSymbol;
+        });
+
+        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SIDEBARWINDOWCLOSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+          var commandToProcess = Number(match.replace('<%SIDEBARWINDOWCLOSE:','').replace('%>','').trim());
+					console.log(commandToProcess)
+					if( commandToProcess == 0) {
+						// var openPaneCount = roamAlphaAPI.ui.rightSidebar.getWindows().length;
+						// for(i=0; i<openPaneCount; i++) {
+						// 	var pane = roamAlphaAPI.ui.rightSidebar.getWindows()[0];
+						// 	await roamAlphaAPI.ui.rightSidebar.removeWindow( { window: pane} );
+						// 	await roam42.common.sleep(300);
+						// 	console.log(pane);
+						// }
+						for await (pane of roamAlphaAPI.ui.rightSidebar.getWindows()) {
+							console.log(pane)
+							let uid = pane['block-uid'] == undefined ? pane['page-uid'] : pane['block-uid'];
+							let closeWin = { window: {'type': pane.type, 'block-uid': uid }}
+							console.log(JSON.stringify(closeWin))
+							await roamAlphaAPI.ui.rightSidebar.removeWindow( closeWin );
+							await roam42.common.sleep(100);
+						}
+					}
+						
+					return ''
+        });				
         //ALWAYS at end of process
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOBLOCKOUTPUT\%\>)/g, async (match, name)=>{
           return roam42.smartBlocks.exclusionBlockSymbol;
