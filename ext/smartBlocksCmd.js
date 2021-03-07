@@ -138,6 +138,8 @@
                              help:'<b>SIDEBARWINDOWOPEN</b><br/>Opens or creates a page in the sidebar<br/><br/>1. Page name or block ref'});
       valueArray.push({key: '<% SIDEBARWINDOWCLOSE: %> (SmartBlock Command)',               icon:'gear', value: '<%SIDEBARWINDOWCLOSE:&&&%>',               processor:'static',
                              help:'<b>SIDEBARWINDOWCLOSE</b><br/>Closes sidebar pane<br/><br/>1. number of side pane to close. Use 0 to close all panes.'});
+      valueArray.push({key: '<% SIDEBARSTATE: %> (SmartBlock Command)',               icon:'gear', value: '<%SIDEBARSTATE:&&&%>',               processor:'static',
+                             help:'<b>SIDEBARSTATE</b><br/>Toggles state of sidebars<br/><br/>Value of  1 to 4. <br/>1 - open left sidebar <br/>2 - close left side bar <br/>3 - open right side bar <br/>4 - close right side bar.'});
       valueArray.push({key: '<% GOTOBLOCK: %> (SmartBlock Command)',               icon:'gear', value: '<%GOTOBLOCK:&&&%>',               processor:'static',
                              help:'<b>GOTOBLOCK</b><br/>Subcommand works with OPENPAGE and SIDEBARWINDOWOPEN <br/><br/>1. set to 1 for first block, set to -1 for last block '});
       valueArray.push({key: '<% GRAPH %> (SmartBlock Command)',               icon:'gear', value: '<%GRAPH%>',               processor:'static',
@@ -472,11 +474,43 @@
 					}
           return roam42.smartBlocks.exclusionBlockSymbol;
         });
+        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SIDEBARSTATE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+          var commandToProcess = Number(match.replace('<%SIDEBARSTATE:','').replace('%>','').trim());
+					let restoreLocation = roam42.common.saveLocationParametersOfTextArea( document.activeElement );
+					switch(commandToProcess) {
+						case 1: //open left
+							if(document.querySelector('.rm-open-left-sidebar-btn')) { //not open.. so open
+								roam42.common.sidebarLeftToggle(); 
+								await roam42.common.sleep(200);
+							}
+							break;
+						case 2: //close left
+							if(!document.querySelector('.rm-open-left-sidebar-btn')) { //not open.. so open
+								roam42.common.sidebarLeftToggle();
+								await roam42.common.sleep(200);
+							}
+							break;
+						case 3: //open right 
+							await roamAlphaAPI.ui.rightSidebar.open()
+							break;
+						case 4: //close right
+							await roamAlphaAPI.ui.rightSidebar.close()
+							break;
+					}					
+					if( document.activeElement.type != 'testarea') {
+						roam42.common.restoreLocationParametersOfTexArea(restoreLocation);
+						await roam42.common.sleep(300);
+					}
+          return roam42.smartBlocks.exclusionBlockSymbol;
+				});
+
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SIDEBARWINDOWCLOSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = Number(match.replace('<%SIDEBARWINDOWCLOSE:','').replace('%>','').trim());
 					var panes = document.querySelectorAll('.sidebar-content .bp3-icon-cross');
 					if(panes.length>0){
 						let restoreLocation = roam42.common.saveLocationParametersOfTextArea( document.activeElement );
+						await roamAlphaAPI.ui.rightSidebar.open();
+						await roam42.common.sleep(250);
 						if( commandToProcess == 0) {
 							numberOfPanes = panes.length;
 							for(let i=0;i<=numberOfPanes-1;i++) {
@@ -487,7 +521,7 @@
 							roam42.common.simulateMouseClick( panes[ commandToProcess -1 ] );
 						}			
 						roam42.common.restoreLocationParametersOfTexArea(restoreLocation);
-						await roam42.common.sleep(500);
+						await roam42.common.sleep(300);
 					}
           return roam42.smartBlocks.exclusionBlockSymbol;
         });				
