@@ -133,11 +133,15 @@
       valueArray.push({key: '<% SMARTBLOCK: %> (SmartBlock Command)',         icon:'gear', value: '<%SMARTBLOCK:&&&%>',processor:'static',
                              help:'<b>SMARTBLOCK (Experimental)</b><br/>Runs another SmartBlock<br/><br/>1. SmartBlock name'});
       valueArray.push({key: '<% OPENPAGE: %> (SmartBlock Command)',               icon:'gear', value: '<%OPENPAGE:&&&%>',               processor:'static',
-                             help:'<b>OPENPAGE</b><br/>Opens or creates a page block ref<br/><br/>1. Page name or block ref'});
+                             help:'<b>OPENPAGE</b><br/>Opens or creates a page or block ref<br/><br/>1. Page name or block ref'});
       valueArray.push({key: '<% SIDEBARWINDOWOPEN: %> (SmartBlock Command)',               icon:'gear', value: '<%SIDEBARWINDOWOPEN:&&&%>',               processor:'static',
-                             help:'<b>SIDEBARWINDOWOPEN</b><br/>Opens or creates a page in the sidebar e<br/><br/>1. Page name or block ref'});
+                             help:'<b>SIDEBARWINDOWOPEN</b><br/>Opens or creates a page in the sidebar<br/><br/>1. Page name or block ref'});
+      valueArray.push({key: '<% SIDEBARWINDOWCLOSE: %> (SmartBlock Command)',               icon:'gear', value: '<%SIDEBARWINDOWCLOSE:&&&%>',               processor:'static',
+                             help:'<b>SIDEBARWINDOWCLOSE</b><br/>Closes sidebar pane<br/><br/>1. number of side pane to close. Use 0 to close all panes.'});
       valueArray.push({key: '<% GOTOBLOCK: %> (SmartBlock Command)',               icon:'gear', value: '<%GOTOBLOCK:&&&%>',               processor:'static',
                              help:'<b>GOTOBLOCK</b><br/>Subcommand works with OPENPAGE and SIDEBARWINDOWOPEN <br/><br/>1. set to 1 for first block, set to -1 for last block '});
+      valueArray.push({key: '<% GRAPH %> (SmartBlock Command)',               icon:'gear', value: '<%GRAPH%>',               processor:'static',
+                             help:'<b>GRAPH</b><br/>Subcommand for SIDEBARWINDOWOPEN to open as a graph'});
       valueArray.push({key: '<% TIME %> (SmartBlock Command)',               icon:'gear', value: '<%TIME%>',               processor:'static',
                              help:'<b>TIME</b><br/>Returns time in 24 hour format'});
       valueArray.push({key: '<% TIMEAMPM: %> (SmartBlock Command)',           icon:'gear', value: '<%TIMEAMPM%>',           processor:'static',
@@ -438,8 +442,8 @@
 					if( targetBlock !=null) {
 						await roam42.common.simulateMouseClick( targetBlock );
 						await roam42.common.sleep(150);
-						document.activeElement.selectionStart = document.activeElement.value.length-1;
-						document.activeElement.selectionEnd   = document.activeElement.value.length-1;
+						document.activeElement.selectionStart = document.activeElement.value.length;
+						document.activeElement.selectionEnd   = document.activeElement.value.length;
 						await roam42.common.sleep(150);
 					}
 				}
@@ -455,8 +459,11 @@
           return roam42.smartBlocks.exclusionBlockSymbol;
         });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SIDEBARWINDOWOPEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-          var commandToProcess = match.replace('<%SIDEBARWINDOWOPEN:','').replace('%>','').trim();
-					await roam42.common.navigateUiTo(commandToProcess, true);
+          let commandToProcess = match.replace('<%SIDEBARWINDOWOPEN:','').replace('%>','').trim();
+					if(textToProcess.includes('<%GRAPH%>'))
+						await roam42.common.navigateUiTo(commandToProcess, true, 'graph');	
+					else
+						await roam42.common.navigateUiTo(commandToProcess, true);
 					await roam42.common.sleep(500);
 					if(textToProcess.includes('<%GOTOBLOCK')) {
         		await roam42.common.replaceAsync(textToProcess, /(\<\%GOTOBLOCK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
@@ -467,26 +474,22 @@
         });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SIDEBARWINDOWCLOSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = Number(match.replace('<%SIDEBARWINDOWCLOSE:','').replace('%>','').trim());
-					console.log(commandToProcess)
-					if( commandToProcess == 0) {
-						// var openPaneCount = roamAlphaAPI.ui.rightSidebar.getWindows().length;
-						// for(i=0; i<openPaneCount; i++) {
-						// 	var pane = roamAlphaAPI.ui.rightSidebar.getWindows()[0];
-						// 	await roamAlphaAPI.ui.rightSidebar.removeWindow( { window: pane} );
-						// 	await roam42.common.sleep(300);
-						// 	console.log(pane);
-						// }
-						for await (pane of roamAlphaAPI.ui.rightSidebar.getWindows()) {
-							console.log(pane)
-							let uid = pane['block-uid'] == undefined ? pane['page-uid'] : pane['block-uid'];
-							let closeWin = { window: {'type': pane.type, 'block-uid': uid }}
-							console.log(JSON.stringify(closeWin))
-							await roamAlphaAPI.ui.rightSidebar.removeWindow( closeWin );
-							await roam42.common.sleep(100);
-						}
+					var panes = document.querySelectorAll('.sidebar-content .bp3-icon-cross');
+					if(panes.length>0){
+						let restoreLocation = roam42.common.saveLocationParametersOfTextArea( document.activeElement );
+						if( commandToProcess == 0) {
+							numberOfPanes = panes.length;
+							for(let i=0;i<=numberOfPanes-1;i++) {
+								roam42.common.simulateMouseClick( document.querySelector('.sidebar-content .bp3-icon-cross') );
+								await roam42.common.sleep(100);
+							}
+						}	else {
+							roam42.common.simulateMouseClick( panes[ commandToProcess -1 ] );
+						}			
+						roam42.common.restoreLocationParametersOfTexArea(restoreLocation);
+						await roam42.common.sleep(500);
 					}
-						
-					return ''
+          return roam42.smartBlocks.exclusionBlockSymbol;
         });				
         //ALWAYS at end of process
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%NOBLOCKOUTPUT\%\>)/g, async (match, name)=>{

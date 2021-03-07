@@ -16,7 +16,7 @@
     //return {pageName:'', pageUID:'', DNPDate:''}
   }
 
-	roam42.common.navigateUiTo = async function (destinationPage, openInSideBar=false) {
+	roam42.common.navigateUiTo = async function (destinationPage, openInSideBar=false, sSidebarType = 'block') {
 		const prefix = destinationPage.substring(0,2);
 		const suffix = destinationPage.substring(destinationPage.length-2,destinationPage.length);
 		if( ( prefix == '[[' && suffix == ']]' ) || ( prefix == '((' && suffix == '))' ) )
@@ -38,8 +38,9 @@
 		}
 		if( openInSideBar==false ) 
 			document.location.href= this.baseUrl().href + '/' + uid;
-		else
-			await roamAlphaAPI.ui.rightSidebar.addWindow( { window: { "block-uid": uid, type: "outline" }} ) 
+		else {
+			await roamAlphaAPI.ui.rightSidebar.addWindow( { window: { "block-uid": uid, type: sSidebarType }} );
+		}
 	}, //navigateUIToDate
 
 
