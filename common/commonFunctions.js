@@ -17,11 +17,24 @@
   }
 
 	roam42.common.navigateUiTo = async function (destinationPage, openInSideBar=false) {
-		var uid = await roam42.common.getPageUidByTitle(destinationPage);
+		const prefix = destinationPage.substring(0,2);
+		const suffix = destinationPage.substring(destinationPage.length-2,destinationPage.length);
+		if( ( prefix == '[[' && suffix == ']]' ) || ( prefix == '((' && suffix == '))' ) )
+			destinationPage = destinationPage.substring(2,destinationPage.length-2);
+		let uid = await roam42.common.getPageUidByTitle(destinationPage);
 		if(uid == '')  {
-			await roam42.common.createPage( destinationPage );
-			await roam42.common.sleep(50);
-			uid = await await roam42.common.getPageUidByTitle(destinationPage);
+			//test if UID for zooming in, if not create page
+			uid = await roam42.common.getBlockInfoByUID(destinationPage);
+			console.log(uid)
+			if(uid == null) { //not a page, nor UID so create page
+				if(destinationPage.length>255)	
+					destinationPage = destinationPage.substring(0,254);
+				await roam42.common.createPage( destinationPage );
+				await roam42.common.sleep(50);
+				uid = await await roam42.common.getPageUidByTitle(destinationPage);
+			} else {
+				uid = destinationPage; //seems to be a UID, zoom it
+			}
 		}
 		if( openInSideBar==false ) 
 			document.location.href= this.baseUrl().href + '/' + uid;

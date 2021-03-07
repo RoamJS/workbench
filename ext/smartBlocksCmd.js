@@ -133,7 +133,11 @@
       valueArray.push({key: '<% SMARTBLOCK: %> (SmartBlock Command)',         icon:'gear', value: '<%SMARTBLOCK:&&&%>',processor:'static',
                              help:'<b>SMARTBLOCK (Experimental)</b><br/>Runs another SmartBlock<br/><br/>1. SmartBlock name'});
       valueArray.push({key: '<% OPENPAGE: %> (SmartBlock Command)',               icon:'gear', value: '<%OPENPAGE:&&&%>',               processor:'static',
-                             help:'<b>OPENPAGE</b><br/>Opens or creates a page'});
+                             help:'<b>OPENPAGE</b><br/>Opens or creates a page block ref<br/><br/>1. Page name or block ref'});
+      valueArray.push({key: '<% SIDEBARWINDOWOPEN: %> (SmartBlock Command)',               icon:'gear', value: '<%SIDEBARWINDOWOPEN:&&&%>',               processor:'static',
+                             help:'<b>SIDEBARWINDOWOPEN</b><br/>Opens or creates a page in the sidebar e<br/><br/>1. Page name or block ref'});
+      valueArray.push({key: '<% GOTOBLOCK: %> (SmartBlock Command)',               icon:'gear', value: '<%GOTOBLOCK:&&&%>',               processor:'static',
+                             help:'<b>GOTOBLOCK</b><br/>Subcommand works with OPENPAGE and SIDEBARWINDOWOPEN <br/><br/>1. set to 1 for first block, set to -1 for last block '});
       valueArray.push({key: '<% TIME %> (SmartBlock Command)',               icon:'gear', value: '<%TIME%>',               processor:'static',
                              help:'<b>TIME</b><br/>Returns time in 24 hour format'});
       valueArray.push({key: '<% TIMEAMPM: %> (SmartBlock Command)',           icon:'gear', value: '<%TIMEAMPM%>',           processor:'static',
@@ -420,35 +424,47 @@
           roam42.smartBlocks.activeWorkflow.vars[textToProcess.substring(0,textToProcess.search(','))] = textToProcess.substring(textToProcess.search(',')+1,);
           return '';
         });
+				const gotoBlock = async (location, bSideBar=false)=> {
+					let targetBlock = null; 
+					if(document.querySelector('#block-input-ghost')) {
+						targetBlock =  document.querySelector('#block-input-ghost');
+					} else {
+						let blocks = bSideBar ? document.querySelectorAll('.rm-sidebar-window')[0].querySelectorAll('.rm-block-text') : document.querySelectorAll('.rm-block-text');
+						if(location == '1') //go to first block
+							targetBlock = blocks[0];
+						else if (location == '-1') //go to last block
+							targetBlock = blocks[blocks.length-1];
+					}
+					if( targetBlock !=null) {
+						await roam42.common.simulateMouseClick( targetBlock );
+						await roam42.common.sleep(150);
+						document.activeElement.selectionStart = document.activeElement.value.length-1;
+						document.activeElement.selectionEnd   = document.activeElement.value.length-1;
+						await roam42.common.sleep(150);
+					}
+				}
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%OPENPAGE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%OPENPAGE:','').replace('%>','').trim();
-					if(commandToProcess.substring(0,2)=='[[' && commandToProcess.substring(commandToProcess.length-2,commandToProcess.length) == ']]')
-						commandToProcess = commandToProcess.substring(2,commandToProcess.length-2);
-					if(commandToProcess.length>255)
-						commandToProcess = commandToProcess.substring(0,254);
 					await roam42.common.navigateUiTo(commandToProcess);
-					await roam42.common.sleep(250);
+					await roam42.common.sleep(500);
 					if(textToProcess.includes('<%GOTOBLOCK')) {
         		await roam42.common.replaceAsync(textToProcess, /(\<\%GOTOBLOCK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
-		          let location = match.replace('<%GOTOBLOCK:','').replace('%>','').trim();
-							let blocks = document.querySelectorAll('.rm-block-text');
-							let targetBlock = null; 
-							if(location == '1') //go to first block
-								targetBlock = blocks[0];
-							else if (location == '-1') //go to last block
-								targetBlock = blocks[blocks.length-1];
-							if( targetBlock !=null) {
-								await roam42.common.simulateMouseClick( targetBlock );
-								await roam42.common.sleep(150);
-								document.activeElement.selectionStart = document.activeElement.value.length-1;
-							 	document.activeElement.selectionEnd   = document.activeElement.value.length-1;
-								await roam42.common.sleep(150);
-							}
+		        	await gotoBlock( match.replace('<%GOTOBLOCK:','').replace('%>','').trim(), false );
 						});
 					}
           return roam42.smartBlocks.exclusionBlockSymbol;
         });
-
+        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SIDEBARWINDOWOPEN:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+          var commandToProcess = match.replace('<%SIDEBARWINDOWOPEN:','').replace('%>','').trim();
+					await roam42.common.navigateUiTo(commandToProcess, true);
+					await roam42.common.sleep(500);
+					if(textToProcess.includes('<%GOTOBLOCK')) {
+        		await roam42.common.replaceAsync(textToProcess, /(\<\%GOTOBLOCK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+		        	await gotoBlock( match.replace('<%GOTOBLOCK:','').replace('%>','').trim(), true );
+						});
+					}
+          return roam42.smartBlocks.exclusionBlockSymbol;
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SIDEBARWINDOWCLOSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = Number(match.replace('<%SIDEBARWINDOWCLOSE:','').replace('%>','').trim());
 					console.log(commandToProcess)
