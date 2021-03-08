@@ -165,12 +165,12 @@
 
     menu += `<li style="padding-left:10px;margin-top:5px;"><span style="font-size:9pt;">Toggle Features On/Off:</span></li>`
 
-        if( roam42.cp.enabled == true ) {
+        if( roam42.wB.enabled == true ) {
           menu += `<li class="" style="height:28px">
                 <a class="bp3-menu-item bp3-popover-dismiss">
-                  <div class="bp3-text-overflow-ellipsis bp3-fill" onclick=" roam42.roam42Menu.tippy[0].hide(); roam42.cp.toggleActiveState()">
+                  <div class="bp3-text-overflow-ellipsis bp3-fill" onclick=" roam42.roam42Menu.tippy[0].hide(); roam42.wB.toggleActiveState()">
                     <span style="font-size:8pt;padding-left:15px">
-                      Command Palette <span style="font-size:7pt">${roam42.cp.getIsEnabled() ? `(Active  ${roam42.cp.keyboardShortcut} )` : '(Disabled)'} 
+                      workBench <span style="font-size:7pt">${roam42.wB.getIsEnabled() ? `(Active  ${roam42.wB.keyboardShortcut} )` : '(Disabled)'} 
                     </span>
                   </div>
                 </a>

@@ -14,6 +14,7 @@
   roam42.formatConverter   converts current page to various formats
   roam42.formatConverterUI UI to roam42.formatConverter
   roam42.smartBlocks       SmartBlocks engine
+	roam42.workBench				 Workbench engine
   roam42.KeyboardLib       imported from another library. so letting it stand as its own object
 */
 
@@ -102,7 +103,7 @@ if( typeof window.roam42 == 'undefined' ) {
       roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
       roam42.loader.addScriptToPage( 'livePreview',       roam42.host + 'ext/livePreview.js'      );
       roam42.loader.addScriptToPage( 'dailyNote',         roam42.host + 'ext/dailyNotesPopup.js'  );
-      roam42.loader.addScriptToPage( 'commandPalette',    roam42.host + 'ext/commandPalette.js'   );
+      roam42.loader.addScriptToPage( 'workBench',    			roam42.host + 'ext/workBench.js'   );
 //      roam42.loader.addScriptToPage( 'focuesMode',        roam42.host + 'ext/focusMode.js'  );
     }
     roam42.loader.addScriptToPage( 'keyEvents',         roam42.host + 'common/keyevents.js'       );
@@ -121,7 +122,7 @@ if( typeof window.roam42 == 'undefined' ) {
         try { roam42.typeAhead.loadTypeAhead(); } catch(e){};
         try { roam42.quickRef.component.initialize(); } catch(e){};
         try { setTimeout(async()=> { await roam42.smartBlocks.initialize() },100) } catch(e){};
-				try { setTimeout(async()=> { await roam42.cp.initialize() },100) } catch(e){};
+				try { setTimeout(async()=> { await roam42.wB.initialize() },100) } catch(e){};
         roam42.autocomplete.loadAutoComplete();
         roam42.jumpnav.loadJumpNav();
         try {

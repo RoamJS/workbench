@@ -15,7 +15,8 @@
   roam42.smartBlocks.activeWorkflow.arrayToWrite = []; // use to output multiple blocks from a command
   roam42.smartBlocks.activeWorkflow.onBlockExitCode = ''; //code executed at end of block
   roam42.smartBlocks.activeWorkflow.forceDelayAferNewBlock = 0; //used by CURRENTBLOCKREF to force a delay after enter so roam can sync changes from  previouis enter
-  roam42.smartBlocks.exclusionBlockSymbol = 'NOUTNOUTNOUTNOUT'; //used to indicate a block is not to be inserted
+  roam42.smartBlocks.activeWorkflow.skipInsertingEnterForOneBlock = false; //used by a command that creates a new block, and we dont want SB engine to create a block as part as of its normal processing
+	roam42.smartBlocks.exclusionBlockSymbol = 'NOUTNOUTNOUTNOUT'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.replaceFirstBlock    = 'SBRPLCSBRPLCSBRPLC'; //used to indicate a block is not to be inserted
   roam42.smartBlocks.customCommands = [];
   roam42.smartBlocks.SmartBlockPopupHelpEnabled = true;
@@ -300,10 +301,13 @@
                         await roam42.smartBlocks.processBlockOnBlockExit()
                       } else {
                         if (firstBlock==false) {
-                          let currentBlockId = document.querySelector('textarea.rm-block-input').id
-                          await roam42KeyboardLib.pressEnter(150);
-                          if(currentBlockId==document.querySelector('textarea.rm-block-input').id ) await roam42KeyboardLib.pressEnter(50);
-
+													if(roam42.smartBlocks.activeWorkflow.skipInsertingEnterForOneBlock) {
+														roam42.smartBlocks.activeWorkflow.skipInsertingEnterForOneBlock = false; //skip pressing enter for this cycle and reset variable
+													} else {
+														let currentBlockId = document.querySelector('textarea.rm-block-input').id
+														await roam42KeyboardLib.pressEnter(150);
+														if(currentBlockId==document.querySelector('textarea.rm-block-input').id ) await roam42KeyboardLib.pressEnter(50);
+													}													
                           //indent/unindent if needed
                           if (currentOutlineLevel < level) {
                             for (var inc = currentOutlineLevel; inc < level; inc++) {

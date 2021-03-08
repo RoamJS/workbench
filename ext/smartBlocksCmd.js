@@ -433,21 +433,31 @@
 				const gotoBlock = async (location, bSideBar=false)=> {
 					let targetBlock = null; 
 					if(document.querySelector('#block-input-ghost')) {
-						targetBlock =  document.querySelector('#block-input-ghost');
+						await roam42.common.simulateMouseClick( document.querySelector('#block-input-ghost') );
+						await roam42.common.sleep(150);
 					} else {
-						let blocks = bSideBar ? document.querySelectorAll('.rm-sidebar-window')[0].querySelectorAll('.rm-block-text') : document.querySelectorAll('.rm-block-text');
-						if(location == '1') //go to first block
-							targetBlock = blocks[0];
-						else if (location == '-1') //go to last block
-							targetBlock = blocks[blocks.length-1];
+						let blocks = bSideBar ? document.querySelectorAll('.rm-sidebar-window')[0].querySelectorAll('.rm-block-text') : document.querySelectorAll('.rm-level-0 .rm-block-text');
+						if(location == '1') { //go to first block
+							await roam42.common.simulateMouseClick( blocks[0] );
+							await roam42.common.sleep(150);
+							if(document.activeElement.value.length>0) {
+								document.activeElement.selectionStart = 0;
+								document.activeElement.selectionEnd   = 0;
+								await roam42KeyboardLib.pressEnter(150);
+								await roam42.common.simulateMouseClick( blocks[0] );
+								await roam42.common.sleep(150);
+							}
+						} else if (location == '-1') { //go to last block
+							await roam42.common.simulateMouseClick( blocks[blocks.length-1] );
+							await roam42.common.sleep(150);
+							if(document.activeElement.value.length>0) {
+								document.activeElement.selectionStart = document.activeElement.value.length;
+								document.activeElement.selectionEnd   = document.activeElement.value.length;
+								await roam42KeyboardLib.pressEnter(150);
+							}
+						}
 					}
-					if( targetBlock !=null) {
-						await roam42.common.simulateMouseClick( targetBlock );
-						await roam42.common.sleep(150);
-						document.activeElement.selectionStart = document.activeElement.value.length;
-						document.activeElement.selectionEnd   = document.activeElement.value.length;
-						await roam42.common.sleep(150);
-					}
+					roam42.smartBlocks.activeWorkflow.skipInsertingEnterForOneBlock = true; //prevent sb engine from pressing enter
 				}
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%OPENPAGE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%OPENPAGE:','').replace('%>','').trim();

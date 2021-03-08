@@ -92,9 +92,11 @@
   //https://stackoverflow.com/questions/40091000/simulate-click-event-on-react-element
   const mouseClickEvents = ['mousedown', 'click', 'mouseup'];
   roam42.common.simulateMouseClick = (element)=> {
-    mouseClickEvents.forEach(mouseEventType =>
-      element.dispatchEvent( new MouseEvent(mouseEventType, { view: window, bubbles: true, cancelable: true, buttons: 1 }) )
-    );
+		try{
+			mouseClickEvents.forEach(mouseEventType =>
+				element.dispatchEvent( new MouseEvent(mouseEventType, { view: window, bubbles: true, cancelable: true, buttons: 1 }) )
+			);
+		} catch(e) {}
   }
 
   const mouseClickEventsRight = ['contextmenu'];
