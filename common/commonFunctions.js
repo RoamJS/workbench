@@ -16,16 +16,18 @@
     //return {pageName:'', pageUID:'', DNPDate:''}
   }
 
-	roam42.common.navigateUiTo = async function (destinationPage, openInSideBar=false, sSidebarType = 'block') {
+	roam42.common.navigateUiTo = async function (destinationPage, openInSideBar=false, sSidebarType = 'outline') {
+		//sSidebarType = block, outline, graph
 		const prefix = destinationPage.substring(0,2);
 		const suffix = destinationPage.substring(destinationPage.length-2,destinationPage.length);
+		if(sSidebarType=='outline' && ( prefix == '((' && suffix == '))' ) ) //test if block ref to open in block mode
+			sSidebarType = 'block'; //chnage to block mode
 		if( ( prefix == '[[' && suffix == ']]' ) || ( prefix == '((' && suffix == '))' ) )
 			destinationPage = destinationPage.substring(2,destinationPage.length-2);
 		let uid = await roam42.common.getPageUidByTitle(destinationPage);
 		if(uid == '')  {
 			//test if UID for zooming in, if not create page
 			uid = await roam42.common.getBlockInfoByUID(destinationPage);
-			console.log(uid)
 			if(uid == null) { //not a page, nor UID so create page
 				if(destinationPage.length>255)	
 					destinationPage = destinationPage.substring(0,254);

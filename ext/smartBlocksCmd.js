@@ -141,7 +141,7 @@
       valueArray.push({key: '<% SIDEBARSTATE: %> (SmartBlock Command)',               icon:'gear', value: '<%SIDEBARSTATE:&&&%>',               processor:'static',
                              help:'<b>SIDEBARSTATE</b><br/>Toggles state of sidebars<br/><br/>Value of  1 to 4. <br/>1 - open left sidebar <br/>2 - close left side bar <br/>3 - open right side bar <br/>4 - close right side bar.'});
       valueArray.push({key: '<% GOTOBLOCK: %> (SmartBlock Command)',               icon:'gear', value: '<%GOTOBLOCK:&&&%>',               processor:'static',
-                             help:'<b>GOTOBLOCK</b><br/>Subcommand works with OPENPAGE and SIDEBARWINDOWOPEN <br/><br/>1. set to 1 for first block, set to -1 for last block '});
+                             help:'<b>GOTOBLOCK</b><br/>Subcommand works with OPENPAGE and SIDEBARWINDOWOPEN <br/><br/>1. set to 1 for first block, set to -1 for last lock '});
       valueArray.push({key: '<% GRAPH %> (SmartBlock Command)',               icon:'gear', value: '<%GRAPH%>',               processor:'static',
                              help:'<b>GRAPH</b><br/>Subcommand for SIDEBARWINDOWOPEN to open as a graph'});
       valueArray.push({key: '<% TIME %> (SmartBlock Command)',               icon:'gear', value: '<%TIME%>',               processor:'static',
