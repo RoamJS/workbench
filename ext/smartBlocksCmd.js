@@ -520,23 +520,7 @@
 
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SIDEBARWINDOWCLOSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = Number(match.replace('<%SIDEBARWINDOWCLOSE:','').replace('%>','').trim());
-					var panes = document.querySelectorAll('.sidebar-content .bp3-icon-cross');
-					if(panes.length>0){
-						let restoreLocation = roam42.common.saveLocationParametersOfTextArea( document.activeElement );
-						await roamAlphaAPI.ui.rightSidebar.open();
-						await roam42.common.sleep(250);
-						if( commandToProcess == 0) {
-							numberOfPanes = panes.length;
-							for(let i=0;i<=numberOfPanes-1;i++) {
-								roam42.common.simulateMouseClick( document.querySelector('.sidebar-content .bp3-icon-cross') );
-								await roam42.common.sleep(100);
-							}
-						}	else {
-							roam42.common.simulateMouseClick( panes[ commandToProcess -1 ] );
-						}			
-						roam42.common.restoreLocationParametersOfTexArea(restoreLocation);
-						await roam42.common.sleep(300);
-					}
+					await roam42.common.rightSidebarClose(commandToProcess);
           return roam42.smartBlocks.exclusionBlockSymbol;
         });				
         //ALWAYS at end of process

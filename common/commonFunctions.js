@@ -41,7 +41,6 @@
 		if( openInSideBar==false ) 
 			document.location.href= this.baseUrl().href + '/' + uid;
 		else {
-			console.log( { "block-uid": uid, type: sSidebarType } )
 			await roamAlphaAPI.ui.rightSidebar.addWindow( { window: { "block-uid": uid, type: sSidebarType }} );
 		}
 	}, //navigateUIToDate
@@ -68,6 +67,25 @@
     }
   };
 
+	roam42.common.rightSidebarClose = async ( iWindow , bRestoreLocation = true )=>{
+		if(await roamAlphaAPI.ui.rightSidebar.getWindows().length>0){
+			let restoreLocation = bRestoreLocation ? roam42.common.saveLocationParametersOfTextArea( document.activeElement ) : null;
+			await roamAlphaAPI.ui.rightSidebar.open();
+			await roam42.common.sleep(250);
+			var panes = document.querySelectorAll('.sidebar-content .bp3-icon-cross');
+			if( iWindow == 0) {
+				numberOfPanes = panes.length;
+				for(let i=0;i<=numberOfPanes-1;i++) {
+					roam42.common.simulateMouseClick( document.querySelector('.sidebar-content .bp3-icon-cross') );
+					await roam42.common.sleep(100);
+				}
+			}	else {
+				roam42.common.simulateMouseClick( panes[ iWindow -1 ] );
+			}
+			if(bRestoreLocation) roam42.common.restoreLocationParametersOfTexArea(restoreLocation);
+			await roam42.common.sleep(300);
+		}
+	}
 
   roam42.common.sidebarRightToggle = ()=>{
     try {

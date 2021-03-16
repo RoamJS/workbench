@@ -1,7 +1,7 @@
-// workBench
-// Tribute: https://github.com/zurb/tribute
+// workBench	
+// Typeahead based on: https://github.com/corejavascript/typeahead.js/
 
-;(async ()=>{
+(async ()=>{
   roam42.wB = {};
 	roam42.wB.enabled = false;
 	roam42.wB.active  = false;
@@ -42,7 +42,6 @@
 		roam42.wB.active = roam42.wB.getIsEnabled();
 		
 		roam42.wB.UI_Visible = false;
-		roam42.wB.tribute = {};	
 		roam42.wB.triggeredState = {}; //tracks state of when the CP was triggered
 		roam42.wB.triggeredState.activeElementId  = null;
 		roam42.wB.triggeredState.selectedNodes  = null;	
@@ -54,36 +53,60 @@
 
 		await appendCP_HTML_ToBody();
 
+		$('#roam42-wB-input').typeahead(
+			{ hint: true, highlight: true, minLength: 0, autoselect: true },
+			{ name: 'basicnav', display: 'display', limit:25, async: true, 
+				source: async (query, syncResults, asyncResults)=> {
+									var results = [];
+									if( query.length == 0 ) {
+											let context = '*'; //default to anywhere
+											for await (source of await roam42.wB._sources)
+												await source.sourceCallBack(context, query, results);
+										// iMax = roam42.wB._commands.length<25 ? roam42.wB._commands.length-1 : 25;
+										// for(let i = 0; i < iMax; i++) {
+										// 	if( roam42.wB._commands[i].context == '*' )
+										// 		await results.push(roam42.wB._commands[i]);
+										// }
+									} else {
+										if(roam42.wB._sources.length>0) {
+											let context = '*'; //default to anywhere
+											if( roam42.wB.triggeredState.activeElementId != null) context ='-'; //context: textarea
+											if( roam42.wB.triggeredState.selectedNodes.length > 0) context ='+'; //context: multiple nodes
+											// await roam42.wB._sources.forEach(async(source)=>{ await source.sourceCallBack(context, query, results) } );
+											for await (source of await roam42.wB._sources)
+												await source.sourceCallBack(context, query, results);
+										}
+									}
+									asyncResults( results );
+								}			
+			 }
+		);
+
+		// perform command
+		$('#roam42-wB-input').bind('typeahead:select',  
+				(ev, suggestion)=> {
+					$('#roam42-wB-input').typeahead('close');
+					roam42.wB.toggleVisible();
+					setTimeout( async()=>{
+						switch(suggestion.context) {
+							case '-': //textarea block edit
+								await roam42KeyboardLib.pressEsc(100);
+								await restoreCurrentBlockSelection();
+								break
+							case '+': //multipe blocks selected
+								break
+						}
+						await suggestion.cmd(suggestion);
+					},200);
+		});
+
+		$('#roam42-wB-input').on('keydown', function(e) { roam42.wB.keystate = e; if(e.key == 'Escape') inputFieldFocusOutListener(); } );
+
+		$('#roam42-wB-input').on('keyup', function(e) { roam42.wB.keystate = e });
+		
 		//assign trigger to keyboard
 		let shortcut = await roam42.settings.get('workBenchShortcut');
 		if(shortcut != null) roam42.wB.keyboardShortcut = shortcut;
-
-		roam42.wB.tribute = new Tribute({
-			collection: [
-				{
-					trigger: ";",
-					values: [
-						{ key: "move", value: "move" },
-						{ key: "duplicate", value: "duiplicate" },
-						{ key: "open", value: "open" },
-					]
-				},
-				{
-					trigger: ">",
-					values: [
-						{ key: "page x", value: "page x" },
-						{ key: "block y", value: "block y" },
-					]
-				}				
-				]
-		});
-		roam42.wB.tribute.attach(document.getElementById("roam42-wB-input"));
-
-		document.getElementById("roam42-wB-input").addEventListener("tribute-replaced", function(e) {
-				console.log( "Original event that triggered text replacement:", e.detail.event );
-				console.log("Matched item:", e.detail.item);
-		});
-
 
 		Mousetrap.unbind( roam42.wB.keyboardShortcut ); //do this in case of a reset
 		Mousetrap.bind( roam42.wB.keyboardShortcut ,()=>{ 
@@ -104,12 +127,8 @@
 			document.activeElement.selectionEnd   = roam42.wB.triggeredState.activeElementSelectionEnd;
 		};
 
-		let inputFieldKeyListener = (e)=>{ 
-			if( e.key == 'Escape' )	inputFieldFocusOutListener();
-		}
-
 		let inputFieldFocusOutListener = (e)=>{ 
-			if(roam42.wB.UI_Visible ) {
+			if(roam42.wB.UI_Visible) {
 				roam42.wB.toggleVisible();
 				if( roam42.wB.triggeredState.activeElementId != null ) setTimeout(async ()=>{restoreCurrentBlockSelection()}, 200);
 			}
@@ -117,20 +136,15 @@
 
 		try{ document.querySelector('#roam42-wB-input').removeEventListener('focusout', inputFieldFocusOutListener) } catch(e) {};
 		document.querySelector('#roam42-wB-input').addEventListener('focusout', inputFieldFocusOutListener);
-		try{ document.querySelector('#roam42-wB-input').removeEventListener('keydown', inputFieldKeyListener) } catch(e) {};
-		document.querySelector('#roam42-wB-input').addEventListener('keydown', inputFieldKeyListener);
 
 		roam42.wB.toggleVisible = async ()=> {
 			const wbControl = document.querySelector('#roam42-wB-container');
 			if(roam42.wB.UI_Visible) {
-				//roam42.wB.tribute.detach(document.getElementById("roam42-wB-input"));
+				$(`#roam42-wB-input`).typeahead('val', '');
 				wbControl.style.visibility='hidden';
-				document.querySelector('#roam42-wB-input').value = '';
 			} else {
 				wbControl.style.visibility='visible';
 				document.querySelector('#roam42-wB-input').focus();
-				//setTimeout(()=>				roam42.wB.tribute.showMenuForCollection(document.getElementById("roam42-wB-input")), 100);
-			//	roam42.wB.tribute.showMenuForCollection(document.getElementById("roam42-wB-input"),true);
 			}
 			roam42.wB.UI_Visible = !roam42.wB.UI_Visible;
 		}
@@ -146,16 +160,29 @@
 					source.sourceCallBack = callBackFunction;
 			}
 
-			await roam42.wB.sourceAdd( "SmartBlocks", async (context, query, results)=>{
+			await roam42.wB.sourceAdd( "SmartBlocks from AnyWhere", async (context, query, results)=> {
+				let queryLowerCase = query.toLowerCase();
+				let sbList =  await roam42.smartBlocks.UserDefinedWorkflowsList();
+				await roam42.smartBlocks.addCommands( sbList );
+				for await (sb of sbList) {
+					if( sb['key'].toLowerCase().includes(queryLowerCase) && sb['key'].includes('<%GLOBAL%>') ) { 
+						let sbCommand = sb['key'].replace('<%GLOBAL%>',''); 
+				 		await results.push( { display: sbCommand, cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}),  context: '*', info: sb });
+					}
+				}
+			});
+
+			await roam42.wB.sourceAdd( "SmartBlocks from blocks", async (context, query, results)=>{
 				if( context != '-' ) return;
 				let queryLowerCase = query.toLowerCase();
 				let sbList =  await roam42.smartBlocks.UserDefinedWorkflowsList();
 				await roam42.smartBlocks.addCommands( sbList );
 				for await (sb of sbList) {
-					if( sb['key'].toLowerCase().includes(queryLowerCase))
+					if( sb['key'].toLowerCase().includes(queryLowerCase) && !sb['key'].includes('<%GLOBAL%>'))
 				 		await results.push( { display: sb['key'], cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}),  context: '-', info: sb });
 				}
 			});
+
 
 			await roam42.wB.sourceAdd( "Built-in Roam commands", async (context, query, results)=>{
 				let queryLowerCase = query.toLowerCase();
@@ -215,6 +242,43 @@
 			// try{ roam42.wB.commandAdd("text", ()=>{}) } catch(e) {};
 				roam42.wB.commandAddRunFromAnywhere("All Pages",()=>{document.location.href=roam42.common.baseUrl().href.replace('page','') + '/search'});
 				roam42.wB.commandAddRunFromAnywhere("Graph Overview", ()=>{document.location.href=roam42.common.baseUrl().href.replace('page','') + '/graph'});
+				roam42.wB.commandAddRunFromAnywhere("Right Sidebar - close window panes (rscwp)", async ()=>{ 
+					await roam42KeyboardLib.pressEsc(100);
+					if(roam42.wB.triggeredState.activeElementId != null) {
+						await roam42.common.rightSidebarClose(0, false); 
+						await restoreCurrentBlockSelection(); 
+					}
+				});
+				roam42.wB.commandAddRunFromAnywhere("Sidebars - open both (sob)", async ()=>{  
+					await roamAlphaAPI.ui.rightSidebar.open();
+					await roam42.common.sleep(100);  
+					try {
+				    var event = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+						document.getElementsByClassName("bp3-icon-menu")[0].dispatchEvent(event);
+					} catch(e) {} //if on ipad, the above command fails, so go to next step
+					setTimeout(()=>{
+						document.getElementsByClassName("bp3-icon-menu-open")[0].click();
+					},100);
+					if(roam42.wB.triggeredState.activeElementId != null) {
+						await roam42.common.sleep(500);
+						await roam42.common.rightSidebarClose(0, false); 
+						await restoreCurrentBlockSelection(); 
+					}
+				});
+				roam42.wB.commandAddRunFromAnywhere("Sidebars - close both (scb)", async ()=>{  
+					await roamAlphaAPI.ui.rightSidebar.close();  
+					await roam42.common.sleep(100);  	
+					try { document.getElementsByClassName("bp3-icon-menu")[0].dispatchEvent(event) } catch(e) {} //if on ipad, the above command fails, so go to next step
+					try {
+							document.getElementsByClassName("bp3-icon-menu-closed")[0].click();
+							roam42.common.simulateMouseOver(document.getElementsByClassName("roam-article")[0]); //.dispatchEvent(event)
+					} catch(e) {};
+					if(roam42.wB.triggeredState.activeElementId != null) {
+						await roam42.common.sleep(500);
+						await roam42.common.rightSidebarClose(0, false); 
+						await restoreCurrentBlockSelection(); 
+					}
+				});
 				try{ roam42.wB.commandAddRunFromAnywhere("Roam42 Privacy Mode (alt-shift-p)", roam42.privacyMode.toggle) } catch(e){};
 				try{ roam42.wB.commandAddRunFromAnywhere("Roam42 Converter (alt-m)", roam42.formatConverterUI.show) } catch(e){};
 				try{ roam42.wB.commandAddRunFromAnywhere("Roam42 Web View (alt-shift-m)", roam42.formatConverterUI.htmlview) } catch(e){};
@@ -233,7 +297,7 @@
 				roam42.wB.commandAddRunFromBlock('Copy Block Reference - Jump Nav (Meta-j r)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j r')} );
 				roam42.wB.commandAddRunFromBlock('Copy Block Reference as alias - Jump Nav (Meta-j s)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j s')} );
 
-				roam42.wB.commandAddRunFromAnywhere("Reload Command Palette", ()=>{ roam42.wB.testReload() });
+				roam42.wB.commandAddRunFromAnywhere("Reload workBench (rw)", ()=>{ roam42.wB.testReload() });
 
 		
 	} // End of INITIALIZE
@@ -301,6 +365,7 @@
 	} //end of module
 
   roam42.wB.testReload = ()=>{
+		console.log('reloading wB')
     roam42.loader.addScriptToPage( "workBench", roam42.host + 'ext/workBench.js');
 		setTimeout(async ()=>{
 			// cleanup controls if being reinitialized
