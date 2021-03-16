@@ -61,22 +61,28 @@
 		roam42.wB.tribute = new Tribute({
 			collection: [
 				{
-					trigger: "[[",
+					trigger: ";",
 					values: [
-						{ key: "Phil Heartman", value: "pheartman]]" },
-						{ key: "Gordon Ramsey", value: "gramsey]]" }
+						{ key: "move", value: "move" },
+						{ key: "duplicate", value: "duiplicate" },
+						{ key: "open", value: "open" },
 					]
 				},
 				{
 					trigger: ">",
 					values: [
-						{ key: "Phil Heartman", value: "pheartman]]" },
-						{ key: "Gordon Ramsey", value: "gramsey]]" }
+						{ key: "page x", value: "page x" },
+						{ key: "block y", value: "block y" },
 					]
 				}				
 				]
 		});
 		roam42.wB.tribute.attach(document.getElementById("roam42-wB-input"));
+
+		document.getElementById("roam42-wB-input").addEventListener("tribute-replaced", function(e) {
+				console.log( "Original event that triggered text replacement:", e.detail.event );
+				console.log("Matched item:", e.detail.item);
+		});
 
 
 		Mousetrap.unbind( roam42.wB.keyboardShortcut ); //do this in case of a reset
@@ -98,8 +104,12 @@
 			document.activeElement.selectionEnd   = roam42.wB.triggeredState.activeElementSelectionEnd;
 		};
 
+		let inputFieldKeyListener = (e)=>{ 
+			if( e.key == 'Escape' )	inputFieldFocusOutListener();
+		}
+
 		let inputFieldFocusOutListener = (e)=>{ 
-			if(roam42.wB.UI_Visible) {
+			if(roam42.wB.UI_Visible ) {
 				roam42.wB.toggleVisible();
 				if( roam42.wB.triggeredState.activeElementId != null ) setTimeout(async ()=>{restoreCurrentBlockSelection()}, 200);
 			}
@@ -107,15 +117,20 @@
 
 		try{ document.querySelector('#roam42-wB-input').removeEventListener('focusout', inputFieldFocusOutListener) } catch(e) {};
 		document.querySelector('#roam42-wB-input').addEventListener('focusout', inputFieldFocusOutListener);
+		try{ document.querySelector('#roam42-wB-input').removeEventListener('keydown', inputFieldKeyListener) } catch(e) {};
+		document.querySelector('#roam42-wB-input').addEventListener('keydown', inputFieldKeyListener);
 
 		roam42.wB.toggleVisible = async ()=> {
 			const wbControl = document.querySelector('#roam42-wB-container');
 			if(roam42.wB.UI_Visible) {
+				//roam42.wB.tribute.detach(document.getElementById("roam42-wB-input"));
 				wbControl.style.visibility='hidden';
+				document.querySelector('#roam42-wB-input').value = '';
 			} else {
 				wbControl.style.visibility='visible';
 				document.querySelector('#roam42-wB-input').focus();
-				roam42.wB.tribute.showMenuForCollection(document.getElementById("roam42-wB-input"));
+				//setTimeout(()=>				roam42.wB.tribute.showMenuForCollection(document.getElementById("roam42-wB-input")), 100);
+			//	roam42.wB.tribute.showMenuForCollection(document.getElementById("roam42-wB-input"),true);
 			}
 			roam42.wB.UI_Visible = !roam42.wB.UI_Visible;
 		}

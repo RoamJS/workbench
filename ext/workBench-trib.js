@@ -1,5 +1,5 @@
 // workBench
-// Typeahead based on: https://github.com/corejavascript/typeahead.js/
+// Tribute: https://github.com/zurb/tribute
 
 ;(async ()=>{
   roam42.wB = {};
@@ -42,6 +42,7 @@
 		roam42.wB.active = roam42.wB.getIsEnabled();
 		
 		roam42.wB.UI_Visible = false;
+		roam42.wB.tribute = {};	
 		roam42.wB.triggeredState = {}; //tracks state of when the CP was triggered
 		roam42.wB.triggeredState.activeElementId  = null;
 		roam42.wB.triggeredState.selectedNodes  = null;	
@@ -53,57 +54,36 @@
 
 		await appendCP_HTML_ToBody();
 
-		$('#roam42-wB-input').typeahead(
-			{ hint: false, highlight: true, minLength: 0, autoselect: true },
-			{ name: 'basicnav', display: 'display', limit:25, async: true, 
-				source: async (query, syncResults, asyncResults)=> {
-									var results = [];
-									if( query.length == 0 ) {
-										iMax = roam42.wB._commands.length<25 ? roam42.wB._commands.length-1 : 25;
-										for(let i = 0; i < iMax; i++) {
-											if( roam42.wB._commands[i].context == '*' )
-												await results.push(roam42.wB._commands[i]);
-										}
-									} else {
-										if(roam42.wB._sources.length>0) {
-											let context = '*'; //default to anywhere
-											if( roam42.wB.triggeredState.activeElementId != null) context ='-'; //context: textarea
-											if( roam42.wB.triggeredState.selectedNodes.length > 0) context ='+'; //context: multiple nodes
-											// await roam42.wB._sources.forEach(async(source)=>{ await source.sourceCallBack(context, query, results) } );
-											for await (source of await roam42.wB._sources)
-												await source.sourceCallBack(context, query, results);
-										}
-									}
-									asyncResults( results );
-								}			
-			 }
-		);
-
-		// perform command
-		$('#roam42-wB-input').bind('typeahead:select',  
-				(ev, suggestion)=> {
-					$('#roam42-wB-input').typeahead('close');
-					roam42.wB.toggleVisible();
-					setTimeout( async()=>{
-						switch(suggestion.context) {
-							case '-': //textarea block edit
-								await roam42KeyboardLib.pressEsc(100);
-								await restoreCurrentBlockSelection();
-								break
-							case '+': //multipe blocks selected
-								break
-						}
-						await suggestion.cmd(suggestion);
-					},200);
-		});
-
-		$('#roam42-wB-input').on('keydown', function(e) { roam42.wB.keystate = e; if(e.key == 'Escape') inputFieldFocusOutListener(); } );
-
-		$('#roam42-wB-input').on('keyup', function(e) { roam42.wB.keystate = e });
-		
 		//assign trigger to keyboard
 		let shortcut = await roam42.settings.get('workBenchShortcut');
 		if(shortcut != null) roam42.wB.keyboardShortcut = shortcut;
+
+		roam42.wB.tribute = new Tribute({
+			collection: [
+				{
+					trigger: ";",
+					values: [
+						{ key: "move", value: "move" },
+						{ key: "duplicate", value: "duiplicate" },
+						{ key: "open", value: "open" },
+					]
+				},
+				{
+					trigger: ">",
+					values: [
+						{ key: "page x", value: "page x" },
+						{ key: "block y", value: "block y" },
+					]
+				}				
+				]
+		});
+		roam42.wB.tribute.attach(document.getElementById("roam42-wB-input"));
+
+		document.getElementById("roam42-wB-input").addEventListener("tribute-replaced", function(e) {
+				console.log( "Original event that triggered text replacement:", e.detail.event );
+				console.log("Matched item:", e.detail.item);
+		});
+
 
 		Mousetrap.unbind( roam42.wB.keyboardShortcut ); //do this in case of a reset
 		Mousetrap.bind( roam42.wB.keyboardShortcut ,()=>{ 
@@ -124,8 +104,12 @@
 			document.activeElement.selectionEnd   = roam42.wB.triggeredState.activeElementSelectionEnd;
 		};
 
+		let inputFieldKeyListener = (e)=>{ 
+			if( e.key == 'Escape' )	inputFieldFocusOutListener();
+		}
+
 		let inputFieldFocusOutListener = (e)=>{ 
-			if(roam42.wB.UI_Visible) {
+			if(roam42.wB.UI_Visible ) {
 				roam42.wB.toggleVisible();
 				if( roam42.wB.triggeredState.activeElementId != null ) setTimeout(async ()=>{restoreCurrentBlockSelection()}, 200);
 			}
@@ -133,15 +117,20 @@
 
 		try{ document.querySelector('#roam42-wB-input').removeEventListener('focusout', inputFieldFocusOutListener) } catch(e) {};
 		document.querySelector('#roam42-wB-input').addEventListener('focusout', inputFieldFocusOutListener);
+		try{ document.querySelector('#roam42-wB-input').removeEventListener('keydown', inputFieldKeyListener) } catch(e) {};
+		document.querySelector('#roam42-wB-input').addEventListener('keydown', inputFieldKeyListener);
 
 		roam42.wB.toggleVisible = async ()=> {
 			const wbControl = document.querySelector('#roam42-wB-container');
 			if(roam42.wB.UI_Visible) {
-				$(`#roam42-wB-input`).typeahead('val', '');
+				//roam42.wB.tribute.detach(document.getElementById("roam42-wB-input"));
 				wbControl.style.visibility='hidden';
+				document.querySelector('#roam42-wB-input').value = '';
 			} else {
 				wbControl.style.visibility='visible';
 				document.querySelector('#roam42-wB-input').focus();
+				//setTimeout(()=>				roam42.wB.tribute.showMenuForCollection(document.getElementById("roam42-wB-input")), 100);
+			//	roam42.wB.tribute.showMenuForCollection(document.getElementById("roam42-wB-input"),true);
 			}
 			roam42.wB.UI_Visible = !roam42.wB.UI_Visible;
 		}

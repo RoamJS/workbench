@@ -41,6 +41,7 @@
 		if( openInSideBar==false ) 
 			document.location.href= this.baseUrl().href + '/' + uid;
 		else {
+			console.log( { "block-uid": uid, type: sSidebarType } )
 			await roamAlphaAPI.ui.rightSidebar.addWindow( { window: { "block-uid": uid, type: sSidebarType }} );
 		}
 	}, //navigateUIToDate

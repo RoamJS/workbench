@@ -144,6 +144,8 @@
                              help:'<b>GOTOBLOCK</b><br/>Subcommand works with OPENPAGE and SIDEBARWINDOWOPEN <br/><br/>1. set to 1 for first block, set to -1 for last lock '});
       valueArray.push({key: '<% GRAPH %> (SmartBlock Command)',               icon:'gear', value: '<%GRAPH%>',               processor:'static',
                              help:'<b>GRAPH</b><br/>Subcommand for SIDEBARWINDOWOPEN to open as a graph'});
+      // valueArray.push({key: '<% MENTIONS %> (SmartBlock Command)',               icon:'gear', value: '<%MENTIONS%>',               processor:'static',
+      //                        help:'<b>MENTIONS</b><br/>Subcommand for SIDEBARWINDOWOPEN to open as a mentions of current page or tag'});
       valueArray.push({key: '<% TIME %> (SmartBlock Command)',               icon:'gear', value: '<%TIME%>',               processor:'static',
                              help:'<b>TIME</b><br/>Returns time in 24 hour format'});
       valueArray.push({key: '<% TIMEAMPM: %> (SmartBlock Command)',           icon:'gear', value: '<%TIMEAMPM%>',           processor:'static',
@@ -474,6 +476,8 @@
           let commandToProcess = match.replace('<%SIDEBARWINDOWOPEN:','').replace('%>','').trim();
 					if(textToProcess.includes('<%GRAPH%>'))
 						await roam42.common.navigateUiTo(commandToProcess, true, 'graph');	
+					// else if(textToProcess.includes('<%MENTIONS%>'))
+						// await roam42.common.navigateUiTo(commandToProcess, true, 'mentions');	
 					else
 						await roam42.common.navigateUiTo(commandToProcess, true);
 					await roam42.common.sleep(500);
