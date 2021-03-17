@@ -55,18 +55,13 @@
 
 		$('#roam42-wB-input').typeahead(
 			{ hint: true, highlight: true, minLength: 0, autoselect: true },
-			{ name: 'basicnav', display: 'display', limit:25, async: true, 
+			{ name: 'basicnav', display: 'display', limit: 10, async: true, 
 				source: async (query, syncResults, asyncResults)=> {
 									var results = [];
 									if( query.length == 0 ) {
 											let context = '*'; //default to anywhere
 											for await (source of await roam42.wB._sources)
 												await source.sourceCallBack(context, query, results);
-										// iMax = roam42.wB._commands.length<25 ? roam42.wB._commands.length-1 : 25;
-										// for(let i = 0; i < iMax; i++) {
-										// 	if( roam42.wB._commands[i].context == '*' )
-										// 		await results.push(roam42.wB._commands[i]);
-										// }
 									} else {
 										if(roam42.wB._sources.length>0) {
 											let context = '*'; //default to anywhere
@@ -244,10 +239,9 @@
 				roam42.wB.commandAddRunFromAnywhere("Graph Overview", ()=>{document.location.href=roam42.common.baseUrl().href.replace('page','') + '/graph'});
 				roam42.wB.commandAddRunFromAnywhere("Right Sidebar - close window panes (rscwp)", async ()=>{ 
 					await roam42KeyboardLib.pressEsc(100);
-					if(roam42.wB.triggeredState.activeElementId != null) {
-						await roam42.common.rightSidebarClose(0, false); 
-						await restoreCurrentBlockSelection(); 
-					}
+					await roam42KeyboardLib.pressEsc(100);
+					await roam42.common.rightSidebarClose(0, false); 
+					await restoreCurrentBlockSelection(); 
 				});
 				roam42.wB.commandAddRunFromAnywhere("Sidebars - open both (sob)", async ()=>{  
 					await roamAlphaAPI.ui.rightSidebar.open();
@@ -297,7 +291,7 @@
 				roam42.wB.commandAddRunFromBlock('Copy Block Reference - Jump Nav (Meta-j r)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j r')} );
 				roam42.wB.commandAddRunFromBlock('Copy Block Reference as alias - Jump Nav (Meta-j s)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j s')} );
 
-				roam42.wB.commandAddRunFromAnywhere("Reload workBench (rw)", ()=>{ roam42.wB.testReload() });
+				roam42.wB.commandAddRunFromAnywhere("Reload workBench (rwb)", ()=>{ roam42.wB.testReload() });
 
 		
 	} // End of INITIALIZE
