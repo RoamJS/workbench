@@ -1,7 +1,7 @@
 // workBench	
 // Typeahead based on: https://github.com/corejavascript/typeahead.js/
 
-(async ()=>{
+{
   roam42.wB = {};
 	roam42.wB.enabled = false;
 	roam42.wB.active  = false;
@@ -14,6 +14,8 @@
 			return;
 		else
 			roam42.wB.enabled = true;
+
+		roam42.loader.addScriptToPage( 'workBenchPath',     roam42.host + 'ext/workBenchPath.js'   );
 
 		roam42.wB.getIsEnabled = ()=> {
 			if( Cookies.get('wB_IsEnabled') === 'true' )
@@ -75,25 +77,57 @@
 									asyncResults( results );
 								}			
 			 }
-		);
+		).on('keydown', this, function (event) {
+			console.log(event.key, event.keyCode )
+    });
 
-		// perform command
 		$('#roam42-wB-input').bind('typeahead:select',  
 				(ev, suggestion)=> {
-					$('#roam42-wB-input').typeahead('close');
-					roam42.wB.toggleVisible();
-					setTimeout( async()=>{
-						switch(suggestion.context) {
-							case '-': //textarea block edit
-								await roam42KeyboardLib.pressEsc(100);
-								await restoreCurrentBlockSelection();
-								break
-							case '+': //multipe blocks selected
-								break
-						}
-						await suggestion.cmd(suggestion);
-					},200);
+					console.log('select')
+					// console.log(ev)
+					// console.log(suggestion)
 		});
+
+		$('#roam42-wB-input').bind('typeahead:autocomplete',  
+				(ev, suggestion)=> {
+					console.log('autocomplete	')
+					// console.log(ev)
+					// console.log(suggestion)
+		});
+
+		$('#roam42-wB-input').bind('typeahead:change',  
+				(ev, suggestion)=> {
+					console.log('change	')
+					// console.log(ev)
+					// console.log(suggestion)
+		});
+
+		$('#roam42-wB-input').bind('typeahead:close',  
+				(ev, suggestion)=> {
+					console.log('close	')
+					// console.log(ev)
+					// console.log(suggestion)
+		});
+
+		// perform command
+		// $('#roam42-wB-input').bind('typeahead:select',  
+		// 		(ev, suggestion)=> {
+		// 			console.log(ev)
+		// 			console.log(suggestion)
+		// 			$('#roam42-wB-input').typeahead('close');
+		// 			roam42.wB.toggleVisible();
+		// 			setTimeout( async()=>{
+		// 				switch(suggestion.context) {
+		// 					case '-': //textarea block edit
+		// 						await roam42KeyboardLib.pressEsc(100);
+		// 						await restoreCurrentBlockSelection();
+		// 						break
+		// 					case '+': //multipe blocks selected
+		// 						break
+		// 				}
+		// 				await suggestion.cmd(suggestion);
+		// 			},200);
+		// });
 
 		$('#roam42-wB-input').on('keydown', function(e) { roam42.wB.keystate = e; if(e.key == 'Escape') inputFieldFocusOutListener(); } );
 
@@ -129,8 +163,20 @@
 			}
 		};
 
+		let inputFieldKeyListener = (e)=>{ 
+			if(roam42.wB.UI_Visible) {
+				if(e.keyCode == 9) { //tab key
+					console.log('tab')
+					event.preventDefault();
+				}
+			}
+		};
+
 		try{ document.querySelector('#roam42-wB-input').removeEventListener('focusout', inputFieldFocusOutListener) } catch(e) {};
 		document.querySelector('#roam42-wB-input').addEventListener('focusout', inputFieldFocusOutListener);
+
+		try{ document.querySelector('#roam42-wB-input').removeEventListener('keydown', inputFieldKeyListener) } catch(e) {};
+		document.querySelector('#roam42-wB-input').addEventListener('keydown', inputFieldKeyListener);
 
 		roam42.wB.toggleVisible = async ()=> {
 			const wbControl = document.querySelector('#roam42-wB-container');
@@ -369,4 +415,4 @@
 		},1000);
   }
 
-})();
+};
