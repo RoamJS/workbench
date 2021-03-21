@@ -67,9 +67,9 @@
 									} else {
 										if(roam42.wB._sources.length>0) {
 											let context = '*'; //default to anywhere
+											console.log('selected ' + roam42.wB.triggeredState.selectedNodes.length )
 											if( roam42.wB.triggeredState.activeElementId != null) context ='-'; //context: textarea
 											if( roam42.wB.triggeredState.selectedNodes.length > 0) context ='+'; //context: multiple nodes
-											// await roam42.wB._sources.forEach(async(source)=>{ await source.sourceCallBack(context, query, results) } );
 											for await (source of await roam42.wB._sources)
 												await source.sourceCallBack(context, query, results);
 										}
@@ -93,9 +93,9 @@
 							case '-': //textarea block edit
 								await roam42KeyboardLib.pressEsc(100);
 								await restoreCurrentBlockSelection();
-								break
+								break;
 							case '+': //multipe blocks selected
-								break
+								break;
 						}
 						await suggestion.cmd(suggestion);
 					},200);
@@ -117,7 +117,9 @@
 				roam42.wB.triggeredState.activeElementSelectionStart = document.activeElement.selectionStart;
 				roam42.wB.triggeredState.activeElementSelectionEnd   = document.activeElement.selectionEnd;
 				roam42.wB.triggeredState.selectedNodes = document.querySelectorAll('.block-highlight-blue .roam-block');	
-				roam42.wB.toggleVisible(); 
+				if(roam42.wB.triggeredState.selectedNodes.length>0)
+					roam42KeyboardLib.pressEsc(100);
+				setTimeout(()=>roam42.wB.toggleVisible(),100);
 			return false; 
 		});
 
@@ -206,21 +208,6 @@
 				}
 			});
 
-			await roam42.wB.sourceAdd( "Page Name Navigation Commands", async (context, query, results)=>{
-					let pagequery = `[:find ?title ?uid
-													:in $ ?title-fragment
-													:where  [?e :node/title ?title]
-																	[(re-pattern ?title-fragment) ?re]
-																	[(re-find ?re ?title)]
-																	[?e :block/uid ?uid]]`;
-					let pages = await window.roamAlphaAPI.q(pagequery,'(?i)'+query);
-					if(pages && pages.length>0)
-						for await (page of pages) 
-							await results.push( {display: page[0], cmd: async (cmdInfo)=> roam42.common.navigateUiTo(cmdInfo.display, roam42.wB.keystate.shiftKey),  
-																	 context: '*', pageInfo: page} );
-			});
-
-
 		// Commands ===================================
 
 			// Format for command array
@@ -246,7 +233,7 @@
 			}
 
 			roam42.wB.commandAddRunFromMultiBlockSelection = ( textToDisplay, callbackFunction )=> {
-				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), cmd: callbackFunction, context: '-' } );
+				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), cmd: callbackFunction, context: '+' } );
 			}
 
 
@@ -292,19 +279,20 @@
 					}
 				});
 				const moveBlocks = async (destinationUID)=> {
-					console.log('moveBlocks ' + destinationUID);
+					console.log('moveBlocks ' + destinationUID, roam42.wB.triggeredState.selectedNodes.length);
 					if(roam42.wB.triggeredState.activeElementId!=null || roam42.wB.triggeredState.selectedNodes != null) {
 						if( roam42.wB.triggeredState.selectedNodes.length>0) {
 							//multipblock selected
+							let navUid = roam42.wB.triggeredState.selectedNodes[0].id.slice(-9);
+							console.log('navUid',navUid);
+							roam42.common.moveBlock(destinationUID, 100000, navUid);
 
 						} else {
 							//single block move
-							roam42.common.moveBlock = async (destinationUID, 100000, roam42.wB.triggeredState.activeElementId.slice(-9));
+							if(destinationUID!=roam42.wB.triggeredState.activeElementId.slice(-9))
+								roam42.common.moveBlock(destinationUID, 100000, roam42.wB.triggeredState.activeElementId.slice(-9));
 						}
 					}
-
-						// roam42.wB.triggeredState.activeElementId  = null;
-						// roam42.wB.triggeredState.selectedNodes  = null;	
 
 				}; 
 				roam42.wB.commandAddRunFromMultiBlockSelection('Move Block(s)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid)}) });

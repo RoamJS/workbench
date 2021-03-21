@@ -111,6 +111,7 @@
 			 }
 		).on('keydown', this, function (event) {
 			if(event.key=='Tab') {
+					event.preventDefault();
 					if(roam42.wB.path.trailUID == null || roam42.wB.path.trailUID.length == 0) return;
 					let outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1];
 					let outputText = roam42.wB.path.trailString[roam42.wB.path.trailString.length-1];
