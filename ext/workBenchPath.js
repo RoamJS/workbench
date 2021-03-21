@@ -1,32 +1,43 @@
 // workBenchPath
+// roam42.wB.path
+//		.initialize() - configures environment by calling appendCP_HTML_ToBody & typeAheadCreate
+//		.typeAheadCreate() - configures typeahead (Presentation, data sources, and event handling)
+//		Data source functions:
+//		.levelPages - returns page names
+//		.levelBlocks - returns blocks at the current level. As user drills down throgh block strucure, the UID of one 
+//									 block is passed to the next until it reaches the last block in the branch
+//	   .formatPathDisplay - displays in the header of this control the current location in the path
 
 {
-	console.log('roam42.wB.path')
 	roam42.wB.path = {};
 
 	roam42.wB.path.initialize = async ()=> {
 		roam42.wB.path.level = 0;		// tracks level of path nav. 0 is page level, 1 is child blocks		
 		roam42.wB.path.UI_Visible = false;
-		roam42.wB.path.trailUID 	 = null; //UID path
-		roam42.wB.path.trailString = null; //string path
+		roam42.wB.path.trailUID 	 = null; //UID path stored as an array
+		roam42.wB.path.trailString = null; //string path stored as an array (same number index as roam42.wb.path.trailUID)
+		roam42.wB.path.callBack    = null; //passes in 4 values: Last UID, last string, UID path and String Path
+
+		roam42.wB.path.launch = (callBackFunction)=> {
+			roam42.wB.path.level = 0;	//reset path level
+			roam42.wB.path.trailUID 	 = null; //UID path
+			roam42.wB.path.trailString = null; //string path
+			roam42.wB.path.callBack = callBackFunction;
+			roam42.wB.path.toggleVisible();
+		};
 
 		await appendCP_HTML_ToBody();
 
 		await typeAheadCreate();
 
 		roam42.wB.path.toggleVisible = async ()=> {
-			const wbControl = document.querySelector('#roam42-wB-path-container');
+			const wControl = document.querySelector('#roam42-wB-path-container');
 			if(roam42.wB.path.UI_Visible) {
-				roam42.wB.path.trailUID 	 = null; //UID path
-				roam42.wB.path.trailString = null; //string path
 				$(`#roam42-wB-path-input`).typeahead('val', '');
-				// $(`#roam42-wB-path-input`).typeahead('close');
 				$(`#roam42-wB-path-PathDisplay`).text('>');
-				wbControl.style.visibility='hidden';
+				wControl.style.visibility='hidden';
 			} else {
-				// $(`#roam42-wB-path-input`).typeahead('close');
-				roam42.wB.path.level = 0;	//reset path level
-				wbControl.style.visibility='visible';
+				wControl.style.visibility='visible';
 				document.querySelector('#roam42-wB-path-input').focus();
 			}
 			roam42.wB.path.UI_Visible = !roam42.wB.path.UI_Visible;
@@ -51,6 +62,7 @@
 	};
 
 	const levelBlocks = async(query, results)=>{
+		//shows all the child blocks of UID from roam42.wB.path.trailUID
 		if(roam42.wB.path.trailUID == null || roam42.wB.path.trailUID.length==0) return; 
 		const blocksAtThisLevel = (await roam42.common.getBlockInfoByUID(
 																			roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1],true))[0][0].children;	
@@ -63,6 +75,24 @@
 				} else if( block.string.toLowerCase().includes( query.toLowerCase()) )
 					await results.push( {display: block.string.substring(0,400), uid: block.uid  } );
 			}
+		}
+	};
+
+	const formatPathDisplay = ()=> {
+		if(roam42.wB.path.trailString != null && roam42.wB.path.trailString.length>0) {
+			let output = roam42.wB.path.trailString.join(' > ');
+			if(output.length > 70){
+				output = roam42.wB.path.trailString[0] + ' * > '.repeat(roam42.wB.path.trailString.length-2) 
+											  + roam42.wB.path.trailString[roam42.wB.path.trailString.length-1] ;				
+			}
+			if(output.length > 70){
+				output = roam42.wB.path.trailString[0].substring(0,25) + '... > * > ' + 
+											   roam42.wB.path.trailString[roam42.wB.path.trailString.length-1].substring(0,35);				
+			}
+			
+			$(`#roam42-wB-path-PathDisplay`).text( output );
+		}	else {
+			$(`#roam42-wB-path-PathDisplay`).text('path > ');
 		}
 	};
 
@@ -80,31 +110,55 @@
 								}			
 			 }
 		).on('keydown', this, function (event) {
-			//remove last block in path if backspace pressed (and nothing in block)
-			if(	event.key == 'Backspace' && roam42.wB.path.trailUID.length > 0 && document.getElementById('roam42-wB-path-input').value.length==0) { 
-				event.preventDefault();
-				roam42.wB.path.trailString.pop();
-				roam42.wB.path.trailUID.pop();
-				if(roam42.wB.path.trailUID.length==0) roam42.wB.path.level = 0;
-				formatPathDisplay();
-				//following lines handles bug in typeahead not refreshing new data SOURCES
-				//be VERY Careful when changing
-				//START FIX
-				$('#roam42-wB-path-input').typeahead('val', '-');
-				setTimeout(async ()=>{
-					$('#roam42-wB-path-input').typeahead('val', '');
-					$('#roam42-wB-path-input').focus();
-				},10);
-				//END FIX
-			} else if(event.key=='Escape') {
-				event.stopPropagation();
-				roam42.wB.path.level = 0;
-				setTimeout( ()=>{ roam42.wB.path.toggleVisible() },10);
-				setTimeout( ()=>{ $('#roam42-wB-path-input').typeahead('val', '-'); },50);				
-				setTimeout( ()=>{
-					$('#roam42-wB-path-input').typeahead('val', '');
-					$('#roam42-wB-path-input').focus();
-				},100);
+			if(event.key=='Tab') {
+					if(roam42.wB.path.trailUID == null || roam42.wB.path.trailUID.length == 0) return;
+					let outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1];
+					let outputText = roam42.wB.path.trailString[roam42.wB.path.trailString.length-1];
+					roam42.wB.path.level = 0;
+					roam42.wB.path.toggleVisible();
+					//following lines handles bug in typeahead not refreshing new data SOURCES
+					//be VERY Careful when changing
+					//START FIX
+					setTimeout( ()=>{ $('#roam42-wB-path-input').typeahead('val', '-') },50);
+					setTimeout(async ()=>{
+						$('#roam42-wB-path-input').typeahead('val', '');
+						$('#roam42-wB-path-input').focus();
+					},100);
+					//END FIX
+					setTimeout ( async ()=>{
+						//Execute CALLBACK function here
+						if(roam42.wB.path.callBack!==null)
+							await roam42.wB.path.callBack(outputUID, outputText, roam42.wB.path.trailUID,roam42.wB.path.trailString);
+						roam42.wB.path.callBack = null;
+					},150);
+
+			} else if ( 			
+				(event.key == 'Backspace' && roam42.wB.path.trailUID.length > 0 && document.getElementById('roam42-wB-path-input').value.length==0)
+				|| (event.key == 'Backspace' && (event.ctrlKey == true || event.metaKey == true)) ) { 
+					//remove last block in path if backspace pressed (and nothing in block)	
+					event.preventDefault();
+					roam42.wB.path.trailString.pop();
+					roam42.wB.path.trailUID.pop();
+					if(roam42.wB.path.trailUID.length==0) roam42.wB.path.level = 0;
+					formatPathDisplay();
+					//following lines handles bug in typeahead not refreshing new data SOURCES
+					//be VERY Careful when changing
+					//START FIX
+					$('#roam42-wB-path-input').typeahead('val', '-');
+					setTimeout(async ()=>{
+						$('#roam42-wB-path-input').typeahead('val', '');
+						$('#roam42-wB-path-input').focus();
+					},10);
+					//END FIX
+				} else if(event.key=='Escape') {
+					event.stopPropagation();
+					roam42.wB.path.level = 0;
+					setTimeout( ()=>{ roam42.wB.path.toggleVisible() },10);
+					setTimeout( ()=>{ $('#roam42-wB-path-input').typeahead('val', '-'); },50);				
+					setTimeout( ()=>{
+						$('#roam42-wB-path-input').typeahead('val', '');
+						$('#roam42-wB-path-input').focus();
+					},100);
 			}
     });
 
@@ -146,101 +200,76 @@
 		try{ document.querySelector('#roam42-wB-path-input').removeEventListener('focusout', inputFieldFocusOutListener) } catch(e) {};
 		document.querySelector('#roam42-wB-path-input').addEventListener('focusout', inputFieldFocusOutListener);
 
-		Mousetrap.unbind( 'ctrl ctrl' ); //do this in case of a reset
-		Mousetrap.bind( 'ctrl ctrl' ,()=>{ 
-				roam42.wB.path.toggleVisible(); 
-			return false; 
-		});
-
 	};
 
-	const formatPathDisplay = ()=> {
-		if(roam42.wB.path.trailString != null && roam42.wB.path.trailString.length>0) {
-			let output = roam42.wB.path.trailString.join(' > ');
-			if(output.length > 70){
-				output = roam42.wB.path.trailString[0] + ' * > '.repeat(roam42.wB.path.trailString.length-2) 
-											  + roam42.wB.path.trailString[roam42.wB.path.trailString.length-1] ;				
-			}
-			if(output.length > 70){
-				output = roam42.wB.path.trailString[0].substring(0,25) + '... > * > ' + 
-											   roam42.wB.path.trailString[roam42.wB.path.trailString.length-1].substring(0,35);				
-			}
-			
-			$(`#roam42-wB-path-PathDisplay`).text( output );
-		}	else {
-			$(`#roam42-wB-path-PathDisplay`).text('path > ');
-		}
-	};
+	const appendCP_HTML_ToBody = ()=> {
+		$(document.body).append(`
+			<div id="roam42-wB-path-container" style="visibility:hidden">
+				<div id="roam42-wB-path-PathDisplay">></div>
+				<div><input class="typeahead" id="roam42-wB-path-input" type="text"></div>
+			</div>
+			<style id="roam42-wB-path-container-style">
+				#roam42-wB-path-container {
+					position: absolute;
+					left: 50%;
+					top:0px;
+					transform: translate(-50%, 0%);
+					border: 4px solid DarkSlateGray;
+					background-color: DarkSlateGray;
+					box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+					height: 50px;
+					width:450px;
+					z-index: 1000;
+				}
+				#roam42-wB-path-PathDisplay {				
+					color: #ddd;
+					font-size: 10pt;
+					height:14pt;
+					padding-left:3px;
+					position: relative;
+					top:-2px;
+				}
 
-	// HTML Body ===================================
-		const appendCP_HTML_ToBody = ()=> {
-			$(document.body).append(`
-				<div id="roam42-wB-path-container" style="visibility:hidden">
-					<div id="roam42-wB-path-PathDisplay">></div>
-					<div><input class="typeahead" id="roam42-wB-path-input" type="text"></div>
-				</div>
-				<style id="roam42-wB-path-container-style">
-					#roam42-wB-path-container {
-						position: absolute;
-						left: 50%;
-						top:0px;
-						transform: translate(-50%, 0%);
-						border: 4px solid DarkSlateGray;
-						background-color: DarkSlateGray;
-						box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
-						height: 50px;
-						width:450px;
-						z-index: 1000;
-					}
-					#roam42-wB-path-PathDisplay {				
-						color: #ddd;
-						font-size: 10pt;
-						height:14pt;
-						padding-left:3px;
-						position: relative;
-						top:-2px;
-					}
+				#roam42-wB-path-container .typeahead {
+					line-height:12px !important;
+					font-size: 10pt !important;
+					height: 14px !important;
+					border-radius: 0px;
+					width: 443px;
+					padding-left: 3px !important;
+					background-color: #777;
+					color: #ddd !important;
+				}
 
-					#roam42-wB-path-container .typeahead {
-						line-height:12px !important;
-						font-size: 10pt !important;
-						height: 14px !important;
-						border-radius: 0px;
-						width: 443px;
-						padding-left: 3px !important;
-						background-color: #777;
-						color: #ddd !important;
-					}
+				#roam42-wB-path-container .tt-input:focus {
+					border-color: #777 !important;
+				}
 
-					#roam42-wB-path-container .tt-input:focus {
-						border-color: #777 !important;
-					}
+				#roam42-wB-path-container .tt-menu {
+					background-color: DarkSlateGray;
+					border-radius: 0px; !important;
+					box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33) !important;
+					color: #ddd !important;
+					top: 12px !important;
+					left:-4px !important;
+					padding-top: 0px !important;
+					padding-bottom: 0px !important;
+					width:450px;
+				}
 
-					#roam42-wB-path-container .tt-menu {
-						background-color: DarkSlateGray;
-						border-radius: 0px; !important;
-						box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33) !important;
-						color: #ddd !important;
-						top: 12px !important;
-						left:-4px !important;
-						padding-top: 0px !important;
-						padding-bottom: 0px !important;
-						width:450px;
-					}
+				#roam42-wB-path-container .tt-highlight {
+					background-color: DarkSlateGray !important
+				}
+				
+				#roam42-wB-path-container .tt-suggestion {
+					line-height:12px;
+					font-size: 10pt;
+					padding-left: 7px !important;
+				}
 
-					#roam42-wB-path-container .tt-highlight {
-						background-color: DarkSlateGray !important
-					}
-					
-					#roam42-wB-path-container .tt-suggestion {
-						line-height:12px;
-						font-size: 10pt;
-						padding-left: 7px !important;
-					}
-
-			</style>`);
+		</style>`);
 	
-	}; //end of module
+	};  //end of appendCP_HTML_ToBody
 
 	roam42.wB.path.initialize();
   roam42.wB.path.testReload = ()=>{
@@ -250,7 +279,11 @@
 		try{ document.querySelector('#roam42-wB-path-container-style').remove() } catch(e) {};
 		setTimeout(async ()=>{
 	    roam42.loader.addScriptToPage( "workBenchPath", roam42.host + 'ext/workBenchPath.js');
-		},1000);
+		},4000);
   };
 
+  roam42.wB.path.fromwB_TestReload = ()=>{
+		try{ document.querySelector('#roam42-wB-path-container').remove() } catch(e) {};
+		try{ document.querySelector('#roam42-wB-path-container-style').remove() } catch(e) {};
+  };
 };
