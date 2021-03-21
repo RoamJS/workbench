@@ -67,9 +67,8 @@
 									} else {
 										if(roam42.wB._sources.length>0) {
 											let context = '*'; //default to anywhere
-											console.log('selected ' + roam42.wB.triggeredState.selectedNodes.length )
 											if( roam42.wB.triggeredState.activeElementId != null) context ='-'; //context: textarea
-											if( roam42.wB.triggeredState.selectedNodes.length > 0) context ='+'; //context: multiple nodes
+											if( roam42.wB.triggeredState.selectedNodes != null) context ='+'; //context: multiple nodes
 											for await (source of await roam42.wB._sources)
 												await source.sourceCallBack(context, query, results);
 										}
@@ -84,8 +83,6 @@
 		// perform command
 		$('#roam42-wB-input').bind('typeahead:select',  
 				(ev, suggestion)=> {
-					console.log(ev)
-					console.log(suggestion)
 					$('#roam42-wB-input').typeahead('close');
 					roam42.wB.toggleVisible();
 					setTimeout( async()=>{
@@ -116,8 +113,15 @@
 				roam42.wB.triggeredState.activeElementId = document.activeElement.type == 'textarea' ? document.activeElement.id : null;
 				roam42.wB.triggeredState.activeElementSelectionStart = document.activeElement.selectionStart;
 				roam42.wB.triggeredState.activeElementSelectionEnd   = document.activeElement.selectionEnd;
-				roam42.wB.triggeredState.selectedNodes = document.querySelectorAll('.block-highlight-blue .roam-block');	
-				if(roam42.wB.triggeredState.selectedNodes.length>0)
+				roam42.wB.triggeredState.selectedNodes = null;
+				for(i=0;i<30;i++){
+					let lvl = document.querySelectorAll(`.rm-level-${i} > .block-highlight-blue`);	
+					if(lvl.length>0) {
+						roam42.wB.triggeredState.selectedNodes  = lvl;
+						break;
+					}
+				}
+				if(roam42.wB.triggeredState.selectedNodes != null)
 					roam42KeyboardLib.pressEsc(100);
 				setTimeout(()=>roam42.wB.toggleVisible(),100);
 			return false; 
@@ -278,24 +282,81 @@
 						await restoreCurrentBlockSelection(); 
 					}
 				});
-				const moveBlocks = async (destinationUID)=> {
-					console.log('moveBlocks ' + destinationUID, roam42.wB.triggeredState.selectedNodes.length);
-					if(roam42.wB.triggeredState.activeElementId!=null || roam42.wB.triggeredState.selectedNodes != null) {
-						if( roam42.wB.triggeredState.selectedNodes.length>0) {
-							//multipblock selected
-							let navUid = roam42.wB.triggeredState.selectedNodes[0].id.slice(-9);
-							console.log('navUid',navUid);
-							roam42.common.moveBlock(destinationUID, 100000, navUid);
-
+				const moveBlocks = async (destinationUID, iLocation, zoom=0)=> {
+					//zoom  = 0  do nothing, 1 move blocks opened in sidebar, 2, zoomed in main window
+					let zoomUID = 0;
+					if( roam42.wB.triggeredState.selectedNodes != null) {
+						if(iLocation==0) { //adding to top
+							for(i=roam42.wB.triggeredState.selectedNodes.length-1; i>=0; i--) 
+								roam42.common.moveBlock(destinationUID, iLocation, roam42.wB.triggeredState.selectedNodes[i].querySelector('.rm-block-text').id.slice(-9));
 						} else {
-							//single block move
-							if(destinationUID!=roam42.wB.triggeredState.activeElementId.slice(-9))
-								roam42.common.moveBlock(destinationUID, 100000, roam42.wB.triggeredState.activeElementId.slice(-9));
+							for(i=0; i<=roam42.wB.triggeredState.selectedNodes.length-1; i++) 
+								roam42.common.moveBlock(destinationUID, iLocation, roam42.wB.triggeredState.selectedNodes[i].querySelector('.rm-block-text').id.slice(-9));
+						}
+						zoomUID = roam42.wB.triggeredState.selectedNodes[0].id.slice(-9);	
+					}
+					else if(roam42.wB.triggeredState.activeElementId!=null) {
+						if(destinationUID!=roam42.wB.triggeredState.activeElementId.slice(-9)) {//single block move
+							let uid = roam42.wB.triggeredState.activeElementId.slice(-9);
+							roam42.common.moveBlock(destinationUID, iLocation, uid);
+							zoomUID = uid;
 						}
 					}
-
+					console.log('zoom '+ zoom, 'zoomUID '+ zoomUID)
+					if(zoom==1 && zoomUID !=0) //open in  side bar
+						roam42.common.navigateUiTo(zoomUID, true, 'block');
+					else if(zoom==2 && zoomUID !=0) //jump to in main page
+						roam42.common.navigateUiTo(zoomUID, false);
 				}; 
-				roam42.wB.commandAddRunFromMultiBlockSelection('Move Block(s)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid)}) });
+				const excludeSelectedBlocks = ()=>{
+					let nodes = [];
+					if(roam42.wB.triggeredState.activeElementId != null)
+						nodes = [roam42.wB.triggeredState.activeElementId.slice(-9)];
+					else if(roam42.wB.triggeredState.selectedNodes != null) 
+						for (node of roam42.wB.triggeredState.selectedNodes)
+							nodes.push(node.querySelector('.rm-block-text').id.slice(-9));
+					return nodes;
+				};
+				//move block
+				roam42.wB.commandAddRunFromBlock('Move Block - to bottom (mbb)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000)}, excludeSelectedBlocks()) });
+				roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to bottom (mbb)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000)}, excludeSelectedBlocks()) });
+				roam42.wB.commandAddRunFromBlock('Move Block - to top (mbt)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0)}, excludeSelectedBlocks())});
+				roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to top (mbt)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0)}, excludeSelectedBlocks())});				
+				//move block & zoom
+				roam42.wB.commandAddRunFromBlock('Move Block - to bottom & zoom (mbbz)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000, 2)}, excludeSelectedBlocks()) });
+				roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to bottom & zoom (mbbz)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000,2)}, excludeSelectedBlocks()) });
+				roam42.wB.commandAddRunFromBlock('Move Block - to top & zoom (mbtz)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0, 2)}, excludeSelectedBlocks())});
+				roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to top & zoom (mbtz)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0, 2)}, excludeSelectedBlocks())});
+				//move block & sidebar
+				roam42.wB.commandAddRunFromBlock('Move Block - to bottom & sidebar (mbbs)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000, 1)}, excludeSelectedBlocks()) });
+				roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to bottom & sidebar (mbbs)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000,1)}, excludeSelectedBlocks()) });
+				roam42.wB.commandAddRunFromBlock('Move Block - to top & sidebar (mbts)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0, 1)}, excludeSelectedBlocks())});
+				roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to top & sidebar (mbts)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0, 1)}, excludeSelectedBlocks())});
+
+				const MoveBlockDNP =  async ()=>{ 
+					let dateExpression = prompt('Move this block to the top of what date?', 'Tomorrow');
+					if(dateExpression == null) return;
+					let parsedDate = roam42.dateProcessing.parseTextForDates(dateExpression)
+					if(parsedDate==dateExpression) { 
+						roam42.help.displayMessage('Invalid date: ' + dateExpression ,5000);
+						return;
+					} else
+						parsedDate = parsedDate.substring(2,parsedDate.length-3);
+					//move the block, and leave behind a block ref
+					let startingBlockUID = roam42.sb.startingBlockTextArea.slice(-9);
+					let destinationPage = await roam42.common.getPageUidByTitle(parsedDate);
+					if(destinationPage=='') {
+						//DNP does not exist, create it before going further
+						await roam42.common.createPage(parsedDate);
+						await roam42.common.sleep(50);
+						destinationPage = await roam42.common.getPageUidByTitle(parsedDate);
+					}
+					console.log('destinationPage',destinationPage, parsedDate)
+					setTimeout( ()=>{ roam42.wB.path.launch( (async (uid)=>{ moveBlocks(uid, 0, 0)}), excludeSelectedBlocks(), destinationPage, parsedDate ) },200);
+				};
+				roam42.wB.commandAddRunFromBlock('Move Block - DNP (mbd)', async ()=>{ MoveBlockDNP() } );
+				roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks - DNP (mbds)', async ()=>{ MoveBlockDNP() } );
+
 				try{ roam42.wB.commandAddRunFromAnywhere("Roam42 Privacy Mode (alt-shift-p)", roam42.privacyMode.toggle) } catch(e){};
 				try{ roam42.wB.commandAddRunFromAnywhere("Roam42 Converter (alt-m)", roam42.formatConverterUI.show) } catch(e){};
 				try{ roam42.wB.commandAddRunFromAnywhere("Roam42 Web View (alt-shift-m)", roam42.formatConverterUI.htmlview) } catch(e){};

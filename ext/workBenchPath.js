@@ -16,14 +16,28 @@
 		roam42.wB.path.UI_Visible = false;
 		roam42.wB.path.trailUID 	 = null; //UID path stored as an array
 		roam42.wB.path.trailString = null; //string path stored as an array (same number index as roam42.wb.path.trailUID)
+		roam42.wB.path.excludeUIDs = [];	 //array of UID to exclude in output
 		roam42.wB.path.callBack    = null; //passes in 4 values: Last UID, last string, UID path and String Path
 
-		roam42.wB.path.launch = (callBackFunction)=> {
+		roam42.wB.path.launch = (callBackFunction, excludeUIDs = [], startUID=null, startString=null)=> {			
 			roam42.wB.path.level = 0;	//reset path level
-			roam42.wB.path.trailUID 	 = null; //UID path
-			roam42.wB.path.trailString = null; //string path
+			roam42.wB.path.trailUID 	 = [startUID]; 		//UID path
+			roam42.wB.path.trailString = [startString]; //string path
+			roam42.wB.path.excludeUIDs = excludeUIDs;
 			roam42.wB.path.callBack = callBackFunction;
-			roam42.wB.path.toggleVisible();
+			if(startUID!=null)
+				roam42.wB.path.level=1;
+			formatPathDisplay();
+			//following lines handles bug in typeahead not refreshing new data SOURCES
+			//be VERY Careful when changing
+			//START FIX
+			setTimeout( ()=>{ $('#roam42-wB-path-input').typeahead('val', '-') },50);
+			setTimeout(async ()=>{
+				$('#roam42-wB-path-input').typeahead('val', '');
+				$('#roam42-wB-path-input').focus();
+				setTimeout(async ()=>{roam42.wB.path.toggleVisible()},150);
+			},100);
+
 		};
 
 		await appendCP_HTML_ToBody();
@@ -69,11 +83,13 @@
 		if(blocksAtThisLevel && blocksAtThisLevel.length>0)	{
 			const blocksAtThisLevelSort = await roam42.common.sortObjectsByOrder( blocksAtThisLevel );
 			for await (block of blocksAtThisLevelSort){
-				if(query.length==0) {
-					let blockString = block.string.trim().length==0 ? '-' : block.string.trim();
-					await results.push( {display: blockString.substring(0,400), uid: block.uid  } );
-				} else if( block.string.toLowerCase().includes( query.toLowerCase()) )
-					await results.push( {display: block.string.substring(0,400), uid: block.uid  } );
+				if( !roam42.wB.path.excludeUIDs.includes(block.uid) ){
+					if(query.length==0) {
+						let blockString = block.string.trim().length==0 ? '-' : block.string.trim();
+						await results.push( {display: blockString.substring(0,400), uid: block.uid  } );
+					} else if( block.string.toLowerCase().includes( query.toLowerCase()) )
+						await results.push( {display: block.string.substring(0,400), uid: block.uid  } );
+				}
 			}
 		}
 	};
@@ -110,11 +126,18 @@
 								}			
 			 }
 		).on('keydown', this, function (event) {
-			if(event.key=='Tab') {
+			if(event.key=='Tab' || ( event.key=='Enter' && event.ctrlKey==true )  ) {
 					event.preventDefault();
 					if(roam42.wB.path.trailUID == null || roam42.wB.path.trailUID.length == 0) return;
-					let outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1];
-					let outputText = roam42.wB.path.trailString[roam42.wB.path.trailString.length-1];
+					let outputUID = null;
+					let outputText = null;
+					if( (event.key=='Enter' && event.ctrlKey==true) && roam42.wB.path.trailUID.length>0  ) { // use the last selection as the lookup
+					 	outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-2];
+						outputText = roam42.wB.path.trailString[roam42.wB.path.trailString.length-2];
+					} else { //as tab use the current
+					 	outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1];
+						outputText = roam42.wB.path.trailString[roam42.wB.path.trailString.length-1];
+					}
 					roam42.wB.path.level = 0;
 					roam42.wB.path.toggleVisible();
 					//following lines handles bug in typeahead not refreshing new data SOURCES
@@ -132,7 +155,6 @@
 							await roam42.wB.path.callBack(outputUID, outputText, roam42.wB.path.trailUID,roam42.wB.path.trailString);
 						roam42.wB.path.callBack = null;
 					},150);
-
 			} else if ( 			
 				(event.key == 'Backspace' && roam42.wB.path.trailUID.length > 0 && document.getElementById('roam42-wB-path-input').value.length==0)
 				|| (event.key == 'Backspace' && (event.ctrlKey == true || event.metaKey == true)) ) { 
