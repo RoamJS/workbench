@@ -284,7 +284,24 @@
             </html>`;
   }
   
-  var output = '';
+  roam42.formatConverter.flatJson = async (uid, withIndents=false, formatOutputAsJsonString = true )=>{
+		//creates a very simple json output in the order of the document
+    var results = await roam42.common.getBlockInfoByUID(uid, true)
+    var jsonOutput = [];
+    //nodeCurrent, level, outputFunction, parent, flatten
+    await walkDocumentStructureAndFormat(results[0][0], 0, async (blockText, nodeCurrent, level, parent, flatten)=> {
+			let blockOutput = roamMarkupScrubber(blockText, true) 
+			if(withIndents==true) blockOutput = (level > 1 ?  '  '.repeat(level-1) + ' - '  : '+ ') + blockOutput ;
+			jsonOutput.push({ uid: nodeCurrent.uid.toString(), level: level, blockText: blockOutput });
+		}, null, false);
+		if(formatOutputAsJsonString == true)
+			output = JSON.stringify(jsonOutput,0,2);
+		else
+			output = jsonOutput; 
+    return output;
+  };
+
+	var output = '';
 
   roam42.formatConverter.iterateThroughTree = async (uid, formatterFunction, flatten )=>{
     var results = await roam42.common.getBlockInfoByUID(uid, true)
@@ -294,14 +311,17 @@
     return output;
   }
 
+
   window.roam42.formatConverter.testingReload = ()=>{
+		console.clear();
     roam42.loader.addScriptToPage( 'formatConverter', 	roam42.host + 'ext/formatConverter.js');
-    roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
+//    roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
     setTimeout( async ()=>{
       var uid = await roam42.common.currentPageUID();
-      var x =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.markdownGithub, false );
-      // console.log( x );
-    }, 600)
+      var x =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.simpleJson, false );
+      
+			//roam42.test 
+    }, 1000)
   }
 })();
 

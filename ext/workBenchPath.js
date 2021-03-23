@@ -9,6 +9,8 @@
 //	   .formatPathDisplay - displays in the header of this control the current location in the path
 
 {
+	//https://github.com/bvaughn/js-search
+	roam42.loader.addScriptToPage('js-search', 'https://cdn.jsdelivr.net/npm/js-search@2.0.0/dist/umd/js-search.min.js');
 	roam42.wB.path = {};
 
 	roam42.wB.path.initialize = async ()=> {
@@ -18,6 +20,8 @@
 		roam42.wB.path.trailString = null; //string path stored as an array (same number index as roam42.wb.path.trailUID)
 		roam42.wB.path.excludeUIDs = [];	 //array of UID to exclude in output
 		roam42.wB.path.callBack    = null; //passes in 4 values: Last UID, last string, UID path and String Path
+		roam42.wB.path.allPagesForGraphSearch = null; //search object for page names
+		roam42.wB.path.currentPageBlocks = null;	//search object for current page
 
 		roam42.wB.path.launch = (callBackFunction, excludeUIDs = [], startUID=null, startString=null)=> {			
 			roam42.wB.path.level = 0;	//reset path level
@@ -25,6 +29,8 @@
 			roam42.wB.path.trailString = [startString]; //string path
 			roam42.wB.path.excludeUIDs = excludeUIDs;
 			roam42.wB.path.callBack = callBackFunction;
+			roam42.wB.path.allPagesForGraphSearch = null;
+			roam42.wB.path.currentPageBlocks = null;
 			if(startUID!=null)
 				roam42.wB.path.level=1;
 			formatPathDisplay();
@@ -51,7 +57,14 @@
 				$(`#roam42-wB-path-PathDisplay`).text('>');
 				wControl.style.visibility='hidden';
 			} else {
+				roam42.wB.path.allPagesForGraphSearch = new JsSearch.Search('1');
+				roam42.wB.path.allPagesForGraphSearch.searchIndex = new JsSearch.UnorderedSearchIndex();
+				roam42.wB.path.allPagesForGraphSearch.indexStrategy = new JsSearch.AllSubstringsIndexStrategy();
+				roam42.wB.path.allPagesForGraphSearch.addDocuments( await window.roamAlphaAPI.q('[:find ?name ?uid :where [?page :node/title ?name] [?page :block/uid ?uid]]') );
+				roam42.wB.path.allPagesForGraphSearch.addIndex('0');
+				roam42.wB.path.currentPageBlocks = null;
 				wControl.style.visibility='visible';
+  			$(`#roam42-wB-path-PathDisplay`).text('Typing page name.... ');
 				document.querySelector('#roam42-wB-path-input').focus();
 			}
 			roam42.wB.path.UI_Visible = !roam42.wB.path.UI_Visible;
@@ -59,39 +72,64 @@
 		
 	} // End of INITIALIZE
 
+	
+	var allPagesForGraph = [];
 	// SOURCES ===================================
 
 	const levelPages = async(query, results)=>{
-		let pagequery = `[:find ?title ?uid
-										:in $ ?title-fragment
-										:where  [?e :node/title ?title]
-														[(re-pattern ?title-fragment) ?re]
-														[(re-find ?re ?title)]
-														[?e :block/uid ?uid]]`;
-		let pages = await window.roamAlphaAPI.q(pagequery,'(?i)'+query);		
-		if(pages && pages.length>0){
-			for await (page of pages) 
+		if(roam42.wB.path.allPagesForGraphSearch && roam42.wB.path.allPagesForGraphSearch._documents.length>0) {
+			for await (page of roam42.wB.path.allPagesForGraphSearch.search(query)) 
 				await results.push( {display: page[0].substring(0,255), uid: page[1]} );
-		}
+		};
+		await results.push( {display: 'Current page (cp)', uid: await roam42.common.currentPageUID() } );
+		await results.push( {display: 'Today DNP', uid: await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date())) } );
 	};
+
+	
+	
 
 	const levelBlocks = async(query, results)=>{
 		//shows all the child blocks of UID from roam42.wB.path.trailUID
 		if(roam42.wB.path.trailUID == null || roam42.wB.path.trailUID.length==0) return; 
-		const blocksAtThisLevel = (await roam42.common.getBlockInfoByUID(
-																			roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1],true))[0][0].children;	
-		if(blocksAtThisLevel && blocksAtThisLevel.length>0)	{
-			const blocksAtThisLevelSort = await roam42.common.sortObjectsByOrder( blocksAtThisLevel );
-			for await (block of blocksAtThisLevelSort){
-				if( !roam42.wB.path.excludeUIDs.includes(block.uid) ){
-					if(query.length==0) {
-						let blockString = block.string.trim().length==0 ? '-' : block.string.trim();
-						await results.push( {display: blockString.substring(0,400), uid: block.uid  } );
-					} else if( block.string.toLowerCase().includes( query.toLowerCase()) )
-						await results.push( {display: block.string.substring(0,400), uid: block.uid  } );
-				}
+		if(roam42.wB.path.currentPageBlocks == null) {
+			roam42.wB.path.currentPageBlocks =  new JsSearch.Search('uid');
+			roam42.wB.path.currentPageBlocks.searchIndex = new JsSearch.UnorderedSearchIndex();
+			roam42.wB.path.currentPageBlocks.indexStrategy = new JsSearch.AllSubstringsIndexStrategy();
+			roam42.wB.path.currentPageBlocks.sanitizer = new JsSearch.LowerCaseSanitizer();
+			roam42.wB.path.currentPageBlocks.addIndex('blockText');
+			roam42.wB.path.currentPageBlocks.addDocuments( await roam42.formatConverter.flatJson( roam42.wB.path.trailUID[0], withIndents=false, false ) );
+		}
+		if(roam42.wB.path.currentPageBlocks._documents.length==1) {  //no blocks, mimick empty block
+			await results.push( {display: '-', uid: roam42.wB.path.trailUID[0] } ); 
+		} else if(roam42.wB.path.currentPageBlocks && roam42.wB.path.currentPageBlocks._documents.length>0 && query.length > 0) {
+			for await (block of roam42.wB.path.currentPageBlocks.search(query)) {
+				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : '-';
+				await results.push( {display: blockOutput, uid: block.uid } );
+			}
+		} else {
+			let maxCount = roam42.wB.path.currentPageBlocks._documents.length > 30 ? 30: roam42.wB.path.currentPageBlocks._documents.length;
+			console.log(maxCount)
+			for(i=1; i<maxCount;i++){
+				let block = roam42.wB.path.currentPageBlocks._documents[i];
+				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : '-';
+				await results.push( {display: blockOutput, uid: block.uid } );
 			}
 		}
+
+		// const blocksAtThisLevel = (await roam42.common.getBlockInfoByUID(
+		// 																	roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1],true))[0][0].children;	
+		// if(blocksAtThisLevel && blocksAtThisLevel.length>0)	{
+		// 	const blocksAtThisLevelSort = await roam42.common.sortObjectsByOrder( blocksAtThisLevel );
+		// 	for await (block of blocksAtThisLevelSort){
+		// 		if( !roam42.wB.path.excludeUIDs.includes(block.uid) ){
+		// 			if(query.length==0) {
+		// 				let blockString = block.string.trim().length==0 ? '-' : block.string.trim();
+		// 				await results.push( {display: blockString.substring(0,400), uid: block.uid  } );
+		// 			} else if( block.string.toLowerCase().includes( query.toLowerCase()) )
+		// 				await results.push( {display: block.string.substring(0,400), uid: block.uid  } );
+		// 		}
+		// 	}
+		// }
 	};
 
 	const formatPathDisplay = ()=> {
@@ -105,10 +143,9 @@
 				output = roam42.wB.path.trailString[0].substring(0,25) + '... > * > ' + 
 											   roam42.wB.path.trailString[roam42.wB.path.trailString.length-1].substring(0,35);				
 			}
-			
 			$(`#roam42-wB-path-PathDisplay`).text( output );
 		}	else {
-			$(`#roam42-wB-path-PathDisplay`).text('path > ');
+			$(`#roam42-wB-path-PathDisplay`).text('Type page name.... ');
 		}
 	};
 
@@ -126,7 +163,7 @@
 								}			
 			 }
 		).on('keydown', this, function (event) {
-			if(event.key=='Tab' || ( event.key=='Enter' && event.ctrlKey==true )  ) {
+			if(event.key=='Tab' || ( event.key=='Enter' && roam42.wB.path.trailUID.length > 1 ) || ( event.key=='Enter' && event.ctrlKey==true )  ) {
 					event.preventDefault();
 					if(roam42.wB.path.trailUID == null || roam42.wB.path.trailUID.length == 0) return;
 					let outputUID = null;

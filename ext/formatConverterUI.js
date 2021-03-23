@@ -49,6 +49,12 @@
       case 'html_Markdown_Github_flatten':
         clipboardConvertedText =  await   roam42.formatConverter.formatter.htmlMarkdownFlatten(uid);
         break;
+      case 'json_Simple':
+        clipboardConvertedText =  await   roam42.formatConverter.flatJson(uid, false, true);
+        break;
+      case 'json_Simple_withIndentation':
+        clipboardConvertedText =  await   roam42.formatConverter.flatJson(uid, true, true);
+        break;
     }
     formatConverterUITextArea.value = clipboardConvertedText;
     formatConverterUITextArea.scrollLeft = 0;
@@ -111,6 +117,8 @@
           <option value="markdown_Github_flatten">GitHub Flavored Markdown - flatten</option>
           <option value="html_Simple">HTML</option>
           <option value="html_Markdown_Github_flatten">HTML after Markdown Flattening</option>
+          <option value="json_Simple">JSON in simple format</option>
+					<option value="json_Simple_withIndentation">JSON in simple format with Indentation in text string</option>
         </select>
         <div style="float:right"><div title="Refresh view based on current page" class="bp3-button bp3-minimal bp3-small bp3-icon-refresh" onclick="roam42.formatConverterUI.changeFormat()"></div></div>
         <div style="float:right"><div title="Copy to clipboard" class="bp3-button bp3-minimal bp3-small bp3-icon-clipboard" onclick="roam42.formatConverterUI.copyToClipboard()"></div></div>
