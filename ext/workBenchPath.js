@@ -78,15 +78,14 @@
 
 	const levelPages = async(query, results)=>{
 		if(roam42.wB.path.allPagesForGraphSearch && roam42.wB.path.allPagesForGraphSearch._documents.length>0) {
-			for await (page of roam42.wB.path.allPagesForGraphSearch.search(query)) 
+			const pages = roam42.wB.path.allPagesForGraphSearch.search(query);
+			const sortPages = pages.sort( (a,b)=> a[0].localeCompare(b[0]) );
+			for await (page of sortPages) 
 				await results.push( {display: page[0].substring(0,255), uid: page[1]} );
 		};
-		await results.push( {display: 'Current page (cp)', uid: await roam42.common.currentPageUID() } );
-		await results.push( {display: 'Today DNP', uid: await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date())) } );
+		await results.push( {display: 'Current page (cp)', level: 0, uid: await roam42.common.currentPageUID() } );
+		await results.push( {display: 'Today DNP', level: 0, uid: await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date())) } );
 	};
-
-	
-	
 
 	const levelBlocks = async(query, results)=>{
 		//shows all the child blocks of UID from roam42.wB.path.trailUID
@@ -100,36 +99,21 @@
 			roam42.wB.path.currentPageBlocks.addDocuments( await roam42.formatConverter.flatJson( roam42.wB.path.trailUID[0], withIndents=false, false ) );
 		}
 		if(roam42.wB.path.currentPageBlocks._documents.length==1) {  //no blocks, mimick empty block
-			await results.push( {display: '-', uid: roam42.wB.path.trailUID[0] } ); 
+			await results.push( {display: '-', uid: roam42.wB.path.trailUID[0], level: 0 } ); 
 		} else if(roam42.wB.path.currentPageBlocks && roam42.wB.path.currentPageBlocks._documents.length>0 && query.length > 0) {
 			for await (block of roam42.wB.path.currentPageBlocks.search(query)) {
 				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : '-';
-				await results.push( {display: blockOutput, uid: block.uid } );
+				await results.push( {display: blockOutput, uid: block.uid, level: block.level } );
 			}
 		} else {
-			let maxCount = roam42.wB.path.currentPageBlocks._documents.length > 30 ? 30: roam42.wB.path.currentPageBlocks._documents.length;
-			console.log(maxCount)
+			let maxCount = roam42.wB.path.currentPageBlocks._documents.length > 1000 ? 1000: roam42.wB.path.currentPageBlocks._documents.length;
 			for(i=1; i<maxCount;i++){
 				let block = roam42.wB.path.currentPageBlocks._documents[i];
 				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : '-';
-				await results.push( {display: blockOutput, uid: block.uid } );
+				await results.push( {display: blockOutput, uid: block.uid,  level: block.level } );
 			}
 		}
 
-		// const blocksAtThisLevel = (await roam42.common.getBlockInfoByUID(
-		// 																	roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1],true))[0][0].children;	
-		// if(blocksAtThisLevel && blocksAtThisLevel.length>0)	{
-		// 	const blocksAtThisLevelSort = await roam42.common.sortObjectsByOrder( blocksAtThisLevel );
-		// 	for await (block of blocksAtThisLevelSort){
-		// 		if( !roam42.wB.path.excludeUIDs.includes(block.uid) ){
-		// 			if(query.length==0) {
-		// 				let blockString = block.string.trim().length==0 ? '-' : block.string.trim();
-		// 				await results.push( {display: blockString.substring(0,400), uid: block.uid  } );
-		// 			} else if( block.string.toLowerCase().includes( query.toLowerCase()) )
-		// 				await results.push( {display: block.string.substring(0,400), uid: block.uid  } );
-		// 		}
-		// 	}
-		// }
 	};
 
 	const formatPathDisplay = ()=> {
@@ -160,7 +144,13 @@
 									else 
 										await levelBlocks(query, results);
 									asyncResults( results );
-								}			
+								},
+					templates: {
+								suggestion: (val)=>{
+									let leftPx = Number(val.level)>0 ? 'padding-left:' + (Number(val.level) * 10) +  'px !important;' : '';
+									return   '<div style="position:relative;' + leftPx + '">' + val.display + '</div>' ;
+								}
+							}											
 			 }
 		).on('keydown', this, function (event) {
 			if(event.key=='Tab' || ( event.key=='Enter' && roam42.wB.path.trailUID.length > 1 ) || ( event.key=='Enter' && event.ctrlKey==true )  ) {
@@ -169,8 +159,8 @@
 					let outputUID = null;
 					let outputText = null;
 					if( (event.key=='Enter' && event.ctrlKey==true) && roam42.wB.path.trailUID.length>0  ) { // use the last selection as the lookup
-					 	outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-2];
-						outputText = roam42.wB.path.trailString[roam42.wB.path.trailString.length-2];
+					 	outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1];
+						outputText = roam42.wB.path.trailString[roam42.wB.path.trailString.length-1];
 					} else { //as tab use the current
 					 	outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1];
 						outputText = roam42.wB.path.trailString[roam42.wB.path.trailString.length-1];

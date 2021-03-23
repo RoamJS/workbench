@@ -71,9 +71,15 @@
 											if( roam42.wB.triggeredState.selectedNodes != null) context ='+'; //context: multiple nodes
 											for await (source of await roam42.wB._sources)
 												await source.sourceCallBack(context, query, results);
+											var enhancedSearch = new JsSearch.Search('display');
+											enhancedSearch.searchIndex = new JsSearch.UnorderedSearchIndex();
+											enhancedSearch.indexStrategy = new JsSearch.AllSubstringsIndexStrategy();
+											enhancedSearch.addDocuments( results );
+											enhancedSearch.addIndex('display');
+											results = enhancedSearch.search( query )
 										}
 									}
-									asyncResults( results );
+									asyncResults( results  );
 								}			
 			 }
 		).on('keydown', this, function (event) {
@@ -180,11 +186,10 @@
 			}
 
 			await roam42.wB.sourceAdd( "SmartBlocks from AnyWhere", async (context, query, results)=> {
-				let queryLowerCase = query.toLowerCase();
 				let sbList =  await roam42.smartBlocks.UserDefinedWorkflowsList();
 				await roam42.smartBlocks.addCommands( sbList );
 				for await (sb of sbList) {
-					if( sb['key'].toLowerCase().includes(queryLowerCase) && sb['key'].includes('<%GLOBAL%>') ) { 
+					if( sb['key'].includes('<%GLOBAL%>') ) { 
 						let sbCommand = sb['key'].replace('<%GLOBAL%>',''); 
 				 		await results.push( { display: sbCommand, cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}),  context: '*', info: sb });
 					}
@@ -193,20 +198,17 @@
 
 			await roam42.wB.sourceAdd( "SmartBlocks from blocks", async (context, query, results)=>{
 				if( context != '-' ) return;
-				let queryLowerCase = query.toLowerCase();
 				let sbList =  await roam42.smartBlocks.UserDefinedWorkflowsList();
 				await roam42.smartBlocks.addCommands( sbList );
 				for await (sb of sbList) {
-					if( sb['key'].toLowerCase().includes(queryLowerCase) && !sb['key'].includes('<%GLOBAL%>'))
+					if( !sb['key'].includes('<%GLOBAL%>'))
 				 		await results.push( { display: sb['key'], cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}),  context: '-', info: sb });
 				}
 			});
 
-
 			await roam42.wB.sourceAdd( "Built-in Roam commands", async (context, query, results)=>{
 				let queryLowerCase = query.toLowerCase();
 				for await (el of roam42.wB._commands) {
-					if( el.searchText.includes(queryLowerCase))
 						if( el.context == '*' || el.context == context ) //applies to all contexts, so include
 							await results.push(el);
 				}
@@ -222,9 +224,9 @@
 			//					- = from a textarea
 			//				  + = multipblock selection 
 			roam42.wB._commands.push( { 
-				display: 'Daily Notes', 
+				display: 'Daily Notes (dn)', 
 				cmd: ()=>{ roam42.common.navigateUiTo( roam42.dateProcessing.getRoamDate(new Date()), roam42.wB.keystate.shiftKey ) }, 
-				searchText: 'dailynotes',
+				searchText: 'dailynotes dn',
 				context: '*'
 			});
 
@@ -332,6 +334,9 @@
 				roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to bottom & sidebar (mbbs)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000,1)}, excludeSelectedBlocks()) });
 				roam42.wB.commandAddRunFromBlock('Move Block - to top & sidebar (mbts)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0, 1)}, excludeSelectedBlocks())});
 				roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to top & sidebar (mbts)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0, 1)}, excludeSelectedBlocks())});
+
+				roam42.wB.commandAddRunFromAnywhere("Open Page (opp)", async ()=>{roam42.wB.path.launch(async (uid)=>{roam42.common.navigateUiTo(uid)}) });
+				roam42.wB.commandAddRunFromAnywhere("Open Page in Sidebar (ops)", async ()=>{roam42.wB.path.launch(async (uid)=>{roam42.common.navigateUiTo(uid,true)}) });
 
 				const MoveBlockDNP =  async ()=>{ 
 					let dateExpression = prompt('Move this block to the top of what date?', 'Tomorrow');

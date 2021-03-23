@@ -17,6 +17,7 @@
   }
 
 	roam42.common.navigateUiTo = async function (destinationPage, openInSideBar=false, sSidebarType = 'outline') {
+		console.log(destinationPage)
 		//sSidebarType = block, outline, graph
 		const prefix = destinationPage.substring(0,2);
 		const suffix = destinationPage.substring(destinationPage.length-2,destinationPage.length);
