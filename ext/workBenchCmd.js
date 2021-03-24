@@ -57,6 +57,8 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0)=> {
 			zoomUID = uid;
 		}
 	}
+	
+	if(zoom>0) await roam42.common.sleep(150);
 	if(zoom==1 && zoomUID !=0) //open in  side bar
 		roam42.common.navigateUiTo(zoomUID, true, 'block');
 	else if(zoom==2 && zoomUID !=0) //jump to in main page
@@ -127,6 +129,28 @@ const pullBlockToThisBlock = async (uidToMove, makeBlockRef = false)=>{
 
 roam42.wB.commandAddRunFromBlock('Pull block (pbb)', async ()=>{ roam42.wB.path.launch(async (uid)=>{pullBlockToThisBlock(uid)}, excludeSelectedBlocks()) });
 roam42.wB.commandAddRunFromBlock('Pull block and leave block ref (pbr)', async ()=>{ roam42.wB.path.launch(async (uid)=>{pullBlockToThisBlock(uid,true)}, excludeSelectedBlocks()) });
+
+
+roam42.wB.commandAddRunFromAnywhere('Jump to Block in page (jbp)', async ()=>{
+	 roam42.wB.path.launch(async (uid)=>{
+		 console.log(uid, roam42.wB.path.trailUID )
+		 if(uid!=roam42.wB.path.trailUID[0]){
+		   roam42.common.navigateUiTo(roam42.wB.path.trailUID[0], false);
+			 await roam42.common.sleep(500);
+		 }
+		 document.querySelector(`[id*="${uid}"]`).scrollIntoView();
+		 await roam42.common.sleep(200);
+		 	roam42.common.simulateMouseClick( document.body );
+ 			await roam42.common.sleep(50);
+			roam42.common.simulateMouseClick( document.querySelector(`[id*="${uid}"]`) );
+			await roam42.common.sleep(250);
+			document.activeElement.selectionStart = document.activeElement.value.length;
+			document.activeElement.selectionEnd   = document.activeElement.value.length;
+		}, excludeSelectedBlocks(),null,null,true); 
+});
+
+
+
 
 try{ roam42.wB.commandAddRunFromAnywhere("Roam42 Privacy Mode (alt-shift-p)", roam42.privacyMode.toggle) } catch(e){};
 try{ roam42.wB.commandAddRunFromAnywhere("Roam42 Converter (alt-m)", roam42.formatConverterUI.show) } catch(e){};

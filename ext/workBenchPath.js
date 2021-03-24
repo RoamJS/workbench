@@ -265,7 +265,7 @@
 		$(document.body).append(`
 			<div id="roam42-wB-path-container" style="visibility:hidden">
 				<div id="roam42-wB-path-PathDisplay">></div>
-				<div><input class="typeahead" id="roam42-wB-path-input" type="text"></div>
+				<div><input autocomplete="off" class="typeahead" id="roam42-wB-path-input" type="text"></div>
 			</div>
 			<style id="roam42-wB-path-container-style">
 				#roam42-wB-path-container {
