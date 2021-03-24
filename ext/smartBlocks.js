@@ -212,7 +212,7 @@
         try {
             roam42.smartBlocks.textBoxObserver.disconnect(); //stop observing blocks during insertion
               if(item.original.help && roam42.smartBlocks.SmartBlockPopupHelpEnabled){
-                roam42.help.displayMessage('<img height="22px" src="https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Fgear.png?v=1605994815962">'+
+                roam42.help.displayMessage('<img height="22px" src="' + roam42.host + '/img/gear.png">'+
                                            ' ' + item.original.help,20000);
               }
             var currentSmartBlockCommand = item.original.fullCommand + '';
@@ -524,22 +524,22 @@
           var img = '';
           switch(item.original.icon) {
             case 'hl':
-              img = 'https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Fhr.png?v=1605996193520';
+              img = roam42.host + '/img/hr.png';
               break;
             case 'random':
-              img = 'https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Frandom.png?v=1605996193519';
+              img = roam42.host + '/img/random.png';
               break;
             case 'list':
-              img = 'https://cdn.glitch.com/463389d2-59ec-4fdc-b3c8-674037563d0e%2Flist.png?v=1606820752757';
+              img = roam42.host + '/img/list.png';
               break;
             case 'gear':
-              img = 'https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Fgear.png?v=1605994815962';
+              img = roam42.host + '/img/gear.png';
               break;
             case 'time':
-              img = 'https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Fclock-time-7.png?v=1605996193660';
+              img = roam42.host + '/img/clock-time-7.png';
               break;
             default:
-              img = "https://cdn.glitch.com/e6cdf156-cbb9-480b-96bc-94e406043bd1%2Flego3blocks.png?v=1605993127860";
+              img = roam42.host + '/img/lego3blocks.png';
           }
           return `<img width="15px" src="${img}"> `
                   + item.string;
