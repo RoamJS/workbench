@@ -22,15 +22,18 @@
 		roam42.wB.path.callBack    = null; //passes in 4 values: Last UID, last string, UID path and String Path
 		roam42.wB.path.allPagesForGraphSearch = null; //search object for page names
 		roam42.wB.path.currentPageBlocks = null;	//search object for current page
+		roam42.wB.path.canPageBeSelected = false; //can the page be selected in the navigator as a destination point
 
-		roam42.wB.path.launch = (callBackFunction, excludeUIDs = [], startUID=null, startString=null)=> {			
+		roam42.wB.path.launch = (callBackFunction, excludeUIDs = [], startUID=null, startString=null, canPageBeSelected=false)=> {			
 			roam42.wB.path.level = 0;	//reset path level
 			roam42.wB.path.trailUID 	 = [startUID]; 		//UID path
 			roam42.wB.path.trailString = [startString]; //string path
 			roam42.wB.path.excludeUIDs = excludeUIDs;
 			roam42.wB.path.callBack = callBackFunction;
+			roam42.wB.path.canPageBeSelected = canPageBeSelected;
 			roam42.wB.path.allPagesForGraphSearch = null;
 			roam42.wB.path.currentPageBlocks = null;
+			
 			if(startUID!=null)
 				roam42.wB.path.level=1;
 			formatPathDisplay();
@@ -98,14 +101,18 @@
 			roam42.wB.path.currentPageBlocks.addIndex('blockText');
 			roam42.wB.path.currentPageBlocks.addDocuments( await roam42.formatConverter.flatJson( roam42.wB.path.trailUID[0], withIndents=false, false ) );
 		}
+		const pageLine = 'Page: ' + roam42.wB.path.trailString[0];
 		if(roam42.wB.path.currentPageBlocks._documents.length==1) {  //no blocks, mimick empty block
-			await results.push( {display: ' ', uid: roam42.wB.path.trailUID[0], level: 0, img: roam42.host + '/img/wb/bullet.png' } ); 
+			if(roam42.wB.path.canPageBeSelected==true)
+				await results.push( {display: pageLine, uid: roam42.wB.path.trailUID[0], level: 0, img: roam42.host + '/img/wb/page.png' } ); 
 		} else if(roam42.wB.path.currentPageBlocks && roam42.wB.path.currentPageBlocks._documents.length>0 && query.length > 0) {
 			for await (block of roam42.wB.path.currentPageBlocks.search(query)) {
 				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : ' ';
 				await results.push( {display: blockOutput, uid: block.uid, level: block.level, img: roam42.host + '/img/wb/bullet.png' } );
 			}
-		} else {
+		} else { //no query yet, just show blocks from page
+			if(roam42.wB.path.canPageBeSelected==true)
+				await results.push( {display: pageLine, uid: roam42.wB.path.trailUID[0], level: 0, img: roam42.host + '/img/wb/page.png' } ); 
 			let maxCount = roam42.wB.path.currentPageBlocks._documents.length > 1000 ? 1000: roam42.wB.path.currentPageBlocks._documents.length;
 			for(i=1; i<maxCount;i++){
 				let block = roam42.wB.path.currentPageBlocks._documents[i];
@@ -181,7 +188,7 @@
 					setTimeout ( async ()=>{
 						//Execute CALLBACK function here
 						if(roam42.wB.path.callBack!==null)
-							await roam42.wB.path.callBack(outputUID, outputText, roam42.wB.path.trailUID,roam42.wB.path.trailString);
+							await roam42.wB.path.callBack(outputUID, outputText);
 						roam42.wB.path.callBack = null;
 					},150);
 			} else if ( 			
