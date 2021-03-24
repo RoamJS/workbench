@@ -57,7 +57,6 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0)=> {
 			zoomUID = uid;
 		}
 	}
-	console.log('zoom '+ zoom, 'zoomUID '+ zoomUID)
 	if(zoom==1 && zoomUID !=0) //open in  side bar
 		roam42.common.navigateUiTo(zoomUID, true, 'block');
 	else if(zoom==2 && zoomUID !=0) //jump to in main page
@@ -109,7 +108,6 @@ const MoveBlockDNP =  async ()=>{
 		await roam42.common.sleep(50);
 		destinationPage = await roam42.common.getPageUidByTitle(parsedDate);
 	}
-	console.log('destinationPage',destinationPage, parsedDate)
 	setTimeout( ()=>{ roam42.wB.path.launch( (async (uid)=>{ moveBlocks(uid, 0, 0)}), excludeSelectedBlocks(), destinationPage, parsedDate ) },200);
 };
 roam42.wB.commandAddRunFromBlock('Move Block - DNP (mbd)', async ()=>{ MoveBlockDNP() } );
@@ -117,7 +115,6 @@ roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks - DNP (mbds)', async
 
 const pullBlockToThisBlock = async (uidToMove, makeBlockRef = false)=>{
 	const activeBlockUID = roam42.wB.triggeredState.activeElementId.slice(-9);
-	console.log( activeBlockUID, uidToMove, makeBlockRef)
 	if(makeBlockRef==true) { 
 		await roam42.common.createSiblingBlock(uidToMove, `((${uidToMove}))`);
 		await roam42.common.sleep(100);
