@@ -24,7 +24,7 @@
 if( typeof window.roam42 == 'undefined' ) {
 
   window.roam42  = {};
-  roam42.buildID = 'Roam<sup>42</sup> 2021-03-23 (Brain Trust) ';
+  roam42.buildID = 'Roam<sup>42</sup> 2021-03-24 (Brain Trust) ';
 
   roam42.host    = document.currentScript.src.replace('main.js','');
 
@@ -42,7 +42,7 @@ if( typeof window.roam42 == 'undefined' ) {
       document.getElementsByTagName('head')[0].appendChild(element);
     }
 
-    roam42.loader.logo2HC = roam42.host + '42logo-2hc.png';
+    roam42.loader.logo2HC = roam42.host + '/img/logo/42logo-2hc.png';
     roam42.loader.disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : [];
 
     roam42.loader.addScriptToPage = (tagId, script)=> {

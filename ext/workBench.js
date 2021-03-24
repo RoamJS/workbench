@@ -79,9 +79,17 @@
 											results = enhancedSearch.search( query )
 										}
 									}
-									asyncResults( results  );
-								}			
-			 }
+									asyncResults( results );
+				},
+				templates: {
+					suggestion: (val)=>{
+						return '<div style="display: flex">' + 
+											'<div style="left:5px;width:22px;"><img height="14px" src="' + val.img + '"></div>' +
+											'<div style="width:430px"> ' + val.display + '</div>' + 
+										'</div>';
+					}
+				}											
+				}
 		).on('keydown', this, function (event) {
 			//console.log(event.key, event.keyCode )
     });
@@ -191,7 +199,8 @@
 				for await (sb of sbList) {
 					if( sb['key'].includes('<%GLOBAL%>') ) { 
 						let sbCommand = sb['key'].replace('<%GLOBAL%>',''); 
-				 		await results.push( { display: sbCommand, cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}),  context: '*', info: sb });
+				 		await results.push( { display: sbCommand, img: roam42.host + '/img/wb/sbglobal.png',   context: '*', info: sb, 
+						 											cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}) });
 					}
 				}
 			});
@@ -202,7 +211,8 @@
 				await roam42.smartBlocks.addCommands( sbList );
 				for await (sb of sbList) {
 					if( !sb['key'].includes('<%GLOBAL%>'))
-				 		await results.push( { display: sb['key'], cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}),  context: '-', info: sb });
+				 		await results.push( { display: sb['key'], img: roam42.host + '/img/wb/sbinwb.png', context: '-', info: sb,
+						 											cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}) });
 				}
 			});
 
@@ -227,25 +237,26 @@
 				display: 'Daily Notes (dn)', 
 				cmd: ()=>{ roam42.common.navigateUiTo( roam42.dateProcessing.getRoamDate(new Date()), roam42.wB.keystate.shiftKey ) }, 
 				searchText: 'dailynotes dn',
-				context: '*'
+				context: '*',
+				img: roam42.host + '/img/wb/command.png'
 			});
 
 			roam42.wB.commandAddRunFromAnywhere = async ( textToDisplay, callbackFunction )=> {
-				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), cmd: callbackFunction, context: '*' } );
+				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), 
+																		img: roam42.host + '/img/wb/command.png', cmd: callbackFunction, context: '*' } );
 			}
 
 			roam42.wB.commandAddRunFromBlock = ( textToDisplay, callbackFunction )=> {
-				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), cmd: callbackFunction, context: '-' } );
+				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), 
+																		img: roam42.host + '/img/wb/blocksblock.png', cmd: callbackFunction, context: '-' } );
 			}
 
 			roam42.wB.commandAddRunFromMultiBlockSelection = ( textToDisplay, callbackFunction )=> {
-				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), cmd: callbackFunction, context: '+' } );
+				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), 
+																		img: roam42.host + '/img/wb/blocksmulti.png', cmd: callbackFunction, context: '+' } );
 			}
 
 
-			// TEMPLATE: 
-			// roam42.wB.commandAdd("text", ()=>{};
-			// try{ roam42.wB.commandAdd("text", ()=>{}) } catch(e) {};
 				roam42.wB.commandAddRunFromAnywhere("All Pages",()=>{document.location.href=roam42.common.baseUrl().href.replace('page','') + '/search'});
 				roam42.wB.commandAddRunFromAnywhere("Graph Overview", ()=>{document.location.href=roam42.common.baseUrl().href.replace('page','') + '/graph'});
 				roam42.wB.commandAddRunFromAnywhere("Right Sidebar - close window panes (rscwp)", async ()=>{ 

@@ -524,22 +524,22 @@
           var img = '';
           switch(item.original.icon) {
             case 'hl':
-              img = roam42.host + '/img/hr.png';
+              img = roam42.host + '/img/sb/hr.png';
               break;
             case 'random':
-              img = roam42.host + '/img/random.png';
+              img = roam42.host + '/img/sb/random.png';
               break;
             case 'list':
-              img = roam42.host + '/img/list.png';
+              img = roam42.host + '/img/sb/list.png';
               break;
             case 'gear':
-              img = roam42.host + '/img/gear.png';
+              img = roam42.host + '/img/sb/gear.png';
               break;
             case 'time':
-              img = roam42.host + '/img/clock-time-7.png';
+              img = roam42.host + '/img/sb/clock-time-7.png';
               break;
             default:
-              img = roam42.host + '/img/lego3blocks.png';
+              img = roam42.host + '/img/sb/lego3blocks.png';
           }
           return `<img width="15px" src="${img}"> `
                   + item.string;

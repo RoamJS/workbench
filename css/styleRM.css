@@ -213,8 +213,6 @@
   display:none;
 }
 
-
-
 .tippy-box {
     background-clip:padding-box;
     border:1px solid rgba(0,8,16,.15);
@@ -281,6 +279,6 @@
     height:14px;
   	width:24px;
     content: "";
-    background:url(/img/2Flego3blocks.png) no-repeat 0 0;
+    background:url(/img/sb/lego3blocks.png) no-repeat 0 0;
     background-size: auto 14px;
 }

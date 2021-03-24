@@ -81,10 +81,10 @@
 			const pages = roam42.wB.path.allPagesForGraphSearch.search(query);
 			const sortPages = pages.sort( (a,b)=> a[0].localeCompare(b[0]) );
 			for await (page of sortPages) 
-				await results.push( {display: page[0].substring(0,255), uid: page[1]} );
+				await results.push( {display: page[0].substring(0,255), uid: page[1], img: roam42.host + '/img/wb/page.png'} );
 		};
-		await results.push( {display: 'Current page (cp)', level: 0, uid: await roam42.common.currentPageUID() } );
-		await results.push( {display: 'Today DNP', level: 0, uid: await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date())) } );
+		await results.push( {display: 'Current page (cp)', level: 0, img: roam42.host + '/img/wb/page.png', uid: await roam42.common.currentPageUID() }  );
+		await results.push( {display: 'Today DNP', level: 0, img: roam42.host + '/img/wb/page.png', uid: await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date())) } );
 	};
 
 	const levelBlocks = async(query, results)=>{
@@ -99,18 +99,18 @@
 			roam42.wB.path.currentPageBlocks.addDocuments( await roam42.formatConverter.flatJson( roam42.wB.path.trailUID[0], withIndents=false, false ) );
 		}
 		if(roam42.wB.path.currentPageBlocks._documents.length==1) {  //no blocks, mimick empty block
-			await results.push( {display: '-', uid: roam42.wB.path.trailUID[0], level: 0 } ); 
+			await results.push( {display: ' ', uid: roam42.wB.path.trailUID[0], level: 0, img: roam42.host + '/img/wb/bullet.png' } ); 
 		} else if(roam42.wB.path.currentPageBlocks && roam42.wB.path.currentPageBlocks._documents.length>0 && query.length > 0) {
 			for await (block of roam42.wB.path.currentPageBlocks.search(query)) {
-				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : '-';
-				await results.push( {display: blockOutput, uid: block.uid, level: block.level } );
+				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : ' ';
+				await results.push( {display: blockOutput, uid: block.uid, level: block.level, img: roam42.host + '/img/wb/bullet.png' } );
 			}
 		} else {
 			let maxCount = roam42.wB.path.currentPageBlocks._documents.length > 1000 ? 1000: roam42.wB.path.currentPageBlocks._documents.length;
 			for(i=1; i<maxCount;i++){
 				let block = roam42.wB.path.currentPageBlocks._documents[i];
-				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : '-';
-				await results.push( {display: blockOutput, uid: block.uid,  level: block.level } );
+				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : ' ';
+				await results.push( {display: blockOutput, uid: block.uid,  level: block.level, img: roam42.host + '/img/wb/bullet.png' } );
 			}
 		}
 
@@ -144,13 +144,15 @@
 									else 
 										await levelBlocks(query, results);
 									asyncResults( results );
-								},
-					templates: {
-								suggestion: (val)=>{
-									let leftPx = Number(val.level)>0 ? 'padding-left:' + (Number(val.level) * 10) +  'px !important;' : '';
-									return   '<div style="position:relative;' + leftPx + '">' + val.display + '</div>' ;
-								}
-							}											
+				},
+				templates: {
+					suggestion: (val)=>{
+						return '<div style="display: flex">' + 
+											'<div style="left:5px;width:22px;"><img style="filter: invert(100%)" height="18px" src="' + val.img + '"></div>' +
+											'<div style="width:430px"> ' + val.display + '</div>' + 
+										'</div>' ;
+					}
+				}
 			 }
 		).on('keydown', this, function (event) {
 			if(event.key=='Tab' || ( event.key=='Enter' && roam42.wB.path.trailUID.length > 1 ) || ( event.key=='Enter' && event.ctrlKey==true )  ) {
