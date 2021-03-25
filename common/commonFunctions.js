@@ -12,12 +12,7 @@
     return url;
   };
 
-  roam42.common.currentPageNameInfo = ()=> {
-    //return {pageName:'', pageUID:'', DNPDate:''}
-  }
-
 	roam42.common.navigateUiTo = async function (destinationPage, openInSideBar=false, sSidebarType = 'outline') {
-		console.log(destinationPage)
 		//sSidebarType = block, outline, graph
 		const prefix = destinationPage.substring(0,2);
 		const suffix = destinationPage.substring(destinationPage.length-2,destinationPage.length);
@@ -69,6 +64,7 @@
   };
 
 	roam42.common.rightSidebarClose = async ( iWindow , bRestoreLocation = true )=>{
+		//iWindow = 0 to close all windows, otherwise the number of the window to close
 		if(await roamAlphaAPI.ui.rightSidebar.getWindows().length>0){
 			let restoreLocation = bRestoreLocation ? roam42.common.saveLocationParametersOfTextArea( document.activeElement ) : null;
 			await roamAlphaAPI.ui.rightSidebar.open();
@@ -87,6 +83,23 @@
 			await roam42.common.sleep(300);
 		}
 	}
+
+	roam42.common.swapWithSideBar = async (paneNumber=1)=>{
+		const panes = await roamAlphaAPI.ui.rightSidebar.getWindows();
+		if(panes.length==0) {
+			roam42.help.displayMessage('No open side windows to swap with.',5000);
+			return;
+		}
+		const mainPageUID = await roam42.common.currentPageUID()
+		let paneToSwap = await roamAlphaAPI.ui.rightSidebar.getWindows()[paneNumber-1]['page-uid'];
+		if(paneToSwap == undefined) paneToSwap = await roamAlphaAPI.ui.rightSidebar.getWindows()[paneNumber-1]['block-uid'];
+		if(paneToSwap != undefined) {
+			roam42.common.navigateUiTo(paneToSwap,false); //move to main window
+			roam42.common.navigateUiTo(mainPageUID,true); //move to side bar main page
+			await roam42.common.sleep(500);
+			await roam42.common.rightSidebarClose(paneNumber+1,false);
+		}
+	}	
 
   roam42.common.sidebarRightToggle = ()=>{
     try {

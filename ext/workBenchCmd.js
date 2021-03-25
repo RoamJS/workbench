@@ -7,6 +7,40 @@ roam42.wB.commandAddRunFromAnywhere("Right Sidebar - close window panes (rscwp)"
 	await roam42.common.rightSidebarClose(0, false); 
 	await restoreCurrentBlockSelection(); 
 });
+roam42.wB.commandAddRunFromAnywhere("Sidebars - swap with main window (swap)", async ()=>{  
+	await roam42.common.swapWithSideBar();
+});
+
+roam42.wB.commandAddRunFromAnywhere("Sidebars - swap with main window & choose window (swc)", async ()=>{
+	const panes = await roamAlphaAPI.ui.rightSidebar.getWindows();
+	if(panes.length==0) {
+		roam42.help.displayMessage('No open side windows to swap with.',5000);
+		return;
+	}
+	let outputString = '';
+	let iCounter = 1;
+	for (pane of panes) {
+		let paneUID = pane['type']=='block' ? pane['block-uid'] : pane['page-uid'];
+		if(paneUID != undefined) {
+			let paneInfo = (await roam42.common.getBlockInfoByUID( paneUID, false, true))[0][0];
+			if(paneInfo.title)
+				outputString += (iCounter + ': ' + paneInfo.title + '\n').substring(0,100);
+			else
+				outputString += (iCounter + ': ' + paneInfo.parents[0].title + ' > ' + paneInfo.string + '\n').substring(0,100);
+			console.log(paneInfo);
+			iCounter +=1;
+		}
+	}
+	let paneToSwap = prompt('Which window pane to swap? (type number)\n\n' + outputString, 1);
+	if(paneToSwap!=null &&  paneToSwap != '' ) {
+		paneToSwap = Number(paneToSwap);
+		if(paneToSwap!=NaN && paneToSwap>0 && paneToSwap<= panes.length)
+			await roam42.common.swapWithSideBar(paneToSwap);
+		else
+			roam42.help.displayMessage('Not  a valid number for a sidebar pane',5000);
+	}
+});
+
 roam42.wB.commandAddRunFromAnywhere("Sidebars - open both (sob)", async ()=>{  
 	await roamAlphaAPI.ui.rightSidebar.open();
 	await roam42.common.sleep(100);  
@@ -37,23 +71,39 @@ roam42.wB.commandAddRunFromAnywhere("Sidebars - close both (scb)", async ()=>{
 		await restoreCurrentBlockSelection(); 
 	}
 });
-const moveBlocks = async (destinationUID, iLocation, zoom=0)=> {
+const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = false)=> {
 	//zoom  = 0  do nothing, 1 move blocks opened in sidebar, 2, zoomed in main window
 	let zoomUID = 0;
 	if( roam42.wB.triggeredState.selectedNodes != null) {
 		if(iLocation==0) { //adding to top
-			for(i=roam42.wB.triggeredState.selectedNodes.length-1; i>=0; i--) 
-				roam42.common.moveBlock(destinationUID, iLocation, roam42.wB.triggeredState.selectedNodes[i].querySelector('.rm-block-text').id.slice(-9));
+			for(i=roam42.wB.triggeredState.selectedNodes.length-1; i>=0; i--) {
+				const blockToMove = roam42.wB.triggeredState.selectedNodes[i].querySelector('.rm-block-text').id.slice(-9);
+				if(makeBlockRef==true) { 
+					await roam42.common.createSiblingBlock(blockToMove, `((${blockToMove}))`);
+					await roam42.common.sleep(100);
+				}
+				roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
+			}
 		} else {
-			for(i=0; i<=roam42.wB.triggeredState.selectedNodes.length-1; i++) 
-				roam42.common.moveBlock(destinationUID, iLocation, roam42.wB.triggeredState.selectedNodes[i].querySelector('.rm-block-text').id.slice(-9));
+			for(i=0; i<=roam42.wB.triggeredState.selectedNodes.length-1; i++) {
+				const blockToMove =  roam42.wB.triggeredState.selectedNodes[i].querySelector('.rm-block-text').id.slice(-9);
+				if(makeBlockRef==true) { 
+					await roam42.common.createSiblingBlock(blockToMove, `((${blockToMove}))`);
+					await roam42.common.sleep(100);
+				}
+				roam42.common.moveBlock(destinationUID, iLocation,blockToMove);
+			}
 		}
 		zoomUID = roam42.wB.triggeredState.selectedNodes[0].id.slice(-9);	
 	}
 	else if(roam42.wB.triggeredState.activeElementId!=null) {
 		if(destinationUID!=roam42.wB.triggeredState.activeElementId.slice(-9)) {//single block move
-			let uid = roam42.wB.triggeredState.activeElementId.slice(-9);
-			roam42.common.moveBlock(destinationUID, iLocation, uid);
+			let blockToMove = roam42.wB.triggeredState.activeElementId.slice(-9);
+			if(makeBlockRef==true) { 
+				await roam42.common.createSiblingBlock(blockToMove, `((${blockToMove}))`);
+				await roam42.common.sleep(100);
+			}
+			roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
 			zoomUID = uid;
 		}
 	}
@@ -75,14 +125,21 @@ const excludeSelectedBlocks = ()=>{
 };
 //move block
 roam42.wB.commandAddRunFromBlock('Move Block - to bottom (mbb)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000)}, excludeSelectedBlocks(),null,null,true) });
-roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to bottom (mbb)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000)}, excludeSelectedBlocks(),null,null,true) });
+roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks - to bottom (mbb)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000)}, excludeSelectedBlocks(),null,null,true) });
 roam42.wB.commandAddRunFromBlock('Move Block - to top (mbt)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0)}, excludeSelectedBlocks(),null,null,true)});
-roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to top (mbt)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0)}, excludeSelectedBlocks(),null,null,true)});				
+roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks - to top (mbt)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0)}, excludeSelectedBlocks(),null,null,true)});				
+
+//move block and leave block ref
+roam42.wB.commandAddRunFromBlock('Move Block - to bottom with block ref (mbbr)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000, 0, true)}, excludeSelectedBlocks(),null,null,true) });
+roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks - to bottom with block ref (mbbr)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000, 0, true)}, excludeSelectedBlocks(),null,null,true) });
+roam42.wB.commandAddRunFromBlock('Move Block - to top with block Ref (mbtr)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0, 0, true)}, excludeSelectedBlocks(),null,null,true)});
+roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks - to top with block refs (mbtr)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0, 0, true)}, excludeSelectedBlocks(),null,null,true)});				
+
 //move block & zoom
 roam42.wB.commandAddRunFromBlock('Move Block - to bottom & zoom (mbbz)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000, 2)}, excludeSelectedBlocks(),null,null,true) });
-roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to bottom & zoom (mbbz)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000,2)}, excludeSelectedBlocks(),null,null,true) });
+roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks - to bottom & zoom (mbbz)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000,2)}, excludeSelectedBlocks(),null,null,true) });
 roam42.wB.commandAddRunFromBlock('Move Block - to top & zoom (mbtz)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0, 2)}, excludeSelectedBlocks(),null,null,true)});
-roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to top & zoom (mbtz)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0, 2)}, excludeSelectedBlocks(),null,null,true)});
+roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks - to top & zoom (mbtz)', async ()=>{roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 0, 2)}, excludeSelectedBlocks(),null,null,true)});
 //move block & sidebar
 roam42.wB.commandAddRunFromBlock('Move Block - to bottom & sidebar (mbbs)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000, 1)}, excludeSelectedBlocks(),null,null,true) });
 roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks -to bottom & sidebar (mbbs)', async ()=>{ roam42.wB.path.launch(async (uid)=>{ moveBlocks(uid, 10000,1)}, excludeSelectedBlocks(),null,null,true) });
@@ -126,7 +183,6 @@ const pullBlockToThisBlock = async (uidToMove, makeBlockRef = false)=>{
 	await roam42.wB.restoreCurrentBlockSelection();
 
 };
-
 roam42.wB.commandAddRunFromBlock('Pull block (pbb)', async ()=>{ roam42.wB.path.launch(async (uid)=>{pullBlockToThisBlock(uid)}, excludeSelectedBlocks()) });
 roam42.wB.commandAddRunFromBlock('Pull block and leave block ref (pbr)', async ()=>{ roam42.wB.path.launch(async (uid)=>{pullBlockToThisBlock(uid,true)}, excludeSelectedBlocks()) });
 

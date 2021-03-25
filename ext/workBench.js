@@ -327,6 +327,7 @@
 	} //end of module
 
   roam42.wB.testReload = ()=>{
+		console.clear(0)
 		console.log('reloading wB');
 		try{ roam42.wB.path.fromwB_TestReload() } catch(e) {};
     roam42.loader.addScriptToPage( "workBench", roam42.host + 'ext/workBench.js');
