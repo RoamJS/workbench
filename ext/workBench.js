@@ -58,15 +58,14 @@
 			{ name: 'basicnav', display: 'display', limit: 10, async: true, 
 				source: async (query, syncResults, asyncResults)=> {
 									var results = [];
+									let context = '*'; //default to anywhere
+									if( roam42.wB.triggeredState.activeElementId != null) context ='-'; //context: textarea
+									if( roam42.wB.triggeredState.selectedNodes != null) context ='+'; //context: multiple nodes
 									if( query.length == 0 ) {
-											let context = '*'; //default to anywhere
 											for await (source of await roam42.wB._sources)
 												await source.sourceCallBack(context, query, results);
 									} else {
 										if(roam42.wB._sources.length>0) {
-											let context = '*'; //default to anywhere
-											if( roam42.wB.triggeredState.activeElementId != null) context ='-'; //context: textarea
-											if( roam42.wB.triggeredState.selectedNodes != null) context ='+'; //context: multiple nodes
 											for await (source of await roam42.wB._sources)
 												await source.sourceCallBack(context, query, results);
 											var enhancedSearch = new JsSearch.Search('display');
@@ -177,8 +176,18 @@
 				$(`#roam42-wB-input`).typeahead('val', '');
 				wControl.style.visibility='hidden';
 			} else {
-				wControl.style.visibility='visible';
-				document.querySelector('#roam42-wB-input').focus();
+			//START FIX
+			setTimeout( ()=>{ $('#roam42-wB-input').typeahead('val', '-') },50);
+			setTimeout(async ()=>{
+				$('#roam42-wB-input').typeahead('val', '');
+				setTimeout(async ()=>{
+					wControl.style.visibility='visible';
+					$('#roam42-wB-input').focus();
+				},150);
+			},100);
+				
+				// wControl.style.visibility='visible';
+				// document.querySelector('#roam42-wB-input').focus();
 			}
 			roam42.wB.UI_Visible = !roam42.wB.UI_Visible;
 		}
@@ -193,6 +202,16 @@
 				else
 					source.sourceCallBack = callBackFunction;
 			}
+
+			await roam42.wB.sourceAdd( "workBench userCommands", async (context, query, results)=> {
+				let list =  await roam42.wB.userCommands.UserDefinedCommandList();
+				for (item of list) {
+					if(context=='-' || context=='+')
+			 		await results.push( { display: item.key, img: roam42.host + `img/wb/ucmd-${item.type}.png`, 
+					 											context: context, info: item.details, 'type': item['type'],
+					 											cmd: roam42.wB.userCommands.runComand });
+				}
+			});
 
 			await roam42.wB.sourceAdd( "SmartBlocks from AnyWhere", async (context, query, results)=> {
 				let sbList =  await roam42.smartBlocks.UserDefinedWorkflowsList();
@@ -261,7 +280,8 @@
 		setTimeout( ()=>{
 			roam42.loader.addScriptToPage( 'workBenchPath',  roam42.host + 'ext/workBenchPath.js'   );
 			roam42.loader.addScriptToPage( 'workBenchCmd',   roam42.host + 'ext/workBenchCmd.js'   );
-		},2000);
+			roam42.loader.addScriptToPage( 'workBenchCmd',   roam42.host + 'ext/workBenchUserCmd.js'   );
+		},1000);
 	} // End of INITIALIZE
 
 

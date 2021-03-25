@@ -27,7 +27,6 @@ roam42.wB.commandAddRunFromAnywhere("Sidebars - swap with main window & choose w
 				outputString += (iCounter + ': ' + paneInfo.title + '\n').substring(0,100);
 			else
 				outputString += (iCounter + ': ' + paneInfo.parents[0].title + ' > ' + paneInfo.string + '\n').substring(0,100);
-			console.log(paneInfo);
 			iCounter +=1;
 		}
 	}
