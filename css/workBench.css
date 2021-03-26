@@ -1,0 +1,175 @@
+
+@media (prefers-color-scheme: light) {
+  :root {
+		--wb-container-background: white; 
+		--wb-container-tt-menu-background-color: white;
+		--wb-container-tt-highlight-background-color: WhiteSmoke;
+		--wb-container-tt-cursor-background-color: Gainsboro;
+	}
+	#roam42-wB-container .tt-input:focus, 
+	#roam42-wB-path-container .tt-input:focus {
+		border-color: white !important;
+		background-color: white !important;
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+		/* --wb-container-background: #555; */
+		--wb-container-background: #8899A6; 
+		--wb-container-tt-menu-background-color:  #8899A6;
+		--wb-container-tt-highlight-background-color: #B3B3B3;
+		--wb-container-tt-cursor-background-color: #E4E6EB;
+	}
+	.roam42-wb-path-image {
+		filter: invert(100%);
+	}
+	#roam42-wB-container .tt-input:focus, 
+	#roam42-wB-path-container .tt-input:focus {
+		border-color: #E4E6EB !important;
+		background-color: #E4E6EB !important;
+		color: black !important;
+	}
+}
+
+#roam42-wB-container, #roam42-wB-path-container {
+	position: absolute;
+	left: 50%;
+	top:0px;
+	transform: translate(-50%, 0%);
+	border: 4px solid var(--wb-container-background);   
+	background-color: var(--wb-container-background); 
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+	height: 30px;
+	width:450px;
+	z-index: 1000;
+	 opacity: 1;
+}
+
+#roam42-wB-container .typeahead,
+#roam42-wB-path-container .typeahead{
+	z-index: 999;
+	opacity: 1;
+	line-height:12px !important;
+	font-size: 10pt !important;
+	height: 14px !important;
+	border-radius: 0px;
+	width: 443px;
+	/* background-color: #777; */
+	/* color: #ddd !important; */
+}
+
+#roam42-wB-container .tt-menu,
+#roam42-wB-path-container .tt-menu {
+	background-color: var(--wb-container-tt-menu-background-color);
+	border-radius: 0px !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33) !important;
+	top: 13px !important;
+	left:-4px !important;
+	padding-top: 0px !important;
+	padding-bottom: 0px !important;
+	width:450px;
+}
+
+#roam42-wB-container .tt-highlight,
+#roam42-wB-path-container .tt-highlight {
+	background-color: var(--wb-container-tt-highlight-background-color) !important ;
+}
+
+#roam42-wB-container .tt-suggestion, 
+#roam42-wB-path-container .tt-suggestion {
+	line-height:12px;
+	font-size: 10pt;
+	padding-left: 7px !important;
+	color: black;
+}
+
+#roam42-wB-container .tt-cursor, 
+#roam42-wB-container .tt-suggestion:hover,
+#roam42-wB-path-container .tt-cursor, 
+#roam42-wB-path-container .tt-suggestion:hover {
+	background-color: var(--wb-container-tt-cursor-background-color) !important;
+
+}
+
+#roam42-wB-path-PathDisplay {				
+	font-size: 10pt;
+	height:14pt;
+	padding-left:3px;
+	position: relative;
+	top:-2px;
+}
+
+#roam42-wB-path-container {
+	height: 50px;
+}
+
+#roam42-wB-path-container .tt-menu {
+	top: 12px !important;
+	left:-4px !important;
+	padding-top: 0px !important;
+	padding-bottom: 0px !important;
+}
+
+
+ 
+
+/* PATH NAVIGATOR  */
+/* 
+#roam42-wB-path-container {
+	position: absolute;
+	left: 50%;
+	top:0px;
+	transform: translate(-50%, 0%);
+	border: 4px solid var(--wb-container-background);   
+	background-color: var(--wb-container-background); 
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+	height: 50px;
+	width:450px;
+	z-index: 1000;
+}
+#roam42-wB-path-PathDisplay {				
+	font-size: 10pt;
+	height:14pt;
+	padding-left:3px;
+	position: relative;
+	top:-2px;
+}
+
+#roam42-wB-path-container .typeahead {
+	line-height:12px !important;
+	font-size: 10pt !important;
+	height: 14px !important;
+	border-radius: 0px;
+	width: 443px;
+	padding-left: 3px !important;
+	background-color: #777;
+	color: #ddd !important;
+}
+
+#roam42-wB-path-container .tt-input:focus {
+	border-color: #777 !important;
+}
+
+#roam42-wB-path-container .tt-menu {
+	background-color: var(--wb-container-tt-menu-background-color);
+	border-radius: 0px !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33) !important;
+	color: #ddd !important;
+	top: 12px !important;
+	left:-4px !important;
+	padding-top: 0px !important;
+	padding-bottom: 0px !important;
+	width:450px;
+}
+
+#roam42-wB-path-container .tt-highlight {
+	background-color: var(--wb-container-tt-highlight-background-color) !important ;
+}
+
+#roam42-wB-path-container .tt-cursor, 
+#roam42-wB-path-container .tt-suggestion:hover {
+	background-color: var(--wb-container-tt-cursor-background-color) !important;
+
+}
+ */

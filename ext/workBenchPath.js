@@ -155,7 +155,7 @@
 				templates: {
 					suggestion: (val)=>{
 						return '<div style="display: flex">' + 
-											'<div style="left:5px;width:22px;"><img style="filter: invert(100%)" height="18px" src="' + val.img + '"></div>' +
+											'<div style="left:5px;width:22px;"><img class="roam42-wb-path-image" height="18px" src="' + val.img + '"></div>' +
 											'<div style="width:430px"> ' + val.display + '</div>' + 
 										'</div>' ;
 					}
@@ -266,67 +266,7 @@
 			<div id="roam42-wB-path-container" style="visibility:hidden">
 				<div id="roam42-wB-path-PathDisplay">></div>
 				<div><input autocomplete="off" class="typeahead" id="roam42-wB-path-input" type="text"></div>
-			</div>
-			<style id="roam42-wB-path-container-style">
-				#roam42-wB-path-container {
-					position: absolute;
-					left: 50%;
-					top:0px;
-					transform: translate(-50%, 0%);
-					border: 4px solid DarkSlateGray;
-					background-color: DarkSlateGray;
-					box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
-					height: 50px;
-					width:450px;
-					z-index: 1000;
-				}
-				#roam42-wB-path-PathDisplay {				
-					color: #ddd;
-					font-size: 10pt;
-					height:14pt;
-					padding-left:3px;
-					position: relative;
-					top:-2px;
-				}
-
-				#roam42-wB-path-container .typeahead {
-					line-height:12px !important;
-					font-size: 10pt !important;
-					height: 14px !important;
-					border-radius: 0px;
-					width: 443px;
-					padding-left: 3px !important;
-					background-color: #777;
-					color: #ddd !important;
-				}
-
-				#roam42-wB-path-container .tt-input:focus {
-					border-color: #777 !important;
-				}
-
-				#roam42-wB-path-container .tt-menu {
-					background-color: DarkSlateGray;
-					border-radius: 0px; !important;
-					box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33) !important;
-					color: #ddd !important;
-					top: 12px !important;
-					left:-4px !important;
-					padding-top: 0px !important;
-					padding-bottom: 0px !important;
-					width:450px;
-				}
-
-				#roam42-wB-path-container .tt-highlight {
-					background-color: DarkSlateGray !important
-				}
-				
-				#roam42-wB-path-container .tt-suggestion {
-					line-height:12px;
-					font-size: 10pt;
-					padding-left: 7px !important;
-				}
-
-		</style>`);
+			</div>`);
 	
 	};  //end of appendCP_HTML_ToBody
 
@@ -335,7 +275,6 @@
 		console.clear()
 		console.log('reloading wB path')
 		try{ document.querySelector('#roam42-wB-path-container').remove() } catch(e) {};
-		try{ document.querySelector('#roam42-wB-path-container-style').remove() } catch(e) {};
 		setTimeout(async ()=>{
 	    roam42.loader.addScriptToPage( "workBenchPath", roam42.host + 'ext/workBenchPath.js');
 		},4000);
@@ -343,6 +282,5 @@
 
   roam42.wB.path.fromwB_TestReload = ()=>{
 		try{ document.querySelector('#roam42-wB-path-container').remove() } catch(e) {};
-		try{ document.querySelector('#roam42-wB-path-container-style').remove() } catch(e) {};
   };
 };

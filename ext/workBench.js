@@ -9,8 +9,8 @@
 
 	roam42.wB.initialize = async ()=> {
 
-		// Default is that CP is enabled, but during testing is turned off.
-		if( await roam42.settings.get('workBenchEnabled') != 'on') 
+		// Default is that wB is enabled, but during testing is turned off.
+		if( await roam42.settings.get('workBenchEnabled') == 'off') 
 			return;
 		else
 			roam42.wB.enabled = true;
@@ -290,59 +290,7 @@
 			$(document.body).append(`
 				<div id="roam42-wB-container" style="visibility:hidden">
 					<input autocomplete="off" class="typeahead" id="roam42-wB-input" type="text">
-				</div>
-				<style id="roam42-wB-container-style">
-					#roam42-wB-container {
-						position: absolute;
-						left: 50%;
-						top:0px;
-						transform: translate(-50%, 0%);
-						border: 4px solid #555;
-						background-color: #555;
-						box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
-						height: 30px;
-						width:450px;
-						z-index: 1000;
-					}
-
-					#roam42-wB-container .typeahead {
-						line-height:12px !important;
-						font-size: 10pt !important;
-						height: 14px !important;
-						border-radius: 0px;
-						width: 443px;
-						padding-left: 3px !important;
-						background-color: #777;
-						color: #ddd !important;
-					}
-
-					#roam42-wB-container .tt-input:focus {
-						border-color: #777 !important;
-					}
-
-					#roam42-wB-container .tt-menu {
-						background-color: #777;
-						border-radius: 0px; !important;
-						box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33) !important;
-						color: #ddd !important;
-						top: 13px !important;
-						left:-4px !important;
-						padding-top: 0px !important;
-						padding-bottom: 0px !important;
-						width:450px;
-					}
-
-					#roam42-wB-container .tt-highlight {
-						background-color: darkblue !important
-					}
-					
-					#roam42-wB-container .tt-suggestion {
-						line-height:12px;
-						font-size: 10pt;
-						padding-left: 7px !important;
-					}
-
-			</style>`);
+				</div>`);
 	
 	} //end of module
 

@@ -5,7 +5,7 @@ roam42.wB.commandAddRunFromAnywhere("Right Sidebar - close window panes (rscwp)"
 	await roam42KeyboardLib.pressEsc(100);
 	await roam42KeyboardLib.pressEsc(100);
 	await roam42.common.rightSidebarClose(0, false); 
-	await restoreCurrentBlockSelection(); 
+	try { await restoreCurrentBlockSelection() } catch(e){}
 });
 roam42.wB.commandAddRunFromAnywhere("Sidebars - swap with main window (swap)", async ()=>{  
 	await roam42.common.swapWithSideBar();
@@ -82,6 +82,7 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = fals
 					await roam42.common.sleep(100);
 				}
 				roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
+				if(zoomUID ==0) zoomUID = destinationUID; //go to first block in move
 			}
 		} else {
 			for(i=0; i<=roam42.wB.triggeredState.selectedNodes.length-1; i++) {
@@ -90,10 +91,10 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = fals
 					await roam42.common.createSiblingBlock(blockToMove, `((${blockToMove}))`);
 					await roam42.common.sleep(100);
 				}
-				roam42.common.moveBlock(destinationUID, iLocation,blockToMove);
+				roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
+				if(zoomUID ==0) zoomUID = destinationUID; //go to first block in move
 			}
 		}
-		zoomUID = roam42.wB.triggeredState.selectedNodes[0].id.slice(-9);	
 	}
 	else if(roam42.wB.triggeredState.activeElementId!=null) {
 		if(destinationUID!=roam42.wB.triggeredState.activeElementId.slice(-9)) {//single block move
@@ -103,10 +104,9 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = fals
 				await roam42.common.sleep(100);
 			}
 			roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
-			zoomUID = uid;
+			zoomUID = blockToMove;	
 		}
 	}
-	
 	if(zoom>0) await roam42.common.sleep(150);
 	if(zoom==1 && zoomUID !=0) //open in  side bar
 		roam42.common.navigateUiTo(zoomUID, true, 'block');
