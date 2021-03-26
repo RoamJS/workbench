@@ -289,7 +289,7 @@
 		const appendCP_HTML_ToBody = ()=> {
 			$(document.body).append(`
 				<div id="roam42-wB-container" style="visibility:hidden">
-					<input autocomplete="off" class="typeahead" id="roam42-wB-input" type="text">
+					<input placeholder="Type a command" autocomplete="off" class="typeahead" id="roam42-wB-input" type="text">
 				</div>`);
 	
 	} //end of module

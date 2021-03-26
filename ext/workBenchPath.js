@@ -168,10 +168,10 @@
 					let outputUID = null;
 					let outputText = null;
 					if( (event.key=='Enter' && event.ctrlKey==true) && roam42.wB.path.trailUID.length>0  ) { // use the last selection as the lookup
-					 	outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1];
+						outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1];
 						outputText = roam42.wB.path.trailString[roam42.wB.path.trailString.length-1];
 					} else { //as tab use the current
-					 	outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1];
+						outputUID = roam42.wB.path.trailUID[roam42.wB.path.trailUID.length-1];
 						outputText = roam42.wB.path.trailString[roam42.wB.path.trailString.length-1];
 					}
 					roam42.wB.path.level = 0;
@@ -219,7 +219,7 @@
 						$('#roam42-wB-path-input').focus();
 					},100);
 			}
-    });
+		});
 
 		$('#roam42-wB-path-input').bind('typeahead:select',  
 				(ev, suggestion)=> {
@@ -227,21 +227,26 @@
 						roam42.wB.path.level = 1;
 						roam42.wB.path.trailString = [suggestion.display]; //string path
 						roam42.wB.path.trailUID 	 = [suggestion.uid]; //UID path
-					} else {
-						roam42.wB.path.trailString.push( suggestion.display ); //string path
-						roam42.wB.path.trailUID.push( 	 suggestion.uid ); //UID path
-					}
-					formatPathDisplay();
-					
-					//following lines handles bug in typeahead not refreshing new data SOURCES
-					//be VERY Careful when changing
-					//START FIX
-					$('#roam42-wB-path-input').typeahead('val', ' ');
-					setTimeout(async ()=>{
-						$('#roam42-wB-path-input').typeahead('val', '');
-						$('#roam42-wB-path-input').focus();
-					},10);
-					//END FIX					  
+						formatPathDisplay();
+						//following lines handles bug in typeahead not refreshing new data SOURCES
+						//be VERY Careful when changing
+						//START FIX
+						$('#roam42-wB-path-input').typeahead('val', ' ');
+						setTimeout(async ()=>{
+							$('#roam42-wB-path-input').typeahead('val', '');
+							$('#roam42-wB-path-input').focus();
+						},10);
+						//END FIX
+					} else if(roam42.wB.path.level == 1) {
+						roam42.wB.path.level = 0;
+						roam42.wB.path.toggleVisible();
+						setTimeout ( async ()=>{
+							//Execute CALLBACK function here
+							if(roam42.wB.path.callBack!==null)
+								await roam42.wB.path.callBack(suggestion.uid, suggestion.display);
+							roam42.wB.path.callBack = null;
+						},150);
+					}						  
 		});
 
 		let inputFieldFocusOutListener = (e)=>{  
