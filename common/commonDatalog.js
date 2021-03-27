@@ -2,12 +2,24 @@
 
 (()=>{
 
+	roam42.common.getUserInformation = ()=> {
+		let gs = window.localStorage.getItem('globalAppState').split(',');
+		let email = gs[ gs.findIndex((e,i)=>e.includes('~:email'))+1 ];
+		let displayName = gs[ gs.findIndex((e,i)=>e.includes('~:display-name'))+1 ];
+		let userID = gs[ gs.findIndex((e,i)=>e.includes('~:uid'))+1 ];
+		let photoUrl = gs[ gs.findIndex((e,i)=>e.includes('~:photo-url'))+1 ];
+		return { displayName: displayName.substring(1, displayName.length-1), 
+						 email: 			email.substring(1,email.length-1),	
+						 userID: 			userID.substring(1,userID.length-1), 
+						 photoUrl: 		photoUrl.substring(1,photoUrl.length-1) 
+					 };
+	}
+
 	roam42.common.createUid = ()=>{
 		return roamAlphaAPI.util.generateUID();
 	}
 
 	//API DOCS: https://roamresearch.com/#/app/help/page/0Xd0lmIrF
-
 	roam42.common.createBlock = async (parent_uid, block_order, block_string)=> {
 		parent_uid = parent_uid.replace('((','').replace('))','');
 		let newUid = roamAlphaAPI.util.generateUID();

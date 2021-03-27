@@ -25,7 +25,7 @@ if( typeof window.roam42 == 'undefined' ) {
 
   window.roam42  = {};
   roam42.buildID = 'Roam<sup>42</sup> 2021-03-27 (this is the way) ';
-
+	
   roam42.host    = document.currentScript.src.replace('main.js','');
 
   // roam42.loader
@@ -126,6 +126,11 @@ if( typeof window.roam42 == 'undefined' ) {
 				try { setTimeout(async()=> { await roam42.wB.initialize() },100) } catch(e){};
         roam42.autocomplete.loadAutoComplete();
         roam42.jumpnav.loadJumpNav();
+
+				try {
+					roam42.user = roam42.common.getUserInformation();
+				} catch(e) {}
+
         try {
           if ( window === window.parent  ) {
             try { await roam42.dailyNotesPopup.component.initialize(); } catch(e){};

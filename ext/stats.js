@@ -110,6 +110,10 @@
 		Firebase Links: ${await roamAlphaAPI.q(queryFireBaseAttachements)} <br/>
 		http Links: ${await roamAlphaAPI.q(queryExternalLinks)} <br/>
 
+		<br/>
+		Display Name: ${roam42.user.displayName}<br/>
+		Email: ${roam42.user.email}<br/>
+
 		<br/><br/>
 		<a href="https://roamresearch.com/#/app/Zsolt-Blog/page/WUn5PuTDV" target=_blank>Click for more info on method of calculations"</a>
 		`,60000);
