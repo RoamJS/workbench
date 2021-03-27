@@ -80,14 +80,23 @@
 	// SOURCES ===================================
 
 	const levelPages = async(query, results)=>{
+		const inboxes = (await roam42.wB.userCommands.UserDefinedCommandList()).filter(e=>e.type=='inbox');
+		for (inbox of inboxes) {
+			if(`Inbox: ${inbox.key}`.toLowerCase().includes(query.toLowerCase()) || query.length==0) {	
+				await results.push( {display: `Inbox: ${inbox.key}`, level: 0, img: roam42.host + '/img/wb/page.png', 
+										uid: await roam42.wB.userCommands.inboxUID(inbox.details) });			
+			}
+		}					
 		if(roam42.wB.path.allPagesForGraphSearch && roam42.wB.path.allPagesForGraphSearch._documents.length>0) {
 			const pages = roam42.wB.path.allPagesForGraphSearch.search(query);
 			const sortPages = pages.sort( (a,b)=> a[0].localeCompare(b[0]) );
 			for await (page of sortPages) 
 				await results.push( {display: page[0].substring(0,255), uid: page[1], img: roam42.host + '/img/wb/page.png'} );
-		};
-		await results.push( {display: 'Current page (cp)', level: 0, img: roam42.host + '/img/wb/page.png', uid: await roam42.common.currentPageUID() }  );
-		await results.push( {display: 'Today DNP', level: 0, img: roam42.host + '/img/wb/page.png', uid: await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date())) } );
+		} 
+		if('Current page (cp)'.toLowerCase().includes(query.toLowerCase()) || query.length==0)	
+			await results.push( {display: 'Current page (cp)', level: 0, img: roam42.host + '/img/wb/page.png', uid: await roam42.common.currentPageUID() }  );
+		if('Today DNP'.toLowerCase().includes(query.toLowerCase()) || query.length==0)	
+			await results.push( {display: 'Today DNP', level: 0, img: roam42.host + '/img/wb/page.png', uid: await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date())) } );
 	};
 
 	const levelBlocks = async(query, results)=>{
