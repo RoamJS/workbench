@@ -113,6 +113,9 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = fals
 	else if(zoom==2 && zoomUID !=0) //jump to in main page
 		roam42.common.navigateUiTo(zoomUID, false);
 }; 
+
+roam42.wB.moveBlocks = moveBlocks;
+
 const excludeSelectedBlocks = ()=>{
 	let nodes = [];
 	if(roam42.wB.triggeredState.activeElementId != null)

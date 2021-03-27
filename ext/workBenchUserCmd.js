@@ -1,6 +1,4 @@
 {
-	console.log('user Commands loading')
-
 	roam42.wB.userCommands = {};
 
 	roam42.wB.userCommands.intialize = async()=>{
@@ -8,7 +6,39 @@
 	}; //END of roam42.wB.userCommands.intialize
 
 	const runInboxCommand = async (cmdInfo)=>{
-		console.log('runInboxCommand', cmdInfo)
+
+		let pageUID = null;
+		let pageName = await roam42.wB.userCommands.findBlockAmongstChildren( cmdInfo.info[0].children, 'page:' );
+		if(pageName == null) { //default to DNP
+			pageUID = await roam42.common.getPageUidByTitle(roam42.dateProcessing.parseTextForDates('today').replace('[[','').replace(']]','').trim());
+			pageName = "Today's DNP";
+		}
+		else { //get page UID, if doesnt exist, exist
+			pageUID = await roam42.common.getPageUidByTitle( pageName );
+			if(pageUID == '') {
+				roam42.help.displayMessage(`This page "${pageName}" doesnt exist, action not performed.`,5000);
+				return;
+			}
+		}
+		let textName = await roam42.wB.userCommands.findBlockAmongstChildren( cmdInfo.info[0].children, 'text:' );
+		//if text defined, get the UID of the tag.
+		let textUID  = (await roam42.formatConverter.flatJson(pageUID,false,false)).find(e=>e.blockText.includes(textName));
+
+		//reset pageUID if there is a valid text block
+		pageUID = textUID ? textUID.uid : pageUID;
+
+		let locationTopBotom = await roam42.wB.userCommands.findBlockAmongstChildren( cmdInfo.info[0].children, 'location:' );
+		locationTopBotom = locationTopBotom=='bottom' ? 10000 : 0;
+
+		let blockRef = await roam42.wB.userCommands.findBlockAmongstChildren( cmdInfo.info[0].children, 'blockref:' );
+		if(blockRef==null)
+			blockref = false;
+		else
+			blockRef = blockRef.toLowerCase()=='true' ? true : false;
+
+		await roam42.wB.moveBlocks(pageUID,location,0,blockRef);
+		textName = textName==null ? '' : ' > ' + textName;
+		roam42.help.displayMessage(`Block(s) moved to ${pageName}${textName}`,3000);
 	}
 
 	roam42.wB.userCommands.runComand = async (cmdInfo)=>{
@@ -16,7 +46,7 @@
 		
 		switch(cmdInfo['type']) {
 			case 'inbox':
-				await runInboxCommand();
+				await runInboxCommand(cmdInfo);
 				break;
 		}		
 	};
@@ -24,8 +54,9 @@
 	roam42.wB.userCommands.findBlockAmongstChildren = async ( childrenBlocks, startsWith )=> {
 		//loops through array and returns node where the text matches
 		for(c of childrenBlocks) {
-			if(c.string.toLowerCase().startsWith(startsWith))
-				return c.string;
+			if(c.string.toLowerCase().startsWith(startsWith)) {
+				return c.string.replace(startsWith,'').trim();
+			}
 		}
 		return null;
 	};
@@ -42,13 +73,12 @@
 				//if contains users, check if this user command should run. if no user defined, command continues to process
 				let users = await roam42.wB.userCommands.findBlockAmongstChildren( inbox.children, 'users:' );
 				if(users!=null && users.trim() !='users:') {
-					const userArray = users.replace('users:','').trim().split(' ');
+					const userArray = users.split(' ');
 					if(userArray.includes( roam42.wB.userCommands.currentUser )==false) continue;
 				}
 				//must contain a name
 				let name = await roam42.wB.userCommands.findBlockAmongstChildren( inbox.children, 'name:' );
 				if(name==null)  continue;
-				name = name.substring(5).trim();
 				results.push( {
 					key: name,
 					'type': sType,
