@@ -215,7 +215,7 @@
 
 			await roam42.wB.sourceAdd( "SmartBlocks from AnyWhere", async (context, query, results)=> {
 				let sbList =  await roam42.smartBlocks.UserDefinedWorkflowsList();
-				await roam42.smartBlocks.addCommands( sbList );
+				// await roam42.smartBlocks.addCommands( sbList );
 				for await (sb of sbList) {
 					if( sb['key'].includes('<%GLOBAL%>') ) { 
 						let sbCommand = sb['key'].replace('<%GLOBAL%>',''); 
@@ -228,7 +228,7 @@
 			await roam42.wB.sourceAdd( "SmartBlocks from blocks", async (context, query, results)=>{
 				if( context != '-' ) return;
 				let sbList =  await roam42.smartBlocks.UserDefinedWorkflowsList();
-				await roam42.smartBlocks.addCommands( sbList );
+				// await roam42.smartBlocks.addCommands( sbList );
 				for await (sb of sbList) {
 					if( !sb['key'].includes('<%GLOBAL%>'))
 				 		await results.push( { display: sb['key'], img: roam42.host + '/img/wb/sbinwb.png', context: '-', info: sb,
@@ -241,6 +241,16 @@
 				for await (el of roam42.wB._commands) {
 						if( el.context == '*' || el.context == context ) //applies to all contexts, so include
 							await results.push(el);
+				}
+			});
+
+			await roam42.wB.sourceAdd( "SmartBlocks builtin", async (context, query, results)=>{
+				if( context != '-' ) return;
+				let sbList =  []
+				await roam42.smartBlocks.addCommands( sbList );
+				for await (sb of sbList) {
+					await results.push( { display: sb['key'], img: roam42.host + '/img/wb/sbinwb.png', context: '-', info: sb,
+																cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}) });
 				}
 			});
 

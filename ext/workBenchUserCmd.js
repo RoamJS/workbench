@@ -1,10 +1,6 @@
 {
 	roam42.wB.userCommands = {};
 
-	roam42.wB.userCommands.intialize = async()=>{
-		roam42.wB.userCommands.currentUser = (await roam42.common.userInformation()).email;
-	}; //END of roam42.wB.userCommands.intialize
-
 	const runInboxCommand = async (cmdInfo)=>{
 
 		let pageUID = null;
@@ -55,7 +51,7 @@
 		//loops through array and returns node where the text matches
 		for(c of childrenBlocks) {
 			if(c.string.toLowerCase().startsWith(startsWith)) {
-				return c.string.replace(startsWith,'').trim();
+				return c.string.toLowerCase().replace(startsWith,'').trim();
 			}
 		}
 		return null;
@@ -70,12 +66,6 @@
 			//		 	console.log( JSON.stringify(inbox,0,2) );
 			var sType = inbox.string.replace('#42workBench','').replace('#[[42workBench]]','').trim().toLowerCase();
 			if( inbox.children && validCommandTypeList.includes(sType) ) {
-				//if contains users, check if this user command should run. if no user defined, command continues to process
-				let users = await roam42.wB.userCommands.findBlockAmongstChildren( inbox.children, 'users:' );
-				if(users!=null && users.trim() !='users:') {
-					const userArray = users.split(' ');
-					if(userArray.includes( roam42.wB.userCommands.currentUser )==false) continue;
-				}
 				//must contain a name
 				let name = await roam42.wB.userCommands.findBlockAmongstChildren( inbox.children, 'name:' );
 				if(name==null)  continue;
@@ -89,5 +79,4 @@
 		return roam42.common.sortObjectByKey(results);
 	};	
 
-	roam42.wB.userCommands.intialize();
 };

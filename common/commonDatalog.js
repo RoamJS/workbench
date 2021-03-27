@@ -6,11 +6,6 @@
 		return roamAlphaAPI.util.generateUID();
 	}
 
-	roam42.common.userInformation = async ()=>{
-		const settings = await roamAlphaAPI.q('[:find (pull ?e [*]) :where[?e :user/settings ?settings]]')[0][0];
-		return { email: settings.email, displayName: settings['display-name'], id: settings.uid };
-	}
-
 	//API DOCS: https://roamresearch.com/#/app/help/page/0Xd0lmIrF
 
 	roam42.common.createBlock = async (parent_uid, block_order, block_string)=> {

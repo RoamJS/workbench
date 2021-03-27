@@ -6,7 +6,6 @@
 //		.levelPages - returns page names
 //		.levelBlocks - returns blocks at the current level. As user drills down throgh block strucure, the UID of one 
 //									 block is passed to the next until it reaches the last block in the branch
-//	   .formatPathDisplay - displays in the header of this control the current location in the path
 
 {
 	//https://github.com/bvaughn/js-search
@@ -25,6 +24,8 @@
 		roam42.wB.path.canPageBeSelected = false; //can the page be selected in the navigator as a destination point
 
 		roam42.wB.path.launch = (callBackFunction, excludeUIDs = [], startUID=null, startString=null, canPageBeSelected=false)=> {			
+			console.log('roam42.wB.path.launch')
+			console.log(callBackFunction, excludeUIDs, startUID, startString, canPageBeSelected);
 			roam42.wB.path.level = 0;	//reset path level
 			roam42.wB.path.trailUID 	 = [startUID]; 		//UID path
 			roam42.wB.path.trailString = [startString]; //string path
@@ -36,7 +37,6 @@
 			
 			if(startUID!=null)
 				roam42.wB.path.level=1;
-			formatPathDisplay();
 			//following lines handles bug in typeahead not refreshing new data SOURCES
 			//be VERY Careful when changing
 			//START FIX
@@ -123,23 +123,6 @@
 
 	};
 
-	const formatPathDisplay = ()=> {
-		if(roam42.wB.path.trailString != null && roam42.wB.path.trailString.length>0) {
-			let output = roam42.wB.path.trailString.join(' > ');
-			if(output.length > 70){
-				output = roam42.wB.path.trailString[0] + ' * > '.repeat(roam42.wB.path.trailString.length-2) 
-											  + roam42.wB.path.trailString[roam42.wB.path.trailString.length-1] ;				
-			}
-			if(output.length > 70){
-				output = roam42.wB.path.trailString[0].substring(0,25) + '... > * > ' + 
-											   roam42.wB.path.trailString[roam42.wB.path.trailString.length-1].substring(0,35);				
-			}
-			$(`#roam42-wB-path-PathDisplay`).text( output );
-		}	else {
-			$(`#roam42-wB-path-PathDisplay`).text('Type page name.... ');
-		}
-	};
-
 	const typeAheadCreate = async ()=>{
 		$('#roam42-wB-path-input').typeahead(
 			{ hint: true, highlight: true, minLength: 0, autoselect: true },
@@ -199,7 +182,6 @@
 					roam42.wB.path.trailString.pop();
 					roam42.wB.path.trailUID.pop();
 					if(roam42.wB.path.trailUID.length==0) roam42.wB.path.level = 0;
-					formatPathDisplay();
 					//following lines handles bug in typeahead not refreshing new data SOURCES
 					//be VERY Careful when changing
 					//START FIX
@@ -227,7 +209,7 @@
 						roam42.wB.path.level = 1;
 						roam42.wB.path.trailString = [suggestion.display]; //string path
 						roam42.wB.path.trailUID 	 = [suggestion.uid]; //UID path
-						formatPathDisplay();
+						
 						//following lines handles bug in typeahead not refreshing new data SOURCES
 						//be VERY Careful when changing
 						//START FIX
@@ -269,8 +251,7 @@
 	const appendCP_HTML_ToBody = ()=> {
 		$(document.body).append(`
 			<div id="roam42-wB-path-container" style="visibility:hidden">
-				<div id="roam42-wB-path-PathDisplay">></div>
-				<div><input autocomplete="off" class="typeahead" id="roam42-wB-path-input" type="text"></div>
+				<div><input placeholder='type...' autocomplete="off" class="typeahead" id="roam42-wB-path-input" type="text"></div>
 			</div>`);
 	
 	};  //end of appendCP_HTML_ToBody

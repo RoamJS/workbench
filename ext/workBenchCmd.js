@@ -166,13 +166,14 @@ const MoveBlockDNP =  async ()=>{
 	if(destinationPage=='') {
 		//DNP does not exist, create it before going further
 		await roam42.common.createPage(parsedDate);
-		await roam42.common.sleep(50);
+		await roam42.common.sleep(150);
 		destinationPage = await roam42.common.getPageUidByTitle(parsedDate);
 	}
-	setTimeout( ()=>{ roam42.wB.path.launch( (async (uid)=>{ moveBlocks(uid, 0, 0)}), excludeSelectedBlocks(), destinationPage, parsedDate ) },200);
+	console.log(destinationPage,parsedDate,excludeSelectedBlocks());
+	setTimeout( ()=>{ roam42.wB.path.launch( (async (uid)=>{ moveBlocks(uid, 0, 0)}), excludeSelectedBlocks(), destinationPage, parsedDate.toString(),true ) },200);
 };
-roam42.wB.commandAddRunFromBlock('Move Block - DNP (mbd)', async ()=>{ MoveBlockDNP() } );
-roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks - DNP (mbds)', async ()=>{ MoveBlockDNP() } );
+roam42.wB.commandAddRunFromBlock('Move Block - DNP (mbdnp)', async ()=>{ MoveBlockDNP() } );
+roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks - DNP (mbdnp)', async ()=>{ MoveBlockDNP() } );
 
 const pullBlockToThisBlock = async (uidToMove, makeBlockRef = false)=>{
 	const activeBlockUID = roam42.wB.triggeredState.activeElementId.slice(-9);
@@ -232,6 +233,7 @@ roam42.wB.commandAddRunFromAnywhere("Reload workBench (rwb)", async ()=>{
 	await roam42.common.sleep(100);
 	await roam42.wB.restoreCurrentBlockSelection();
 	roam42.wB.testReload(); 
+	roam42.help.displayMessage('Reloading workBench.', 2000);
 });
 
 } //end of module
