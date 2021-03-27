@@ -120,24 +120,28 @@
 
 		Mousetrap.unbind( roam42.wB.keyboardShortcut ); //do this in case of a reset
 		Mousetrap.bind( roam42.wB.keyboardShortcut ,()=>{ 
-				if(!roam42.wB.active) return;
-				//capture States
-				roam42.wB.triggeredState.activeElementId = document.activeElement.type == 'textarea' ? document.activeElement.id : null;
-				roam42.wB.triggeredState.activeElementSelectionStart = document.activeElement.selectionStart;
-				roam42.wB.triggeredState.activeElementSelectionEnd   = document.activeElement.selectionEnd;
-				roam42.wB.triggeredState.selectedNodes = null;
-				for(i=0;i<30;i++){
-					let lvl = document.querySelectorAll(`.rm-level-${i} > .block-highlight-blue`);	
-					if(lvl.length>0) {
-						roam42.wB.triggeredState.selectedNodes  = lvl;
-						break;
-					}
-				}
-				if(roam42.wB.triggeredState.selectedNodes != null)
-					roam42KeyboardLib.pressEsc(100);
-				setTimeout(()=>roam42.wB.toggleVisible(),100);
+			roam42.wB.launch();
 			return false; 
 		});
+
+		roam42.wB.launch = ()=>{
+			if(!roam42.wB.active) return;
+			//capture States
+			roam42.wB.triggeredState.activeElementId = document.activeElement.type == 'textarea' ? document.activeElement.id : null;
+			roam42.wB.triggeredState.activeElementSelectionStart = document.activeElement.selectionStart;
+			roam42.wB.triggeredState.activeElementSelectionEnd   = document.activeElement.selectionEnd;
+			roam42.wB.triggeredState.selectedNodes = null;
+			for(i=0;i<30;i++){
+				let lvl = document.querySelectorAll(`.rm-level-${i} > .block-highlight-blue`);	
+				if(lvl.length>0) {
+					roam42.wB.triggeredState.selectedNodes  = lvl;
+					break;
+				}
+			}
+			if(roam42.wB.triggeredState.selectedNodes != null)
+				roam42KeyboardLib.pressEsc(100);
+			setTimeout(()=>roam42.wB.toggleVisible(),100);
+		}
 
 		roam42.wB.restoreCurrentBlockSelection = async()=>{
 		 	roam42.common.simulateMouseClick( document.body );

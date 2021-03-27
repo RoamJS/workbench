@@ -72,6 +72,18 @@
     let menu = '';
     menu += `<div class="bp3-popover-content"><ul class="bp3-menu">`;
 
+			if( roam42.wB.enabled == true && roam42.wB.getIsEnabled()) {
+				menu += `<li class="">
+										<a class="bp3-menu-item bp3-popover-dismiss">
+											<div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.wB.launch();">
+												<div class="bp3-button bp3-minimal bp3-small bp3-icon-control"></div>
+												workBench <span style="font-size:7pt"> (${roam42.wB.keyboardShortcut}) </span>
+											</div>
+										</a>
+									</li>`;
+			}
+
+
     if( roam42.dailyNotesPopup && roam42.dailyNotesPopup.state != undefined && roam42.dailyNotesPopup.state != 'off'  ) {
       menu += `<li class="">
                    <a class="bp3-menu-item bp3-popover-dismiss">
@@ -170,7 +182,7 @@
                 <a class="bp3-menu-item bp3-popover-dismiss">
                   <div class="bp3-text-overflow-ellipsis bp3-fill" onclick=" roam42.roam42Menu.tippy[0].hide(); roam42.wB.toggleActiveState()">
                     <span style="font-size:8pt;padding-left:15px">
-                      workBench <span style="font-size:7pt">${roam42.wB.getIsEnabled() ? `(Active  ${roam42.wB.keyboardShortcut} )` : '(Disabled)'} 
+                      workBench <span style="font-size:7pt">${roam42.wB.getIsEnabled() ? `(Active)` : '(Disabled)'} 
                     </span>
                   </div>
                 </a>
