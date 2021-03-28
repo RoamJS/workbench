@@ -1,8 +1,11 @@
+"use strict";
 {
+	
 	roam42.wB.userCommands = {};
 
 	roam42.wB.userCommands.inboxUID = async (wBInbox) =>{
 		const ibx = wBInbox[0];
+		let pageUID = null;
 		let pageName = await roam42.wB.userCommands.findBlockAmongstChildren( ibx.children, 'page:' );
 		if(pageName == null) { //default to DNP
 			pageUID = await roam42.common.getPageUidByTitle(roam42.dateProcessing.parseTextForDates('today').replace('[[','').replace(']]','').trim());
@@ -12,12 +15,18 @@
 			pageUID = await roam42.common.getPageUidByTitle( pageName );
 			if(pageUID == '') {
 				roam42.help.displayMessage(`This page "${pageName}" doesnt exist, action not performed.`,5000);
-				return;
+				return null;
 			}
 		}
 		let textName = await roam42.wB.userCommands.findBlockAmongstChildren( ibx.children, 'text:' );
 		//if text defined, get the UID of the tag.
 		let textUID = textName==null ? null : (await roam42.formatConverter.flatJson(pageUID,false,false)).find(e=>e.blockText.toLowerCase().includes(textName.toLowerCase()));
+
+		if(textName!=null && textUID==null){ //text location doesnt exist,
+				roam42.help.displayMessage(`This location "${pageName} > ${textName}" doesnt exist, action not performed.`,5000);
+				return null;
+		}
+	
 		//reset pageUID if there is a valid text block
 		pageUID = textUID ? textUID.uid : pageUID;
 
@@ -41,6 +50,12 @@
 		let textName = await roam42.wB.userCommands.findBlockAmongstChildren( cmdInfo.info[0].children, 'text:' );
 		//if text defined, get the UID of the tag.
 		let textUID = textName==null ? null : (await roam42.formatConverter.flatJson(pageUID,false,false)).find(e=>e.blockText.toLowerCase().includes(textName.toLowerCase()));
+		
+		if(textName!=null && textUID==null){ //text location doesnt exist,
+				roam42.help.displayMessage(`This location "${pageName} > ${textName}" doesnt exist, action not performed.`,5000);
+				return;
+		}
+	
 		//reset pageUID if there is a valid text block
 		pageUID = textUID ? textUID.uid : pageUID;
 
@@ -49,11 +64,11 @@
 
 		let blockRef = await roam42.wB.userCommands.findBlockAmongstChildren( cmdInfo.info[0].children, 'blockref:' );
 		if(blockRef==null)
-			blockref = false;
+			blockRef = false;
 		else
 			blockRef = blockRef.toLowerCase()=='true' ? true : false;
 
-		await roam42.wB.moveBlocks(pageUID,location,0,blockRef);
+		await roam42.wB.moveBlocks(pageUID, locationTopBotom, 0, blockRef);
 		textName = textName==null ? '' : ' > ' + textName;
 		roam42.help.displayMessage(`Block(s) moved to ${pageName}${textName}`,3000);
 	}
@@ -69,10 +84,11 @@
 
 	roam42.wB.userCommands.findBlockAmongstChildren = async ( childrenBlocks, startsWith )=> {
 		//loops through array and returns node where the text matches
-		for(c of childrenBlocks) {
-			if(c.string.toLowerCase().startsWith(startsWith)) {
-				return c.string.toLowerCase().replace(startsWith,'').trim();
-			}
+		for(let c of childrenBlocks) {
+			let resolvedBlockString = (await roam42.formatConverter.resolveBlockRefsInText(c.string)).toString().toLowerCase();
+			let comparisonString = startsWith.toLowerCase();
+			if(resolvedBlockString.startsWith(comparisonString)) 
+				return resolvedBlockString.replace(comparisonString,'').trim();
 		}
 		return null;
 	};
@@ -81,7 +97,7 @@
 		let validCommandTypeList = ['inbox']; //in future add new types here
 		let userCommands = await roam42.common.getBlocksReferringToThisPage("42workBench");
 		let results = [];
-		for (item of userCommands) {
+		for (let item of userCommands) {
 			const inbox = item[0];
 			var sType = inbox.string.replace('#42workBench','').replace('#[[42workBench]]','').trim().toLowerCase();
 			if( inbox.children && validCommandTypeList.includes(sType) ) {

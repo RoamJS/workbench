@@ -76,6 +76,7 @@
     }
     return blockText
   }
+	roam42.formatConverter.resolveBlockRefsInText = resolveBlockRefsInText;
 
   var roamMarkupScrubber = (blockText, removeMarkdown=true)=> {
     if(blockText.substring(0,9)  == "{{[[query" || blockText.substring(0,7) == "{{query" ) return '';
@@ -288,6 +289,7 @@
 		//creates a very simple json output in the order of the document
     var results = await roam42.common.getBlockInfoByUID(uid, true)
     var jsonOutput = [];
+		if(results==null) return;
     //nodeCurrent, level, outputFunction, parent, flatten
     await walkDocumentStructureAndFormat(results[0][0], 0, async (blockText, nodeCurrent, level, parent, flatten)=> {
 			let blockOutput = roamMarkupScrubber(blockText, true) 
