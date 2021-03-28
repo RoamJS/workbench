@@ -85,10 +85,11 @@
 	roam42.wB.userCommands.findBlockAmongstChildren = async ( childrenBlocks, startsWith )=> {
 		//loops through array and returns node where the text matches
 		for(let c of childrenBlocks) {
-			let resolvedBlockString = (await roam42.formatConverter.resolveBlockRefsInText(c.string)).toString().toLowerCase();
+			let resolvedBlockString = await roam42.formatConverter.resolveBlockRefsInText(c.string)
+			let searchString = resolvedBlockString.toString().toLowerCase();
 			let comparisonString = startsWith.toLowerCase();
-			if(resolvedBlockString.startsWith(comparisonString)) 
-				return resolvedBlockString.replace(comparisonString,'').trim();
+			if(searchString.startsWith(comparisonString)) 
+				return resolvedBlockString.substring(startsWith.length).trim();
 		}
 		return null;
 	};
