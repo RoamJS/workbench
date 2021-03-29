@@ -229,9 +229,92 @@ roam42.wB.commandAddRunFromBlock('Heading 3 (Alt+Shift+3)', ()=>{ roam42.jumpnav
 roam42.wB.commandAddRunFromBlock('Copy Block Reference - Jump Nav (Meta-j r)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j r')} );
 roam42.wB.commandAddRunFromBlock('Copy Block Reference as alias - Jump Nav (Meta-j s)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j s')} );
 
+
+//DELETE PAGE
+const confirmDeletePage = (pageUID, pageTitle)=>{
+	iziToast.question({
+			timeout: 20000, close: false, overlay: true, displayMode: 'once', id: 'question', color: 'red', zindex: 999, position: 'center',
+			message: `Are you sure you want to <span style='color:red'><b>DELETE</b></span> the page? <br><br> <b>${pageTitle}</b> <br><br>`,
+			buttons: [
+				['<button>NO</button>', (instance, toast)=> {instance.hide({ transitionOut: 'fadeOut' }, toast, 'button') },true],
+				['<button><b>YES</b></button>', (instance, toast)=> {
+						instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+						setTimeout( async ()=>{
+							console.log('delete me')
+							const currentPageUID = await roam42.common.currentPageUID();
+							roam42.common.deleteBlock(pageUID);
+							if(currentPageUID == pageUID)
+								roam42.common.navigateUiTo( roam42.dateProcessing.getRoamDate(new Date()) );
+						}, 10);
+				}],
+			],
+	});
+}
+
+const deleteCurrentPage = async ()=>{
+	const uid = await roam42.common.currentPageUID();
+	const currentPageTitle = (await roam42.common.getBlockInfoByUID(uid))[0][0].title;
+	confirmDeletePage(uid, currentPageTitle);
+}
+
+const deleteSomePage = async ()=>{
+	await roam42.wB.path.launch( async (uid)=>{
+		const blockInfo = await roam42.common.getBlockInfoByUID(uid,false,true);
+		let currentPageTitle = blockInfo[0][0].title;
+		if(currentPageTitle == undefined) {
+			currentPageTitle = blockInfo[0][0].parents[0].title;
+			uid = blockInfo[0][0].parents[0].uid;
+		}
+		confirmDeletePage(uid, currentPageTitle);
+	},[],null,null,true);
+	
+}
+roam42.wB.commandAddRunFromAnywhere("Delete current page (dcp)",async ()=>{ deleteCurrentPage()})
+roam42.wB.commandAddRunFromAnywhere("Delete a page using Path Navigator (dap)",async ()=>{ deleteSomePage()})
+
+//CREATE  PAGE
+const createThisPage = (instance, toast, textInput,  shiftKey)=>{
+	if(textInput.length>0) {
+		setTimeout( async ()=>{
+			const pageUID  =  await roam42.common.getPageUidByTitle(textInput)
+			if(pageUID!='') {
+				roam42.help.displayMessage(`Page <b>${textInput}</b> already exists.`, 5000);
+				document.querySelector('#roam42-wB-CreatePage-input').focus();
+			} else {
+				instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+				await roam42.common.createPage(textInput);
+				await roam42.common.sleep(50);
+				roam42.common.navigateUiTo( textInput, shiftKey);
+			}
+		},10);
+	}
+}
+roam42.wB.commandAddRunFromAnywhere("Create a page (cap)",async ()=>{
+	let textInput = '';
+	iziToast.info({
+		timeout: 120000, overlay: true, displayMode: 'once', id: 'inputs', zindex: 999, title: 'Create Page', position: 'center',  drag: false,
+    inputs: [
+        ['<input type="text" id="roam42-wB-CreatePage-input">', 'keyup', (instance, toast, input, e)=> {
+					textInput = input.value;
+					document.querySelector('#roam42-wB-createPage-CREATE').style.visibility = input.value.length>0 ? 'visible' : 'hidden';
+					if(e.key=='Enter') createThisPage(instance, toast, textInput, e.shiftKey);
+        }, true],
+    ],
+		buttons: [
+			['<button id="roam42-wB-createPage-CREATE" style="visibility:hidden"><b>CREATE</b></button>', (instance, toast)=> {
+					createThisPage(instance, toast, textInput, false);
+			}],
+			['<button>CANCEL</button>', (instance, toast)=> {
+					instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+			}],
+		],
+	});	
+});
+
+
 roam42.wB.commandAddRunFromAnywhere("Reload workBench (rwb)", async ()=>{ 
 	await roam42.common.sleep(100);
-	await roam42.wB.restoreCurrentBlockSelection();
+	try{ await roam42.wB.restoreCurrentBlockSelection() } catch(e){}
 	roam42.wB.testReload(); 
 	roam42.help.displayMessage('Reloading workBench.', 2000);
 });

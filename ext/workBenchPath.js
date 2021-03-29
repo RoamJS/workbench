@@ -24,8 +24,6 @@
 		roam42.wB.path.canPageBeSelected = false; //can the page be selected in the navigator as a destination point
 
 		roam42.wB.path.launch = (callBackFunction, excludeUIDs = [], startUID=null, startString=null, canPageBeSelected=false)=> {			
-			console.log('roam42.wB.path.launch')
-			console.log(callBackFunction, excludeUIDs, startUID, startString, canPageBeSelected);
 			roam42.wB.path.level = 0;	//reset path level
 			roam42.wB.path.trailUID 	 = [startUID]; 		//UID path
 			roam42.wB.path.trailString = [startString]; //string path
