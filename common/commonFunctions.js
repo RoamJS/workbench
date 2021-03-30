@@ -103,8 +103,10 @@
 
   roam42.common.sidebarRightToggle = ()=>{
     try {
-        document.getElementsByClassName("bp3-icon-more")[0].click();
-        document.getElementsByClassName("bp3-text-overflow-ellipsis bp3-fill")[0].click();
+			if(document.querySelector('#roam-right-sidebar-content'))
+			 	roamAlphaAPI.ui.rightSidebar.close();
+			else
+				roamAlphaAPI.ui.rightSidebar.open();
     } catch(e) {console.log(e)}
   }
 

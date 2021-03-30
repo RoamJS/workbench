@@ -141,11 +141,13 @@
       valueArray.push({key: '<% SIDEBARSTATE: %> (SmartBlock Command)',               icon:'gear', value: '<%SIDEBARSTATE:&&&%>',               processor:'static',
                              help:'<b>SIDEBARSTATE</b><br/>Toggles state of sidebars<br/><br/>Value of  1 to 4. <br/>1 - open left sidebar <br/>2 - close left side bar <br/>3 - open right side bar <br/>4 - close right side bar.'});
       valueArray.push({key: '<% GOTOBLOCK: %> (SmartBlock Command)',               icon:'gear', value: '<%GOTOBLOCK:&&&%>',               processor:'static',
-                             help:'<b>GOTOBLOCK</b><br/>Subcommand works with OPENPAGE and SIDEBARWINDOWOPEN <br/><br/>1. set to 1 for first block, set to -1 for last lock '});
+                             help:'<b>GOTOBLOCK</b><br/>Subcommand works with OPENPAGE and SIDEBARWINDOWOPEN <br/><br/>1. set to 1 for first block, set to -1 for last block '});
       valueArray.push({key: '<% GRAPH %> (SmartBlock Command)',               icon:'gear', value: '<%GRAPH%>',               processor:'static',
                              help:'<b>GRAPH</b><br/>Subcommand for SIDEBARWINDOWOPEN to open as a graph'});
       // valueArray.push({key: '<% MENTIONS %> (SmartBlock Command)',               icon:'gear', value: '<%MENTIONS%>',               processor:'static',
       //                        help:'<b>MENTIONS</b><br/>Subcommand for SIDEBARWINDOWOPEN to open as a mentions of current page or tag'});
+      valueArray.push({key: '<% GLOBAL %> (SmartBlock Command)',               icon:'gear', value: '<%GLOBAL%>',               processor:'static',
+                             help:'<b>GLOBAL</b><br/>Subcommand for use with a #42SmartBlock that makes the SmartBlock available in the workBench even if a block is not selected'});
       valueArray.push({key: '<% TIME %> (SmartBlock Command)',               icon:'gear', value: '<%TIME%>',               processor:'static',
                              help:'<b>TIME</b><br/>Returns time in 24 hour format'});
       valueArray.push({key: '<% TIMEAMPM: %> (SmartBlock Command)',           icon:'gear', value: '<%TIMEAMPM%>',           processor:'static',
@@ -438,7 +440,7 @@
 						await roam42.common.simulateMouseClick( document.querySelector('#block-input-ghost') );
 						await roam42.common.sleep(150);
 					} else {
-						let blocks = bSideBar ? document.querySelectorAll('.rm-sidebar-window')[0].querySelectorAll('.rm-block-text') : document.querySelectorAll('.rm-level-0 .rm-block-text');
+						let blocks = bSideBar ? document.querySelectorAll('.rm-sidebar-window')[0].querySelectorAll('.rm-block-text') : document.querySelectorAll('.roam-article .rm-level-0 .rm-block-text');
 						if(location == '1') { //go to first block
 							await roam42.common.simulateMouseClick( blocks[0] );
 							await roam42.common.sleep(150);

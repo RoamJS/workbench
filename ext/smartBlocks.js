@@ -34,7 +34,6 @@
     if(popupHelpEnabled!=null & popupHelpEnabled=='disabled')
       roam42.smartBlocks.SmartBlockPopupHelpEnabled = false;
 
-
     roam42.smartBlocks.UserDefinedWorkflowsList = async (hideWorkflow=false) => {
       let sbList = await roam42.common.getBlocksReferringToThisPage("42SmartBlock");
       let results = [];
@@ -42,13 +41,14 @@
         try {
           var sKey  = sb[0].string.replace('#42SmartBlock','');
           var bHide = sKey.search('<%HIDE%>')>0 ? true : false;
+					var bGlobal = sKey.search('<%GLOBAL%>')>0 ? true : false;
 
           sKey = sKey.replace('<%GLOBAL%>','').trim();
           sKey = sKey.replace('<%HIDE%>','').trim();
           sKey = sKey.replace('<%NOCURSOR%>','').trim();
           if(sKey.trim()!='') {
             if(hideWorkflow==false || hideWorkflow==true && bHide == false)
-              results.push({  key: sKey.trim(),  value: sb[0].uid, processor:'blocks', fullCommand: sb[0].string});
+              results.push({  key: sKey.trim(), global: bGlobal, value: sb[0].uid, processor:'blocks', fullCommand: sb[0].string});
           }
         } catch(e) {}
       }
@@ -212,7 +212,7 @@
         try {
             roam42.smartBlocks.textBoxObserver.disconnect(); //stop observing blocks during insertion
               if(item.original.help && roam42.smartBlocks.SmartBlockPopupHelpEnabled){
-                roam42.help.displayMessage('<img height="22px" src="' + roam42.host + '/img/gear.png">'+
+                roam42.help.displayMessage('<img height="22px" src="' + roam42.host + '/img/sb/gear.png">'+
                                            ' ' + item.original.help,20000);
               }
             var currentSmartBlockCommand = item.original.fullCommand + '';

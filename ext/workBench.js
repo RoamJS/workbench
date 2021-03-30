@@ -219,11 +219,9 @@
 
 			await roam42.wB.sourceAdd( "SmartBlocks from AnyWhere", async (context, query, results)=> {
 				let sbList =  await roam42.smartBlocks.UserDefinedWorkflowsList();
-				// await roam42.smartBlocks.addCommands( sbList );
 				for await (sb of sbList) {
-					if( sb['key'].includes('<%GLOBAL%>') ) { 
-						let sbCommand = sb['key'].replace('<%GLOBAL%>',''); 
-				 		await results.push( { display: sbCommand, img: roam42.host + '/img/wb/sbglobal.png',   context: '*', info: sb, 
+					if( sb.global == true ) { 
+				 		await results.push( { display: sb['key'], img: roam42.host + '/img/wb/sbglobal.png',   context: '*', info: sb, 
 						 											cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}) });
 					}
 				}
