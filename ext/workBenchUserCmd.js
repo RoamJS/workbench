@@ -99,23 +99,25 @@
 		let userCommands = await roam42.common.getBlocksReferringToThisPage("42workBench");
 		let results = [];
 		for (let item of userCommands) {
-			const inbox = item[0];
-			var sType = inbox.string.replace('#42workBench','').replace('#[[42workBench]]','').trim().toLowerCase();
-			if( inbox.children && validCommandTypeList.includes(sType) ) {
-				let users = await roam42.wB.userCommands.findBlockAmongstChildren( inbox.children, 'users:' );
-				if(users!=null && users.trim() !='users:') {
-					const userArray = users.split(' ');
-					if(userArray.includes( roam42.user.email )==false) continue;
-				}				
-				//must contain a name
-				let name = await roam42.wB.userCommands.findBlockAmongstChildren( inbox.children, 'name:' );
-				if(name==null)  continue;
-				results.push( {
-					key: name,
-					'type': sType,
-					'details': item
-				});
-			}
+			try {
+				const inbox = item[0];
+				var sType = inbox.string.replace('#42workBench','').replace('#[[42workBench]]','').trim().toLowerCase();
+				if( inbox.children && validCommandTypeList.includes(sType) ) {
+					let users = await roam42.wB.userCommands.findBlockAmongstChildren( inbox.children, 'users:' );
+					if(users!=null && users.trim() !='users:') {
+						const userArray = users.split(' ');
+						if(userArray.includes( roam42.user.email )==false) continue;
+					}				
+					//must contain a name
+					let name = await roam42.wB.userCommands.findBlockAmongstChildren( inbox.children, 'name:' );
+					if(name==null)  continue;
+					results.push( {
+						key: name,
+						'type': sType,
+						'details': item
+					});
+				}
+			} catch(e) {}
 		}
 		return roam42.common.sortObjectByKey(results);
 	};	

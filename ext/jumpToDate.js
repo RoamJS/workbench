@@ -104,34 +104,41 @@
 
     //Toggles the date picker display
     jumpToDate(){
-      roam42KeyboardLib.simulateKey(16); //this fixes some bug with shift
-      this.flCalendar.clear();
-      this.flCalendar.setDate(new Date());
-      this.rqrJumpToDatePanel.reposition({
-        my: 'right-top',
-        at: 'right-top',
-        offsetX: -10,
-        offsetY: 45
-      });
+			setTimeout( async ()=>{
+				roam42KeyboardLib.simulateKey(16); //this fixes some bug with shift
+				this.flCalendar.clear();
+				const currentDate = new Date((await roam42.common.getBlockInfoByUID( 
+																				await roam42.common.currentPageUID()))[0][0].uid);
+				if(currentDate=='Invalid Date')
+					this.flCalendar.setDate(new Date());
+				else
+					this.flCalendar.setDate( currentDate );
+				this.rqrJumpToDatePanel.reposition({
+					my: 'right-top',
+					at: 'right-top',
+					offsetX: -10,
+					offsetY: 45
+				});
 
-      var jump = document.querySelector('#rqrJumpToDatePanel');
-      var jInput = document.querySelector('#jumptoDateInput');
+				var jump = document.querySelector('#rqrJumpToDatePanel');
+				var jInput = document.querySelector('#jumptoDateInput');
 
-      if ( jump.style.visibility == 'hidden' | jump.style.visibility == ''  ) {
-          jump.style.visibility='visible';
-          jInput.style.visibility='visible';
-      } else {
-          this.flCalendar.close()
-          jump.style.visibility='hidden';
-          jInput.style.visibility='hidden';
-          return
-      }
+				if ( jump.style.visibility == 'hidden' | jump.style.visibility == ''  ) {
+						jump.style.visibility='visible';
+						jInput.style.visibility='visible';
+				} else {
+						this.flCalendar.close()
+						jump.style.visibility='hidden';
+						jInput.style.visibility='hidden';
+						return
+				}
 
-      jInput.placeholder = 'Jump to date';
-      jInput.style.visibility='visible';
-      jInput.focus();
-      roam42KeyboardLib.pressDownKey();
-      roam42KeyboardLib.simulateKey(16); //this fixes some bug with shift
+				jInput.placeholder = 'Jump to date';
+				jInput.style.visibility='visible';
+				jInput.focus();
+				roam42KeyboardLib.pressDownKey();
+				roam42KeyboardLib.simulateKey(16); //this fixes some bug with shift			
+			},10)
     }, //jumpToDate
 
     jumpToDateFromButton() {

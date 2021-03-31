@@ -239,13 +239,10 @@ const confirmDeletePage = (pageUID, pageTitle)=>{
 				['<button>NO</button>', (instance, toast)=> {instance.hide({ transitionOut: 'fadeOut' }, toast, 'button') },true],
 				['<button><b>YES</b></button>', (instance, toast)=> {
 						instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+						roam42.common.navigateUiTo( roam42.dateProcessing.getRoamDate(new Date()) );
 						setTimeout( async ()=>{
-							console.log('delete me')
-							const currentPageUID = await roam42.common.currentPageUID();
-							roam42.common.deleteBlock(pageUID);
-							if(currentPageUID == pageUID)
-								roam42.common.navigateUiTo( roam42.dateProcessing.getRoamDate(new Date()) );
-						}, 10);
+							await roam42.common.deleteBlock(pageUID);
+						}, 500);
 				}],
 			],
 	});
@@ -311,6 +308,35 @@ roam42.wB.commandAddRunFromAnywhere("Create a page (cap)",async ()=>{
 	});	
 });
 
+roam42.wB.commandAddRunFromAnywhere('workBench - Generate command list',()=>{ 
+	iziToast.question({
+		timeout: 20000, close: false, overlay: true, displayMode: 'once', id: 'question', color: 'green', zindex: 999, position: 'center',
+		message: `Create a page with a list of workBench commands. Proceed?`,
+		buttons: [
+			['<button><b>YES</b></button>', (instance, toast)=> {
+					instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+					setTimeout( async ()=>{
+						const userCommands = await roam42.wB.userCommands.UserDefinedCommandList();
+						const builtinCommands = await roam42.wB._commands;
+
+						const newPageTitle = '#[[42workBench]] Command List as of ' + dayjs().format('YYYY-MM-DD hh:mm ');
+						const newPageUID = await roam42.common.createPage( newPageTitle );
+
+						const userCommandsParentUID = await roam42.common.createBlock(newPageUID, 0, '**User Defined Commands**')
+						const userCommandsArray = userCommands.map(c=>c.key)
+						await roam42.common.batchCreateBlocks(userCommandsParentUID, 0, userCommandsArray);	
+
+						const builtinCommandsParentUID = await roam42.common.createBlock(newPageUID, 1, '**Built-in Commands**')
+						const builtinCommandsArray = builtinCommands.map(c=>c.display);
+						await roam42.common.batchCreateBlocks(builtinCommandsParentUID, 0, builtinCommandsArray);
+
+						await roam42.common.navigateUiTo(newPageTitle);
+					}, 10);
+			}, true],
+			['<button>NO</button>', (instance, toast)=> {instance.hide({ transitionOut: 'fadeOut' }, toast, 'button') }],
+		],
+	});
+});
 
 roam42.wB.commandAddRunFromAnywhere("Reload workBench (rwb)", async ()=>{ 
 	await roam42.common.sleep(100);

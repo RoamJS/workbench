@@ -82,7 +82,12 @@
 	}
 	
 	roam42.common.createPage = async (page_title)=> {
-		return window.roamAlphaAPI.createPage({page:{title:page_title.toString() }});
+		const newUID = roamAlphaAPI.util.generateUID();
+		const success = await window.roamAlphaAPI.createPage({page:{title:page_title.toString(), uid:newUID  }});
+		if(success)
+			return newUID;
+		else
+			return null;
 	}
 
 	roam42.common.updatePage = async (page_uid, page_new_title)=> {

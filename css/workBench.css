@@ -13,9 +13,8 @@
 	}
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark),  {
   :root {
-		/* --wb-container-background: #555; */
 		--wb-container-background: #8899A6; 
 		--wb-container-tt-menu-background-color:  #8899A6;
 		--wb-container-tt-highlight-background-color: #B3B3B3;

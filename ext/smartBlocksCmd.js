@@ -11,8 +11,8 @@
         valueArray.push({key: `Last ${e} (42)`,  icon:'time',   value: `Last ${e}`, processor:'date'});
         valueArray.push({key: `Next ${e} (42)`,  icon:'time',   value: `Next ${e}`, processor:'date'});
       });
-      valueArray.push({key: 'Time 24 (42)',         icon:'time',   value: roam42.dateProcessing.getTime24Format(),     processor:'static'});
-      valueArray.push({key: 'Time AM/PM (42)',      icon:'time',   value: roam42.dateProcessing.getTimeAPPMFormat(),   processor:'static'});
+      valueArray.push({key: 'Time 24 (42)',         icon:'time',   value: roam42.dateProcessing.getTime24Format() + ' ',     processor:'static'});
+      valueArray.push({key: 'Time AM/PM (42)',      icon:'time',   value: roam42.dateProcessing.getTimeAPPMFormat() + ' ',   processor:'static'});
       valueArray.push({key: 'TODOs for Today (42)', icon:'time',   value: roam42.timemgmt.smartBlocks.todosDueToday,   processor:'function'});
       valueArray.push({key: 'TODOs Overdue (42)',   icon:'time',   value: roam42.timemgmt.smartBlocks.todosOverdue,    processor:'function'});
       valueArray.push({key: 'TODOs Overdue + DNP (42)',   icon:'time',   value: roam42.timemgmt.smartBlocks.todosOverduePlusDNP,    processor:'function'});
