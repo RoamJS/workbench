@@ -82,25 +82,6 @@
         return;
       }
 
-      //do a strikeout
-      if (ev.altKey && ev.shiftKey && ev.code=='KeyT'  ) {
-        event.preventDefault();
-        if (event.srcElement.localName == 'textarea') {
-          if (document.queryCommandSupported("insertText")) {
-            if (window.getSelection().toString() == "") {
-              roam42.common.setEmptyNodeValue(document.getElementById(event.srcElement.id), "~~" + event.srcElement.innerHTML + "~~");
-            } else {
-              document.execCommand(
-                "insertText",
-                false,
-                "~~" + window.getSelection().toString() + "~~"
-              );
-            }
-          }
-        }
-        return
-      }
-
       //simple markdown
       if (ev.altKey && ev.shiftKey==false &&  ev.code=='KeyM'  ) {
         event.preventDefault();
