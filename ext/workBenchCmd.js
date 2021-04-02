@@ -308,6 +308,16 @@ roam42.wB.commandAddRunFromAnywhere("Create a page (cap)",async ()=>{
 	});	
 });
 
+roam42.wB.commandAddRunFromMultiBlockSelection('Remove blank blocks at current level (rbbcl)', async ()=>{
+	for(i=roam42.wB.triggeredState.selectedNodes.length-1; i>=0; i--) {
+		const blockToAnalyze = roam42.wB.triggeredState.selectedNodes[i].querySelector('.rm-block-text').id.slice(-9);
+		const blockInfo = await roam42.common.getBlockInfoByUID( blockToAnalyze, true );
+		if( !blockInfo[0][0].children )  //don't process if it has child blocks
+			if (blockInfo[0][0].string.trim().length == 0 ) //this is a blank, should delete
+				await roam42.common.deleteBlock(blockToAnalyze);
+	}
+});
+
 roam42.wB.commandAddRunFromAnywhere('workBench - Generate command list',()=>{ 
 	iziToast.question({
 		timeout: 20000, close: false, overlay: true, displayMode: 'once', id: 'question', color: 'green', zindex: 999, position: 'center',
