@@ -41,6 +41,9 @@
 		}
 	}, //navigateUIToDate
 
+	roam42.common.commandPaletteAdd = async (label, callBack)=>{
+		return	await roamAlphaAPI.ui.commandPalette.addCommand({label: label, callback: callBack });
+	};
 
   roam42.common.sortObjectByKey = async o => {
     return o.sort(function(a, b) {

@@ -274,6 +274,7 @@
 			});
 
 			roam42.wB.commandAddRunFromAnywhere = async ( textToDisplay, callbackFunction )=> {
+				try{ roam42.common.commandPaletteAdd( '(42) ' + textToDisplay  ,callbackFunction ) } catch(e) {};
 				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), 
 																		img: roam42.host + '/img/wb/command.png', cmd: callbackFunction, context: '*' } );
 			}
