@@ -308,13 +308,43 @@ roam42.wB.commandAddRunFromAnywhere("Create a page (cap)",async ()=>{
 	});	
 });
 
-roam42.wB.commandAddRunFromMultiBlockSelection('Remove blank blocks at current level (rbbcl)', async ()=>{
+
+// from https://stackoverflow.com/a/44438404
+// replaces all "new line" characters contained in `someString` with the given `replacementString`
+const replaceNewLineChars = ((someString, replacementString = ``) => { // defaults to just removing
+  const LF = `\u{000a}`; // Line Feed (\n)
+  const VT = `\u{000b}`; // Vertical Tab
+  const FF = `\u{000c}`; // Form Feed
+  const CR = `\u{000d}`; // Carriage Return (\r)
+  const CRLF = `${CR}${LF}`; // (\r\n)
+  const NEL = `\u{0085}`; // Next Line
+  const LS = `\u{2028}`; // Line Separator
+  const PS = `\u{2029}`; // Paragraph Separator
+  const ZW = `\u{200B}`; // Zero  white space https://www.fileformat.info/info/unicode/char/200b/index.htm
+  const lineTerminators = [LF, VT, FF, CR, CRLF, NEL, LS, PS, ZW]; // all Unicode `lineTerminators`
+  let finalString = someString.normalize(`NFD`); // better safe than sorry? Or is it?
+  for (let lineTerminator of lineTerminators) {
+    if (finalString.includes(lineTerminator)) { // check if the string contains the current `lineTerminator`
+      let regex = new RegExp(lineTerminator.normalize(`NFD`), `gu`); // create the `regex` for the current `lineTerminator`
+      finalString = finalString.replace(regex, replacementString); // perform the replacement
+    };
+  };
+  return finalString.normalize(`NFC`); // return the `finalString` (without any Unicode `lineTerminators`)
+});
+
+roam42.wB.commandAddRunFromMultiBlockSelection('Remove blank blocks at current level (rbbcl) - not recursive', async ()=>{
 	for(i=roam42.wB.triggeredState.selectedNodes.length-1; i>=0; i--) {
 		const blockToAnalyze = roam42.wB.triggeredState.selectedNodes[i].querySelector('.rm-block-text').id.slice(-9);
 		const blockInfo = await roam42.common.getBlockInfoByUID( blockToAnalyze, true );
-		if( !blockInfo[0][0].children )  //don't process if it has child blocks
-			if (blockInfo[0][0].string.trim().length == 0 ) //this is a blank, should delete
+		if( !blockInfo[0][0].children ) { //don't process if it has child blocks
+			if (blockInfo[0][0].string.trim().length == 0 || blockInfo[0][0].string == '' ) //this is a blank, should delete
 				await roam42.common.deleteBlock(blockToAnalyze);
+			else if(blockInfo[0][0].string.trim().length == 1) { //test if this is a line break
+				const stringText = replaceNewLineChars( blockInfo[0][0].string.trim() );
+				if(stringText.length==0)
+					await roam42.common.deleteBlock(blockToAnalyze);
+			}
+		}
 	}
 });
 
