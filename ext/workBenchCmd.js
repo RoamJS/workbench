@@ -79,7 +79,7 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = fals
 				const blockToMove = roam42.wB.triggeredState.selectedNodes[i].querySelector('.rm-block-text').id.slice(-9);
 				if(makeBlockRef==true) { 
 					await roam42.common.createSiblingBlock(blockToMove, `((${blockToMove}))`);
-					await roam42.common.sleep(100);
+					await roam42.common.sleep(50);
 				}
 				roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
 				if(zoomUID ==0) zoomUID = destinationUID; //go to first block in move
@@ -89,7 +89,7 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = fals
 				const blockToMove =  roam42.wB.triggeredState.selectedNodes[i].querySelector('.rm-block-text').id.slice(-9);
 				if(makeBlockRef==true) { 
 					await roam42.common.createSiblingBlock(blockToMove, `((${blockToMove}))`);
-					await roam42.common.sleep(100);
+					await roam42.common.sleep(50);
 				}
 				roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
 				if(zoomUID ==0) zoomUID = destinationUID; //go to first block in move
@@ -101,7 +101,7 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = fals
 			let blockToMove = roam42.wB.triggeredState.activeElementId.slice(-9);
 			if(makeBlockRef==true) { 
 				await roam42.common.createSiblingBlock(blockToMove, `((${blockToMove}))`);
-				await roam42.common.sleep(100);
+				await roam42.common.sleep(50);
 			}
 			roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
 			zoomUID = blockToMove;	
@@ -169,7 +169,6 @@ const MoveBlockDNP =  async ()=>{
 		await roam42.common.sleep(150);
 		destinationPage = await roam42.common.getPageUidByTitle(parsedDate);
 	}
-	console.log(destinationPage,parsedDate,excludeSelectedBlocks());
 	setTimeout( ()=>{ roam42.wB.path.launch( (async (uid)=>{ moveBlocks(uid, 0, 0)}), excludeSelectedBlocks(), destinationPage, parsedDate.toString(),true ) },200);
 };
 roam42.wB.commandAddRunFromBlock('Move Block - DNP (mbdnp)', async ()=>{ MoveBlockDNP() } );
@@ -179,20 +178,39 @@ const pullBlockToThisBlock = async (uidToMove, makeBlockRef = false)=>{
 	const activeBlockUID = roam42.wB.triggeredState.activeElementId.slice(-9);
 	if(makeBlockRef==true) { 
 		await roam42.common.createSiblingBlock(uidToMove, `((${uidToMove}))`);
-		await roam42.common.sleep(100);
+		await roam42.common.sleep(50);
 	}
 	await roam42.common.moveBlock(activeBlockUID, 0, uidToMove);
-	await roam42.common.sleep(100);
+	await roam42.common.sleep(250);
 	await roam42.wB.restoreCurrentBlockSelection();
 
 };
 roam42.wB.commandAddRunFromBlock('Pull block (pbb)', async ()=>{ roam42.wB.path.launch(async (uid)=>{pullBlockToThisBlock(uid)}, excludeSelectedBlocks()) });
 roam42.wB.commandAddRunFromBlock('Pull block and leave block ref (pbr)', async ()=>{ roam42.wB.path.launch(async (uid)=>{pullBlockToThisBlock(uid,true)}, excludeSelectedBlocks()) });
 
+const pullChildBlocksToThisBlock = async (uidParent, makeBlockRef = false)=>{
+	const parentBlockInfo = await roam42.common.getBlockInfoByUID(uidParent, true);
+	if(!parentBlockInfo[0][0].children)
+		roam42.help.displayMessage('This block has no children to pull.',5000);
+	else {
+		const childBlocks = await roam42.common.sortObjectsByOrder(parentBlockInfo[0][0].children);
+		for(let i=childBlocks.length-1; i>=0; i--) {
+			const activeBlockUID = roam42.wB.triggeredState.activeElementId.slice(-9);
+			if(makeBlockRef==true) { 
+				await roam42.common.createSiblingBlock(childBlocks[i].uid, `((${childBlocks[i].uid}))`);
+				await roam42.common.sleep(50);
+			}	
+			await roam42.common.moveBlock(activeBlockUID, 0, childBlocks[i].uid);
+			await roam42.common.sleep(50);			
+		}
+		await roam42.wB.restoreCurrentBlockSelection();
+	}
+};
+roam42.wB.commandAddRunFromBlock('Pull child blocks  (pcb)', async ()=>{ roam42.wB.path.launch(async (uid)=>{pullChildBlocksToThisBlock(uid)}, excludeSelectedBlocks()) });
+roam42.wB.commandAddRunFromBlock('Pull child block and leave block ref (pcr)', async ()=>{ roam42.wB.path.launch(async (uid)=>{pullChildBlocksToThisBlock(uid,true)}, excludeSelectedBlocks()) });
 
 roam42.wB.commandAddRunFromAnywhere('Jump to Block in page (jbp)', async ()=>{
 	 roam42.wB.path.launch(async (uid)=>{
-		 console.log(uid, roam42.wB.path.trailUID )
 		 if(uid!=roam42.wB.path.trailUID[0]){
 		   roam42.common.navigateUiTo(roam42.wB.path.trailUID[0], false);
 			 await roam42.common.sleep(500);
@@ -208,8 +226,26 @@ roam42.wB.commandAddRunFromAnywhere('Jump to Block in page (jbp)', async ()=>{
 		}, excludeSelectedBlocks(),null,null,true); 
 });
 
-
-
+const sendBlockRefToThisBlock = async (destinationUID, locationTop = true)=>{
+	let blockRefUIDS = [];
+	if( roam42.wB.triggeredState.selectedNodes != null) 
+		for(i=0; i<=roam42.wB.triggeredState.selectedNodes.length-1; i++) 
+			blockRefUIDS.push( roam42.wB.triggeredState.selectedNodes[i].querySelector('.rm-block-text').id.slice(-9));
+	else if(roam42.wB.triggeredState.activeElementId!=null)
+		blockRefUIDS.push( roam42.wB.triggeredState.activeElementId.slice(-9) );
+	const makeBlockRefs = blockRefUIDS.map(e=> `((${e}))`)
+	if(locationTop==true) { //add to top
+		await roam42.common.batchCreateBlocks(destinationUID, 0, makeBlockRefs)
+	} else {
+		await roam42.common.batchCreateBlocks(destinationUID, 100000, makeBlockRefs)
+	}
+	await roam42.common.sleep(150);
+	try { await roam42.wB.restoreCurrentBlockSelection() } catch(e){}
+};
+roam42.wB.commandAddRunFromBlock('Send block ref - to top (sbrt)', async ()=>{ roam42.wB.path.launch(async (uid)=>{sendBlockRefToThisBlock(uid, true)}, excludeSelectedBlocks(),null,null,true) });
+roam42.wB.commandAddRunFromMultiBlockSelection('Send block refs - to top (sbrt)', async ()=>{ roam42.wB.path.launch(async (uid)=>{sendBlockRefToThisBlock(uid, true)}, excludeSelectedBlocks(),null,null,true) });
+roam42.wB.commandAddRunFromBlock('Send block ref - to bottom (sbrb)', async ()=>{ roam42.wB.path.launch(async (uid)=>{sendBlockRefToThisBlock(uid,false)}, excludeSelectedBlocks(),null,null,true) });
+roam42.wB.commandAddRunFromMultiBlockSelection('Send block refs - to bottom (sbrb)', async ()=>{ roam42.wB.path.launch(async (uid)=>{sendBlockRefToThisBlock(uid,false)}, excludeSelectedBlocks(),null,null,true) });
 
 try{ roam42.wB.commandAddRunFromAnywhere("Roam42 Privacy Mode (alt-shift-p)", roam42.privacyMode.toggle) } catch(e){};
 try{ roam42.wB.commandAddRunFromAnywhere("Roam42 Converter (alt-m)", roam42.formatConverterUI.show) } catch(e){};
@@ -346,6 +382,92 @@ roam42.wB.commandAddRunFromMultiBlockSelection('Remove blank blocks at current l
 			}
 		}
 	}
+});
+
+
+roam42.wB.commandAddRunFromAnywhere("Create Vanity Page UID (cvpu)",async ()=>{ 
+	iziToast.info({
+		timeout: 120000, overlay: true, displayMode: 'once', id: 'inputs', zindex: 999, title: 'Vanity Page UID', position: 'center',  drag: false,
+    inputs: [
+        ['<input type="text" placeholder="Page Name" id="roam42-wB-CreateVanityPage-PageName">', 'keyup', (instance, toast, input, e)=> {}, true],
+        ['<input type="text" placeholder="Vanity UID" id="roam42-wB-CreateVanityPage-UID">', 'keyup', (instance, toast, input, e)=> {}, false],
+    ],
+		buttons: [
+			['<button id="roam42-wB-CreateVanityPage-CREATE"><b>CREATE</b></button>', async (instance, toast)=> {
+				//validate page name
+				const pageName = document.querySelector('#roam42-wB-CreateVanityPage-PageName').value.trim();
+				if(pageName.length==0) {
+					roam42.help.displayMessage('Page name is not valid.',3000);
+					document.querySelector('#roam42-wB-CreateVanityPage-PageName').focus();
+					return;
+				} else { //test if page is in use
+					if(await roam42.common.getPageUidByTitle(pageName)!='') {
+						roam42.help.displayMessage('This page name is already in use, try again.',3000);
+						document.querySelector('#roam42-wB-CreateVanityPage-PageName').focus();
+						return;
+					}
+				}
+				//validate UID
+				const vanityUID = document.querySelector('#roam42-wB-CreateVanityPage-UID').value.trim();				
+				const regex = new RegExp('^[a-zA-Z0-9]+$');
+				if(vanityUID.length!=9 || !regex.test(vanityUID)) {
+					roam42.help.displayMessage('UID is not valid. It must be exactly 9 characters and it contain only alpha-numeric characters. It is also case-sensitive.',3000);
+					document.querySelector('#roam42-wB-CreateVanityPage-UID').focus();
+					return;
+				} else { //test if UID is in use
+					if(await roam42.common.getBlockInfoByUID(vanityUID)!=null) {
+						roam42.help.displayMessage('This UID is already in use, try again.',3000);
+						document.querySelector('#roam42-wB-CreateVanityPage-UID').focus();
+						return;
+					}
+				}
+				const success = await window.roamAlphaAPI.createPage({page:{title: pageName, uid: vanityUID }});
+				instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+				await roam42.common.sleep(50);
+				roam42.common.navigateUiTo( pageName );
+			}],
+			['<button>CANCEL</button>', (instance, toast)=> {
+					instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+			}],
+		],
+	});
+});
+
+roam42.wB.commandAddRunFromBlock('Create vanity block UID (cvbu)', ()=>{
+	iziToast.info({
+		timeout: 120000, overlay: true, displayMode: 'once', id: 'inputs', zindex: 999, title: 'Vanity Block UID', position: 'center',  drag: false,
+    inputs: [
+        ['<input type="text" placeholder="Vanity UID" id="roam42-wB-CreateVanityBlock-UID">', 'keyup', (instance, toast, input, e)=> {
+        }, true],
+    ],
+		buttons: [
+			['<button id="roam42-wB-CreateVanityBlock-CREATE"><b>CREATE</b></button>', async (instance, toast)=> {
+				//validate UID
+				const vanityUID = document.querySelector('#roam42-wB-CreateVanityBlock-UID').value.trim();				
+				const regex = new RegExp('^[a-zA-Z0-9]+$');
+				if(vanityUID.length!=9 || !regex.test(vanityUID)) {
+					roam42.help.displayMessage('UID is not valid. It must be exactly 9 characters and it contain only alpha-numeric characters. It is also case-sensitive.',3000);
+					document.querySelector('#roam42-wB-CreateVanityBlock-UID').focus();
+					return;
+				} else { //test if UID is in use
+					if(await roam42.common.getBlockInfoByUID(vanityUID)!=null) {
+						roam42.help.displayMessage('This UID is already in use, try again.',3000);
+						document.querySelector('#roam42-wB-CreateVanityBlock-UID').focus();
+						return;
+					}
+				}				
+				instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+				await window.roamAlphaAPI.createBlock(
+						{	location: {	"parent-uid": roam42.wB.triggeredState.activeElementId.slice(-9), order: 0 }, 
+							block: 		{ string: `This is a new block with the UID: ${vanityUID}` , uid: vanityUID }
+						});
+				await roam42.common.sleep(50);
+			}],
+			['<button>CANCEL</button>', (instance, toast)=> {
+					instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+			}],
+		],
+	});
 });
 
 roam42.wB.commandAddRunFromAnywhere('workBench - Generate command list',()=>{ 
