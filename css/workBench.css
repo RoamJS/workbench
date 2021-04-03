@@ -20,9 +20,6 @@
 		--wb-container-tt-highlight-background-color: #B3B3B3;
 		--wb-container-tt-cursor-background-color: #E4E6EB;
 	}
-	.roam42-wb-path-image {
-		filter: invert(100%);
-	}
 	#roam42-wB-container .tt-input:focus, 
 	#roam42-wB-path-container .tt-input:focus {
 		border-color: #E4E6EB !important;

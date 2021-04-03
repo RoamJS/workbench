@@ -37,11 +37,11 @@
 			//following lines handles bug in typeahead not refreshing new data SOURCES
 			//be VERY Careful when changing
 			//START FIX
-			setTimeout( ()=>{ $('#roam42-wB-path-input').typeahead('val', '-') },50);
+			setTimeout( ()=>{ $('#roam42-wB-path-input').typeahead('val', '-') },10);
 			setTimeout(async ()=>{
 				$('#roam42-wB-path-input').typeahead('val', '');
 				$('#roam42-wB-path-input').focus();
-				setTimeout(async ()=>{roam42.wB.path.toggleVisible()},150);
+				setTimeout(async ()=>{roam42.wB.path.toggleVisible()},100);
 			},100);
 
 		};
@@ -75,14 +75,13 @@
 	
 	var allPagesForGraph = [];
 	// SOURCES ===================================
-
 	const levelPages = async(query, results)=>{
 		if('Current page (cp)'.toLowerCase().includes(query.toLowerCase()) || query.length==0)	
-			await results.push( {display: 'Current page (cp)', level: 0, img: roam42.host + '/img/wb/page.png', uid: await roam42.common.currentPageUID() }  );
+			await results.push( {display: 'Current page (cp)', level: 0, type: 'page', img: roam42.host + '/img/wb/page.png', uid: await roam42.common.currentPageUID() }  );
 		const inboxes = (await roam42.wB.userCommands.UserDefinedCommandList()).filter(e=>e.type=='inbox');
 		for (inbox of inboxes) {
 			if(`Inbox: ${inbox.key}`.toLowerCase().includes(query.toLowerCase()) || query.length==0) {	
-				await results.push( {display: `Inbox: ${inbox.key}`, level: 0, img: roam42.host + '/img/wb/page.png', 
+				await results.push( {display: `Inbox: ${inbox.key}`, level: 0,  type: 'page', img: roam42.host + '/img/wb/page.png', 
 										uid: await roam42.wB.userCommands.inboxUID(inbox.details) });			
 			}
 		}					
@@ -90,10 +89,10 @@
 			const pages = roam42.wB.path.allPagesForGraphSearch.search(query);
 			const sortPages = pages.sort( (a,b)=> a[0].localeCompare(b[0]) );
 			for await (page of sortPages) 
-				await results.push( {display: page[0].substring(0,255), uid: page[1], img: roam42.host + '/img/wb/page.png'} );
+				await results.push( {display: page[0].substring(0,255), uid: page[1], type: 'page', img: roam42.host + '/img/wb/page.png'} );
 		} 
 		if('Today DNP'.toLowerCase().includes(query.toLowerCase()) || query.length==0)	
-			await results.push( {display: 'Today DNP', level: 0, img: roam42.host + '/img/wb/page.png', uid: await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date())) } );
+			await results.push( {display: 'Today DNP', level: 0,  type: 'page', img: roam42.host + '/img/wb/page.png', uid: await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date())) } );
 	};
 
 	const levelBlocks = async(query, results)=>{
@@ -110,20 +109,20 @@
 		const pageLine = 'Page: ' + roam42.wB.path.trailString[0];
 		if(roam42.wB.path.currentPageBlocks._documents.length==1) {  //no blocks, mimick empty block
 			if(roam42.wB.path.canPageBeSelected==true)
-				await results.push( {display:  pageLine, uid: roam42.wB.path.trailUID[0], showLevel: false, level: 0, img: roam42.host + '/img/wb/page.png' } ); 
+				await results.push( {display:  pageLine, uid: roam42.wB.path.trailUID[0], showLevel: false, level: 0,  type: 'page', img: roam42.host + '/img/wb/page.png' } ); 
 		} else if(roam42.wB.path.currentPageBlocks && roam42.wB.path.currentPageBlocks._documents.length>0 && query.length > 0) {
 			for await (block of roam42.wB.path.currentPageBlocks.search(query)) {
 				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : ' ';
-				await results.push( {display: blockOutput, uid: block.uid,  showLevel: true, level: block.level, img: roam42.host + '/img/wb/bullet.png' } );
+				await results.push( {display: blockOutput, uid: block.uid,  showLevel: true, level: block.level, type: 'bullet', img: roam42.host + '/img/wb/bullet.png' } );
 			}
 		} else { //no query yet, just show blocks from page
 			if(roam42.wB.path.canPageBeSelected==true)
-				await results.push( {display: pageLine, uid: roam42.wB.path.trailUID[0], showLevel: false, level: 0, img: roam42.host + '/img/wb/page.png' } ); 
+				await results.push( {display: pageLine, uid: roam42.wB.path.trailUID[0], showLevel: false, level: 0, type: 'page', img: roam42.host + '/img/wb/page.png' } ); 
 			let maxCount = roam42.wB.path.currentPageBlocks._documents.length > 1000 ? 1000: roam42.wB.path.currentPageBlocks._documents.length;
 			for(i=1; i<maxCount;i++){
 				let block = roam42.wB.path.currentPageBlocks._documents[i];
 				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : ' ';
-				await results.push( {display: blockOutput, uid: block.uid, showLevel: true,  level: block.level, img: roam42.host + '/img/wb/bullet.png' } );
+				await results.push( {display: blockOutput, uid: block.uid, showLevel: true,  level: block.level, type: 'bullet', img: roam42.host + '/img/wb/bullet.png' } );
 			}
 		}
 
@@ -143,15 +142,21 @@
 				},
 				templates: {
 					suggestion: (val)=>{
-						let leftPxl = 5;
-						let lvl = Number(val.level);
-						if(val.showLevel==true && lvl != 0){
-							leftPxl = leftPxl * lvl;
-						}	
-						return '<div style="display: flex">' + 
-											'<div style="left:5px;width:22px;"><img style="padding-left:' + leftPxl + 'px;" class="roam42-wb-path-image" height="18px" src="' + val.img + '"></div>' +
-											'<div style="width:430p;padding-left:' + leftPxl + 'px;">' + val.display + '</div>' + 
-										'</div>' ;
+						if(val.type=='page') {
+							return '<div style="display: flex" class="roam42-wb-path-ttmenu-item">' + 
+												'<div style="width:20px"><img class="roam42-wb-path-image-page" height="18px" src="' + val.img + '"></div>' +
+												'<div style="padding-left:5px;width:430p">' + val.display.substring(0,80) + '</div>' + 
+											'</div>' ;
+						} else {
+							let lvlWidth = 10;
+							let lvl = Number(val.level);
+							if(val.showLevel==true && lvl >1)
+								lvlWidth = lvlWidth * lvl;
+							return '<div style="display: flex" class="roam42-wb-path-ttmenu-item">' + 
+												'<div style="margin-left:4px;padding-top:6px;width:' + lvlWidth + 'px"><img style="float:right" class="roam42-wb-path-image-bullet" height="10px" src="' + val.img + '"></div>' +
+												'<div style="width:100%;padding-left:6px;">' + val.display.substring(0,500) + '</div>' + 
+											'</div>' ;
+						}
 					}
 				}
 			 }
