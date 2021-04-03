@@ -54,9 +54,8 @@
 	height: 14px !important;
 	border-radius: 0px;
 	width: 443px;
-	/* background-color: #777; */
-	/* color: #ddd !important; */
 }
+
 
 #roam42-wB-container .tt-menu,
 #roam42-wB-path-container .tt-menu {
@@ -68,6 +67,8 @@
 	padding-top: 0px !important;
 	padding-bottom: 0px !important;
 	width:450px;
+	height: 220px;
+	overflow-y: auto; 
 }
 
 #roam42-wB-container .tt-highlight,

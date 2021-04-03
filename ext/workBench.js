@@ -55,7 +55,7 @@
 
 		$('#roam42-wB-input').typeahead(
 			{ hint: true, highlight: true, minLength: 0, autoselect: true },
-			{ name: 'basicnav', display: 'display', limit: 10, async: true, 
+			{ name: 'basicnav', display: 'display', limit: 1000, async: true, 
 				source: async (query, syncResults, asyncResults)=> {
 									var results = [];
 									let context = '*'; //default to anywhere
@@ -139,8 +139,8 @@
 				}
 			}
 			if(roam42.wB.triggeredState.selectedNodes != null)
-				roam42KeyboardLib.pressEsc(100);
-			setTimeout(()=>roam42.wB.toggleVisible(),100);
+				roam42KeyboardLib.pressEsc(50);
+			setTimeout(()=>roam42.wB.toggleVisible(),10);
 		}
 
 		roam42.wB.restoreCurrentBlockSelection = async()=>{

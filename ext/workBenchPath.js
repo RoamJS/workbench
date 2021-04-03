@@ -6,10 +6,9 @@
 //		.levelPages - returns page names
 //		.levelBlocks - returns blocks at the current level. As user drills down throgh block strucure, the UID of one 
 //									 block is passed to the next until it reaches the last block in the branch
+// using js-search 	//https://github.com/bvaughn/js-search
 
 {
-	//https://github.com/bvaughn/js-search
-	roam42.loader.addScriptToPage('js-search', 'https://cdn.jsdelivr.net/npm/js-search@2.0.0/dist/umd/js-search.min.js');
 	roam42.wB.path = {};
 
 	roam42.wB.path.initialize = async ()=> {
@@ -111,20 +110,20 @@
 		const pageLine = 'Page: ' + roam42.wB.path.trailString[0];
 		if(roam42.wB.path.currentPageBlocks._documents.length==1) {  //no blocks, mimick empty block
 			if(roam42.wB.path.canPageBeSelected==true)
-				await results.push( {display: pageLine, uid: roam42.wB.path.trailUID[0], level: 0, img: roam42.host + '/img/wb/page.png' } ); 
+				await results.push( {display:  pageLine, uid: roam42.wB.path.trailUID[0], showLevel: false, level: 0, img: roam42.host + '/img/wb/page.png' } ); 
 		} else if(roam42.wB.path.currentPageBlocks && roam42.wB.path.currentPageBlocks._documents.length>0 && query.length > 0) {
 			for await (block of roam42.wB.path.currentPageBlocks.search(query)) {
 				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : ' ';
-				await results.push( {display: blockOutput, uid: block.uid, level: block.level, img: roam42.host + '/img/wb/bullet.png' } );
+				await results.push( {display: blockOutput, uid: block.uid,  showLevel: true, level: block.level, img: roam42.host + '/img/wb/bullet.png' } );
 			}
 		} else { //no query yet, just show blocks from page
 			if(roam42.wB.path.canPageBeSelected==true)
-				await results.push( {display: pageLine, uid: roam42.wB.path.trailUID[0], level: 0, img: roam42.host + '/img/wb/page.png' } ); 
+				await results.push( {display: pageLine, uid: roam42.wB.path.trailUID[0], showLevel: false, level: 0, img: roam42.host + '/img/wb/page.png' } ); 
 			let maxCount = roam42.wB.path.currentPageBlocks._documents.length > 1000 ? 1000: roam42.wB.path.currentPageBlocks._documents.length;
 			for(i=1; i<maxCount;i++){
 				let block = roam42.wB.path.currentPageBlocks._documents[i];
 				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : ' ';
-				await results.push( {display: blockOutput, uid: block.uid,  level: block.level, img: roam42.host + '/img/wb/bullet.png' } );
+				await results.push( {display: blockOutput, uid: block.uid, showLevel: true,  level: block.level, img: roam42.host + '/img/wb/bullet.png' } );
 			}
 		}
 
@@ -133,7 +132,7 @@
 	const typeAheadCreate = async ()=>{
 		$('#roam42-wB-path-input').typeahead(
 			{ hint: true, highlight: true, minLength: 0, autoselect: true },
-			{ name: 'basicnav', display: 'display', limit: 10, async: true, 
+			{ name: 'basicnav', display: 'display', limit: 1000, async: true, 
 				source: async (query, syncResults, asyncResults)=> {
 									var results = [];
 									if(roam42.wB.path.level == 0)
@@ -144,9 +143,14 @@
 				},
 				templates: {
 					suggestion: (val)=>{
+						let leftPxl = 5;
+						let lvl = Number(val.level);
+						if(val.showLevel==true && lvl != 0){
+							leftPxl = leftPxl * lvl;
+						}	
 						return '<div style="display: flex">' + 
-											'<div style="left:5px;width:22px;"><img class="roam42-wb-path-image" height="18px" src="' + val.img + '"></div>' +
-											'<div style="width:430px"> ' + val.display + '</div>' + 
+											'<div style="left:5px;width:22px;"><img style="padding-left:' + leftPxl + 'px;" class="roam42-wb-path-image" height="18px" src="' + val.img + '"></div>' +
+											'<div style="width:430p;padding-left:' + leftPxl + 'px;">' + val.display + '</div>' + 
 										'</div>' ;
 					}
 				}
