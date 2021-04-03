@@ -66,7 +66,32 @@
     }
   };
 
-	roam42.common.rightSidebarClose = async ( iWindow , bRestoreLocation = true )=>{
+	roam42.common.setSideBarState = async (state)=>{
+		switch(state) {
+			case 1: //open left
+				if(document.querySelector('.rm-open-left-sidebar-btn')) { //not open.. so open
+					roam42.common.simulateMouseOver(document.getElementsByClassName("rm-open-left-sidebar-btn")[0]);
+					setTimeout(async ()=>{
+						document.getElementsByClassName("rm-open-left-sidebar-btn")[0].click();
+					},100);
+				}
+				break;
+			case 2: //close left
+				if(!document.querySelector('.rm-open-left-sidebar-btn')) { //open.. so close
+					document.querySelector(".roam-sidebar-content .bp3-icon-menu-closed").click()				
+					roam42.common.simulateMouseOver(document.getElementsByClassName("roam-article")[0]); 						
+				}
+				break;
+			case 3: //open right 
+				await roamAlphaAPI.ui.rightSidebar.open()
+				break;
+			case 4: //close right
+				await roamAlphaAPI.ui.rightSidebar.close()
+				break;
+		}					
+	}
+
+	roam42.common.rightSidebarCloseWindow = async ( iWindow , bRestoreLocation = true )=>{
 		//iWindow = 0 to close all windows, otherwise the number of the window to close
 		if(await roamAlphaAPI.ui.rightSidebar.getWindows().length>0){
 			let restoreLocation = bRestoreLocation ? roam42.common.saveLocationParametersOfTextArea( document.activeElement ) : null;
@@ -113,20 +138,11 @@
     } catch(e) {console.log(e)}
   }
 
-  roam42.common.sidebarLeftToggle = ()=> {
-    var event = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
-    try {
-      //try to open menu
-      document.getElementsByClassName("bp3-icon-menu-closed")[0].click();
-      roam42.common.simulateMouseOver(document.getElementsByClassName("roam-article")[0]); //.dispatchEvent(event)
-    } catch(e) {
-      try {
-        document.getElementsByClassName("bp3-icon-menu")[0].dispatchEvent(event);
-      } catch(e) {} //if on ipad, the above command fails, so go to next step
-      setTimeout(()=>{
-        document.getElementsByClassName("bp3-icon-menu-open")[0].click();
-      },100);
-    }
+  roam42.common.sidebarLeftToggle = async ()=> {
+		if( document.getElementsByClassName("rm-open-left-sidebar-btn")?.length>0 ) //left side bar closed, open it
+			await roam42.common.setSideBarState(1);
+		else
+			await roam42.common.setSideBarState(2);
   }
 
   //https://stackoverflow.com/questions/40091000/simulate-click-event-on-react-element

@@ -493,26 +493,9 @@
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SIDEBARSTATE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = Number(match.replace('<%SIDEBARSTATE:','').replace('%>','').trim());
 					let restoreLocation = roam42.common.saveLocationParametersOfTextArea( document.activeElement );
-					switch(commandToProcess) {
-						case 1: //open left
-							if(document.querySelector('.rm-open-left-sidebar-btn')) { //not open.. so open
-								roam42.common.sidebarLeftToggle(); 
-								await roam42.common.sleep(200);
-							}
-							break;
-						case 2: //close left
-							if(!document.querySelector('.rm-open-left-sidebar-btn')) { //not open.. so open
-								roam42.common.sidebarLeftToggle();
-								await roam42.common.sleep(200);
-							}
-							break;
-						case 3: //open right 
-							await roamAlphaAPI.ui.rightSidebar.open()
-							break;
-						case 4: //close right
-							await roamAlphaAPI.ui.rightSidebar.close()
-							break;
-					}					
+					await roam42.common.sleep(500);
+					await roam42.common.setSideBarState(commandToProcess);
+					await roam42.common.sleep(500);
 					if( document.activeElement.type != 'testarea') {
 						roam42.common.restoreLocationParametersOfTexArea(restoreLocation);
 						await roam42.common.sleep(300);
@@ -522,7 +505,7 @@
 
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%SIDEBARWINDOWCLOSE:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = Number(match.replace('<%SIDEBARWINDOWCLOSE:','').replace('%>','').trim());
-					await roam42.common.rightSidebarClose(commandToProcess);
+					await roam42.common.rightSidebarCloseWindow(commandToProcess);
           return roam42.smartBlocks.exclusionBlockSymbol;
         });				
         //ALWAYS at end of process

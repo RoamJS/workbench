@@ -30,8 +30,8 @@
       //open left side bar
       if (ev.altKey && ev.shiftKey && (ev.code=='Backslash' || ev.key=='«') ) {
         ev.preventDefault();
-        roam42.common.sidebarLeftToggle();
-        return
+				setTimeout(async()=>{await roam42.common.sidebarLeftToggle()},50);
+        return;
       }
 
 

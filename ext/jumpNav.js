@@ -291,7 +291,7 @@
         if(handler=='ctrl+j q' ) { roam42.quickRef.component.toggleQuickReference(); return false; }; //roam42.help.displayHelp() };
         if(handler=='ctrl+j h' ) { roam42.quickRef.component.toggleQuickReference(); return false; };
 
-        if(handler=='ctrl+j n' ) { roam42.common.sidebarLeftToggle(); return false; };
+        if(handler=='ctrl+j n' ) { setTimeout(async ()=>{roam42.common.sidebarLeftToggle()},50);  return false; };
         if(handler=='ctrl+j m' ) { roam42.common.sidebarRightToggle(); return false; };
 
         if(handler=='ctrl+j ,' ) { roam42.dailyNotesPopup.component.toggleVisible(); return false; };

@@ -4,7 +4,7 @@ roam42.wB.commandAddRunFromAnywhere("Graph Overview", ()=>{document.location.hre
 roam42.wB.commandAddRunFromAnywhere("Right Sidebar - close window panes (rscwp)", async ()=>{ 
 	await roam42KeyboardLib.pressEsc(100);
 	await roam42KeyboardLib.pressEsc(100);
-	await roam42.common.rightSidebarClose(0, false); 
+	await roam42.common.rightSidebarCloseWindow(0, false); 
 	try { await restoreCurrentBlockSelection() } catch(e){}
 });
 roam42.wB.commandAddRunFromAnywhere("Sidebars - swap with main window (swap)", async ()=>{  
@@ -41,33 +41,19 @@ roam42.wB.commandAddRunFromAnywhere("Sidebars - swap with main window & choose w
 });
 
 roam42.wB.commandAddRunFromAnywhere("Sidebars - open both (sob)", async ()=>{  
-	await roamAlphaAPI.ui.rightSidebar.open();
-	await roam42.common.sleep(100);  
-	try {
-		var event = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
-		document.getElementsByClassName("bp3-icon-menu")[0].dispatchEvent(event);
-	} catch(e) {} //if on ipad, the above command fails, so go to next step
-	setTimeout(()=>{
-		document.getElementsByClassName("bp3-icon-menu-open")[0].click();
-	},100);
+	await roam42.common.setSideBarState(3);
+	await roam42.common.setSideBarState(1);
 	if(roam42.wB.triggeredState.activeElementId != null) {
 		await roam42.common.sleep(500);
-		await roam42.common.rightSidebarClose(0, false); 
-		await restoreCurrentBlockSelection(); 
+		await roam42.wB.restoreCurrentBlockSelection(); 
 	}
 });
 roam42.wB.commandAddRunFromAnywhere("Sidebars - close both (scb)", async ()=>{  
-	await roamAlphaAPI.ui.rightSidebar.close();  
-	await roam42.common.sleep(100);  	
-	try { document.getElementsByClassName("bp3-icon-menu")[0].dispatchEvent(event) } catch(e) {} //if on ipad, the above command fails, so go to next step
-	try {
-			document.getElementsByClassName("bp3-icon-menu-closed")[0].click();
-			roam42.common.simulateMouseOver(document.getElementsByClassName("roam-article")[0]); //.dispatchEvent(event)
-	} catch(e) {};
+	await roam42.common.setSideBarState(2);
+	await roam42.common.setSideBarState(4);
 	if(roam42.wB.triggeredState.activeElementId != null) {
 		await roam42.common.sleep(500);
-		await roam42.common.rightSidebarClose(0, false); 
-		await restoreCurrentBlockSelection(); 
+		await roam42.wB.restoreCurrentBlockSelection(); 
 	}
 });
 const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = false)=> {
