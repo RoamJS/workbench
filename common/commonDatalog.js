@@ -132,9 +132,15 @@
   }
 
   roam42.common.currentPageUID = async ()=> {
-    var uid = '';
+    let uid = '';
     if(window.location.href.includes('page')) {
       uid = window.location.href.replace(roam42.common.baseUrl().href + '/','')
+			try {
+				//test uid if it is the title
+				const testForParents = await roam42.common.getBlockInfoByUID(uid, false, true);
+				if(testForParents[0][0].parents)
+					uid = testForParents[0][0].parents[0].uid;
+			} catch(e) {}
     } else {
       uid = await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date()))
     }

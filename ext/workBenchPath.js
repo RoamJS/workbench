@@ -111,9 +111,17 @@
 			if(roam42.wB.path.canPageBeSelected==true)
 				await results.push( {display:  pageLine, uid: roam42.wB.path.trailUID[0], showLevel: false, level: 0,  type: 'page', img: roam42.host + '/img/wb/page.png' } ); 
 		} else if(roam42.wB.path.currentPageBlocks && roam42.wB.path.currentPageBlocks._documents.length>0 && query.length > 0) {
+			let lastParentUid = null;
+			let lastOrder =null;
+			let styledResults =[];
 			for await (block of roam42.wB.path.currentPageBlocks.search(query)) {
+				let bSiblingBlock=false;
+				if(lastParentUid==block.parentUID && lastOrder==block.order-1)
+					bSiblingBlock=true;
+				lastParentUid = block.parentUID;
+				lastOrder = block.order;
 				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : ' ';
-				await results.push( {display: blockOutput, uid: block.uid,  showLevel: true, level: block.level, type: 'bullet', img: roam42.host + '/img/wb/bullet.png' } );
+				await results.push( {display: blockOutput, isSibling: bSiblingBlock, parentUID: block.parentUID,  uid: block.uid,  showLevel: true, level: block.level, type: 'bullet', img: roam42.host + '/img/wb/bullet.png' } );
 			}
 		} else { //no query yet, just show blocks from page
 			if(roam42.wB.path.canPageBeSelected==true)
@@ -152,10 +160,11 @@
 							let lvl = Number(val.level);
 							if(val.showLevel==true && lvl >1)
 								lvlWidth = lvlWidth * lvl;
-							return '<div style="display: flex" class="roam42-wb-path-ttmenu-item">' + 
-												'<div style="margin-left:4px;padding-top:6px;width:' + lvlWidth + 'px"><img style="float:right" class="roam42-wb-path-image-bullet" height="10px" src="' + val.img + '"></div>' +
+							const groupLine = val.isSibling==false ? 'border-top: 1px solid' : '';
+							return 	'<div style="' + groupLine + '"><div style="display: flex;" class="roam42-wb-path-ttmenu-item">' + 		
+										 		'<div style="margin-left:4px;padding-top:6px;width:' + lvlWidth + 'px"><img style="float:right" class="roam42-wb-path-image-bullet" height="10px" src="' + val.img + '"></div>' +
 												'<div style="width:100%;padding-left:6px;">' + val.display.substring(0,500) + '</div>' + 
-											'</div>' ;
+											'</div></div>' ;
 						}
 					}
 				}

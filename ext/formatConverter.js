@@ -293,8 +293,10 @@
     //nodeCurrent, level, outputFunction, parent, flatten
     await walkDocumentStructureAndFormat(results[0][0], 0, async (blockText, nodeCurrent, level, parent, flatten)=> {
 			let blockOutput = roamMarkupScrubber(blockText, true) 
-			if(withIndents==true) blockOutput = (level > 1 ?  '  '.repeat(level-1) + ' - '  : '+ ') + blockOutput ;
-			jsonOutput.push({ uid: nodeCurrent.uid.toString(), level: level, blockText: blockOutput });
+			if(withIndents==true) blockOutput = (level > 1 ?  '  '.repeat(level-1) + ' - '  : '+ ') + blockOutput;
+			try {
+				jsonOutput.push({ uid: nodeCurrent.uid, order: nodeCurrent.order, parentUID: parent.uid,  level: level, blockText: blockOutput });
+			} catch(e){}
 		}, null, false);
 		if(formatOutputAsJsonString == true)
 			output = JSON.stringify(jsonOutput,0,2);
@@ -320,8 +322,8 @@
 //    roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
     setTimeout( async ()=>{
       var uid = await roam42.common.currentPageUID();
-      var x =  await roam42.formatConverter.iterateThroughTree(uid, roam42.formatConverter.formatter.simpleJson, false );
-      
+			console.log('uid',uid	)
+      // console.log(x)
 			//roam42.test 
     }, 1000)
   }
