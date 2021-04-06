@@ -73,7 +73,6 @@
 	const queryExternalLinks = `[:find (count ?e) . :where [?e :block/string ?s] (not [(clojure.string/includes? ?s "https://firebasestorage.googleapis.com")]) (or [(clojure.string/includes? ?s "https://")] [(clojure.string/includes? ?s "https://")])]`;
 
 	roam42.stats.displayGraphStats = async ()=> {		
-		console.log('roam42.stats.displayGraphStats')
 		roam42.help.displayMessage(`
 		Graph Database stats <br/>
 		========================== <br/><br/>

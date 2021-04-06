@@ -25,7 +25,7 @@
   roam42.formatConverterUI.changeFormat = async ()=> {
     //save selection state
     roam42.formatConverterUI.setLastFormat( document.getElementById('r42formatConverterSelection').selectedIndex );
-    var uid = await roam42.common.currentPageUID();
+    var uid = await roam42.common.currentPageZoomLevelUID();
     clipboardConvertedText='';
     switch(document.getElementById('r42formatConverterSelection').value) {
       case 'puretext_Tab':

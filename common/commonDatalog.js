@@ -147,6 +147,16 @@
     return uid;
   }
 
+	roam42.common.currentPageZoomLevelUID = async ()=> {
+   var uid = '';
+    if(window.location.href.includes('page')) {
+      uid = window.location.href.replace(roam42.common.baseUrl().href + '/','')
+    } else {
+      uid = await roam42.common.getPageUidByTitle(roam42.dateProcessing.getRoamDate(new Date()))
+    }
+    return uid;
+  }
+
   roam42.common.getBlockInfoByUID = async (uid, withChildren=false, withParents=false)=>{
     try {
       let q = `[:find (pull ?page
