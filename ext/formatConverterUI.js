@@ -140,7 +140,7 @@
       } //END roam42.formatConverterUI.show
 
   roam42.formatConverterUI.htmlview = async ()=> {
-    var uid = await roam42.common.currentPageUID();
+    var uid = await roam42.common.currentPageZoomLevelUID();
     var results = await roam42.formatConverter.formatter.htmlSimple(uid);
 
     var winPrint = await window.open('','','left=50,top=100,width=1000,height=600,toolbar=0,scrollbars=0,status=0');
