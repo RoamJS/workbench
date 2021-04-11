@@ -512,9 +512,9 @@
     // Add top level navigations to the list of navigateItems
     if (sidebar) {
       withClass(sidebar, 'log-button', (logButton) => {
-        const text = logButton.innerText;
-        if (text.includes('DAILY NOTES') ||
-            text === DAILY_NOTES_KEY + '\nDAILY NOTES') {
+        const text = logButton.innerText.toLowerCase();
+        if (text === 'daily notes' ||
+            text === DAILY_NOTES_KEY + '\ndaily notes') {
           const option = {
             element: logButton,
             mustBeKeys: DAILY_NOTES_KEY,
@@ -523,8 +523,8 @@
           };
           navigateItems.push(option);
           uidToNavigateOptionsMap[DAILY_NOTES_UID] = option;
-        } else if (text.includes('GRAPH OVERVIEW') ||
-                   text === GRAPH_OVERVIEW_KEY + '\nGRAPH OVERVIEW') {
+        } else if (text === 'graph overview' ||
+                   text === GRAPH_OVERVIEW_KEY + '\ngraph overview') {
           const option = {
             element: logButton,
             mustBeKeys: GRAPH_OVERVIEW_KEY,
@@ -533,8 +533,8 @@
           };
           navigateItems.push(option);
           uidToNavigateOptionsMap[GRAPH_OVERVIEW_UID] = option;
-        } else if (text.includes('ALL PAGES') ||
-                   text === ALL_PAGES_KEYS + '\nALL PAGES') {
+        } else if (text === 'all pages' ||
+                   text === ALL_PAGES_KEYS + '\nall pages') {
           const option = {
             element: logButton,
             mustBeKeys: ALL_PAGES_KEYS,
@@ -2074,9 +2074,6 @@
     '.log-button .' + HINT_CLASS + ' {',
     '  margin-top: 0;',
     '}',
-    '.starred-pages .' + HINT_CLASS + ' {',
-    '  margin-top: 8px;',
-    '}',
     '#roam-right-sidebar-content {',
     '  position: relative;',
     '}',
@@ -2147,8 +2144,8 @@
     '  position: relative;',
     '  width: 0;',
     '  height: 0;',
-    '  top: -16px;',
-    '  left: 0;',
+    '  top: -25px;',
+    '  left: 3px;',
     '}',
     '#roam-right-sidebar-content .' + SIDE_PAGE_CLOSE_CLASS + ' {',
     '  position: relative;',
