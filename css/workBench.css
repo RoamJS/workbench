@@ -1,4 +1,5 @@
 
+
 @media (prefers-color-scheme: light) {
   :root {
 		--wb-container-background: white; 
@@ -28,6 +29,8 @@
 	}
 }
 
+
+
 #roam42-wB-container, #roam42-wB-path-container {
 	position: absolute;
 	left: 50%;
@@ -37,10 +40,11 @@
 	background-color: var(--wb-container-background); 
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
 	height: 30px;
-	width:450px;
+	width: 400px;
 	z-index: 1000;
 	 opacity: 1;
 }
+
 
 #roam42-wB-container .typeahead,
 #roam42-wB-path-container .typeahead{
@@ -50,7 +54,7 @@
 	font-size: 10pt !important;
 	height: 14px !important;
 	border-radius: 0px;
-	width: 443px;
+	width: 393px;
 }
 
 
@@ -63,7 +67,7 @@
 	left:-4px !important;
 	padding-top: 0px !important;
 	padding-bottom: 0px !important;
-	width:450px;
+	width: 400px;
 	height: 220px;
 	overflow-y: auto; 
 }
@@ -88,3 +92,4 @@
 	background-color: var(--wb-container-tt-cursor-background-color) !important;
 
 }
+

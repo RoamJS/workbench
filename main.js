@@ -24,7 +24,7 @@
 if( typeof window.roam42 == 'undefined' ) {
 
   window.roam42  = {};
-  roam42.buildID = 'Roam<sup>42</sup> 2021-04-07 (this is the way) ';
+  roam42.buildID = 'Roam<sup>42</sup> 2021-04-12 (this is the way) ';
 	
   roam42.host    = document.currentScript.src.replace('main.js','');
 
@@ -105,7 +105,7 @@ if( typeof window.roam42 == 'undefined' ) {
       roam42.loader.addScriptToPage( 'dailyNote',         roam42.host + 'ext/dailyNotesPopup.js'  );
       roam42.loader.addScriptToPage( 'workBench',    			roam42.host + 'ext/workBench.js'   );
 				 roam42.loader.addCSSToPage( 'workBenchCss',      roam42.host + 'css/workBench.css'       );
-//      roam42.loader.addScriptToPage( 'focuesMode',        roam42.host + 'ext/focusMode.js'  );
+      roam42.loader.addScriptToPage( 'focuesMode',        roam42.host + 'ext/focusMode.js'  );
     }
     roam42.loader.addScriptToPage( 'keyEvents',         roam42.host + 'common/keyevents.js'       );
 
