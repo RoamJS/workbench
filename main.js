@@ -84,7 +84,6 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addScriptToPage( 'smartBlocks',       roam42.host + 'ext/smartBlocks.js'        );
 //    roam42.loader.addScriptToPage( 'templatePoc',       roam42.host + 'ext/templatepoc.js'        );
     roam42.loader.addScriptToPage( 'jumpToDate',        roam42.host + 'ext/jumpToDate.js'         );
-    roam42.loader.addScriptToPage( 'autocomplete',      roam42.host + 'ext/autoComplete.js'       );
     roam42.loader.addScriptToPage( 'privacyMode',       roam42.host + 'ext/privacyMode.js'        );
     roam42.loader.addScriptToPage( 'roam42Menu',        roam42.host + 'ext/roam42Menu.js'         );
     roam42.loader.addScriptToPage( 'roam42Tutorials',   roam42.host + 'ext/tutorials.js'          );
@@ -105,7 +104,6 @@ if( typeof window.roam42 == 'undefined' ) {
       roam42.loader.addScriptToPage( 'dailyNote',         roam42.host + 'ext/dailyNotesPopup.js'  );
       roam42.loader.addScriptToPage( 'workBench',    			roam42.host + 'ext/workBench.js'   );
 				 roam42.loader.addCSSToPage( 'workBenchCss',      roam42.host + 'css/workBench.css'       );
-      roam42.loader.addScriptToPage( 'focuesMode',        roam42.host + 'ext/focusMode.js'  );
     }
     roam42.loader.addScriptToPage( 'keyEvents',         roam42.host + 'common/keyevents.js'       );
 
@@ -124,9 +122,7 @@ if( typeof window.roam42 == 'undefined' ) {
         try { roam42.quickRef.component.initialize(); } catch(e){};
         try { setTimeout(async()=> { await roam42.smartBlocks.initialize() },100) } catch(e){};
 				try { setTimeout(async()=> { await roam42.wB.initialize() },100) } catch(e){};
-        roam42.autocomplete.loadAutoComplete();
-        roam42.jumpnav.loadJumpNav();
-
+				roam42.jumpnav.loadJumpNav();
 				try {
 					roam42.user = roam42.common.getUserInformation();
 				} catch(e) {}

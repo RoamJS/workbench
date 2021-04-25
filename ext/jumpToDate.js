@@ -164,16 +164,16 @@
 
    // Create ROAM42 jump to date button
       try {
-        var jump = document.createElement("div");
+				setTimeout(()=>{
+	        var jump = document.createElement("div");
           jump.id='roam42-button-jumptodate';
           jump.className = 'bp3-button bp3-minimal bp3-small bp3-icon-pivot';
-         // jump.setAttribute('style','position:relative;left:2px');
           jump.onclick = ()=>{ this.jumpToDateFromButton()};
-        //var spacer = document.createElement("div");
-        //  spacer.setAttribute('style','flex: 0 0 3px');
-        //document.querySelector('.rm-topbar').appendChild(spacer);
-        document.querySelector('.rm-topbar').appendChild(jump);
-
+					var roamTopbar = document.querySelectorAll(".rm-topbar .bp3-popover-wrapper");
+					var positionInToolbar = document.querySelector('.rm-topbar .bp3-icon-menu-closed')?.children.length>0 ? 2 : 1;
+					var jumpToDateButton = roamTopbar[ roamTopbar.length - positionInToolbar ];					
+					jumpToDateButton.insertAdjacentElement('afterend', jump);
+				},4000);
       } catch(e) {
         console.log('could not add toolbar buton - see module jump-to-date.js ');
         console.log(e);

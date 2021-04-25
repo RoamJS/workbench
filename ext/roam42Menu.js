@@ -15,9 +15,11 @@
 				if(trackTopbarUpdate==false) {
 					trackTopbarUpdate = true;
 					setTimeout(()=>{		
-						document.querySelector('.rm-topbar').appendChild(document.querySelector('#roam42-button-jumptodate'));
-						document.querySelector('.rm-topbar').appendChild(document.querySelector('#roam42-menu-spacer'));
-						document.querySelector('.rm-topbar').appendChild(document.querySelector('#roam42-menu'));
+						var roamTopbar = document.querySelectorAll(".rm-topbar .bp3-popover-wrapper");
+						var positionInToolbar = document.querySelector('.rm-topbar .bp3-icon-menu-closed')?.children.length>0 ? 2 : 1;
+						var nextIconButton = roamTopbar[ roamTopbar.length-positionInToolbar];
+						nextIconButton.insertAdjacentElement('afterend', document.querySelector('#roam42-menu'));
+						nextIconButton.insertAdjacentElement('afterend', document.querySelector('#roam42-button-jumptodate'));
 						trackTopbarUpdate = false;
 					}, 100);
 				}
@@ -30,11 +32,10 @@
         menu.id='roam42-menu';
         menu.className = 'bp3-button bp3-minimal bp3-small bp3-icon-vertical-distribution';
         menu.setAttribute('style','left:2px;');
-    var spacer = document.createElement("div");
-      spacer.id="roam42-menu-spacer"
-      spacer.setAttribute('style','flex: 0 0 3px;');
-		document.querySelector('.rm-topbar').appendChild(spacer);
-		document.querySelector('.rm-topbar').appendChild(menu);
+		var roamTopbar = document.querySelectorAll(".rm-topbar .bp3-popover-wrapper");
+		var positionInToolbar = document.querySelector('.rm-topbar .bp3-icon-menu-closed')?.children.length>0 ? 2 : 1;
+		var nextIconButton = roamTopbar[ roamTopbar.length-positionInToolbar];
+		nextIconButton.insertAdjacentElement('afterend', menu);
 
     roam42.roam42Menu.tippy = tippy('#roam42-menu', {
       allowHTML: true,
@@ -45,16 +46,18 @@
       position: 'auto',
       onShow(instance) {
         setTimeout(async ()=>{
-          var elem = document.getElementById(instance.popper.id).firstElementChild
+          var elem = document.getElementById(instance.popper.id).firstElementChild;
           if(window.innerWidth < elem.getBoundingClientRect().right ) elem.style.left = '-' + Number(elem.style.width.replace('px','')) + 'px';
-          instance.setContent( await roam42.roam42Menu.displayMenu() )
+          instance.setContent( await roam42.roam42Menu.displayMenu() );
         },50)
       },
       onMount(instance) {
 				setTimeout(async ()=>{
-					var bck = document.querySelector('#roam42-menu + div .tippy-box')
-					bck.style.width="240px";
-					bck.classList.add('bp3-popover');
+					var bck = document.querySelector('#roam42-menu + div .tippy-box');
+					try {
+						bck.style.width="240px";
+						bck.classList.add('bp3-popover');
+					} catch(e) {}
 					instance.setContent( await roam42.roam42Menu.displayMenu() ); //force content in for sizing
 				},50)
       },
@@ -213,17 +216,6 @@
               </li>`;
         }
 
-        if( roam42.autocomplete != undefined ) {
-          menu += `<li class="" style="height:25px">
-                <a class="bp3-menu-item bp3-popover-dismiss">
-                   <div class="bp3-text-overflow-ellipsis bp3-fill" onclick="roam42.roam42Menu.tippy[0].hide(); roam42.autocomplete.autoCompleteStatusToast()">
-                    <span style="font-size:8pt;padding-left:15px">
-                       Auto-complete <span style="font-size:7pt">${roam42.autocomplete.getAutoComplete_IsEnabled() > 0 ? ' (Active)' : '(Disabled)'  }
-                    </span>
-                  </div>
-                </a>
-              </li>`;
-        }
 
     menu += `<hr style="margin:0px; margin-top:5px; padding:0px">`;
     menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;">
