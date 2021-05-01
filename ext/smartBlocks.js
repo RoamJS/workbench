@@ -212,7 +212,7 @@
         try {
             roam42.smartBlocks.textBoxObserver.disconnect(); //stop observing blocks during insertion
               if(item.original.help && roam42.smartBlocks.SmartBlockPopupHelpEnabled){
-                roam42.help.displayMessage('<img height="22px" src="' + roam42.host + '/img/sb/gear.png">'+
+                roam42.help.displayMessage('<img height="22px" src="' + roam42.host + 'img/sb/gear.png">'+
                                            ' ' + item.original.help,20000);
               }
             var currentSmartBlockCommand = item.original.fullCommand + '';
@@ -524,22 +524,22 @@
           var img = '';
           switch(item.original.icon) {
             case 'hl':
-              img = roam42.host + '/img/sb/hr.png';
+              img = roam42.host + 'img/sb/hr.png';
               break;
             case 'random':
-              img = roam42.host + '/img/sb/random.png';
+              img = roam42.host + 'img/sb/random.png';
               break;
             case 'list':
-              img = roam42.host + '/img/sb/list.png';
+              img = roam42.host + 'img/sb/list.png';
               break;
             case 'gear':
-              img = roam42.host + '/img/sb/gear.png';
+              img = roam42.host + 'img/sb/gear.png';
               break;
             case 'time':
-              img = roam42.host + '/img/sb/clock-time-7.png';
+              img = roam42.host + 'img/sb/clock-time-7.png';
               break;
             default:
-              img = roam42.host + '/img/sb/lego3blocks.png';
+              img = roam42.host + 'img/sb/lego3blocks.png';
           }
           return `<img width="15px" src="${img}"> `
                   + item.string;

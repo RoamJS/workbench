@@ -42,7 +42,7 @@ if( typeof window.roam42 == 'undefined' ) {
       document.getElementsByTagName('head')[0].appendChild(element);
     }
 
-    roam42.loader.logo2HC = roam42.host + '/img/logo/42logo-2hc.png';
+    roam42.loader.logo2HC = roam42.host + 'img/logo/42logo-2hc.png';
     roam42.loader.disabledFeatures = typeof window.disabledFeatures !== 'undefined' ? window.disabledFeatures : [];
 
     roam42.loader.addScriptToPage = (tagId, script)=> {

@@ -221,7 +221,7 @@
 				let sbList =  await roam42.smartBlocks.UserDefinedWorkflowsList();
 				for await (sb of sbList) {
 					if( sb.global == true ) { 
-				 		await results.push( { display: sb['key'], img: roam42.host + '/img/wb/sbglobal.png',   context: '*', info: sb, 
+				 		await results.push( { display: sb['key'], img: roam42.host + 'img/wb/sbglobal.png',   context: '*', info: sb, 
 						 											cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}) });
 					}
 				}
@@ -233,7 +233,7 @@
 				// await roam42.smartBlocks.addCommands( sbList );
 				for await (sb of sbList) {
 					if( !sb['key'].includes('<%GLOBAL%>'))
-				 		await results.push( { display: sb['key'], img: roam42.host + '/img/wb/sbinwb.png', context: '-', info: sb,
+				 		await results.push( { display: sb['key'], img: roam42.host + 'img/wb/sbinwb.png', context: '-', info: sb,
 						 											cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}) });
 				}
 			});
@@ -251,7 +251,7 @@
 				let sbList =  []
 				await roam42.smartBlocks.addCommands( sbList );
 				for await (sb of sbList) {
-					await results.push( { display: sb['key'], img: roam42.host + '/img/wb/sbinwb.png', context: '-', info: sb,
+					await results.push( { display: sb['key'], img: roam42.host + 'img/wb/sbinwb.png', context: '-', info: sb,
 																cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}) });
 				}
 			});
@@ -270,23 +270,23 @@
 				cmd: ()=>{ roam42.common.navigateUiTo( roam42.dateProcessing.getRoamDate(new Date()), roam42.wB.keystate.shiftKey ) }, 
 				searchText: 'dailynotes dn',
 				context: '*',
-				img: roam42.host + '/img/wb/command.png'
+				img: roam42.host + 'img/wb/command.png'
 			});
 
 			roam42.wB.commandAddRunFromAnywhere = async ( textToDisplay, callbackFunction )=> {
 				try{ roam42.common.commandPaletteAdd( '(42) ' + textToDisplay  ,callbackFunction ) } catch(e) {};
 				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), 
-																		img: roam42.host + '/img/wb/command.png', cmd: callbackFunction, context: '*' } );
+																		img: roam42.host + 'img/wb/command.png', cmd: callbackFunction, context: '*' } );
 			}
 
 			roam42.wB.commandAddRunFromBlock = ( textToDisplay, callbackFunction )=> {
 				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), 
-																		img: roam42.host + '/img/wb/blocksblock.png', cmd: callbackFunction, context: '-' } );
+																		img: roam42.host + 'img/wb/blocksblock.png', cmd: callbackFunction, context: '-' } );
 			}
 
 			roam42.wB.commandAddRunFromMultiBlockSelection = ( textToDisplay, callbackFunction )=> {
 				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), 
-																		img: roam42.host + '/img/wb/blocksmulti.png', cmd: callbackFunction, context: '+' } );
+																		img: roam42.host + 'img/wb/blocksmulti.png', cmd: callbackFunction, context: '+' } );
 			}
 
 		// add dependencies
