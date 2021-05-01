@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: RoamJS Publish
-        uses: dvargas92495/roamjs-publish@0.1.11
+        uses: dvargas92495/roamjs-publish@0.1.12
         with:
           token: ${{ secrets.ROAMJS_DEVELOPER_TOKEN }}
           source: .
