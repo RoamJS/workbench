@@ -1,0 +1,14 @@
+on: [push]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v2
+      - name: RoamJS Publish
+        uses: dvargas92495/roamjs-publish@0.1.9
+        with:
+          token: ${{ secrets.ROAMJS_DEVELOPER_TOKEN }}
+          source: .
+          path: roam42
