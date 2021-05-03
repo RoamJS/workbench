@@ -56,7 +56,7 @@
           },
           theme: 'light',
           contentOverflow: 'hidden',
-          content: '<iframe src="https://roam-quickref.glitch.me/" id="iframeRqrQuickReferencePanel" style="width: 100%; height: 100%;"></iframe>',
+          content: `<iframe src="${window.host.includes('roamjs.com') ? 'https://roamjs.com/quickref/index.html' : 'https://roam-quickref.glitch.me/'}" id="iframeRqrQuickReferencePanel" style="width: 100%; height: 100%;"></iframe>`,
           onwindowresize: true,
           dragit: {
             containment: 10,
