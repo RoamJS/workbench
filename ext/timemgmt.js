@@ -201,6 +201,7 @@
     return roam42.timemgmt.outputTaskBlocks(results, textToProcess, commandMatch, request.params, request.limitCount);
   }
 
+  const queryRegex = /{{(\[\[)?query(\]\])?:/;
   roam42.timemgmt.todosOverdue = async (limitOutputCount = 50, sortAscending=true, includeDNPTasks=true)=>{
     var yesterday = roam42.dateProcessing.testIfRoamDateAndConvert(roam42.dateProcessing.parseTextForDates('yesterday'));
     var outputTODOs = [];
@@ -212,7 +213,7 @@
         var taskWasOutputted=false; //tracks for this loop if thee was an output
         var testForPages=null;
         var taskString = task[0].string + ' ';
-        if(taskString.substring(0,12)!='{{[[query]]:') {
+        if(!queryRegex.test(taskString)) {
           if(taskString.includes('{{[[TODO]]}}')) //confirm there is a TODO in the string properly formatted
             testForPages = taskString.replace('[[TODO]]','').match(/\[\[(\s*[\S\s]*?)\]\]/g)
           if(testForPages!=null) {
@@ -230,17 +231,18 @@
               } catch(e) {}
             }
           } //end of testForPages!=null
+        
+          //This task has no date, but check if it is on a DNP, thus inherits the date
+          if(includeDNPTasks && taskWasOutputted==false) {
+            try {
+              var pageNameIsDate = roam42.dateProcessing.testIfRoamDateAndConvert(task[1].title);
+              if(pageNameIsDate && pageNameIsDate <= yesterday) {
+                    outputCounter+=1;
+                    outputTODOs.push({taskUID: task[0].uid, taskString: task[0].string, pageTitle: task[1].title, date:pageNameIsDate })
+              }
+            } catch(e) {}
+          } //end of includeDNPTasks
         }
-        //This task has no date, but check if it is on a DNP, thus inherits the date
-				if(includeDNPTasks && taskWasOutputted==false) {
-          try {
-            var pageNameIsDate = roam42.dateProcessing.testIfRoamDateAndConvert(task[1].title);
-            if(pageNameIsDate && pageNameIsDate <= yesterday) {
-                  outputCounter+=1;
-                  outputTODOs.push({taskUID: task[0].uid, taskString: task[0].string, pageTitle: task[1].title, date:pageNameIsDate })
-            }
-          } catch(e) {}
-        } //end of includeDNPTasks
       } // end outputCounter < limitOutputCount
     } //end of for
     return outputTODOs.sort((a, b) =>  a.pageTitle-b.pageTitle ).
