@@ -88,6 +88,8 @@
                              help:'<b>ELSE</b><br/>Used with IF when<br/>IF is false<br/><br/>1: Text to be inserted'});
       valueArray.push({key: '<% IFTRUE: %> (SmartBlock Command)',             icon:'gear', value: '<%IFTRUE:&&&%>',         processor:'static',
                              help:'<b>IFTRUE</b><br/>Test if parameter is true<br/>If true, the block<br/> is output<br/><br/>1: Logic to be evaluated'});
+      valueArray.push({key: '<% IFDATEOFYEAR: %> (SmartBlock Command)',       icon:'gear', value: '<%IFDATEOFYEAR:&&&%>',   processor:'static',
+                             help:'<b>IFDATEOFYEAR</b><br/>Compares today\'s date<br/><br/><br/>1: Comma separated list<br/>of dates (mm/dd)<br/> Example: 01/01,04/01,09/01'});
       valueArray.push({key: '<% IFDAYOFMONTH: %> (SmartBlock Command)',       icon:'gear', value: '<%IFDAYOFMONTH:&&&%>',   processor:'static',
                              help:'<b>IFDAYOFMONTH</b><br/>Compares today\'s date<br/><br/><br/>1: Comma separated list of days<br/> Example: 5,10,15'});
       valueArray.push({key: '<% IFDAYOFWEEK: %> (SmartBlock Command)',        icon:'gear', value: '<%IFDAYOFWEEK:&&&%>',    processor:'static',
@@ -350,6 +352,25 @@
           }
         });
 
+        textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDATEOFYEAR:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
+          var commandToProcess = match.replace('<%IFDATEOFYEAR:','').replace('%>','').trim();
+          var date = '';
+					try { //try for "smart date" in context
+						date = chrono.parseDate(roam42.dateProcessing.parseTextForDates('today'));
+					} catch(e) {
+						// fall back to today
+						date = chrono.parseDate('today');
+					}
+          if(commandToProcess.replaceAll(' ','').split(',').some(d => {
+            const parts = d.split('/')
+            const monthPart = Number(parts[0]);
+            const dayPart = Number(parts[1]);
+            return date.getMonth() + 1 === monthPart && date.getDate() === dayPart;
+          }))
+            return ''; //
+          else
+            return roam42.smartBlocks.exclusionBlockSymbol
+        });
         textToProcess = await roam42.common.replaceAsync(textToProcess, /(\<\%IFDAYOFWEEK:)(\s*[\S\s]*?)(\%\>)/g, async (match, name)=>{
           var commandToProcess = match.replace('<%IFDAYOFWEEK:','').replace('%>','').trim();
           var day = '';
