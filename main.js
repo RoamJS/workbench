@@ -24,7 +24,18 @@
 if( typeof window.roam42 == 'undefined' ) {
 
   window.roam42  = {};
-  roam42.buildID = 'Roam<sup>42</sup> 2021-04-25 (flint rock) ';
+  const scriptVersionMatch = document.currentScript.src.match(/roam42\/(\d\d\d\d-\d\d-\d\d-\d\d-\d\d)\/main.js/);
+  if (scriptVersionMatch) {
+    roam42.buildID = scriptVersionMatch[1];
+  } else {
+    fetch('https://api.roamjs.com/versions?limit=1&id=roam42')
+      .then(r => r.json())
+      .then(({versions}) => {
+        roam42.buildID = `Roam<sup>42</sup> ${versions[0] || 'Version Not Found'}`;
+      }).catch(() => {
+        roam42.buildID = 'Roam<sup>42</sup> Version Not Found';
+      })
+  }
 	
   roam42.host    = document.currentScript.src.replace('main.js','');
 
