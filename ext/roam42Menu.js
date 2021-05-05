@@ -218,8 +218,8 @@
 
 
     menu += `<hr style="margin:0px; margin-top:5px; padding:0px">`;
-    menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;">
-              ${roam42.buildID}
+    menu += `<li  style="padding-left:10px;margin-top:5px"><span style="font-size:7pt;padding-left:15px;cursor:pointer;" onclick="roam42.roam42Menu.tippy[0].hide(); window.roamjs.extension.versioning.switch({id: 'roam42', currentVersion:'${roam42.buildID}'});">
+    Roam<sup>42</sup> ${roam42.buildID}
             </span></li>`;
 
     menu += `</ul></div>`

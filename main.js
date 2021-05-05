@@ -26,14 +26,14 @@ if( typeof window.roam42 == 'undefined' ) {
   window.roam42  = {};
   const scriptVersionMatch = document.currentScript.src.match(/roam42\/(\d\d\d\d-\d\d-\d\d-\d\d-\d\d)\/main.js/);
   if (scriptVersionMatch) {
-    roam42.buildID = `Roam<sup>42</sup> ${scriptVersionMatch[1]}`;
+    roam42.buildID = scriptVersionMatch[1];
   } else {
     fetch('https://api.roamjs.com/versions?limit=1&id=roam42')
       .then(r => r.json())
       .then(({versions}) => {
-        roam42.buildID = `Roam<sup>42</sup> ${versions[0] || 'Version Not Found'}`;
+        roam42.buildID = versions[0] || 'Version Not Found';
       }).catch(() => {
-        roam42.buildID = 'Roam<sup>42</sup> Version Not Found';
+        roam42.buildID = 'Version Not Found';
       })
   }
 	
@@ -77,7 +77,7 @@ if( typeof window.roam42 == 'undefined' ) {
 
   ( async ()=>{
 
-
+    roam42.loader.addScriptToPage('roamjs-versioning', 'https://roamjs.com/versioning.js');
     roam42.loader.addScriptToPage( 'libs',  roam42.host + 'dist/libs.js'  );
     roam42.loader.addCSSToPage( 'cssLibs',  roam42.host + 'dist/libs.css' );
 
