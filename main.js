@@ -26,7 +26,7 @@ if( typeof window.roam42 == 'undefined' ) {
   window.roam42  = {};
   const scriptVersionMatch = document.currentScript.src.match(/roam42\/(\d\d\d\d-\d\d-\d\d-\d\d-\d\d)\/main.js/);
   if (scriptVersionMatch) {
-    roam42.buildID = scriptVersionMatch[1];
+    roam42.buildID = `Roam<sup>42</sup> ${scriptVersionMatch[1]}`;
   } else {
     fetch('https://api.roamjs.com/versions?limit=1&id=roam42')
       .then(r => r.json())
