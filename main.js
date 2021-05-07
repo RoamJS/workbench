@@ -82,7 +82,7 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addCSSToPage( 'cssLibs',  roam42.host + 'dist/libs.css' );
 
     //common shared functions
-       roam42.loader.addCSSToPage( 'styleRM',           roam42.host + 'css/styleRM.css'           );
+    roam42.loader.addCSSToPage( 'styleRM',           roam42.host + 'css/styleRM.css'           );
     roam42.loader.addScriptToPage( 'commonFunctions',   roam42.host + 'common/commonFunctions.js' );
     roam42.loader.addScriptToPage( 'commonDatalog',     roam42.host + 'common/commonDatalog.js  ' );
     roam42.loader.addScriptToPage( 'jumpNav'  ,         roam42.host + 'ext/jumpNav.js'            );
@@ -114,7 +114,7 @@ if( typeof window.roam42 == 'undefined' ) {
       roam42.loader.addScriptToPage( 'livePreview',       roam42.host + 'ext/livePreview.js'      );
       roam42.loader.addScriptToPage( 'dailyNote',         roam42.host + 'ext/dailyNotesPopup.js'  );
       roam42.loader.addScriptToPage( 'workBench',    			roam42.host + 'ext/workBench.js'   );
-				 roam42.loader.addCSSToPage( 'workBenchCss',      roam42.host + 'css/workBench.css'       );
+      roam42.loader.addCSSToPage( 'workBenchCss',      roam42.host + 'css/workBench.css'       );
     }
     roam42.loader.addScriptToPage( 'keyEvents',         roam42.host + 'common/keyevents.js'       );
 
@@ -132,7 +132,7 @@ if( typeof window.roam42 == 'undefined' ) {
         try { roam42.typeAhead.loadTypeAhead(); } catch(e){};
         try { roam42.quickRef.component.initialize(); } catch(e){};
         const initializeSb = (counter) => setTimeout(()=> { 
-          if (roam42.wB) {
+          if (roam42.smartBlocks) {
             try { roam42.smartBlocks.initialize() } catch(e){};
           } else if (counter > 100) {
             console.error('Failed to initalize Smart blocks after 100 tries');

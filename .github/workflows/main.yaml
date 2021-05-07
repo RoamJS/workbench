@@ -4,6 +4,7 @@ on:
 
 jobs:
   deploy:
+    if: ${{ env.GITHUB_REPOSITORY == 'dvargas92495/roam42' }}
     runs-on: ubuntu-latest
     name: Deploy
     steps:
