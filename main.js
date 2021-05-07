@@ -131,8 +131,26 @@ if( typeof window.roam42 == 'undefined' ) {
         try { roam42.jumpToDate.component.initialize(); } catch(e){};
         try { roam42.typeAhead.loadTypeAhead(); } catch(e){};
         try { roam42.quickRef.component.initialize(); } catch(e){};
-        try { setTimeout(async()=> { await roam42.smartBlocks.initialize() },100) } catch(e){};
-				try { setTimeout(async()=> { await roam42.wB.initialize() },100) } catch(e){};
+        const initializeSb = (counter) => setTimeout(()=> { 
+          if (roam42.wB) {
+            try { roam42.smartBlocks.initialize() } catch(e){};
+          } else if (counter > 100) {
+            console.error('Failed to initalize Smart blocks after 100 tries');
+          } else {
+            initializeSb(counter + 1);
+          }
+        }, 100)
+        initializeSb(0);
+        const initializeWb = (counter) => setTimeout(()=> { 
+          if (roam42.wB) {
+            try { roam42.wB.initialize() } catch(e){};
+          } else if (counter > 100) {
+            console.error('Failed to initalize workbench after 100 tries');
+          } else {
+            initializeWb(counter + 1);
+          }
+        }, 100)
+        initializeWb(0);
 				roam42.jumpnav.loadJumpNav();
 				try {
 					roam42.user = roam42.common.getUserInformation();
