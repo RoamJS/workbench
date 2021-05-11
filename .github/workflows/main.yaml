@@ -4,7 +4,7 @@ on:
 
 jobs:
   deploy:
-    if: github.repository == 'dvargas92495/roam42'
+    if: ${{ github.repository == 'dvargas92495/roam42' }}
     runs-on: ubuntu-latest
     name: Deploy
     steps:
