@@ -139,7 +139,7 @@ if( typeof window.roam42 == 'undefined' ) {
           } else {
             initializeSb(counter + 1);
           }
-        }, 100)
+        }, 1000)
         initializeSb(0);
         const initializeWb = (counter) => setTimeout(()=> { 
           if (roam42.wB) {
@@ -149,7 +149,7 @@ if( typeof window.roam42 == 'undefined' ) {
           } else {
             initializeWb(counter + 1);
           }
-        }, 100)
+        }, 1000)
         initializeWb(0);
 				roam42.jumpnav.loadJumpNav();
 				try {
