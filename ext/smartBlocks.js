@@ -304,7 +304,9 @@
 													if(roam42.smartBlocks.activeWorkflow.skipInsertingEnterForOneBlock) {
 														roam42.smartBlocks.activeWorkflow.skipInsertingEnterForOneBlock = false; //skip pressing enter for this cycle and reset variable
 													} else {
-														let currentBlockId = document.querySelector('textarea.rm-block-input').id
+														let currentBlock = document.querySelector('textarea.rm-block-input');
+                            if (currentBlock !== document.activeElement) currentBlock.focus();
+                            let currentBlockId = currentBlock.id;
 														await roam42KeyboardLib.pressEnter(150);
 														if(currentBlockId==document.querySelector('textarea.rm-block-input').id ) await roam42KeyboardLib.pressEnter(50);
 													}													

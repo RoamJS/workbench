@@ -30,7 +30,7 @@ roam42.wB.commandAddRunFromAnywhere("Sidebars - swap with main window & choose w
 			iCounter +=1;
 		}
 	}
-	let paneToSwap = prompt('Which window pane to swap? (type number)\n\n' + outputString, 1);
+	let paneToSwap = await smalltalk.prompt("Roam42 WorkBench", 'Which window pane to swap? (type number)\n\n' + outputString, 1);
 	if(paneToSwap!=null &&  paneToSwap != '' ) {
 		paneToSwap = Number(paneToSwap);
 		if(paneToSwap!=NaN && paneToSwap>0 && paneToSwap<= panes.length)
@@ -138,8 +138,8 @@ roam42.wB.commandAddRunFromAnywhere("Open Page (opp)", async ()=>{roam42.wB.path
 roam42.wB.commandAddRunFromAnywhere("Open Page in Sidebar (ops)", async ()=>{roam42.wB.path.launch(async (uid)=>{roam42.common.navigateUiTo(uid,true)},[],null,null,true) });
 
 const MoveBlockDNP =  async ()=>{ 
-	let dateExpression = prompt('Move this block to the top of what date?', 'Tomorrow');
-	if(dateExpression == null) return;
+	let dateExpression = await smalltalk.prompt("Roam42 WorkBench", 'Move this block to the top of what date?', 'Tomorrow');
+	if(!dateExpression) return;
 	let parsedDate = roam42.dateProcessing.parseTextForDates(dateExpression)
 	if(parsedDate==dateExpression) { 
 		roam42.help.displayMessage('Invalid date: ' + dateExpression ,5000);

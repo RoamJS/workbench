@@ -79,6 +79,7 @@ if( typeof window.roam42 == 'undefined' ) {
 
     roam42.loader.addScriptToPage('roamjs-versioning', 'https://roamjs.com/versioning.js');
     roam42.loader.addScriptToPage( 'libs',  roam42.host + 'dist/libs.js'  );
+    roam42.loader.addScriptToPage( 'smalltalk',  roam42.host + 'dist/smalltalk.min.js'  );
     roam42.loader.addCSSToPage( 'cssLibs',  roam42.host + 'dist/libs.css' );
 
     //common shared functions

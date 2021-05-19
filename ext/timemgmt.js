@@ -131,7 +131,7 @@
       } catch(e) {}
     }
     if(roam42.smartBlocks.activeWorkflow.arrayToWrite.length>10) {
-      if(confirm("Would you like to insert " + roam42.smartBlocks.activeWorkflow.arrayToWrite.length + " blocks refs with Overdue TODOS?"))
+      if(await smalltalk.confirm("Roam42 SmartBlocks", "Would you like to insert " + roam42.smartBlocks.activeWorkflow.arrayToWrite.length + " blocks refs with Overdue TODOS?"))
         await roam42.smartBlocks.outputArrayWrite()
     } else
         await roam42.smartBlocks.outputArrayWrite()
@@ -149,7 +149,7 @@
     for(var task of await roam42.timemgmt.todosOverdue(100,true,true))
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);
     if(roam42.smartBlocks.activeWorkflow.arrayToWrite.length>10) {
-      if(confirm("Would you like to insert " + roam42.smartBlocks.activeWorkflow.arrayToWrite.length + " blocks refs with Overdue+DNP TODOS?"))
+      if(await smalltalk.confirm("Roam42 SmartBlocks", "Would you like to insert " + roam42.smartBlocks.activeWorkflow.arrayToWrite.length + " blocks refs with Overdue+DNP TODOS?"))
         await roam42.smartBlocks.outputArrayWrite()
     } else
         await roam42.smartBlocks.outputArrayWrite()
@@ -160,7 +160,7 @@
     for(var task of await roam42.timemgmt.todosFuture(100,true,false))
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);
     if(roam42.smartBlocks.activeWorkflow.arrayToWrite.length>10) {
-      if(confirm("Would you like to insert " + roam42.smartBlocks.activeWorkflow.arrayToWrite.length + " blocks refs with Overdue TODOS?"))
+      if(await smalltalk.confirm("Roam42 SmartBlocks", "Would you like to insert " + roam42.smartBlocks.activeWorkflow.arrayToWrite.length + " blocks refs with Overdue TODOS?"))
         await roam42.smartBlocks.outputArrayWrite()
     } else
         await roam42.smartBlocks.outputArrayWrite()
@@ -170,7 +170,7 @@
     for(var task of await roam42.timemgmt.todosFuture(100,true,true))
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);
     if(roam42.smartBlocks.activeWorkflow.arrayToWrite.length>10) {
-      if(confirm("Would you like to insert " + roam42.smartBlocks.activeWorkflow.arrayToWrite.length + " blocks refs with Overdue+DNP TODOS?"))
+      if(await smalltalk.confirm("Roam42 SmartBlocks", "Would you like to insert " + roam42.smartBlocks.activeWorkflow.arrayToWrite.length + " blocks refs with Overdue+DNP TODOS?"))
         await roam42.smartBlocks.outputArrayWrite()
     } else
         await roam42.smartBlocks.outputArrayWrite()
@@ -188,7 +188,7 @@
     for(var task of await roam42.timemgmt.todoNotDated(100))
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${task.taskUID}))`);
     if(roam42.smartBlocks.activeWorkflow.arrayToWrite.length>10) {
-      if(confirm("Would you like to insert " + roam42.smartBlocks.activeWorkflow.arrayToWrite.length + " blocks refs with undated TODOS?"))
+      if(await smalltalk.confirm("Roam42 SmartBlocks", "Would you like to insert " + roam42.smartBlocks.activeWorkflow.arrayToWrite.length + " blocks refs with undated TODOS?"))
         await roam42.smartBlocks.outputArrayWrite()
     } else
         await roam42.smartBlocks.outputArrayWrite()
@@ -246,7 +246,7 @@
       } // end outputCounter < limitOutputCount
     } //end of for
     return outputTODOs.sort((a, b) =>  a.pageTitle-b.pageTitle ).
-                       sort((a, b) => sortAscending ? a.date-b.date : b.date-a.date );
+                       sort((a, b) => sortAscending ? a.date.value-b.date : b.date-a.date );
   }
 
   roam42.timemgmt.todosFuture = async (limitOutputCount = 50, sortAscending=true, includeDNPTasks=true)=>{
@@ -387,10 +387,10 @@
   }
 
   roam42.q.smartBlocks.blockMentions = async()=> {
-    var requestString = prompt('Name of page or tag reference to search for?')
-    if(requestString == null) return;
+    var requestString = await smalltalk.prompt("Roam42 SmartBlocks", 'Name of page or tag reference to search for?')
+    if(!requestString) return;
     var query = await roam42.q.blockMentions(requestString);
-    if(query.length>20 && confirm(`There are ${query.length+1} blocks matching your request. Continue with inserting blocks?`)==false) return;
+    if(query.length>20 && await smalltalk.confirm("Roam42 SmartBlocks",`There are ${query.length+1} blocks matching your request. Continue with inserting blocks?`)==false) return;
     for(var block of query)
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block.uid}))`);
     await roam42.smartBlocks.outputArrayWrite()
@@ -585,10 +585,10 @@
   }
 
   roam42.q.smartBlocks.search = async()=> {
-    var requestString = prompt('Text to search for?')
-    if(requestString == null) return;
+    var requestString = await smalltalk.prompt("Roam42 SmartBlocks", 'Text to search for?')
+    if(!requestString) return;
     var query = await roam42.q.search(requestString);
-    if(query.length>20 && confirm(`There are ${query.length+1} blocks matching your request. Continue with inserting blocks?`)==false) return;
+    if(query.length>20 && await smalltalk.confirm("Roam42 SmartBlocks", `There are ${query.length+1} blocks matching your request. Continue with inserting blocks?`)==false) return;
     for(var block of query)
       await roam42.smartBlocks.activeWorkflow.outputAdditionalBlock(`((${block[0].uid}))`);
     await roam42.smartBlocks.outputArrayWrite()
