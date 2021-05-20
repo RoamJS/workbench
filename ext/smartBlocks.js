@@ -63,7 +63,8 @@
 
     const insertSnippetIntoBlock = async ( textToInsert, removeIfCursor = true, startPosistionOffset=2, caretRepositionDelay=100 )=> {
       setTimeout(async()=>{
-        var txtarea = document.activeElement;
+        var txtarea = document.querySelector('textarea.rm-block-input');
+        if (txtarea !== document.activeElement) txtarea.focus();
         var strPos = txtarea.selectionStart;
         var front = txtarea.value.substring(0, strPos-startPosistionOffset);
         var back = txtarea.value.substring(strPos, txtarea.value.length);
