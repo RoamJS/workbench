@@ -147,6 +147,8 @@
     }
 
     roam42.smartBlocks.outputArrayWrite = async ()=> {
+      let activeTextArea = document.querySelector("textarea.rm-block-input");
+      if (activeTextArea && activeTextArea !== document.activeElement) activeTextArea.focus();
       let countOfblocksToInsert = roam42.smartBlocks.activeWorkflow.arrayToWrite.length
       if(countOfblocksToInsert>0) {
         let blocksInserted = 1;
