@@ -246,7 +246,7 @@
       } // end outputCounter < limitOutputCount
     } //end of for
     return outputTODOs.sort((a, b) =>  a.pageTitle-b.pageTitle ).
-                       sort((a, b) => sortAscending ? a.date.value-b.date : b.date-a.date );
+                       sort((a, b) => sortAscending ? a.date-b.date : b.date-a.date );
   }
 
   roam42.timemgmt.todosFuture = async (limitOutputCount = 50, sortAscending=true, includeDNPTasks=true)=>{
