@@ -61,6 +61,11 @@
       await roam42.smartBlocks.activeWorkflow.arrayToWrite.push({'text': blockText, reprocess: reprocessBlock  });
     }
 
+    const focusTextarea = () => {
+      var textarea = document.querySelector("textarea.rm-block-input");
+      if (textarea !== document.activeElement) textarea.focus();
+    }
+
     const insertSnippetIntoBlock = async ( textToInsert, removeIfCursor = true, startPosistionOffset=2, caretRepositionDelay=100 )=> {
       setTimeout(async()=>{
         var txtarea = document.querySelector('textarea.rm-block-input');
@@ -286,7 +291,7 @@
 
                     //test for EXIT command
                     if(roam42.smartBlocks.exitTriggered == true) return;
-
+                    focusTextarea();
                     if( !insertText.includes(roam42.smartBlocks.exclusionBlockSymbol) ) {
                       if (firstBlock==true && document.activeElement.value.length>2) {
 												//block contains text already
