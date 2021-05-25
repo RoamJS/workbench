@@ -5,34 +5,37 @@
 
   roam42.jumpnav.loadJumpNav = ()=> {
     Mousetrap.prototype.stopCallback = function () { return false }
-    Mousetrap.bind([
-          // block: expand, collapse, ref, add action
-          'ctrl+j x', 'ctrl+j l', 'ctrl+j r', 'ctrl+j s', 'ctrl+j a', 'meta+j x', 'meta+j l', 'meta+j s', 'meta+j r', 'meta+j a',   'alt+j x', 'alt+j l', 'alt+j s', 'alt+j r', 'alt+j a',
-         //move up one line, move down one line insert above (k), insert below(j), delete block (d)
-          'ctrl+j i', 'ctrl+j u',                         'meta+j i', 'meta+j u',                           'alt+j i', 'alt+j u',
-          'ctrl+j k', 'ctrl+j j', 'ctrl+j d',             'meta+j k', 'meta+j j', 'meta+j d',               'alt+j k', 'alt+j j', 'alt+j d',
-          // block align left,center, right, justify
-          'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4', 'meta+j 1', 'meta+j 2', 'meta+j 3', 'meta+j 4',   'alt+j 1', 'alt+j 2', 'alt+j 3', 'alt+j 4',
-          // headings 1,2,3
-          'ctrl+j 5', 'ctrl+j 6', 'ctrl+j 7',           'meta+j 5', 'meta+j 6', 'meta+j 7',                'alt+j 5', 'alt+j 6', 'alt+j 7',   
-          // page: first node last node      
-          'ctrl+j t', 'ctrl+j b', 'ctrl+ t',              'meta+j t', 'meta+j b', 'meta+ t',                'alt+j t', 'alt+j b', 'alt+ t',
-          // page: expand/collapse open in side
-          'ctrl+j e', 'ctrl+j c', 'ctrl+j o','ctrl+j y', 'meta+j e', 'meta+j c', 'meta+j o', 'meta+j y',    'alt+j e', 'alt+j c', 'alt+j o', 'alt+j y',
-          // page: toggle linked references, unlinked references
-          'ctrl+j w', 'ctrl+j z',                         'meta+j w', 'meta+j z',                           'alt+j w', 'alt+j z',
-          // page: Expand All/Collapse parents or children  in linked references, unlinked references
-          'ctrl+j f', 'ctrl+j v', 'ctrl+j p',             'meta+j f', 'meta+j v', 'meta+j p',               'alt+j f', 'alt+j v', 'alt+j p',
-          // help for javigation
-           'ctrl+j h','ctrl+j q',                      'meta+j h', 'meta+j q',                   'alt+j h'  ,'alt+j q',
-          // Side bars
-          'ctrl+j n','ctrl+j m',                      'meta+j n', 'meta+j m',                   'alt+j n', 'alt+j m',
-          // daily notes and lookup
-          'ctrl+j ,','ctrl+j .',                      'meta+j ,', 'meta+j .',                   'alt+j ,', 'alt+j .',
-					// go to parent block
-          'ctrl+j g','ctrl+j ;','ctrl+j \'',  'meta+j g', 'meta+j ;', 'meta+j \'', 'alt+j g', 'alt+j ;', 'alt+j \'',
-					
-      ], (event, handler)=>  roam42.jumpnav.jumpCommand(event, handler) )
+    roam42.settings.get('jumpNavIgnore').then((jumpNavIgnore) => {
+      const ignoreBindings = new Set(jumpNavIgnore ? jumpNavIgnore.split(',') : [])
+      Mousetrap.bind([
+            // block: expand, collapse, ref, add action
+            'ctrl+j x', 'ctrl+j l', 'ctrl+j r', 'ctrl+j s', 'ctrl+j a', 'meta+j x', 'meta+j l', 'meta+j s', 'meta+j r', 'meta+j a',   'alt+j x', 'alt+j l', 'alt+j s', 'alt+j r', 'alt+j a',
+          //move up one line, move down one line insert above (k), insert below(j), delete block (d)
+            'ctrl+j i', 'ctrl+j u',                         'meta+j i', 'meta+j u',                           'alt+j i', 'alt+j u',
+            'ctrl+j k', 'ctrl+j j', 'ctrl+j d',             'meta+j k', 'meta+j j', 'meta+j d',               'alt+j k', 'alt+j j', 'alt+j d',
+            // block align left,center, right, justify
+            'ctrl+j 1', 'ctrl+j 2', 'ctrl+j 3', 'ctrl+j 4', 'meta+j 1', 'meta+j 2', 'meta+j 3', 'meta+j 4',   'alt+j 1', 'alt+j 2', 'alt+j 3', 'alt+j 4',
+            // headings 1,2,3
+            'ctrl+j 5', 'ctrl+j 6', 'ctrl+j 7',           'meta+j 5', 'meta+j 6', 'meta+j 7',                'alt+j 5', 'alt+j 6', 'alt+j 7',   
+            // page: first node last node      
+            'ctrl+j t', 'ctrl+j b',              'meta+j t', 'meta+j b',                'alt+j t', 'alt+j b',
+            // page: expand/collapse open in side
+            'ctrl+j e', 'ctrl+j c', 'ctrl+j o','ctrl+j y', 'meta+j e', 'meta+j c', 'meta+j o', 'meta+j y',    'alt+j e', 'alt+j c', 'alt+j o', 'alt+j y',
+            // page: toggle linked references, unlinked references
+            'ctrl+j w', 'ctrl+j z',                         'meta+j w', 'meta+j z',                           'alt+j w', 'alt+j z',
+            // page: Expand All/Collapse parents or children  in linked references, unlinked references
+            'ctrl+j f', 'ctrl+j v', 'ctrl+j p',             'meta+j f', 'meta+j v', 'meta+j p',               'alt+j f', 'alt+j v', 'alt+j p',
+            // help for javigation
+            'ctrl+j h','ctrl+j q',                      'meta+j h', 'meta+j q',                   'alt+j h'  ,'alt+j q',
+            // Side bars
+            'ctrl+j n','ctrl+j m',                      'meta+j n', 'meta+j m',                   'alt+j n', 'alt+j m',
+            // daily notes and lookup
+            'ctrl+j ,','ctrl+j .',                      'meta+j ,', 'meta+j .',                   'alt+j ,', 'alt+j .',
+            // go to parent block
+            'ctrl+j g','ctrl+j ;','ctrl+j \'',  'meta+j g', 'meta+j ;', 'meta+j \'', 'alt+j g', 'alt+j ;', 'alt+j \'',
+            
+        ].filter(b => !ignoreBindings.has(b.replace(/^(ctrl|meta|alt)\+j /, ''))), (event, handler)=>  roam42.jumpnav.jumpCommand(event, handler) )
+    });
   }
 
 	roam42.jumpnav.jumpCommandByActiveElement = (handler)=> {
