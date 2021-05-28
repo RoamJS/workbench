@@ -21,6 +21,7 @@
 
       if( ev.ctrlKey==true  && ev.shiftKey==true &&  ev.code=='Comma' ) {
         ev.preventDefault();
+        ev.stopPropagation();
         if (event.srcElement.localName == 'textarea') {
           roam42KeyboardLib.pressEsc();
           setTimeout( async ()=> {
@@ -35,6 +36,7 @@
 
       if( ev.ctrlKey==true && ev.shiftKey==true &&  ev.code=='Period' ) {
         ev.preventDefault();
+        ev.stopPropagation();
         if (event.srcElement.localName == 'textarea') {
           roam42KeyboardLib.pressEsc();
           setTimeout( async ()=> {

@@ -35,7 +35,7 @@
 			}
 		}
 		if( openInSideBar==false ) 
-			document.location.href= this.baseUrl().href + '/' + uid;
+			document.location.assign(this.baseUrl().href + '/' + uid);
 		else {
 			await roamAlphaAPI.ui.rightSidebar.addWindow( { window: { "block-uid": uid, type: sSidebarType }} );
 		}
