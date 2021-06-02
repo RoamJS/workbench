@@ -105,8 +105,7 @@
 							:where  [?cur_block :block/uid "${uid}"]
 											[?cur_block :block/order ?order]
 											[?parent :block/children ?cur_block]
-											[?parent :block/uid ?uid]
-											[?cur_block :block/page ?page]]`);
+											[?parent :block/uid ?uid]]`);
 		return r.length>0 ? {order: r[0][1], parentUID: r[0][0] } : null;
   }
 
