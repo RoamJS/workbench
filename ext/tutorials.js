@@ -31,7 +31,7 @@
       // },
       theme: 'light',
       contentOverflow: 'hidden',
-      content: '<iframe src="https://roam-quickref.glitch.me/tutorials.html" id="iframeRoam42Tutorials" style="width:100%; height:100%;"></iframe>',
+      content: `<iframe src="https://roamjs.com/quickref/tutorials.html" id="iframeRoam42Tutorials" style="width:100%; height:100%;"></iframe>`,
       onwindowresize: true,
       dragit: {
         containment: 10,
