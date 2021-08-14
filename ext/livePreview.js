@@ -298,19 +298,12 @@
 
           let isPageRef = false;
           let isPageRefTag = target.classList.contains('rm-page-ref');
-          let isPageRefNameSpace = target.classList.contains('rm-page-ref-namespace-color');
           let text = '';
 
 
-          if ( isPageRefTag ) {                                   // # tag
+          if ( isPageRefTag ) {
             isPageRef = true;
-            text = target.innerText.replace('#','');
-          } else {
-            if(target.classList.contains('rm-page-ref')) {        //  [[ page ]]
-              isPageRef = true;
-              pageIsBlock = true;
-              text = target.parentElement.getAttribute('data-link-uid');
-            }
+            text = target.parentElement.getAttribute('data-link-title')
           }
 
           //finds odd scenario like: [[[[book]]/smart notes]]
@@ -320,12 +313,6 @@
               isPageRef = true;
               pageIsBlock = true;
               text = target.parentElement.parentElement.getAttribute('data-link-uid')
-          }
-
-
-          if ( isPageRef == false && isPageRefNameSpace ) {
-            isPageRef = true;
-            text = target.parentElement.getAttribute('data-link-title')
           }
 
           if (isPageRef == false && target.classList.contains('rm-alias-page') ) {
