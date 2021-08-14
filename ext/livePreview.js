@@ -303,7 +303,9 @@
 
           if ( isPageRefTag ) {
             isPageRef = true;
-            text = target.parentElement.getAttribute('data-link-title')
+            text = target.classList.contains('rm-page-ref--tag') 
+                ? target.getAttribute('data-tag')
+                : target.parentElement.getAttribute('data-link-title')
           }
 
           //finds odd scenario like: [[[[book]]/smart notes]]
