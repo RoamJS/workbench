@@ -10,7 +10,7 @@
 
   // Key to start navigation.  Alt + this key will also trigger
   // navigation.
-  const START_NAVIGATE_KEY = 'g';
+  const START_NAVIGATE_KEY = 'KeyG';
 
   // Key sequence to navigate to daily notes.
   const DAILY_NOTES_KEY = 'g';
@@ -162,7 +162,7 @@
       }
 
       if (ev.ctrlKey ||
-          (ev.altKey && (isNavigating() || ev.key !== START_NAVIGATE_KEY))) {
+          (ev.altKey && (isNavigating() || ev.code !== START_NAVIGATE_KEY))) {
         delete keysToIgnore[ev.key];
         return;
       }
@@ -175,7 +175,7 @@
           handleNavigateKey(ev);
         }
         return;
-      } else if (ev.key === START_NAVIGATE_KEY) {
+      } else if (ev.code === START_NAVIGATE_KEY) {
         const inputTarget = getInputTarget(ev);
         if (ev.altKey || !inputTarget) {
           ev.stopImmediatePropagation();
