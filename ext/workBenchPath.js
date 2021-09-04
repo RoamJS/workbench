@@ -127,7 +127,7 @@
 			if(roam42.wB.path.canPageBeSelected==true)
 				await results.push( {display: pageLine, uid: roam42.wB.path.trailUID[0], showLevel: false, level: 0, type: 'page', img: roam42.host + 'img/wb/page.png' } ); 
 			let maxCount = roam42.wB.path.currentPageBlocks._documents.length > 1000 ? 1000: roam42.wB.path.currentPageBlocks._documents.length;
-			for(i=1; i<maxCount;i++){
+			for(i=0; i<maxCount;i++){
 				let block = roam42.wB.path.currentPageBlocks._documents[i];
 				let blockOutput = block.blockText.length>0 ? block.blockText.substring(0,255) : ' ';
 				await results.push( {display: blockOutput, uid: block.uid, showLevel: true,  level: block.level, type: 'bullet', img: roam42.host + 'img/wb/bullet.png' } );
