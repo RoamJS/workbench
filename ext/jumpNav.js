@@ -147,16 +147,17 @@
             //climb up higher one node in chain
             parentControlNode =  document.getElementById(locFacts.id).parentNode.parentNode;
           }
-          roam42.common.simulateMouseClickRight(parentControlNode.previousSibling.childNodes[1]);
+          if (!['ctrl+j x', 'ctrl+j l'].includes(handler)) {
+            roam42.common.simulateMouseClickRight(parentControlNode.previousSibling.childNodes[1]);
+          }
           setTimeout(()=>{
+            const uid = document.querySelector("textarea.rm-block-input").id.slice(-9);
             switch(handler)  {
               case 'ctrl+j x': // expand block
-                document.querySelector('.bp3-popover-content > div> ul').childNodes[3].childNodes[0].click();
-                roam42.common.restoreLocationParametersOfTexArea(locFacts);
+                window.roamAlphaAPI.updateBlock({block: {uid, open: true}});
                 break;
               case 'ctrl+j l':      // collapse block
-                document.querySelector('.bp3-popover-content > div> ul').childNodes[4].childNodes[0].click();
-                roam42.common.restoreLocationParametersOfTexArea(locFacts);
+                window.roamAlphaAPI.updateBlock({block: {uid, open: false}});
                 break;
               case 'ctrl+j a':      // add reaction
                 setTimeout(()=>{

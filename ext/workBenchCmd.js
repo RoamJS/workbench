@@ -67,7 +67,11 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = fals
 					await roam42.common.createSiblingBlock(blockToMove, `((${blockToMove}))`);
 					await roam42.common.sleep(50);
 				}
-				roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
+				if (makeBlockRef=== 'reverse') {
+					roam42.common.createBlock(destinationUID, iLocation, `((${blockToMove}))`)
+				} else {
+				    roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
+				}
 				if(zoomUID ==0) zoomUID = destinationUID; //go to first block in move
 			}
 		} else {
@@ -77,7 +81,11 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = fals
 					await roam42.common.createSiblingBlock(blockToMove, `((${blockToMove}))`);
 					await roam42.common.sleep(50);
 				}
-				roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
+				if (makeBlockRef=== 'reverse') {
+					roam42.common.createBlock(destinationUID, iLocation, `((${blockToMove}))`)
+				} else {
+				    roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
+				}
 				if(zoomUID ==0) zoomUID = destinationUID; //go to first block in move
 			}
 		}
@@ -89,7 +97,11 @@ const moveBlocks = async (destinationUID, iLocation, zoom=0, makeBlockRef = fals
 				await roam42.common.createSiblingBlock(blockToMove, `((${blockToMove}))`);
 				await roam42.common.sleep(50);
 			}
-			roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
+			if (makeBlockRef=== 'reverse') {
+				roam42.common.createBlock(destinationUID, iLocation, `((${blockToMove}))`)
+			} else {
+				roam42.common.moveBlock(destinationUID, iLocation, blockToMove);
+			}
 			zoomUID = blockToMove;	
 		}
 	}

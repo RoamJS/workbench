@@ -62,11 +62,14 @@
 		let locationTopBotom = await roam42.wB.userCommands.findBlockAmongstChildren( cmdInfo.info[0].children, 'location:' );
 		locationTopBotom = locationTopBotom=='bottom' ? 10000 : 0;
 
+		const blockrefValues = {'true': true, 'reverse': 'reverse'};
 		let blockRef = await roam42.wB.userCommands.findBlockAmongstChildren( cmdInfo.info[0].children, 'blockref:' );
 		if(blockRef==null)
 			blockRef = false;
 		else
-			blockRef = blockRef.toLowerCase()=='true' ? true : false;
+			blockRef = Object.keys(blockrefValues).includes(blockRef.toLowerCase()) 
+			  ? blockrefValues[blockRef.toLowerCase()] 
+			  : false;
 
 		await roam42.wB.moveBlocks(pageUID, locationTopBotom, 0, blockRef);
 		textName = textName==null ? '' : ' > ' + textName;
