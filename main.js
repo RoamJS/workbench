@@ -13,7 +13,6 @@
   roam42.privacyMode       Redacts content from your Roam
   roam42.formatConverter   converts current page to various formats
   roam42.formatConverterUI UI to roam42.formatConverter
-  roam42.smartBlocks       SmartBlocks engine
 	roam42.workBench				 Workbench engine
   roam42.KeyboardLib       imported from another library. so letting it stand as its own object
 */
@@ -93,16 +92,13 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addScriptToPage( "settings",          roam42.host + 'ext/settings.js'           );
     roam42.loader.addScriptToPage( 'dateProcessing',    roam42.host + 'ext/dateProcessing.js'     );
     roam42.loader.addScriptToPage( 'r42kb_lib',         roam42.host + 'common/r42kb_lib.js'       );
-    roam42.loader.addScriptToPage( 'smartBlocks',       roam42.host + 'ext/smartBlocks.js'        );
+    roam42.loader.addScriptToPage( 'smartBlocks',       'https://roamjs.com/smartblocks/main.js');
 //    roam42.loader.addScriptToPage( 'templatePoc',       roam42.host + 'ext/templatepoc.js'        );
     roam42.loader.addScriptToPage( 'jumpToDate',        roam42.host + 'ext/jumpToDate.js'         );
     roam42.loader.addScriptToPage( 'privacyMode',       roam42.host + 'ext/privacyMode.js'        );
     roam42.loader.addScriptToPage( 'roam42Menu',        roam42.host + 'ext/roam42Menu.js'         );
     roam42.loader.addScriptToPage( 'roam42Tutorials',   roam42.host + 'ext/tutorials.js'          );
     roam42.loader.addScriptToPage( 'roamNavigator',     roam42.host + 'ext/roam-navigator.js'     );
-    roam42.loader.addScriptToPage( 'smartBlocksCmd',    roam42.host + 'ext/smartBlocksCmd.js'     );
-    roam42.loader.addScriptToPage( 'smartBlocksRB',     roam42.host + 'ext/smartBlocksRB.js'      );
-    roam42.loader.addScriptToPage( 'timemgmt',          roam42.host + 'ext/timemgmt.js'           );
     roam42.loader.addScriptToPage( 'stats',          		roam42.host + 'ext/stats.js'           );
 
     //Do not load in iframe windows
@@ -132,16 +128,6 @@ if( typeof window.roam42 == 'undefined' ) {
         try { roam42.jumpToDate.component.initialize(); } catch(e){};
         try { roam42.typeAhead.loadTypeAhead(); } catch(e){};
         try { roam42.quickRef.component.initialize(); } catch(e){};
-        const initializeSb = (counter) => setTimeout(()=> { 
-          if (roam42.smartBlocks) {
-            try { roam42.smartBlocks.initialize() } catch(e){};
-          } else if (counter > 100) {
-            console.error('Failed to initalize Smart blocks after 100 tries');
-          } else {
-            initializeSb(counter + 1);
-          }
-        }, 1000)
-        initializeSb(0);
         const initializeWb = (counter) => setTimeout(()=> { 
           if (roam42.wB) {
             try { roam42.wB.initialize() } catch(e){};

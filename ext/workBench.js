@@ -217,24 +217,35 @@
 				}
 			});
 
-			await roam42.wB.sourceAdd( "SmartBlocks from AnyWhere", async (context, query, results)=> {
-				let sbList =  await roam42.smartBlocks.UserDefinedWorkflowsList();
-				for await (sb of sbList) {
-					if( sb.global == true ) { 
-				 		await results.push( { display: sb['key'], img: roam42.host + 'img/wb/sbglobal.png',   context: '*', info: sb, 
-						 											cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}) });
-					}
-				}
-			});
-
-			await roam42.wB.sourceAdd( "SmartBlocks from blocks", async (context, query, results)=>{
+			await roam42.wB.sourceAdd( "SmartBlocks", async (context, query, results)=>{
 				if( context != '-' ) return;
-				let sbList =  await roam42.smartBlocks.UserDefinedWorkflowsList();
-				// await roam42.smartBlocks.addCommands( sbList );
-				for await (sb of sbList) {
-					if( !sb['key'].includes('<%GLOBAL%>'))
-				 		await results.push( { display: sb['key'], img: roam42.host + 'img/wb/sbinwb.png', context: '-', info: sb,
-						 											cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}) });
+				const createTagRegex = (tag) => new RegExp(`#?\\[\\[${tag}\\]\\]|#${tag}`);
+				let sbList =  window.roamAlphaAPI
+				.q(
+				  `[:find ?s ?u :where [?r :block/uid ?u] [?r :block/string ?s] [?r :block/refs ?p] (or [?p :node/title "SmartBlock"] [?p :node/title "42SmartBlock"])]`
+				)
+				.map(([text, uid]) => ({
+				  uid,
+				  name: text
+					.replace(createTagRegex("SmartBlock"), "")
+					.replace(createTagRegex("42SmartBlock"), "")
+					.trim(),
+				}));
+				for (sb of sbList) {
+				 	results.push( { 
+						 display: sb['name'], 
+						 img: roam42.host + 'img/wb/sbinwb.png', 
+						 context: '-', 
+						 info: sb,
+						 cmd: async (cmdInfo)=> {
+							const targetMatch = window.location.hash.match(/\/page\/(.{9,10})$/)
+							const double = (n) => `${n}`.padStart(2, '0')
+							 return window.roamjs.extension.smartblocks.triggerSmartblock({
+							srcUid:cmdInfo.info.uid,
+							targetUid: targetMatch ? targetMatch[1] : `${double(new Date().getMonth()+1)}-${double(new Date().getDate())}-${new Date().getFullYear()}`,
+						  })
+						}
+					});
 				}
 			});
 
@@ -243,16 +254,6 @@
 				for await (el of roam42.wB._commands) {
 						if( el.context == '*' || el.context == context ) //applies to all contexts, so include
 							await results.push(el);
-				}
-			});
-
-			await roam42.wB.sourceAdd( "SmartBlocks builtin", async (context, query, results)=>{
-				if( context != '-' ) return;
-				let sbList =  []
-				await roam42.smartBlocks.addCommands( sbList );
-				for await (sb of sbList) {
-					await results.push( { display: sb['key'], img: roam42.host + 'img/wb/sbinwb.png', context: '-', info: sb,
-																cmd: async (cmdInfo)=> roam42.smartBlocks.sbBomb({original: cmdInfo.info}) });
 				}
 			});
 

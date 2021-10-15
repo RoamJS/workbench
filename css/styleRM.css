@@ -254,12 +254,3 @@
 .tribute-container .menu-highlighted {
   font-weight: bold;
 }
-
-.rm-page-ref--tag[data-tag="42SmartBlock"]:before {
-    display:inline-block;
-    height:14px;
-  	width:24px;
-    content: "";
-    background:url(../img/sb/lego3blocks.png) no-repeat 0 0;
-    background-size: auto 14px;
-}
