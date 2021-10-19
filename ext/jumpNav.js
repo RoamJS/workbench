@@ -155,9 +155,15 @@
             switch(handler)  {
               case 'ctrl+j x': // expand block
                 window.roamAlphaAPI.updateBlock({block: {uid, open: true}});
+                window.roamAlphaAPI.q(`[:find (pull ?p [:block/uid]) :where [?b :block/uid "${uid}"] [?p :block/parents ?b]]`)
+                    .map(a => a[0].uid)
+                    .forEach((u) => window.roamAlphaAPI.updateBlock({block: {uid:u, open: true}}));
                 break;
               case 'ctrl+j l':      // collapse block
                 window.roamAlphaAPI.updateBlock({block: {uid, open: false}});
+                window.roamAlphaAPI.q(`[:find (pull ?p [:block/uid]) :where [?b :block/uid "${uid}"] [?p :block/parents ?b]]`)
+                    .map(a => a[0].uid)
+                    .forEach((u) => window.roamAlphaAPI.updateBlock({block: {uid:u, open: false}}));
                 break;
               case 'ctrl+j a':      // add reaction
                 setTimeout(()=>{
