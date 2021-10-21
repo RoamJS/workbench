@@ -159,7 +159,6 @@ const MoveBlockDNP =  async ()=>{
 	} else
 		parsedDate = parsedDate.substring(2,parsedDate.length-3);
 	//move the block, and leave behind a block ref
-	let startingBlockUID = roam42.sb.startingBlockTextArea.slice(-9);
 	let destinationPage = await roam42.common.getPageUidByTitle(parsedDate);
 	if(destinationPage=='') {
 		//DNP does not exist, create it before going further
