@@ -137,7 +137,7 @@ if( typeof window.roam42 == 'undefined' ) {
             initializeWb(counter + 1);
           }
         }, 1000)
-        initializeWb(0);
+        if ( window === window.parent  ) initializeWb(0);
 				roam42.jumpnav.loadJumpNav();
 				try {
 					roam42.user = roam42.common.getUserInformation();
