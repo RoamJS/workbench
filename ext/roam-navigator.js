@@ -162,7 +162,7 @@
       }
 
       if (ev.ctrlKey ||
-          (ev.altKey && (isNavigating() || ev.code !== START_NAVIGATE_KEY))) {
+          (ev.altKey && (isNavigating() || !(ev.code === START_NAVIGATE_KEY || ev.key === 'g')))) {
         delete keysToIgnore[ev.key];
         return;
       }
@@ -175,7 +175,7 @@
           handleNavigateKey(ev);
         }
         return;
-      } else if (ev.code === START_NAVIGATE_KEY) {
+      } else if (ev.code === START_NAVIGATE_KEY || ev.key === 'g') {
         const inputTarget = getInputTarget(ev);
         if (ev.altKey || !inputTarget) {
           ev.stopImmediatePropagation();
