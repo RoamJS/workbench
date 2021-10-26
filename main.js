@@ -94,7 +94,6 @@ if( typeof window.roam42 == 'undefined' ) {
     roam42.loader.addScriptToPage( 'r42kb_lib',         roam42.host + 'common/r42kb_lib.js'       );
     roam42.loader.addScriptToPage( 'smartBlocks',       'https://roamjs.com/smartblocks/main.js');
 //    roam42.loader.addScriptToPage( 'templatePoc',       roam42.host + 'ext/templatepoc.js'        );
-    roam42.loader.addScriptToPage( 'jumpToDate',        roam42.host + 'ext/jumpToDate.js'         );
     roam42.loader.addScriptToPage( 'privacyMode',       roam42.host + 'ext/privacyMode.js'        );
     roam42.loader.addScriptToPage( 'roam42Menu',        roam42.host + 'ext/roam42Menu.js'         );
     roam42.loader.addScriptToPage( 'roam42Tutorials',   roam42.host + 'ext/tutorials.js'          );
@@ -125,7 +124,6 @@ if( typeof window.roam42 == 'undefined' ) {
       if (roam42.keyevents) {
         clearInterval(interval);
         roam42.keyevents.loadKeyEvents();
-        try { roam42.jumpToDate.component.initialize(); } catch(e){};
         try { roam42.typeAhead.loadTypeAhead(); } catch(e){};
         try { roam42.quickRef.component.initialize(); } catch(e){};
         const initializeWb = (counter) => setTimeout(()=> { 
