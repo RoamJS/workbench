@@ -17,7 +17,7 @@
         directionTip='bounceInLeft';
       }
       var dDate = roam42.dateProcessing.getRoamDate( jumpDate )
-      await roam42.common.navigateUiTo(dDate,false);
+      roam42.common.navigateUiTo(dDate,false);
     }
 
     try {
