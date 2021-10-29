@@ -158,6 +158,10 @@ const MoveBlockDNP =  async ()=>{
 		return;
 	} else
 		parsedDate = parsedDate.substring(2,parsedDate.length-3);
+	let makeBlockRef = await smalltalk.confirm("Roam42 WorkBench", "Leave Block Reference?", {buttons: {
+		ok: 'Yes',
+		cancel: 'No',
+	}}).then(() => true).catch(() => false);
 	//move the block, and leave behind a block ref
 	let destinationPage = await roam42.common.getPageUidByTitle(parsedDate);
 	if(destinationPage=='') {
@@ -166,7 +170,7 @@ const MoveBlockDNP =  async ()=>{
 		await roam42.common.sleep(150);
 		destinationPage = await roam42.common.getPageUidByTitle(parsedDate);
 	}
-	setTimeout( ()=>{ roam42.wB.path.launch( (async (uid)=>{ moveBlocks(uid, 0, 0)}), excludeSelectedBlocks(), destinationPage, parsedDate.toString(),true ) },200);
+	setTimeout( ()=>{ roam42.wB.path.launch( (async (uid)=>{ moveBlocks(uid, 0, 0, makeBlockRef)}), excludeSelectedBlocks(), destinationPage, parsedDate.toString(),true ) },200);
 };
 roam42.wB.commandAddRunFromBlock('Move Block - DNP (mbdnp)', async ()=>{ MoveBlockDNP() } );
 roam42.wB.commandAddRunFromMultiBlockSelection('Move Blocks - DNP (mbdnp)', async ()=>{ MoveBlockDNP() } );
