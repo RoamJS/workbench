@@ -57,6 +57,12 @@
           const roamNativeDate = document.querySelector('div.rm-topbar span.bp3-icon-calendar');
           if (roamNativeDate) {
             roamNativeDate.click();
+            setTimeout(() => {
+              const day = new Date().getDate();
+              const dayEl = Array.from(document.querySelectorAll('.DayPicker-Day'))
+                                 .find(d => d.innerText === `${day}`)
+              dayEl?.focus?.();
+            }, 1);
           }
           return true;
         }
