@@ -288,7 +288,11 @@ const confirmDeletePage = (pageUID, pageTitle)=>{
 const deleteCurrentPage = async ()=>{
 	const uid = await roam42.common.currentPageUID();
 	const currentPageTitle = (await roam42.common.getBlockInfoByUID(uid))[0][0].title;
-	confirmDeletePage(uid, currentPageTitle);
+	if ( await roam42.settings.get('workBenchDcpConfirm') == 'off') {
+	  await roam42.common.deleteBlock(uid);
+	} else {
+	  confirmDeletePage(uid, currentPageTitle);
+	}
 }
 
 const deleteSomePage = async ()=>{
