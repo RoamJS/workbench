@@ -266,6 +266,12 @@ roam42.wB.commandAddRunFromBlock('Heading 3 (Alt+Shift+3)', ()=>{ roam42.jumpnav
 roam42.wB.commandAddRunFromBlock('Copy Block Reference - Jump Nav (Meta-j r)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j r')} );
 roam42.wB.commandAddRunFromBlock('Copy Block Reference as alias - Jump Nav (Meta-j s)', ()=>{ roam42.jumpnav.jumpCommandByActiveElement('ctrl+j s')} );
 
+const navToDnp = () => {
+	const d = new Date();
+	window.roamAlphaAPI.ui.mainWindow.openPage({
+		page: { uid: `${d.getMonth() + 1}-${d.getDate()}-${d.getFullYear()}` },
+	});
+}
 
 //DELETE PAGE
 const confirmDeletePage = (pageUID, pageTitle)=>{
@@ -279,6 +285,7 @@ const confirmDeletePage = (pageUID, pageTitle)=>{
 						roam42.common.navigateUiTo( roam42.dateProcessing.getRoamDate(new Date()) );
 						setTimeout( async ()=>{
 							await roam42.common.deleteBlock(pageUID);
+							navToDnp();
 						}, 500);
 				}],
 			],
@@ -290,6 +297,7 @@ const deleteCurrentPage = async ()=>{
 	const currentPageTitle = (await roam42.common.getBlockInfoByUID(uid))[0][0].title;
 	if ( await roam42.settings.get('workBenchDcpConfirm') == 'off') {
 	  await roam42.common.deleteBlock(uid);
+	  navToDnp();
 	} else {
 	  confirmDeletePage(uid, currentPageTitle);
 	}
