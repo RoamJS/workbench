@@ -136,7 +136,7 @@ if( typeof window.roam42 == 'undefined' ) {
           }
         }, 1000)
         if ( window === window.parent  ) initializeWb(0);
-				roam42.jumpnav.loadJumpNav();
+        try { roam42.jumpnav.loadJumpNav(); } catch(e){};
 				try {
 					roam42.user = roam42.common.getUserInformation();
 				} catch(e) {}
