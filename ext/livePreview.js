@@ -21,7 +21,7 @@
   if(roam42.livePreview.browserWidth==null)  roam42.livePreview.browserWidth  = '500px';
   if(roam42.livePreview.delay==null)         roam42.livePreview.delay = '100';
   
-  if( roam42.livePreview.state != 'on' ) {
+  if( ['on', 'optimized'].includes(roam42.livePreview.state)  ) {
 		roam42.livePreview.state = 'off';
     return;
 	}
