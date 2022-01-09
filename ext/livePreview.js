@@ -12,7 +12,7 @@
 (async ()=>{
 
   roam42.livePreview = {};
-  roam42.livePreview.state 				 = await roam42.settings.get('LivePreview');
+  roam42.livePreview.state 				 = (await roam42.settings.get('LivePreview')) || 'on';
   roam42.livePreview.browserHeight = await roam42.settings.get('LivePreviewHeight');
   roam42.livePreview.browserWidth  = await roam42.settings.get('LivePreviewWidth');
   roam42.livePreview.delay         = Number(await roam42.settings.get('LivePreviewDelay '));
