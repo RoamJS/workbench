@@ -12,14 +12,10 @@
 (async ()=>{
 
   roam42.livePreview = {};
-  roam42.livePreview.state 				 = (await roam42.settings.get('LivePreview')) || 'on';
-  roam42.livePreview.browserHeight = await roam42.settings.get('LivePreviewHeight');
-  roam42.livePreview.browserWidth  = await roam42.settings.get('LivePreviewWidth');
-  roam42.livePreview.delay         = Number(await roam42.settings.get('LivePreviewDelay '));
-
-  if(roam42.livePreview.browserHeight==null) roam42.livePreview.browserHeight = '500px';
-  if(roam42.livePreview.browserWidth==null)  roam42.livePreview.browserWidth  = '500px';
-  if(roam42.livePreview.delay==null)         roam42.livePreview.delay = '100';
+  roam42.livePreview.state 				 = (await roam42.settings.get('LivePreview ')) || 'on';
+  roam42.livePreview.browserHeight = (await roam42.settings.get('LivePreviewHeight')) || '500px';
+  roam42.livePreview.browserWidth  = (await roam42.settings.get('LivePreviewWidth')) || '500px';
+  roam42.livePreview.delay         = Number((await roam42.settings.get('LivePreviewDelay')) || '100');
   
   if( !['on', 'optimized'].includes(roam42.livePreview.state)  ) {
 		roam42.livePreview.state = 'off';
