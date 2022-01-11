@@ -226,13 +226,13 @@
           setTimeout(()=>{
             switch(handler) {
               case 'ctrl+j e':
-                document.querySelector('.bp3-popover-content > div> ul').childNodes[2+zoomedView].childNodes[0].click();
-                break;
-              case 'ctrl+j c':
                 document.querySelector('.bp3-popover-content > div> ul').childNodes[3+zoomedView].childNodes[0].click();
                 break;
+              case 'ctrl+j c':
+                document.querySelector('.bp3-popover-content > div> ul').childNodes[4+zoomedView].childNodes[0].click();
+                break;
               case 'ctrl+j o':
-                document.querySelector('.bp3-popover-content > div> ul').childNodes[1+zoomedView].childNodes[0].click();
+                document.querySelector('.bp3-popover-content > div> ul').childNodes[2+zoomedView].childNodes[0].click();
                 break;
             }
             if(locFacts!='') {
