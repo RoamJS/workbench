@@ -23,8 +23,12 @@
 		let textUID = textName==null ? null : (await roam42.formatConverter.flatJson(pageUID,false,false)).find(e=>e.blockText.toLowerCase().includes(textName.toLowerCase()));
 
 		if(textName!=null && textUID==null){ //text location doesnt exist,
-				roam42.help.displayMessage(`This location "${pageName} > ${textName}" doesnt exist, action not performed.`,5000);
-				return null;
+				textUID = { uid: window.roamAlphaAPI.util.generateUID() };
+				await window.roamAlphaAPI.createBlock({
+					location: { "parent-uid": pageUID, order: 0 },
+					block: { uid: textUID.uid, string: textName },
+				});
+				roam42.help.displayMessage(`This location "${pageName} > ${textName}" didnt exist, so a new block was created.`,5000);
 		}
 	
 		//reset pageUID if there is a valid text block
