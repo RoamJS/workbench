@@ -164,16 +164,19 @@
 
       //simple markdown
       if (ev.altKey && ev.shiftKey==false &&  ev.code=='KeyM'  ) {
-        event.preventDefault();
-        // roam42.turndownPage();
-        roam42.formatConverterUI.show();
+        if (roam42.formatConverterUI && roam42.formatConverter) {
+          event.preventDefault();
+          roam42.formatConverterUI.show();
+        }
         return
       }
 
       //HTML view
       if (ev.altKey  && ev.shiftKey==true &&  ev.code=='KeyM'  ) {
-        event.preventDefault();
-        roam42.formatConverterUI.htmlview();
+        if (roam42.formatConverterUI && roam42.formatConverter) {
+          event.preventDefault();
+          roam42.formatConverterUI.htmlview();
+        }
         return
       }
 
