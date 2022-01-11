@@ -181,16 +181,15 @@
       };
 
       const createPreviewIframe = () => {
-        const iframe = document.createElement('iframe');
-        // const url = getPageUrl('search');
         let url = baseUrl().toString().replace('/page','');
         if(roam42.livePreview.state=='optimized')
           url = url + '?disablejs=true';
         
-        const isAdded = (pageUrl) => !!document.querySelector(`[src="${pageUrl}"]`);
-        if (isAdded(url)) {
-          return;
+        const existing = document.querySelector(`[src="${url}"]`);
+        if (existing) {
+          return existing;
         }
+        const iframe = document.createElement('iframe');
         iframe.src = url;
         iframe.style.position = 'absolute';
         iframe.style.left = '0';
@@ -384,7 +383,10 @@
              }
             if (!popupTimeout) {
               popupTimeout = window.setTimeout(() => {
-                previewIframe.contentDocument.querySelector('.rm-topbar').scrollIntoView()
+                const previewTopbar = previewIframe.contentDocument.querySelector('.rm-topbar');
+                if (previewTopbar) {
+                  previewTopbar.scrollIntoView()
+                }
                 if (previewIframe) {
                   previewIframe.style.opacity = '1';
                   previewIframe.style.pointerEvents = 'all';
