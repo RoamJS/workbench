@@ -37,7 +37,7 @@
           'bp3-button bp3-minimal bp3-small bp3-icon-cross'
           ],
         onwindowresize: true,
-        resizeit: {  minWidth: 300, minHeight: 300, },
+        resizeit: {  minWidth: 300, minHeight: 300, aspectRatio: false },
 
         contentOverflow: 'hidden',
         position: {
