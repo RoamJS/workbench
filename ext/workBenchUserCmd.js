@@ -3,6 +3,12 @@
 	
 	roam42.wB.userCommands = {};
 
+	const getBlocksByParent = (uid) => window.roamAlphaAPI
+	.q(
+	  `[:find (pull ?c [:block/string, :block/uid]) :where [?b :block/uid "${uid}"] [?c :block/page ?b]]`
+	)
+	.map((a) => a[0])
+
 	roam42.wB.userCommands.inboxUID = async (wBInbox) =>{
 		const ibx = wBInbox[0];
 		let pageUID = null;
@@ -20,7 +26,7 @@
 		}
 		let textName = await roam42.wB.userCommands.findBlockAmongstChildren( ibx.children, 'text:' );
 		//if text defined, get the UID of the tag.
-		let textUID = textName==null ? null : (await roam42.formatConverter.flatJson(pageUID,false,false)).find(e=>e.blockText.toLowerCase().includes(textName.toLowerCase()));
+		let textUID = textName==null ? null : getBlocksByParent(pageUID).find(e=>e.string.toLowerCase().includes(textName.toLowerCase()));
 
 		if(textName!=null && textUID==null){ //text location doesnt exist,
 				textUID = { uid: window.roamAlphaAPI.util.generateUID() };
@@ -53,7 +59,7 @@
 		}
 		let textName = await roam42.wB.userCommands.findBlockAmongstChildren( cmdInfo.info[0].children, 'text:' );
 		//if text defined, get the UID of the tag.
-		let textUID = textName==null ? null : (await roam42.formatConverter.flatJson(pageUID,false,false)).find(e=>e.blockText.toLowerCase().includes(textName.toLowerCase()));
+		let textUID = textName==null ? null : getBlocksByParent(pageUID).find(e=>e.string.toLowerCase().includes(textName.toLowerCase()));
 		
 		if(textName!=null && textUID==null){ //text location doesnt exist,
 			textUID = { uid: window.roamAlphaAPI.util.generateUID() };
