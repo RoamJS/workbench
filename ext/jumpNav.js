@@ -226,13 +226,19 @@
           setTimeout(()=>{
             switch(handler) {
               case 'ctrl+j e':
-                document.querySelector('.bp3-popover-content > div> ul').childNodes[3+zoomedView].childNodes[0].click();
+                Array.from(
+                  document.querySelector('.bp3-popover-content > div> ul').childNodes
+                ).find(t => /expand all/i.test(t.innerText)).childNodes[0].click();
                 break;
               case 'ctrl+j c':
-                document.querySelector('.bp3-popover-content > div> ul').childNodes[4+zoomedView].childNodes[0].click();
+                Array.from(
+                  document.querySelector('.bp3-popover-content > div> ul').childNodes
+                ).find(t => /collapse all/i.test(t.innerText)).childNodes[0].click();
                 break;
               case 'ctrl+j o':
-                document.querySelector('.bp3-popover-content > div> ul').childNodes[2+zoomedView].childNodes[0].click();
+                Array.from(
+                  document.querySelector('.bp3-popover-content > div> ul').childNodes
+                ).find(t => /open in sidebar/i.test(t.innerText)).childNodes[0].click();
                 break;
             }
             if(locFacts!='') {
