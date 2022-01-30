@@ -146,7 +146,10 @@ if( typeof window.roam42 == 'undefined' ) {
             try { await roam42.dailyNotesPopup.component.initialize(); } catch(e){};
           }
         } catch(e) {}
-        try {  setTimeout(async ()=>{await roam42.roam42Menu.initialize()}, 2000) } catch(e){};          
+        try {  setTimeout(async ()=>{
+          await roam42.roam42Menu.initialize();
+          document.body.dispatchEvent(new Event('roamjs:roam42:loaded'));
+        }, 2000) } catch(e){};          
       } else {
         if(loadingCounter>30)
           clearInterval(interval);
