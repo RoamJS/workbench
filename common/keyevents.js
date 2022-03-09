@@ -117,24 +117,27 @@
 
       //Date NLP
       if (ev.altKey && ev.shiftKey &&  ev.code=='KeyD'  ) {
-        event.preventDefault();
         if (ev.target.nodeName === "TEXTAREA") {
-          var processText = roam42.dateProcessing.parseTextForDates( event.target.value );
-          roam42.common.setEmptyNodeValue(document.getElementById(event.srcElement.id), processText );
+          var processText = roam42.dateProcessing.parseTextForDates( ev.target.value );
+          roam42.common.setEmptyNodeValue(document.getElementById(ev.srcElement.id), processText );
+          ev.preventDefault();
+          ev.stopPropagation();
         }
         return
       }
 
       //Dictonary Lookup
       if (ev.altKey && ev.shiftKey &&  (ev.code=='Period' || ev.key=='˘')  ) {
-        event.preventDefault();
+        ev.preventDefault();
+        ev.stopPropagation();
         roam42.typeAhead.typeAheadLookup();
         return
       }
 
       // Daily notes page
       if (ev.altKey && ev.shiftKey &&  (ev.key=='¯' || ev.code=='Comma')  ) {
-        event.preventDefault();
+        ev.preventDefault();
+        ev.stopPropagation();
         if( window != window.parent ) {
           window.parent.document.querySelector('#jsPanelDNP').style.visibility = 'hidden';
         } else {
@@ -145,13 +148,11 @@
 
       // Daily notes page toggle in and out
       if (ev.altKey  && (ev.key=='y' || ev.code=='KeyY')  ) {
-        event.preventDefault();
-        console.log ('9')
+        ev.preventDefault();
+        ev.stopPropagation();
         if( window != window.parent ) {
-        console.log ('iinsdie')
           window.parent.focus();
         } else {
-        console.log ('outside')
           // window.parent.document.querySelector('#jsPanelDNP').style.visibility = 'hidden';
           roam42.dailyNotesPopup.component.panelDNP.style.visibility = 'hidden';
           setTimeout(()=> {
@@ -165,7 +166,8 @@
       //simple markdown
       if (ev.altKey && ev.shiftKey==false &&  ev.code=='KeyM'  ) {
         if (roam42.formatConverterUI && roam42.formatConverter) {
-          event.preventDefault();
+          ev.preventDefault();
+          ev.stopPropagation();
           roam42.formatConverterUI.show();
         }
         return
@@ -174,7 +176,8 @@
       //HTML view
       if (ev.altKey  && ev.shiftKey==true &&  ev.code=='KeyM'  ) {
         if (roam42.formatConverterUI && roam42.formatConverter) {
-          event.preventDefault();
+          ev.preventDefault();
+          ev.stopPropagation();
           roam42.formatConverterUI.htmlview();
         }
         return
