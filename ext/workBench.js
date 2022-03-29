@@ -281,11 +281,33 @@
 			}
 
 			roam42.wB.commandAddRunFromBlock = ( textToDisplay, callbackFunction )=> {
+				roam42.common.commandPaletteAdd('(42) ' + textToDisplay, () => {
+					const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.['block-uid'];
+					if (uid) {
+						const el = document.querySelector(`div[id*="${uid}"]`);
+						roam42.wB.triggeredState.activeElementId = el?.id;
+						roam42.wB.triggeredState.activeElementSelectionStart = el.selectionStart;
+						roam42.wB.triggeredState.activeElementSelectionEnd   = el.selectionEnd;
+					}
+					roam42.wB.triggeredState.selectedNodes = document.querySelectorAll(`.block-highlight-blue`);
+					callbackFunction();
+				})
 				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), 
 																		img: roam42.host + 'img/wb/blocksblock.png', cmd: callbackFunction, context: '-' } );
 			}
 
 			roam42.wB.commandAddRunFromMultiBlockSelection = ( textToDisplay, callbackFunction )=> {
+				roam42.common.commandPaletteAdd('(42) ' + textToDisplay, () => {
+					const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.['block-uid'];
+					if (uid) {
+						const el = document.querySelector(`div[id*="${uid}"]`);
+						roam42.wB.triggeredState.activeElementId = el?.id;
+						roam42.wB.triggeredState.activeElementSelectionStart = el.selectionStart;
+						roam42.wB.triggeredState.activeElementSelectionEnd   = el.selectionEnd;
+					}
+					roam42.wB.triggeredState.selectedNodes = document.querySelectorAll(`.block-highlight-blue`);
+					callbackFunction();
+				}))
 				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), 
 																		img: roam42.host + 'img/wb/blocksmulti.png', cmd: callbackFunction, context: '+' } );
 			}
