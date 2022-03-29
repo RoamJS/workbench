@@ -307,7 +307,7 @@
 					}
 					roam42.wB.triggeredState.selectedNodes = document.querySelectorAll(`.block-highlight-blue`);
 					callbackFunction();
-				}))
+				})
 				roam42.wB._commands.push( { display: textToDisplay, searchText:textToDisplay.toLowerCase(), 
 																		img: roam42.host + 'img/wb/blocksmulti.png', cmd: callbackFunction, context: '+' } );
 			}
