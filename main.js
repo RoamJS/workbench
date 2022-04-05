@@ -26,13 +26,11 @@ if( typeof window.roam42 == 'undefined' && !(isMobile() && (typeof window.loadRo
   if (scriptVersionMatch) {
     roam42.buildID = scriptVersionMatch[1];
   } else {
-    fetch('https://api.roamjs.com/versions?limit=1&id=roam42')
-      .then(r => r.json())
-      .then(({versions}) => {
-        roam42.buildID = versions[0] || 'Version Not Found';
-      }).catch(() => {
-        roam42.buildID = 'Version Not Found';
-      })
+    try {
+      roam42.buildID = process.env.ROAMJS_VERSION;
+    } catch (e) {
+      roam42.buildID = 'Version Not Found';
+    }
   }
 	
   roam42.host    = document.currentScript.src.replace('main.js','');
