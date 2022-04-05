@@ -16,3 +16,4 @@ jobs:
           source: .
           path: roam42
           release_token: ${{ secrets.ROAMJS_RELEASE_TOKEN }}
+          email: dvargas92495@gmail.com
