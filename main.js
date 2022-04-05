@@ -17,10 +17,12 @@
   roam42.KeyboardLib       imported from another library. so letting it stand as its own object
 */
 
-
-;(()=>{});
-
 if( typeof window.roam42 == 'undefined' ) {
+  function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+    
+  if (isMobile() && (typeof window.loadRoam42InMobile === 'undefined' || !window.loadRoam42InMobile)) { return; }
 
   window.roam42  = {};
   const scriptVersionMatch = document.currentScript.src.match(/roam42\/(\d\d\d\d-\d\d-\d\d-\d\d-\d\d)\/main.js/);
