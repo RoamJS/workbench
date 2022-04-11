@@ -159,85 +159,87 @@
     }, 500)
   }
 
-  const dailySubtitles = await roam42.settings.get('dailySubtitles') == 'off';
-
-  if (!dailySubtitles) {
-    // TODO - Move This
-    const MONTHS = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    const addDateToRoamTitleBanners = (titles) => {
-      titles.forEach((title) => {
-        if (
-          title.nextElementSibling &&
-          title.nextElementSibling.classList.contains("roam-title-day-banner")
-        ) {
-          return;
-        }
-        const [month, date = "", year = ""] = title.innerText.split(" ");
-        const dateMatch = date.match(/^(\d{1,2})(st|nd|rd|th),$/);
-        const pageDate =
-          year &&
-          dateMatch &&
-          MONTHS.includes(month) &&
-          new Date(year, MONTHS.indexOf(month), dateMatch[1]);
-        if (pageDate && !isNaN(pageDate.valueOf())) {
-          var weekdays = new Array(
-            "Sunday",
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday"
+  roam42.settings.get('dailySubtitles').then(setting => {
+    if (setting != 'off') {
+      // TODO - Move This
+      const MONTHS = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      const addDateToRoamTitleBanners = (titles) => {
+        titles.forEach((title) => {
+          if (
+            title.nextElementSibling &&
+            title.nextElementSibling.classList.contains("roam-title-day-banner")
+          ) {
+            return;
+          }
+          const [month, date = "", year = ""] = title.innerText.split(" ");
+          const dateMatch = date.match(/^(\d{1,2})(st|nd|rd|th),$/);
+          const pageDate =
+            year &&
+            dateMatch &&
+            MONTHS.includes(month) &&
+            new Date(year, MONTHS.indexOf(month), dateMatch[1]);
+          if (pageDate && !isNaN(pageDate.valueOf())) {
+            var weekdays = new Array(
+              "Sunday",
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday"
+            );
+            var day = pageDate.getDay();
+            var div = document.createElement("DIV");
+            div.className = "roam-title-day-banner";
+            div.innerText = weekdays[day];
+            div.style.fontSize = "10pt";
+            div.style.top =
+              -(Number(getComputedStyle(title).marginBottom.replace("px", "")) + 6) +
+              "px";
+            div.style.position = "relative";
+            title.insertAdjacentElement("afterend", div);
+          }
+        });
+      };
+      
+      const className = "rm-title-display";
+      addDateToRoamTitleBanners(document.querySelectorAll(`.${className}`));
+      const observerHeadings = new MutationObserver((ms) => {
+        const titles = ms
+          .flatMap((m) =>
+            Array.from(m.addedNodes).filter(
+              (d) => /^H\d$/.test(d.nodeName) && d.classList.contains(className)
+            )
+          )
+          .concat(
+            ms.flatMap((m) =>
+              Array.from(m.addedNodes)
+                .filter((n) => n.hasChildNodes())
+                .flatMap((d) => Array.from(d.getElementsByClassName(className)))
+            )
           );
-          var day = pageDate.getDay();
-          var div = document.createElement("DIV");
-          div.className = "roam-title-day-banner";
-          div.innerText = weekdays[day];
-          div.style.fontSize = "10pt";
-          div.style.top =
-            -(Number(getComputedStyle(title).marginBottom.replace("px", "")) + 6) +
-            "px";
-          div.style.position = "relative";
-          title.insertAdjacentElement("afterend", div);
-        }
+        addDateToRoamTitleBanners(titles);
       });
-    };
-    
-    const className = "rm-title-display";
-    addDateToRoamTitleBanners(document.querySelectorAll(`.${className}`));
-    const observerHeadings = new MutationObserver((ms) => {
-      const titles = ms
-        .flatMap((m) =>
-          Array.from(m.addedNodes).filter(
-            (d) => /^H\d$/.test(d.nodeName) && d.classList.contains(className)
-          )
-        )
-        .concat(
-          ms.flatMap((m) =>
-            Array.from(m.addedNodes)
-              .filter((n) => n.hasChildNodes())
-              .flatMap((d) => Array.from(d.getElementsByClassName(className)))
-          )
-        );
-      addDateToRoamTitleBanners(titles);
-    });
-    observerHeadings.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-  }
+      observerHeadings.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+    }
+  })
+
+ 
 
 })();
