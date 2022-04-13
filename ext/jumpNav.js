@@ -223,17 +223,21 @@
             roam42.common.simulateMouseClickRight(document.querySelectorAll('.simple-bullet-outer')[0]);
             zoomedView = 1;
           }
+          const toRoamDateUid = (d = new Date()) => `${(d.getMonth() + 1).toString().padStart(2, '0')}-${(d.getDate() + 1).toString().padStart(2, '0')}-${d.getFullYear()}`;
           setTimeout(()=>{
+            const uid = window.location.hash.match(/\/page\/(.*)$/)?.[1] || toRoamDateUid();
             switch(handler) {
               case 'ctrl+j e':
-                Array.from(
-                  document.querySelector('.bp3-popover-content > div> ul').childNodes
-                ).find(t => /expand all/i.test(t.innerText)).childNodes[0].click();
+                window.roamAlphaAPI.updateBlock({block: {uid, open: true}});
+                window.roamAlphaAPI.q(`[:find (pull ?p [:block/uid]) :where [?b :block/uid "${uid}"] [?p :block/parents ?b]]`)
+                    .map(a => a[0].uid)
+                    .forEach((u) => window.roamAlphaAPI.updateBlock({block: {uid:u, open: true}}));
                 break;
               case 'ctrl+j c':
-                Array.from(
-                  document.querySelector('.bp3-popover-content > div> ul').childNodes
-                ).find(t => /collapse all/i.test(t.innerText)).childNodes[0].click();
+                window.roamAlphaAPI.updateBlock({block: {uid, open: false}});
+                window.roamAlphaAPI.q(`[:find (pull ?p [:block/uid]) :where [?b :block/uid "${uid}"] [?p :block/parents ?b]]`)
+                    .map(a => a[0].uid)
+                    .forEach((u) => window.roamAlphaAPI.updateBlock({block: {uid:u, open: false}}));
                 break;
               case 'ctrl+j o':
                 Array.from(
