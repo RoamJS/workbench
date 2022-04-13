@@ -216,13 +216,7 @@
         // PAGE: Paging all Hitchhikers
         if(['ctrl+j e', 'ctrl+j c', 'ctrl+j o'].includes(handler)) {
           var locFacts =  (event.srcElement.localName == "textarea")  ? roam42.common.saveLocationParametersOfTextArea(event.target) : ''
-          var zoomedView = 0  // 0 if page is not zoomed, 1 if zoomed
-          try {
-            roam42.common.simulateMouseClickRight(document.querySelector('.rm-title-display'));
-          } catch(e) {
-            roam42.common.simulateMouseClickRight(document.querySelectorAll('.simple-bullet-outer')[0]);
-            zoomedView = 1;
-          }
+          
           const toRoamDateUid = (d = new Date()) => `${(d.getMonth() + 1).toString().padStart(2, '0')}-${(d.getDate() + 1).toString().padStart(2, '0')}-${d.getFullYear()}`;
           setTimeout(()=>{
             const uid = window.location.hash.match(/\/page\/(.*)$/)?.[1] || toRoamDateUid();
@@ -240,6 +234,13 @@
                     .forEach((u) => window.roamAlphaAPI.updateBlock({block: {uid:u, open: false}}));
                 break;
               case 'ctrl+j o':
+                var zoomedView = 0  // 0 if page is not zoomed, 1 if zoomed
+                try {
+                  roam42.common.simulateMouseClickRight(document.querySelector('.rm-title-display'));
+                } catch(e) {
+                  roam42.common.simulateMouseClickRight(document.querySelectorAll('.simple-bullet-outer')[0]);
+                  zoomedView = 1;
+                }
                 Array.from(
                   document.querySelector('.bp3-popover-content > div> ul').childNodes
                 ).find(t => /open in sidebar/i.test(t.innerText)).childNodes[0].click();
