@@ -89,7 +89,11 @@ if( typeof window.roam42 == 'undefined' && !(isMobile() && (typeof window.loadRo
     roam42.loader.addScriptToPage( "settings",          roam42.host + 'ext/settings.js'           );
     roam42.loader.addScriptToPage( 'dateProcessing',    roam42.host + 'ext/dateProcessing.js'     );
     roam42.loader.addScriptToPage( 'r42kb_lib',         roam42.host + 'common/r42kb_lib.js'       );
-    roam42.loader.addScriptToPage( 'smartBlocks',       'https://roamjs.com/smartblocks/main.js');
+    setTimeout(() => {
+      if (!window.roamjs || !window.roamjs.loaded.has("smartblocks")) {
+        roam42.loader.addScriptToPage( 'smartBlocks',       'https://roamjs.com/smartblocks/main.js');
+      }
+    }, 30000);
 //    roam42.loader.addScriptToPage( 'templatePoc',       roam42.host + 'ext/templatepoc.js'        );
     roam42.loader.addScriptToPage( 'privacyMode',       roam42.host + 'ext/privacyMode.js'        );
     roam42.loader.addScriptToPage( 'roam42Menu',        roam42.host + 'ext/roam42Menu.js'         );
