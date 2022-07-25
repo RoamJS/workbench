@@ -1,6 +1,18 @@
 {
+  "name": "workbench",
   "dependencies": {
-    "roamjs-components": "^0.70.2",
+    "flatpickr": "4.6.6",
+    "izitoast": "1.4.0",
+    "jquery": "3.5.1",
+    "js-cookie": "3.0.0-rc.1",
+    "js-search": "2.0.0",
+    "jspanel4": "^4.11.3",
+    "mousetrap": "1.6.5",
+    "roamjs-components": "^0.70.11",
+    "smalltalk": "4.1.1"
+  },
+  "devDependencies": {
+    "@types/mousetrap": "^1.6.9",
     "roamjs-scripts": "^0.21.1"
   }
 }
