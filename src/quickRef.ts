@@ -14,7 +14,7 @@ export const toggle = (flag: boolean) => {
   if (flag) component.initialize();
   else {
     window.removeEventListener("message", windowListener);
-    document.querySelector<HTMLElement>("#rqrQuickReferencePanel").remove();
+    document.querySelector<HTMLElement>("#rqrQuickReferencePanel")?.remove?.();
   }
 }
 

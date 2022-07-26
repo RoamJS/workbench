@@ -12,6 +12,8 @@
     "smalltalk": "4.1.1"
   },
   "devDependencies": {
+    "@types/jquery": "^3.5.14",
+    "@types/js-cookie": "^3.0.2",
     "@types/mousetrap": "^1.6.9",
     "roamjs-scripts": "^0.21.1"
   }

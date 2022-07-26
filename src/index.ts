@@ -1,7 +1,6 @@
 /* roam42 namespace structure
   roam42.keyevents         global handler for keyevents (some modules have their own key handling)
   roam42.quickRef          quick reference system
-  roam42.dailyNotesPopup   Dialy notes popup
   roam42.livePreview       Live preview features
   roam42.privacyMode       Redacts content from your Roam
   roam42.formatConverter   converts current page to various formats
@@ -22,6 +21,8 @@ import * as help from "./help";
 // exts
 import * as jumpnav from "./jumpNav";
 import * as quickRef from "./quickRef";
+import * as dailyNotesPopup from "./dailyNotesPopup";
+import * as dictionary from "./dictionary";
 
 declare global {
   interface Window {
@@ -38,6 +39,8 @@ declare global {
 
       jumpnav: typeof jumpnav;
       quickRef: typeof quickRef;
+      dailyNotesPopup: typeof dailyNotesPopup;
+      typeAhead: typeof dictionary;
     };
     loadRoam42InMobile?: boolean;
     roam42KeyboardLib: typeof roam42KeyboardLib;
@@ -71,6 +74,8 @@ export default runExtension({
 
         jumpnav,
         quickRef,
+        dailyNotesPopup,
+        typeAhead: dictionary,
       };
       window.roam42KeyboardLib = roam42KeyboardLib;
 
@@ -93,13 +98,34 @@ export default runExtension({
               type: "switch",
               onChange: (e) => quickRef.toggle(e.target.checked),
             },
-            description: "A quick help section of WorkBench's and Roam's features",
+            description:
+              "A quick help section of WorkBench's and Roam's features",
           },
+          {
+            id: "dailyNotesPopup",
+            name: "Daily Notes Popup",
+            action: {
+              type: "switch",
+              onChange: (e) => dailyNotesPopup.toggle(e.target.checked),
+            },
+            description: "A popup window with the current Daily Notes Page",
+          },
+          {
+            id: "dictionary",
+            name: "Dictionary",
+            action: {
+              type: "switch",
+              onChange: (e) => dictionary.toggle(e.target.checked),
+            },
+            description: "Look up terms in the dictionary"
+          }
         ],
       });
 
       jumpnav.toggle(!!extensionAPI.settings.get("jumpNav"));
       quickRef.toggle(!!extensionAPI.settings.get("quickRef"));
+      dailyNotesPopup.toggle(!!extensionAPI.settings.get("dailyNotesPopup"));
+      dictionary.toggle(!!extensionAPI.settings.get("dictionary"));
 
       //extension modules
       roam42.loader.addScriptToPage(
@@ -120,16 +146,6 @@ export default runExtension({
       );
       roam42.loader.addScriptToPage("stats", roam42.host + "ext/stats.js");
 
-      roam42.typeAhead.loadTypeAhead();
-      roam42.loader.addScriptToPage(
-        "lookupUI",
-        roam42.host + "ext/typeaheadUI.js"
-      );
-      
-      roam42.loader.addScriptToPage(
-        "typeAheadData",
-        roam42.host + "ext/typeaheadData.js"
-      );
       roam42.loader.addScriptToPage(
         "formatConverter",
         roam42.host + "ext/formatConverter.js"
@@ -141,10 +157,6 @@ export default runExtension({
       roam42.loader.addScriptToPage(
         "livePreview",
         roam42.host + "ext/livePreview.js"
-      );
-      roam42.loader.addScriptToPage(
-        "dailyNote",
-        roam42.host + "ext/dailyNotesPopup.js"
       );
       roam42.loader.addScriptToPage(
         "workBench",
@@ -187,14 +199,6 @@ export default runExtension({
           if (window === window.parent) initializeWb(0);
           try {
             roam42.user = roam42.common.getUserInformation();
-          } catch (e) {}
-
-          try {
-            if (window === window.parent) {
-              try {
-                await roam42.dailyNotesPopup.component.initialize();
-              } catch (e) {}
-            }
           } catch (e) {}
           try {
             setTimeout(async () => {

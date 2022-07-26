@@ -15,9 +15,11 @@ import {
   sleep,
 } from "./commonFunctions";
 import { displayMessage } from "./help";
-import { component } from "./quickRef";
+import { component as queryRef } from "./quickRef";
+import { component as dailyNotesPopup } from "./dailyNotesPopup";
 import { pressEsc, simulateKey } from "./r42kb_lib";
 import { get } from "./settings";
+import { typeAheadLookup } from "./dictionary";
 
 const oldStopCallback = Mousetrap.prototype.stopCallback;
 const bindings = [
@@ -577,11 +579,11 @@ export const jumpCommand = (target: Element, handler: string) => {
   }
 
   if (handler == "ctrl+j q") {
-    component.toggleQuickReference();
+    queryRef.toggleQuickReference();
     return false;
   } //roam42.help.displayHelp() };
   if (handler == "ctrl+j h") {
-    component.toggleQuickReference();
+    queryRef.toggleQuickReference();
     return false;
   }
 
@@ -597,11 +599,11 @@ export const jumpCommand = (target: Element, handler: string) => {
   }
 
   if (handler == "ctrl+j ,") {
-    roam42.dailyNotesPopup.component.toggleVisible();
+    dailyNotesPopup.toggleVisible();
     return false;
   }
   if (handler == "ctrl+j .") {
-    roam42.typeAhead.typeAheadLookup();
+    typeAheadLookup(target);
     return false;
   }
 
