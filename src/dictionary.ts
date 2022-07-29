@@ -6,8 +6,8 @@ import ReactDOM from "react-dom";
 
 export let currentTextArea = "";
 
-export const typeAheadLookup = (target: Element) => {
-  if (target.localName == "textarea") {
+export const typeAheadLookup = (target?: Element) => {
+  if (target?.localName == "textarea") {
     typeaheadDisplayTextArea(target.id);
   } else {
     typeaheadDisplayOtherAreas();
@@ -64,7 +64,10 @@ const TypeAhead = () => {
   });
 };
 
+export let enabled = false;
+
 export const loadTypeAhead = () => {
+  enabled = true;
   const rmSearch = document.createElement("div");
   rmSearch.id = "rmSearch";
   document.body.appendChild(rmSearch);
@@ -72,9 +75,12 @@ export const loadTypeAhead = () => {
   ReactDOM.render(TypeAhead(), rmSearch);
 };
 
-export const toggle = (flag: boolean) => {
+export const toggleFeature = (flag: boolean) => {
   if (flag) loadTypeAhead();
-  else document.getElementById("rmSearch")?.remove?.();
+  else {
+    document.getElementById("rmSearch")?.remove?.();
+    enabled = false;
+  }
 };
 
 export const typeaheadQueryURL =

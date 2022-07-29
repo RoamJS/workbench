@@ -2,21 +2,20 @@
 import jsPanel from "jspanel4";
 
 const windowListener = function (e: MessageEvent) {
-  if (
-    e.data === "roamquickrefclosewindow"
-  ) {
-    document.querySelector<HTMLElement>("#rqrQuickReferencePanel").style.visibility =
-      "hidden";
+  if (e.data === "roamquickrefclosewindow") {
+    document.querySelector<HTMLElement>(
+      "#rqrQuickReferencePanel"
+    ).style.visibility = "hidden";
   }
-}
+};
 
-export const toggle = (flag: boolean) => {
+export const toggleFeature = (flag: boolean) => {
   if (flag) component.initialize();
   else {
     window.removeEventListener("message", windowListener);
     document.querySelector<HTMLElement>("#rqrQuickReferencePanel")?.remove?.();
   }
-}
+};
 
 export const component = {
   rqrQuickReferencePanel: "",
@@ -35,16 +34,18 @@ export const component = {
       this.rqrQuickReferencePanel_isInitiallyPositioned = true;
     }
     if (
-      document.querySelector<HTMLElement>("#rqrQuickReferencePanel").style.visibility ==
-      "hidden"
+      document.querySelector<HTMLElement>("#rqrQuickReferencePanel").style
+        .visibility == "hidden"
     ) {
-      document.querySelector<HTMLElement>("#rqrQuickReferencePanel").style.visibility =
-        "visible";
+      document.querySelector<HTMLElement>(
+        "#rqrQuickReferencePanel"
+      ).style.visibility = "visible";
       var iframe = document.getElementById("iframeRqrQuickReferencePanel");
       iframe.focus();
     } else {
-      document.querySelector<HTMLElement>("#rqrQuickReferencePanel").style.visibility =
-        "hidden";
+      document.querySelector<HTMLElement>(
+        "#rqrQuickReferencePanel"
+      ).style.visibility = "hidden";
     }
   },
 
@@ -90,12 +91,14 @@ export const component = {
       },
     });
 
-    document.querySelector<HTMLElement>("#rqrQuickReferencePanel").style.visibility =
-      "hidden";
+    document.querySelector<HTMLElement>(
+      "#rqrQuickReferencePanel"
+    ).style.visibility = "hidden";
 
     this.rqrQuickReferencePanel.options.onbeforeclose.push(() => {
-      document.querySelector<HTMLElement>("#rqrQuickReferencePanel").style.visibility =
-        "hidden";
+      document.querySelector<HTMLElement>(
+        "#rqrQuickReferencePanel"
+      ).style.visibility = "hidden";
       if (
         this.rqrQuickReferencePanel.status == "minimized" ||
         this.rqrQuickReferencePanel.status == "smallified"
@@ -104,7 +107,6 @@ export const component = {
       }
       return false;
     });
-
 
     window.addEventListener("message", windowListener);
   }, //initialize

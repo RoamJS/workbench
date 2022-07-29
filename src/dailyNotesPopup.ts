@@ -288,7 +288,7 @@ export const component = {
   },
 };
 
-export const toggle = (flag: boolean) => {
+export const toggleFeature = (flag: boolean) => {
   if (flag) component.initialize();
   else {
     observerHeadings?.disconnect();

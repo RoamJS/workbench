@@ -1,6 +1,6 @@
 import iziToast from "izitoast";
 
-export const displayMessage = (sMessage: string, delayTime: number) => {
+export const displayMessage = (sMessage: string, delayTime = 0) => {
   iziToast.show({
     message: sMessage,
     theme: "dark",

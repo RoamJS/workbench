@@ -162,7 +162,7 @@ export const loadJumpNav = () => {
   );
 };
 
-export const toggle = (flag: boolean) => {
+export const toggleFeature = (flag: boolean) => {
   if (flag) loadJumpNav();
   else {
     Mousetrap.unbind(bindings);

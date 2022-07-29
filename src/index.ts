@@ -1,8 +1,6 @@
 /* roam42 namespace structure
   roam42.keyevents         global handler for keyevents (some modules have their own key handling)
-  roam42.quickRef          quick reference system
   roam42.livePreview       Live preview features
-  roam42.privacyMode       Redacts content from your Roam
   roam42.formatConverter   converts current page to various formats
   roam42.formatConverterUI UI to roam42.formatConverter
 	roam42.workBench				 Workbench engine
@@ -19,10 +17,12 @@ import * as settings from "./settings";
 import * as help from "./help";
 
 // exts
-import * as jumpnav from "./jumpNav";
-import * as quickRef from "./quickRef";
 import * as dailyNotesPopup from "./dailyNotesPopup";
 import * as dictionary from "./dictionary";
+import * as jumpnav from "./jumpNav";
+import * as privacyMode from "./privacyMode";
+import * as quickRef from "./quickRef";
+import * as roam42Menu from "./roam42Menu";
 
 declare global {
   interface Window {
@@ -34,12 +34,14 @@ declare global {
 
       common: typeof common;
       dateProcessing: typeof dateProcessing;
-      settings: typeof settings;
       help: typeof help;
+      settings: typeof settings;
 
-      jumpnav: typeof jumpnav;
-      quickRef: typeof quickRef;
       dailyNotesPopup: typeof dailyNotesPopup;
+      jumpnav: typeof jumpnav;
+      privacyMode: typeof privacyMode;
+      quickRef: typeof quickRef;
+      roam42Menu: typeof roam42Menu;
       typeAhead: typeof dictionary;
     };
     loadRoam42InMobile?: boolean;
@@ -69,12 +71,14 @@ export default runExtension({
 
         common,
         dateProcessing,
-        settings,
         help,
+        settings,
 
-        jumpnav,
-        quickRef,
         dailyNotesPopup,
+        jumpnav,
+        privacyMode,
+        quickRef,
+        roam42Menu,
         typeAhead: dictionary,
       };
       window.roam42KeyboardLib = roam42KeyboardLib;
@@ -83,30 +87,11 @@ export default runExtension({
         tabTitle: "WorkBench (Roam42)",
         settings: [
           {
-            id: "jumpNav",
-            name: "Jump Navigation",
-            action: {
-              type: "switch",
-              onChange: (e) => jumpnav.toggle(e.target.checked),
-            },
-            description: "Hot Keys for easy Jump Navigation",
-          },
-          {
-            id: "quickRef",
-            name: "Quick Reference",
-            action: {
-              type: "switch",
-              onChange: (e) => quickRef.toggle(e.target.checked),
-            },
-            description:
-              "A quick help section of WorkBench's and Roam's features",
-          },
-          {
             id: "dailyNotesPopup",
             name: "Daily Notes Popup",
             action: {
               type: "switch",
-              onChange: (e) => dailyNotesPopup.toggle(e.target.checked),
+              onChange: (e) => dailyNotesPopup.toggleFeature(e.target.checked),
             },
             description: "A popup window with the current Daily Notes Page",
           },
@@ -115,27 +100,60 @@ export default runExtension({
             name: "Dictionary",
             action: {
               type: "switch",
-              onChange: (e) => dictionary.toggle(e.target.checked),
+              onChange: (e) => dictionary.toggleFeature(e.target.checked),
             },
-            description: "Look up terms in the dictionary"
-          }
+            description: "Look up terms in the dictionary",
+          },
+          {
+            id: "jumpNav",
+            name: "Jump Navigation",
+            action: {
+              type: "switch",
+              onChange: (e) => jumpnav.toggleFeature(e.target.checked),
+            },
+            description: "Hot Keys for easy Jump Navigation",
+          },
+          {
+            id: "privacyMode",
+            name: "Privacy Mode",
+            description: "Redacts content from your Roam",
+            action: {
+              type: "switch",
+              onChange: (e) => privacyMode.toggleFeature(e.target.checked),
+            },
+          },
+          {
+            id: "quickRef",
+            name: "Quick Reference",
+            action: {
+              type: "switch",
+              onChange: (e) => quickRef.toggleFeature(e.target.checked),
+            },
+            description:
+              "A quick help section of WorkBench's and Roam's features",
+          },
+          {
+            id: "roam42Menu",
+            name: "Roam42 Menu",
+            action: {
+              type: "switch",
+              onChange: (e) => roam42Menu.toggleFeature(e.target.checked),
+            },
+            description: "Help menu that appears on the top right",
+          },
         ],
       });
 
-      jumpnav.toggle(!!extensionAPI.settings.get("jumpNav"));
-      quickRef.toggle(!!extensionAPI.settings.get("quickRef"));
-      dailyNotesPopup.toggle(!!extensionAPI.settings.get("dailyNotesPopup"));
-      dictionary.toggle(!!extensionAPI.settings.get("dictionary"));
+      dailyNotesPopup.toggleFeature(
+        !!extensionAPI.settings.get("dailyNotesPopup")
+      );
+      dictionary.toggleFeature(!!extensionAPI.settings.get("dictionary"));
+      jumpnav.toggleFeature(!!extensionAPI.settings.get("jumpNav"));
+      privacyMode.toggleFeature(!!extensionAPI.settings.get("privacyMode"));
+      quickRef.toggleFeature(!!extensionAPI.settings.get("quickRef"));
+      roam42Menu.toggleFeature(!!extensionAPI.settings.get("roam42Menu"));
 
       //extension modules
-      roam42.loader.addScriptToPage(
-        "privacyMode",
-        roam42.host + "ext/privacyMode.js"
-      );
-      roam42.loader.addScriptToPage(
-        "roam42Menu",
-        roam42.host + "ext/roam42Menu.js"
-      );
       roam42.loader.addScriptToPage(
         "roam42Tutorials",
         roam42.host + "ext/tutorials.js"
@@ -158,6 +176,7 @@ export default runExtension({
         "livePreview",
         roam42.host + "ext/livePreview.js"
       );
+
       roam42.loader.addScriptToPage(
         "workBench",
         roam42.host + "ext/workBench.js"
@@ -166,51 +185,15 @@ export default runExtension({
         "workBenchCss",
         roam42.host + "css/workBench.css"
       );
+      roam42.wB.initialize();
 
       roam42.keyevents.loadKeyEvents();
       roam42.loader.addScriptToPage(
         "keyEvents",
         roam42.host + "common/keyevents.js"
       );
-
-      // Give the libraries a few seconds to get comfy in their new home
-      // and then let the extension dance, that is to say,
-      // begin initializing the environment with all the cool tools
-
-      var loadingCounter = 0;
-
-      const interval = setInterval(async () => {
-        if (roam42.keyevents) {
-          clearInterval(interval);
-          try {
-          } catch (e) {}
-          const initializeWb = (counter) =>
-            setTimeout(() => {
-              if (roam42.wB) {
-                try {
-                  roam42.wB.initialize();
-                } catch (e) {}
-              } else if (counter > 100) {
-                console.error("Failed to initalize workbench after 100 tries");
-              } else {
-                initializeWb(counter + 1);
-              }
-            }, 1000);
-          if (window === window.parent) initializeWb(0);
-          try {
-            roam42.user = roam42.common.getUserInformation();
-          } catch (e) {}
-          try {
-            setTimeout(async () => {
-              await roam42.roam42Menu.initialize();
-              document.body.dispatchEvent(new Event("roamjs:roam42:loaded"));
-            }, 2000);
-          } catch (e) {}
-        } else {
-          if (loadingCounter > 30) clearInterval(interval);
-          else loadingCounter += 1;
-        }
-      }, 3000);
+      
+      roam42.user = roam42.common.getUserInformation();
     }
   },
 });

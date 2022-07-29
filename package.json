@@ -9,7 +9,8 @@
     "jspanel4": "^4.11.3",
     "mousetrap": "1.6.5",
     "roamjs-components": "^0.70.11",
-    "smalltalk": "4.1.1"
+    "smalltalk": "4.1.1",
+    "tippy.js": "^6.3.7"
   },
   "devDependencies": {
     "@types/jquery": "^3.5.14",
