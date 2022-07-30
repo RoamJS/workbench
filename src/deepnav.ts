@@ -1,4 +1,16 @@
-roam42.roamNavigator = {};
+import Cookies from "js-cookie";
+import iziToast from "izitoast";
+
+type Item = {
+  element?: Element;
+  mustBeKeys?: string | null;
+  text?: string;
+  initials?: string;
+  isNavigateOption?: boolean;
+  keepGoing?: boolean;
+  aliased?: unknown[];
+  extraClasses?: string[];
+};
 
 // Set to true to enable debug logging.
 const DEBUG = false;
@@ -44,14 +56,6 @@ const LEFT_SIDEBAR_KEY = "`";
 // attempt to display.
 const MAX_BREADCRUMB_COUNT = 15;
 
-function readSetting(name, initial) {
-  if (window.roamNavigatorSettings && name in window.roamNavigatorSettings) {
-    return roamNavigatorSettings[name];
-  } else {
-    return initial;
-  }
-}
-
 export const getRoamNavigator_IsEnabled = () => {
   if (Cookies.get("RoamNavigator_IsEnabled") === "true") {
     return true;
@@ -59,17 +63,14 @@ export const getRoamNavigator_IsEnabled = () => {
     return false;
   }
 };
-window.getRoamNavigator_IsEnabled = getRoamNavigator_IsEnabled;
 
-const setRoamNavigator_IsEnabled = (val) => {
-  if (val == true) {
+const setRoamNavigator_IsEnabled = (val: boolean) => {
+  if (val) {
     Cookies.set("RoamNavigator_IsEnabled", "true", { expires: 365 });
   } else {
     Cookies.set("RoamNavigator_IsEnabled", "false", { expires: 365 });
   }
 };
-
-let roamNavigatorEnabled = getRoamNavigator_IsEnabled();
 
 export const roamNavigatorStatusToast = () => {
   var status = getRoamNavigator_IsEnabled();
@@ -86,7 +87,6 @@ export const roamNavigatorStatusToast = () => {
         "<button>Enabled</button>",
         function (instance, toast) {
           setRoamNavigator_IsEnabled(true);
-          roamNavigatorEnabled = true;
           instance.hide({ transitionOut: "fadeOutUp" }, toast, "buttonName");
         },
         status,
@@ -95,7 +95,6 @@ export const roamNavigatorStatusToast = () => {
         "<button>Disabled</button>",
         function (instance, toast) {
           setRoamNavigator_IsEnabled(false);
-          roamNavigatorEnabled = false;
           instance.hide({ transitionOut: "fadeOutDown" }, toast, "buttonName");
         },
         !status,
@@ -104,45 +103,12 @@ export const roamNavigatorStatusToast = () => {
   });
 };
 
-window.roamNavigatorStatusToast = roamNavigatorStatusToast;
-
-//Roam42: End
-
-// Set to true to activate navigation mode when body is focused.
-const ACTIVATE_ON_NO_FOCUS = readSetting("activate-on-no-focus", false);
-
-// Set to true to activate navigation mode on startup.
-const ACTIVATE_ON_STARTUP = readSetting("activate-on-startup", false);
-
-// Set to true to respond to scroll keys outside navigate mode.
-const SCROLL_OUTSIDE_NAVIGATE_MODE = readSetting(
-  "scroll-outside-navigate-mode",
-  true
-);
-
-// Set to true to enable display of recent pages list.
-const BREADCRUMBS_ENABLED = readSetting("breadcrumbs-enabled", true);
-
-// Set to true to display recent pages list, even when not in
-// navigation mode.
-const BREADCRUMBS_ALWAYS_VISIBLE = readSetting(
-  "breadcrumbs-always-visible",
-  false
-);
-
-// 'navigate' (g) attempts to assign keys to items based on their
-// names. In some case there might not be a concise labeling. This
-// sets the limit on key sequence length for things based on
-// prefixes.
-//
-// Note that this isn't really a knob for users, as more than 2
-// won't fit well.
 const MAX_NAVIGATE_PREFIX = 2;
 
 // MUTABLE. This is a set of keys to ignore for keypress / keyup
 // events. This solves an issue where keypresses involved in
 // navigation can get handled elsewhere (especially textareas).
-let keysToIgnore = {};
+let keysToIgnore: Record<string, boolean> = {};
 
 // MUTABLE. Stores whether a block was highlighted last time the DOM
 // was mutated.
@@ -153,105 +119,90 @@ let blockWasHighlighted = false;
 // and so the changes should be ignored.
 let domMutationLevel = 0;
 
+const keyDownListener = (ev: KeyboardEvent) => {
+  debug("keydown", ev);
+  debug("keysToIgnore", keysToIgnore);
+  if (keyIsModifier(ev)) {
+    return;
+  }
+  // Ignore keystrokes pressed with modifier keys, as they might
+  // be used by other extensions.
+
+  if (!getRoamNavigator_IsEnabled()) {
+    // navigator disabled, don't go further
+    return;
+  }
+
+  if (
+    ev.ctrlKey ||
+    (ev.altKey &&
+      (isNavigating() || !(ev.code === START_NAVIGATE_KEY || ev.key === "g")))
+  ) {
+    delete keysToIgnore[ev.key];
+    return;
+  }
+  if (isNavigating()) {
+    if (getInputTarget(ev)) {
+      warn("Ending navigate mode as keypress target is input");
+      endNavigate();
+    } else {
+      keysToIgnore[ev.key] = true;
+      handleNavigateKey(ev);
+    }
+    return;
+  } else if (ev.code === START_NAVIGATE_KEY || ev.key === "g") {
+    const inputTarget = getInputTarget(ev);
+    if (ev.altKey || !inputTarget) {
+      ev.stopImmediatePropagation();
+      ev.preventDefault();
+      keysToIgnore = {};
+      // Deslect input before navigating
+      if (inputTarget) {
+        inputTarget.blur();
+      }
+      // Deselect block highlight before navigating.
+      if (isBlockHighlighted()) {
+        click(document.body);
+        setTimeout(navigate);
+      } else {
+        navigate();
+      }
+      return;
+    }
+  } else if (!getInputTarget(ev) && handleScrollKey(ev)) {
+    return;
+  }
+  delete keysToIgnore[ev.key];
+};
+
+const keyPressListener = (ev: KeyboardEvent) => {
+  debug("keypress", ev);
+  debug("keysToIgnore", keysToIgnore);
+  if (isNavigating() || keysToIgnore[ev.key]) {
+    ev.stopImmediatePropagation();
+    ev.preventDefault();
+  }
+};
+
+const keyUpListener = (ev: KeyboardEvent) => {
+  debug("keyup", ev);
+  debug("keysToIgnore", keysToIgnore);
+  if (isNavigating() || keysToIgnore[ev.key]) {
+    ev.stopImmediatePropagation();
+    ev.preventDefault();
+    delete keysToIgnore[ev.key];
+  }
+};
+
+let highlightedObserver: MutationObserver = undefined;
+
 function initialize() {
-  document.addEventListener(
-    "keydown",
-    (ev) => {
-      debug("keydown", ev);
-      debug("keysToIgnore", keysToIgnore);
-      if (keyIsModifier(ev)) {
-        return;
-      }
-      // Ignore keystrokes pressed with modifier keys, as they might
-      // be used by other extensions.
-
-      if (!roamNavigatorEnabled) {
-        // navigator disabled, don't go further
-        return;
-      }
-
-      if (
-        ev.ctrlKey ||
-        (ev.altKey &&
-          (isNavigating() ||
-            !(ev.code === START_NAVIGATE_KEY || ev.key === "g")))
-      ) {
-        delete keysToIgnore[ev.key];
-        return;
-      }
-      if (isNavigating()) {
-        if (getInputTarget(ev)) {
-          warn("Ending navigate mode as keypress target is input");
-          endNavigate();
-        } else {
-          keysToIgnore[ev.key] = true;
-          handleNavigateKey(ev);
-        }
-        return;
-      } else if (ev.code === START_NAVIGATE_KEY || ev.key === "g") {
-        const inputTarget = getInputTarget(ev);
-        if (ev.altKey || !inputTarget) {
-          ev.stopImmediatePropagation();
-          ev.preventDefault();
-          keysToIgnore = {};
-          // Deslect input before navigating
-          if (inputTarget) {
-            inputTarget.blur();
-          }
-          // Deselect block highlight before navigating.
-          if (isBlockHighlighted()) {
-            click(document.body);
-            setTimeout(navigate);
-          } else {
-            navigate();
-          }
-          return;
-        }
-      } else if (
-        SCROLL_OUTSIDE_NAVIGATE_MODE &&
-        !getInputTarget(ev) &&
-        handleScrollKey(ev)
-      ) {
-        return;
-      }
-      delete keysToIgnore[ev.key];
-    },
-    true
-  );
-
-  document.addEventListener(
-    "keypress",
-    (ev) => {
-      debug("keypress", ev);
-      debug("keysToIgnore", keysToIgnore);
-      if (isNavigating() || keysToIgnore[ev.key]) {
-        ev.stopImmediatePropagation();
-        ev.preventDefault();
-      }
-    },
-    true
-  );
-
-  document.addEventListener(
-    "keyup",
-    (ev) => {
-      debug("keyup", ev);
-      debug("keysToIgnore", keysToIgnore);
-      if (isNavigating() || keysToIgnore[ev.key]) {
-        ev.stopImmediatePropagation();
-        ev.preventDefault();
-        delete keysToIgnore[ev.key];
-      }
-    },
-    true
-  );
-
-  let isReady = false;
-  let initiatedNavigation = false;
+  document.addEventListener("keydown", keyDownListener, true);
+  document.addEventListener("keypress", keyPressListener, true);
+  document.addEventListener("keyup", keyUpListener, true);
 
   const handleChange = throttle(20, () => {
     const blockHighlighted = isBlockHighlighted();
-    const bodyFocused = document.activeElement === document.body;
     debug(
       "DOM mutation. blockHighlighted = ",
       blockHighlighted,
@@ -259,43 +210,10 @@ function initialize() {
       blockWasHighlighted
     );
     if (isNavigating()) {
-      if (
-        ACTIVATE_ON_NO_FOCUS &&
-        roamNavigatorEnabled &&
-        blockHighlighted &&
-        bodyFocused
-      ) {
-        handleFocusIn();
-      } else {
-        if (!setupNavigateCrashed) {
-          setupNavigate(false);
-        }
-        registerScrollHandlers();
-      }
-    } else if (
-      ACTIVATE_ON_STARTUP &&
-      isReady &&
-      !initiatedNavigation &&
-      roamNavigatorEnabled
-    ) {
       if (!setupNavigateCrashed) {
-        navigate();
+        setupNavigate(false);
       }
-    } else if (
-      ACTIVATE_ON_NO_FOCUS &&
-      !blockHighlighted &&
-      blockWasHighlighted &&
-      bodyFocused
-    ) {
-      handleFocusOut();
-    }
-    if (
-      ACTIVATE_ON_STARTUP &&
-      isReady &&
-      !initiatedNavigation &&
-      roamNavigatorEnabled
-    ) {
-      initiatedNavigation = true;
+      registerScrollHandlers();
     }
     blockWasHighlighted = blockHighlighted;
     updateBreadcrumbs();
@@ -303,44 +221,30 @@ function initialize() {
 
   window.addEventListener("resize", handleScrollOrResize);
 
-  const observer = new MutationObserver(() => {
+  highlightedObserver = new MutationObserver(() => {
     if (!domMutationLevel) {
       handleChange();
     }
   });
-  observer.observe(document, {
+  highlightedObserver.observe(document, {
     childList: true,
     subtree: true,
     attributes: true,
   });
-
-  // Watch for DOM changes, to know when to re-render tips.
-  if (ACTIVATE_ON_NO_FOCUS && roamNavigatorEnabled) {
-    document.addEventListener("focusout", (ev) => {
-      if (getInputTarget(ev) && document.activeElement === document.body) {
-        handleFocusOut();
-      }
-    });
-    document.addEventListener("focusin", (ev) => {
-      if (getInputTarget(ev) && isNavigating()) {
-        handleFocusIn();
-      }
-    });
-  }
-
-  // Activate on startup, once the DOM is sufficiently populated.
-  if (ACTIVATE_ON_STARTUP) {
-    persistentlyFind(
-      () => getById("right-sidebar"),
-      () => {
-        isReady = true;
-        handleChange();
-      }
-    );
-  }
 }
 
-function keyIsModifier(ev) {
+export const toggleFeature = (flag: boolean) => {
+  if (flag) initialize();
+  else {
+    document.removeEventListener("keydown", keyDownListener);
+    document.removeEventListener("keypress", keyPressListener);
+    document.removeEventListener("keyup", keyUpListener);
+    window.removeEventListener("resize", handleScrollOrResize);
+    highlightedObserver?.disconnect?.();
+  }
+};
+
+function keyIsModifier(ev: KeyboardEvent) {
   return (
     ev.key === "Shift" ||
     ev.key === "Meta" ||
@@ -349,8 +253,8 @@ function keyIsModifier(ev) {
   );
 }
 
-function getInputTarget(ev) {
-  const element = ev.target || ev.srcElement;
+function getInputTarget(ev: Event) {
+  const element = ev.target as HTMLElement;
   if (
     element.tagName == "INPUT" ||
     element.tagName == "SELECT" ||
@@ -369,7 +273,7 @@ function registerScrollHandlers() {
     rightScroller.removeEventListener("scroll", handleScrollOrResize);
     rightScroller.addEventListener("scroll", handleScrollOrResize);
   }
-  let mainScroller = getUniqueClass(document, "roam-body-main");
+  let mainScroller: Node = getUniqueClass(document, "roam-body-main");
   if (mainScroller && mainScroller.firstChild) {
     mainScroller = mainScroller.firstChild;
     mainScroller.removeEventListener("scroll", handleScrollOrResize);
@@ -382,23 +286,6 @@ const handleScrollOrResize = throttle(100, () => {
     setupNavigate(true);
   }
 });
-
-function handleFocusIn() {
-  debug("Ending navigate due to focusin event or block selection appearing");
-  endNavigate();
-}
-
-function handleFocusOut() {
-  // This delay is for efficiency in the case that a focusout
-  // is rapidly followed by a focusin, such as when pressing
-  // enter to create a new bullet.
-  setTimeout(() => {
-    if (!isNavigating() && document.activeElement === document.body) {
-      debug("Navigating due to focusout or block selection disappearing");
-      navigate();
-    }
-  }, 50);
-}
 
 function isBlockHighlighted() {
   return document.body.querySelector(".block-highlight-blue") !== null;
@@ -419,7 +306,7 @@ const SIDE_PAGE_CLOSE_CLASS = "roam_navigator_side_page_close";
 
 // MUTABLE. When set, this function should be called when navigate mode
 // finished.
-let finishNavigate = null;
+let finishNavigate: () => void = null;
 
 // MUTABLE. Current set of navigate options.
 let currentNavigateOptions = {};
@@ -428,11 +315,11 @@ let currentNavigateOptions = {};
 let currentNavigatePrefixesUsed = {};
 
 // MUTABLE. Map from uids to navigate options.
-let currentUidToNavigateOptionsMap = {};
+let currentUidToNavigateOptionsMap: Record<string, Item> = {};
 
 // MUTABLE. Used to avoid infinite recursion of 'setupNavigate' due to it
 // being called on mutation of DOM that it mutates.
-let oldNavigateOptions = {};
+let oldNavigateOptions: Record<string, Item> = {};
 
 // MUTABLE. Current set of link options.
 let currentLinkOptions = {};
@@ -460,9 +347,7 @@ function navigate() {
   navigateKeysPressed = "";
 
   finishNavigate = () => {
-    if (!BREADCRUMBS_ALWAYS_VISIBLE) {
-      clearBreadcrumbs();
-    }
+    clearBreadcrumbs();
   };
 
   setupNavigate(false);
@@ -488,7 +373,7 @@ function endNavigate() {
 // DOM refreshes, in order to ensure they are displayed. It
 // overrides the keyboard handler such that it temporarily expects a
 // key.
-function setupNavigate(onlyLinks) {
+function setupNavigate(onlyLinks: boolean) {
   updateBreadcrumbs();
   // ensureSidebarOpen();
   if (!matchingClass(NAVIGATE_CLASS)(document.body)) {
@@ -549,12 +434,12 @@ function setupNavigate(onlyLinks) {
 }
 
 function collectNavigateOptions() {
-  const uidToNavigateOptionsMap = {};
+  const uidToNavigateOptionsMap: Record<string, Item> = {};
   const sidebar = getUniqueClass(document, "roam-sidebar-container");
   // Initialize a list of elements to bind to keys for
   // navigation. Starts out with some reserved keys that will
   // later be removed.
-  const navigateItems = [
+  const navigateItems: Item[] = [
     {
       mustBeKeys: SIDEBAR_BLOCK_PREFIX,
     },
@@ -666,8 +551,8 @@ function collectNavigateOptions() {
   // For links that have a uid, collect a map from that to the options.
   for (const keySequence of Object.keys(navigateOptions)) {
     const option = navigateOptions[keySequence];
-    if (option.element && option.element.attributes["href"]) {
-      const href = option.element.attributes["href"].value;
+    if (option.element && option.element.hasAttribute("href")) {
+      const href = option.element.getAttribute("href");
       if (href[0] === "/") {
         const uidMatchResult = ID_FROM_HASH_REGEX.exec(href.slice(1));
         if (uidMatchResult) {
@@ -681,7 +566,7 @@ function collectNavigateOptions() {
   // Add key sequences for every block in article.
   const article = getUniqueClass(document, "roam-article");
   if (article && article.firstChild) {
-    const lastBlock = findLastBlock(article.firstChild);
+    const lastBlock = findLastBlock(article.firstElementChild);
     addBlocks(navigateOptions, article, lastBlock, "");
   }
 
@@ -726,7 +611,7 @@ function collectNavigateOptions() {
   return { navigateOptions, navigatePrefixesUsed, uidToNavigateOptionsMap };
 }
 
-function findLastBlock(el) {
+function findLastBlock(el: Element) {
   const firstLogPage = getFirstClass(el, "roam-log-page");
   const container = firstLogPage
     ? getFirstClass(firstLogPage, "flex-v-box")
@@ -1039,16 +924,20 @@ const FILTERED_JUMP_KEYS = filterJumpKeys(JUMP_KEYS);
 const CLOSE_BUTTON_KEYS = "0123456789" + JUMP_KEYS;
 
 // Assign keys to items based on their text.
-function assignKeysToItems(items, otherPrefixesUsed, otherOptions) {
-  const options = {};
+function assignKeysToItems(
+  items: Item[],
+  otherPrefixesUsed: Record<string, boolean> = {},
+  otherOptions: Record<string, boolean> = {}
+) {
+  const options: Record<string, Item> = {};
   let item;
   let keys;
   let prefix;
-  const prefixesUsed = {};
+  const prefixesUsed: Record<string, boolean> = {};
   otherPrefixesUsed = otherPrefixesUsed || {};
   otherOptions = otherOptions || {};
   // Ensure none of the results are prefixes or equal to this keysequence.
-  const prefixNotAliased = (ks) => {
+  const prefixNotAliased = (ks: string) => {
     for (let i = 1; i <= ks.length; i++) {
       const sliced = ks.slice(0, i);
       if (options[sliced] || otherOptions[sliced]) {
@@ -1057,7 +946,7 @@ function assignKeysToItems(items, otherPrefixesUsed, otherOptions) {
     }
     return true;
   };
-  const noAliasing = (ks) => {
+  const noAliasing = (ks: string) => {
     if (!prefixNotAliased(ks)) {
       return false;
     }
@@ -1067,7 +956,7 @@ function assignKeysToItems(items, otherPrefixesUsed, otherOptions) {
     }
     return true;
   };
-  const addResult = (ks, x) => {
+  const addResult = (ks: string, x: Item) => {
     const noAlias = noAliasing(ks);
     if (noAlias) {
       options[ks] = x;
@@ -1554,99 +1443,97 @@ const GRAPH_OVERVIEW_UID = "graph_overview";
 const ALL_PAGES_UID = "all_pages";
 
 function updateBreadcrumbs() {
-  if (BREADCRUMBS_ENABLED) {
-    const hash = window.location.hash;
+  const hash = window.location.hash;
 
-    const graphNameResult = GRAPH_NAME_REGEX.exec(hash);
-    let graphName = "";
-    if (graphNameResult) {
-      graphName = graphNameResult[1];
-    } else {
-      // Omit graphs chooser and other non-graph pages from
-      // breadcrumbs list.
-      debug("Omitting", hash, "from breadcrumbs");
-    }
-    if (!(graphName in breadcrumbsByGraph)) {
-      breadcrumbsByGraph[graphName] = [];
-    }
-    const breadcrumbs = breadcrumbsByGraph[graphName];
+  const graphNameResult = GRAPH_NAME_REGEX.exec(hash);
+  let graphName = "";
+  if (graphNameResult) {
+    graphName = graphNameResult[1];
+  } else {
+    // Omit graphs chooser and other non-graph pages from
+    // breadcrumbs list.
+    debug("Omitting", hash, "from breadcrumbs");
+  }
+  if (!(graphName in breadcrumbsByGraph)) {
+    breadcrumbsByGraph[graphName] = [];
+  }
+  const breadcrumbs = breadcrumbsByGraph[graphName];
 
-    const pageTitleElement = document.querySelector(
-      ".roam-body-main .rm-title-display > span"
-    );
-    const pageUidMatchResult = ID_FROM_HASH_REGEX.exec(hash);
-    const isDailyPage = IS_DAILY_NOTES_REGEX.exec(hash) !== null;
-    const isGraphOverview = IS_GRAPH_OVERVIEW_REGEX.exec(hash) !== null;
-    const isAllPages = IS_ALL_PAGES_REGEX.exec(hash) !== null;
-    let title;
-    let uid;
-    if (pageTitleElement) {
-      title = pageTitleElement.innerText;
-    } else if (!isDailyPage && !isAllPages && !isGraphOverview) {
-      if (!pageUidMatchResult) {
-        // Fall back on using document title, this is used for cases
-        // like the graph overview / all pages.
-        title = document.title;
-        uid = document.title;
-      } else {
-        debug("Didn't find title element for page");
-        return;
-      }
-    }
-    if (isDailyPage) {
-      uid = DAILY_NOTES_UID;
-      title = "Daily Notes";
-    } else if (isGraphOverview) {
-      uid = GRAPH_OVERVIEW_UID;
-      title = "Graph Overview";
-    } else if (isAllPages) {
-      uid = ALL_PAGES_UID;
-      title = "All Pages";
+  const pageTitleElement = document.querySelector(
+    ".roam-body-main .rm-title-display > span"
+  );
+  const pageUidMatchResult = ID_FROM_HASH_REGEX.exec(hash);
+  const isDailyPage = IS_DAILY_NOTES_REGEX.exec(hash) !== null;
+  const isGraphOverview = IS_GRAPH_OVERVIEW_REGEX.exec(hash) !== null;
+  const isAllPages = IS_ALL_PAGES_REGEX.exec(hash) !== null;
+  let title;
+  let uid;
+  if (pageTitleElement) {
+    title = pageTitleElement.innerText;
+  } else if (!isDailyPage && !isAllPages && !isGraphOverview) {
+    if (!pageUidMatchResult) {
+      // Fall back on using document title, this is used for cases
+      // like the graph overview / all pages.
+      title = document.title;
+      uid = document.title;
     } else {
-      if (pageUidMatchResult) {
-        uid = pageUidMatchResult[1];
+      debug("Didn't find title element for page");
+      return;
+    }
+  }
+  if (isDailyPage) {
+    uid = DAILY_NOTES_UID;
+    title = "Daily Notes";
+  } else if (isGraphOverview) {
+    uid = GRAPH_OVERVIEW_UID;
+    title = "Graph Overview";
+  } else if (isAllPages) {
+    uid = ALL_PAGES_UID;
+    title = "All Pages";
+  } else {
+    if (pageUidMatchResult) {
+      uid = pageUidMatchResult[1];
+    }
+  }
+  let newBreadcrumb;
+  if (uid) {
+    newBreadcrumb = { hash, title, uid };
+  } else {
+    newBreadcrumb = { hash, title };
+  }
+  let changed = false;
+  if (breadcrumbs.length < 1) {
+    breadcrumbs.push(newBreadcrumb);
+    changed = true;
+  }
+  const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1];
+  if (lastBreadcrumb.hash === hash) {
+    if (lastBreadcrumb.title !== title) {
+      lastBreadcrumb.title = title;
+    }
+  } else {
+    // Remove existing occurrences.
+    for (let i = 0; i < breadcrumbs.length; i++) {
+      if (breadcrumbs[i].hash === hash) {
+        breadcrumbs.splice(i, 1);
       }
     }
-    let newBreadcrumb;
-    if (uid) {
-      newBreadcrumb = { hash, title, uid };
-    } else {
-      newBreadcrumb = { hash, title };
-    }
-    let changed = false;
-    if (breadcrumbs.length < 1) {
-      breadcrumbs.push(newBreadcrumb);
-      changed = true;
-    }
-    const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1];
-    if (lastBreadcrumb.hash === hash) {
-      if (lastBreadcrumb.title !== title) {
-        lastBreadcrumb.title = title;
-      }
-    } else {
-      // Remove existing occurrences.
-      for (let i = 0; i < breadcrumbs.length; i++) {
-        if (breadcrumbs[i].hash === hash) {
-          breadcrumbs.splice(i, 1);
-        }
-      }
-      breadcrumbs.push(newBreadcrumb);
-      changed = true;
-    }
-    if (changed) {
-      trimExcessBreadcrumbs(breadcrumbs);
-      debug("updated breadcrumbs = ", breadcrumbs);
-    }
-    // Update rendering of breadcrumbs.
-    const alreadyVisible =
-      selectAll(document, "." + BREADCRUMBS_CLASS).length > 0;
-    const shouldBeVisible = BREADCRUMBS_ALWAYS_VISIBLE || isNavigating();
-    if (!shouldBeVisible) {
-      clearBreadcrumbs();
-    } else if (changed || !alreadyVisible) {
-      clearBreadcrumbs();
-      renderBreadcrumbs(breadcrumbs);
-    }
+    breadcrumbs.push(newBreadcrumb);
+    changed = true;
+  }
+  if (changed) {
+    trimExcessBreadcrumbs(breadcrumbs);
+    debug("updated breadcrumbs = ", breadcrumbs);
+  }
+  // Update rendering of breadcrumbs.
+  const alreadyVisible =
+    selectAll(document, "." + BREADCRUMBS_CLASS).length > 0;
+  const shouldBeVisible = isNavigating();
+  if (!shouldBeVisible) {
+    clearBreadcrumbs();
+  } else if (changed || !alreadyVisible) {
+    clearBreadcrumbs();
+    renderBreadcrumbs(breadcrumbs);
   }
 }
 
@@ -1908,7 +1795,7 @@ function withQuery(parent, query, f) {
 }
 
 // Invokes the function for the matching id, or logs a warning.
-function withId(id, f, ...rest) {
+function withId(id: string, f: (el: Element) => void, ...rest: unknown[]) {
   if (rest.length > 0) {
     error("Too many arguments passed to withId", rest);
   }
@@ -1923,19 +1810,29 @@ function withId(id, f, ...rest) {
 
 // Invokes the function for every descendant element that matches
 // the class name.
-function withClass(parent, cls, f, ...rest) {
+function withClass(
+  parent: Element,
+  cls: string,
+  f: (el: HTMLElement) => void,
+  ...rest: unknown[]
+) {
   if (rest.length > 0) {
     error("Too many arguments passed to withClass", rest);
   }
   const els = parent.getElementsByClassName(cls);
   for (let i = 0; i < els.length; i++) {
-    f(els[i]);
+    f(els[i] as HTMLElement);
   }
 }
 
 // Invokes the function for every descendant element that matches a
 // tag name.
-function withTag(parent, tag, f, ...rest) {
+function withTag(
+  parent: Element,
+  tag: string,
+  f: (el: Element) => void,
+  ...rest: unknown[]
+) {
   if (rest.length > 0) {
     error("Too many arguments passed to withTag", rest);
   }
@@ -1962,7 +1859,7 @@ function findParent(el0, predicate) {
 
 // Returns first descendant that matches the specified class and
 // predicate.
-function getFirstClass(parent, cls, predicate) {
+function getFirstClass(parent: Element, cls: string, predicate?: (el: Element) => boolean) {
   return findFirst(predicate, parent.getElementsByClassName(cls));
 }
 
@@ -1976,15 +1873,20 @@ function getLastClass(parent, cls, predicate) {
 // Checks that there is only one descendant element that matches the
 // class name and predicate, and returns it. Returns null if it is
 // not found or not unique.
-function getUniqueClass(parent, cls, predicate) {
-  let foundElements = [];
-  if (cls.constructor === Array) {
+function getUniqueClass(
+  parent: Element | Document,
+  cls: string[] | string,
+  predicate?: (el: Element) => boolean
+) {
+  let foundElements: Element[] = [];
+  document.getElementsByClassName;
+  if (Array.isArray(cls)) {
     for (let i = 0; i < cls.length; i++) {
       const results = parent.getElementsByClassName(cls[i]);
       foundElements = foundElements.concat(Array.from(results));
     }
   } else {
-    foundElements = parent.getElementsByClassName(cls);
+    foundElements = Array.from(parent.getElementsByClassName(cls));
   }
   return findUnique(predicate, foundElements);
 }
@@ -1992,10 +1894,15 @@ function getUniqueClass(parent, cls, predicate) {
 // Checks that there is only one descendant element that matches the
 // class name, and invokes the function on it. Logs a warning if
 // there isn't exactly one.
-function withUniqueClass(parent, cls, predicate, f) {
+function withUniqueClass(
+  parent: Element | Document,
+  cls: string,
+  predicate: (el: Element) => boolean,
+  f: (el: HTMLElement) => void
+) {
   const result = getUniqueClass(parent, cls, predicate);
   if (result) {
-    return f(result);
+    return f(result as HTMLElement);
   } else {
     warn(
       "Couldn't find unique descendant with class",
@@ -2060,7 +1967,10 @@ function findLast(predicate, array) {
 // Given a predicate, returns the only element that matches. If no elements
 // match, or multiple elements match, then nothing gets returned. If predicate
 // is null, then it is treated like 'all'.
-function findUnique(predicate, array) {
+function findUnique<T>(
+  predicate: undefined | ((el: T) => boolean),
+  array: T[]
+) {
   const pred = checkedPredicate("findUnique", predicate ? predicate : all);
   let result = null;
   for (let i = 0; i < array.length; i++) {

@@ -23,6 +23,8 @@ import * as jumpnav from "./jumpNav";
 import * as privacyMode from "./privacyMode";
 import * as quickRef from "./quickRef";
 import * as roam42Menu from "./roam42Menu";
+import * as roamNavigator from "./deepnav";
+import * as tutorials from "./tutorials";
 
 declare global {
   interface Window {
@@ -42,6 +44,8 @@ declare global {
       privacyMode: typeof privacyMode;
       quickRef: typeof quickRef;
       roam42Menu: typeof roam42Menu;
+      roamNavigator: typeof roamNavigator;
+      tutorials: typeof tutorials;
       typeAhead: typeof dictionary;
     };
     loadRoam42InMobile?: boolean;
@@ -79,6 +83,8 @@ export default runExtension({
         privacyMode,
         quickRef,
         roam42Menu,
+        roamNavigator,
+        tutorials,
         typeAhead: dictionary,
       };
       window.roam42KeyboardLib = roam42KeyboardLib;
@@ -141,6 +147,25 @@ export default runExtension({
             },
             description: "Help menu that appears on the top right",
           },
+          {
+            id: "roamNavigator",
+            name: "Deep Nav",
+            action: {
+              type: "switch",
+              onChange: (e) => roamNavigator.toggleFeature(e.target.checked),
+            },
+            description: "Help menu that appears on the top right",
+          },
+          {
+            id: "tutorials",
+            name: "Tutorials",
+            action: {
+              type: "switch",
+              onChange: (e) => tutorials.toggleFeature(e.target.checked),
+            },
+            description:
+              "Learn how to use WorkBench features and Roam basics right from within Roam",
+          },
         ],
       });
 
@@ -152,16 +177,10 @@ export default runExtension({
       privacyMode.toggleFeature(!!extensionAPI.settings.get("privacyMode"));
       quickRef.toggleFeature(!!extensionAPI.settings.get("quickRef"));
       roam42Menu.toggleFeature(!!extensionAPI.settings.get("roam42Menu"));
+      roamNavigator.toggleFeature(!!extensionAPI.settings.get("roamNavigator"));
+      tutorials.toggleFeature(!!extensionAPI.settings.get("tutorials"));
 
       //extension modules
-      roam42.loader.addScriptToPage(
-        "roam42Tutorials",
-        roam42.host + "ext/tutorials.js"
-      );
-      roam42.loader.addScriptToPage(
-        "roamNavigator",
-        roam42.host + "ext/roam-navigator.js"
-      );
       roam42.loader.addScriptToPage("stats", roam42.host + "ext/stats.js");
 
       roam42.loader.addScriptToPage(
@@ -192,7 +211,7 @@ export default runExtension({
         "keyEvents",
         roam42.host + "common/keyevents.js"
       );
-      
+
       roam42.user = roam42.common.getUserInformation();
     }
   },

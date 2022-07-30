@@ -1,3 +1,6 @@
+// @ts-ignore
+import jsPanel from "jspanel4";
+
 export const show = () => {
   // if already open, do nothing
   if (document.querySelector("#r42Tutorials")) return;
@@ -43,15 +46,10 @@ export const show = () => {
   });
 };
 
-roam42.tutorials.testingReload = () => {
-  try {
+export const toggleFeature = (flag: boolean) => {
+  if (flag) {
+    show();
+  } else {
     document.querySelector("#r42Tutorials").remove();
-  } catch (e) {}
-  roam42.loader.addScriptToPage(
-    "roam42Tutorials",
-    roam42.host + "ext/tutorials.js"
-  );
-  setTimeout(() => {
-    roam42.tutorials.show();
-  }, 500);
+  }
 };
