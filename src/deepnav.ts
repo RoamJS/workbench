@@ -8,8 +8,9 @@ type Item = {
   initials?: string;
   isNavigateOption?: boolean;
   keepGoing?: boolean;
-  aliased?: unknown[];
+  aliased?: Element[];
   extraClasses?: string[];
+  uid?: string;
 };
 
 // Set to true to enable debug logging.
@@ -309,7 +310,7 @@ const SIDE_PAGE_CLOSE_CLASS = "roam_navigator_side_page_close";
 let finishNavigate: () => void = null;
 
 // MUTABLE. Current set of navigate options.
-let currentNavigateOptions = {};
+let currentNavigateOptions: Record<string, Item> = {};
 
 // MUTABLE. Prefixes used in last assignment of navigate options to keys.
 let currentNavigatePrefixesUsed = {};
@@ -322,7 +323,7 @@ let currentUidToNavigateOptionsMap: Record<string, Item> = {};
 let oldNavigateOptions: Record<string, Item> = {};
 
 // MUTABLE. Current set of link options.
-let currentLinkOptions = {};
+let currentLinkOptions: Record<string, Item> = {};
 
 // MUTABLE. Keys the user has pressed so far.
 let navigateKeysPressed = "";
@@ -624,7 +625,12 @@ function findLastBlock(el: Element) {
   return null;
 }
 
-function addBlocks(navigateOptions, el, lastBlock, prefix) {
+function addBlocks(
+  navigateOptions: Record<string, Item>,
+  el: Element,
+  lastBlock: Element,
+  prefix: string
+) {
   let offset = 0;
   const blocks = el.querySelectorAll(
     [
@@ -654,9 +660,9 @@ function addBlocks(navigateOptions, el, lastBlock, prefix) {
 }
 
 function collectLinkOptions(
-  navigateOptions,
-  navigatePrefixesUsed,
-  uidToNavigateOptionsMap
+  navigateOptions: Record<string, Item>,
+  navigatePrefixesUsed: Record<string, boolean>,
+  uidToNavigateOptionsMap: Record<string, Item>
 ) {
   const linksByUid = Object.assign({}, uidToNavigateOptionsMap);
 
@@ -693,8 +699,14 @@ function collectLinkOptions(
   return options;
 }
 
-function addLinks(linksByUid, navigateOptions, container) {
-  const links = container.querySelectorAll([".rm-page-ref", "a"].join(", "));
+function addLinks(
+  linksByUid: Record<string, Item>,
+  navigateOptions: Record<string, Item>,
+  container: Element
+) {
+  const links = container.querySelectorAll<HTMLElement>(
+    [".rm-page-ref", "a"].join(", ")
+  );
   for (let i = 0; i < links.length; i++) {
     const link = links[i];
     const boundingRect = link.getBoundingClientRect();
@@ -715,11 +727,11 @@ function addLinks(linksByUid, navigateOptions, container) {
           el = link;
           uid = link.innerText;
         } else {
-          const hrefAttr = link.attributes["href"];
+          const hrefAttr = link.getAttribute("href");
           if (hrefAttr) {
             // External link
             el = link;
-            uid = hrefAttr.value;
+            uid = hrefAttr;
             // isExternalLink = true;
           } else {
             if (link.parentElement.tagName === "H1") {
@@ -736,17 +748,17 @@ function addLinks(linksByUid, navigateOptions, container) {
           }
         }
       } else if (matchingClass("rm-page-ref")(link)) {
-        const uidAttr = parent.attributes["data-link-uid"];
+        const uidAttr = parent.getAttribute("data-link-uid");
         if (uidAttr) {
           // Internal link
           el = parent;
-          uid = uidAttr.value;
+          uid = uidAttr;
         } else {
-          const tagAttr = link.attributes["data-tag"];
+          const tagAttr = link.getAttribute("data-tag");
           if (tagAttr) {
             // Internal tag
             el = link;
-            uid = tagAttr.value;
+            uid = tagAttr;
           } else {
             error("Expected data-tag or data-link-uid attribute on", link);
             continue;
@@ -775,7 +787,7 @@ function addLinks(linksByUid, navigateOptions, container) {
 }
 
 // Add in tips to tell the user what key to press.
-function rerenderTips(onlyLinks) {
+function rerenderTips(onlyLinks: boolean) {
   let renderedAny = false;
   withDomMutation(() => {
     updateBreadcrumbs();
@@ -795,7 +807,7 @@ function rerenderTips(onlyLinks) {
   return onlyLinks || renderedAny;
 }
 
-function renderTip(key, option, skipRenderingMain) {
+function renderTip(key: string, option: Item, skipRenderingMain: boolean) {
   const prefix = key.slice(0, navigateKeysPressed.length);
   const rest = key.slice(navigateKeysPressed.length);
   if (prefix === navigateKeysPressed) {
@@ -822,7 +834,12 @@ function renderTip(key, option, skipRenderingMain) {
   return false;
 }
 
-function renderTipInternal(prefix, rest, el, extraClasses) {
+function renderTipInternal(
+  prefix: string,
+  rest: string,
+  el: Element,
+  extraClasses: string[]
+) {
   const tip = div({ class: HINT_CLASS }, text(rest));
   if (extraClasses) {
     for (const cls of extraClasses) {
@@ -876,7 +893,7 @@ function closeSidebarIfOpened() {
 }
 
 // Lowercase and take only alphanumeric.
-function preprocessItemText(txt) {
+function preprocessItemText(txt: string) {
   let result = "";
   for (let i = 0; i < txt.length; i++) {
     const char = txt[i];
@@ -889,7 +906,7 @@ function preprocessItemText(txt) {
 }
 
 // Lowercase and get initials.
-function getItemInitials(txt) {
+function getItemInitials(txt: string) {
   let result = "";
   for (let i = 0; i < txt.length; i++) {
     const char = txt[i];
@@ -904,12 +921,12 @@ function getItemInitials(txt) {
   return result;
 }
 
-function lowercaseCharIsAlpha(char) {
+function lowercaseCharIsAlpha(char: string) {
   const code = char.charCodeAt(0);
   return code > 96 && code < 123; // (a-z)
 }
 
-function filterJumpKeys(keys) {
+function filterJumpKeys(keys: string) {
   return keys
     .replace(DAILY_NOTES_KEY, "")
     .replace(SIDEBAR_BLOCK_PREFIX, "")
@@ -926,7 +943,7 @@ const CLOSE_BUTTON_KEYS = "0123456789" + JUMP_KEYS;
 // Assign keys to items based on their text.
 function assignKeysToItems(
   items: Item[],
-  otherPrefixesUsed: Record<string, boolean> = {},
+  otherPrefixesUsed: Record<string, Item> = {},
   otherOptions: Record<string, boolean> = {}
 ) {
   const options: Record<string, Item> = {};
@@ -966,8 +983,8 @@ function assignKeysToItems(
     }
     return noAlias;
   };
-  const addViaKeyFunc = (mode, f) => {
-    const groups = {};
+  const addViaKeyFunc = (mode: string, f: (i: Item) => string) => {
+    const groups: Record<string, number[]> = {};
     for (let j = 0; j < items.length; j++) {
       keys = f(items[j]);
       if (keys) {
@@ -1016,7 +1033,7 @@ function assignKeysToItems(
           error("Inconstiant violation: unexpected mode in addViaKeyFunc");
         }
         if (qualifies) {
-          qualifying.push([keys, groupItems[0]]);
+          qualifying.push([keys, groupItems[0]] as const);
         }
       }
     }
@@ -1154,14 +1171,14 @@ function assignKeysToItems(
   return { options, prefixesUsed };
 }
 
-function uidToJumpKeys(uid, keys1, keys2) {
+function uidToJumpKeys(uid: string, keys1: string, keys2: string) {
   const hash = hashUid(uid) % (keys1.length * keys2.length);
   const ix1 = hash % keys1.length;
   const ix2 = Math.floor((hash - ix1) / keys2.length);
   return keys1[ix1] + keys2[ix2];
 }
 
-function hashUid(uid) {
+function hashUid(uid: string) {
   let hash = 0;
   for (let i = 0; i < uid.length; i++) {
     hash = (hash << 5) - hash + uid.charCodeAt(i);
@@ -1170,7 +1187,7 @@ function hashUid(uid) {
   return Math.abs(hash);
 }
 
-function handleScrollKey(ev) {
+function handleScrollKey(ev: KeyboardEvent) {
   if (ev.key === BIG_SCROLL_KEY) {
     // Space to scroll down.  Shift+space to scroll up.
     withContainerToScroll((container) => {
@@ -1859,7 +1876,11 @@ function findParent(el0, predicate) {
 
 // Returns first descendant that matches the specified class and
 // predicate.
-function getFirstClass(parent: Element, cls: string, predicate?: (el: Element) => boolean) {
+function getFirstClass(
+  parent: Element,
+  cls: string,
+  predicate?: (el: Element) => boolean
+) {
   return findFirst(predicate, parent.getElementsByClassName(cls));
 }
 
@@ -2053,7 +2074,7 @@ function matchingClass(cls) {
  * Utilities for creating elements
  */
 
-function text(x) {
+function text(x: string) {
   return document.createTextNode(x);
 }
 
