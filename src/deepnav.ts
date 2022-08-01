@@ -620,7 +620,7 @@ function findLastBlock(el: Element) {
   if (container) {
     // TODO: inefficient to query all blocks twice.
     const query = ".rm-block-text, #block-input-ghost";
-    return findLast(all, selectAll(container, query));
+    return findLast(all, Array.from(selectAll(container, query)));
   }
   return null;
 }
@@ -1214,7 +1214,7 @@ function handleScrollKey(ev: KeyboardEvent) {
   return false;
 }
 
-function handleNavigateKey(ev) {
+function handleNavigateKey(ev: KeyboardEvent) {
   debug("handleNavigateKey");
   let keepGoing = false;
   try {
@@ -1259,7 +1259,8 @@ function handleNavigateKey(ev) {
             keepGoing = false;
           }
           // Scroll the clicked thing into view, if needed.
-          el.scrollIntoViewIfNeeded();
+          // @ts-ignore non-standard
+          (el as HTMLElement).scrollIntoViewIfNeeded();
           // If we're just changing folding, then the user probably wants to
           // stay in navigation mode, so reset and rerender.
           if (keepGoing) {
@@ -1278,7 +1279,7 @@ function handleNavigateKey(ev) {
   }
 }
 
-function eventToKey(ev) {
+function eventToKey(ev: KeyboardEvent) {
   if (ev.key === "Enter") {
     return ENTER_SYMBOL;
   }
@@ -1296,7 +1297,11 @@ function eventToKey(ev) {
   warn("Ignoring keypress with length =", result.length, ":", result);
 }
 
-function navigateToElement(ev, el, f) {
+function navigateToElement(
+  ev: KeyboardEvent,
+  el: Element,
+  f?: (el: Element) => void
+) {
   let scheduleRerender = false;
   let closeSidebar = true;
   if (matchingClass("rm-block-text")(el)) {
@@ -1304,7 +1309,8 @@ function navigateToElement(ev, el, f) {
     click(el);
     persistentlyFind(
       () => getUniqueTag(blockParent, "textarea"),
-      (textarea) => {
+      (el) => {
+        const textarea = el as HTMLTextAreaElement;
         textarea.focus();
         const lastPosition = textarea.value.length;
         textarea.setSelectionRange(lastPosition, lastPosition);
@@ -1373,7 +1379,7 @@ function navigateToElement(ev, el, f) {
   }
 }
 
-function withContainerToScroll(f) {
+function withContainerToScroll(f: (el: Element) => void) {
   if (navigateKeysPressed.startsWith(SIDEBAR_BLOCK_PREFIX)) {
     withId("roam-right-sidebar-content", f);
   } else {
@@ -1382,36 +1388,26 @@ function withContainerToScroll(f) {
       withUniqueClass(allPages, "table", all, f);
     } else {
       withUniqueClass(document, "roam-body-main", all, (main) => {
-        f(main.firstChild);
+        f(main.firstElementChild);
       });
     }
   }
 }
 
-/* TODO
-  function extendWithNewBlock(ev, el) {
-    const lastBlock = getLastClass(el, 'rm-block-text');
-    navigateToElement(ev, lastBlock, textarea => {
-      const enterEvent = createKeyEvent('keypress', 'z', 0);
-      textarea.dispatchEvent(enterEvent);
-    });
-  }
-  */
-
 // Remove old tips if any still exist.
-function removeOldTips(onlyLinks) {
+function removeOldTips(onlyLinks: boolean) {
   // FIXME: I can't quite explain this, but for some reason, querying the
   // list that matches the class name doesn't quite work.  So instead find
   // and remove until they are all gone.
   withDomMutation(() => {
-    let toDelete = [];
+    let toDelete: Element[] = [];
     do {
       for (let i = 0; i < toDelete.length; i++) {
         const el = toDelete[i];
         el.parentElement.removeChild(el);
       }
       const cls = onlyLinks ? LINK_HINT_CLASS : HINT_CLASS;
-      toDelete = document.getElementsByClassName(cls);
+      toDelete = Array.from(document.getElementsByClassName(cls));
     } while (toDelete.length > 0);
   });
 }
@@ -1426,7 +1422,11 @@ function isNavigating() {
 
 // MUTABLE. Map from graph name to array of recently visited pages.
 // Array elements are { title: "", hash: "", uid: "" }
-const breadcrumbsByGraph = {};
+type Breadcrumbs = Record<
+  string,
+  { hash?: string; title?: string; uid?: string }[]
+>;
+const breadcrumbsByGraph: Breadcrumbs = {};
 
 // Class used for breadcrumbs container.
 const BREADCRUMBS_CLASS = "roam_navigator_breadcrumbs";
@@ -1486,7 +1486,7 @@ function updateBreadcrumbs() {
   let title;
   let uid;
   if (pageTitleElement) {
-    title = pageTitleElement.innerText;
+    title = (pageTitleElement as HTMLElement).innerText;
   } else if (!isDailyPage && !isAllPages && !isGraphOverview) {
     if (!pageUidMatchResult) {
       // Fall back on using document title, this is used for cases
@@ -1562,12 +1562,12 @@ function clearBreadcrumbs() {
   });
 }
 
-function renderBreadcrumbs(breadcrumbs) {
+function renderBreadcrumbs(breadcrumbs: Breadcrumbs[string]) {
   withDomMutation(() => {
     const container = div({ class: BREADCRUMBS_CLASS });
     for (let i = breadcrumbs.length - 2; i >= 0; i--) {
       const breadcrumb = breadcrumbs[i];
-      const breadcrumbAttrs = {
+      const breadcrumbAttrs: Record<string, string> = {
         title: breadcrumb.title,
         "data-link-title": breadcrumb.title,
       };
@@ -1576,7 +1576,7 @@ function renderBreadcrumbs(breadcrumbs) {
       }
       const breadcrumbSpan = span(breadcrumbAttrs);
       breadcrumbSpan.appendChild(span(LINK_ATTRS, text(breadcrumb.title)));
-      breadcrumbSpan.onclick = (event) => {
+      breadcrumbSpan.onclick = () => {
         setTimeout(() => {
           window.location.hash = breadcrumb.hash;
         });
@@ -1597,13 +1597,13 @@ function renderBreadcrumbs(breadcrumbs) {
   });
 }
 
-function trimExcessBreadcrumbs(breadcrumbs) {
+function trimExcessBreadcrumbs(breadcrumbs: Breadcrumbs[string]) {
   if (breadcrumbs.length > MAX_BREADCRUMB_COUNT) {
     breadcrumbs.splice(0, breadcrumbs.length - MAX_BREADCRUMB_COUNT);
   }
 }
 
-function withDomMutation(f) {
+function withDomMutation(f: () => void) {
   domMutationLevel += 1;
   try {
     f();
@@ -1616,11 +1616,15 @@ function withDomMutation(f) {
  * Utilities
  */
 
-function persistentlyFind(finder, f) {
+function persistentlyFind(finder: () => Element, f: (el: Element) => void) {
   persistentlyFindImpl(finder, 0, f);
 }
 
-function persistentlyFindImpl(finder, n, f) {
+function persistentlyFindImpl(
+  finder: () => Element,
+  n: number,
+  f: (el: Element) => void
+) {
   const el = finder();
   if (el) {
     f(el);
@@ -1631,19 +1635,19 @@ function persistentlyFindImpl(finder, n, f) {
   }
 }
 
-function throttle(ivl, f) {
+function throttle(ivl: number, f: () => void) {
   let prev = 0;
   return () => {
     const now = new Date();
-    if (now - prev >= ivl) {
+    if (now.valueOf() - prev >= ivl) {
       f();
-      prev = now;
+      prev = now.valueOf();
     }
   };
 }
 
 // Simulate a mouse over event.
-function mouseOver(el) {
+function mouseOver(el: Element) {
   const options = {
     bubbles: true,
     cancelable: true,
@@ -1654,7 +1658,7 @@ function mouseOver(el) {
 }
 
 // Simulate a mouse click.
-function click(el) {
+function click(el: Element) {
   const options = {
     bubbles: true,
     cancelable: true,
@@ -1670,7 +1674,7 @@ function click(el) {
 
 // Simulate a shift mouse click.
 // eslint-disable-next-line no-unused-vars
-function shiftClick(el) {
+function shiftClick(el: Element) {
   const options = {
     bubbles: true,
     cancelable: true,
@@ -1691,18 +1695,9 @@ function shiftClick(el) {
   el.dispatchEvent(ev);
 }
 
-// eslint-disable-next-line no-unused-vars
-function createKeyEvent(type, key, code) {
-  const keyEvent = new Event(type);
-  keyEvent.key = key;
-  keyEvent.keyCode = code;
-  keyEvent.which = code;
-  return keyEvent;
-}
-
 const EXTENSION_NAME = "roam-navigator";
 
-function debug(...rest) {
+function debug(...rest: unknown[]) {
   if (DEBUG) {
     const args = [].slice.call(rest);
     args.unshift(EXTENSION_NAME + ":");
@@ -1711,7 +1706,7 @@ function debug(...rest) {
   }
 }
 
-function debugWithStack(...rest) {
+function debugWithStack(...rest: unknown[]) {
   if (DEBUG) {
     const args = [].slice.call(rest);
     args.unshift(EXTENSION_NAME + ":");
@@ -1723,21 +1718,21 @@ function debugWithStack(...rest) {
 
 // Used to notify about an issue that's expected to sometimes occur during
 // normal operation.
-function info(...rest) {
+function info(...rest: unknown[]) {
   const args = [].slice.call(rest);
   args.unshift(EXTENSION_NAME + ":");
   args.push("(this is fine)");
   console.log(...args);
 }
 
-function warn(...rest) {
+function warn(...rest: unknown[]) {
   const args = [].slice.call(rest);
   args.unshift(EXTENSION_NAME + ":");
   args.push("\n" + getStack());
   console.warn(...args);
 }
 
-function error(...rest) {
+function error(...rest: unknown[]) {
   const args = [].slice.call(rest);
   args.unshift(EXTENSION_NAME + ":");
   args.push(getStack());
@@ -1757,7 +1752,7 @@ function getStack() {
 }
 
 // https://github.com/greasemonkey/greasemonkey/issues/2724#issuecomment-354005162
-function addCss(css) {
+function addCss(css: string) {
   const style = document.createElement("style");
   style.textContent = css;
   document.documentElement.appendChild(style);
@@ -1765,46 +1760,33 @@ function addCss(css) {
 }
 
 // Alias for document.getElementById
-function getById(id) {
+function getById(id: string) {
   return document.getElementById(id);
 }
 
 // Alias for querySelectorAll.
-function selectAll(parent, query) {
-  if (!query) {
-    // eslint-disable-next-line no-param-reassign
-    query = parent;
-    // eslint-disable-next-line no-param-reassign
-    parent = document;
+function selectAll(parent: Element | string | Document, query = "") {
+  if (!query || typeof parent === "string") {
+    if (typeof parent === "string") {
+      return document.querySelectorAll(parent);
+    } else {
+      return document.querySelectorAll("div");
+    }
   }
   return parent.querySelectorAll(query);
 }
 
 // Uses querySelectorAll, but requires a unique result.
-function selectUnique(parent, query) {
-  return findUnique(all, selectAll(parent, query));
-}
-
-// Users querySelectorAll, requires unique result, and applies the
-// user's function to it.  Logs a warning if there isn't one.
-// eslint-disable-next-line no-unused-vars
-function withUnique(parent, query, f) {
-  const result = selectUnique(parent, query);
-  if (result) {
-    return f(result);
-  } else {
-    warn(
-      "Couldn't find unique descendant matching query",
-      query,
-      ", instead got",
-      result
-    );
-    return null;
-  }
+function selectUnique(parent: Element | Document, query: string) {
+  return findUnique(all, Array.from(selectAll(parent, query)));
 }
 
 // Uses querySelectorAll, and applies the provided function to each result.
-function withQuery(parent, query, f) {
+function withQuery(
+  parent: Element | Document,
+  query: string,
+  f: (el: Element) => void
+) {
   const els = selectAll(parent, query);
   for (let i = 0; i < els.length; i++) {
     f(els[i]);
@@ -1861,7 +1843,7 @@ function withTag(
 
 // Finds a parentElement which matches the specified
 // predicate. Returns null if element is null.
-function findParent(el0, predicate) {
+function findParent(el0: Element, predicate: (el: Element) => boolean) {
   if (!el0) return null;
   let el = el0.parentElement;
   if (!el) return null;
@@ -1881,14 +1863,7 @@ function getFirstClass(
   cls: string,
   predicate?: (el: Element) => boolean
 ) {
-  return findFirst(predicate, parent.getElementsByClassName(cls));
-}
-
-// Returns last descendant that matches the specified class and
-// predicate.
-// eslint-disable-next-line no-unused-vars
-function getLastClass(parent, cls, predicate) {
-  return findLast(predicate, parent.getElementsByClassName(cls));
+  return findFirst(predicate, Array.from(parent.getElementsByClassName(cls)));
 }
 
 // Checks that there is only one descendant element that matches the
@@ -1938,14 +1913,23 @@ function withUniqueClass(
 // Checks that there is only one descendant element that matches the
 // tag and predicate, and returns it. Returns null if it is not
 // found or not unique.
-function getUniqueTag(parent, tag, predicate) {
-  return findUnique(predicate, parent.getElementsByTagName(tag));
+function getUniqueTag(
+  parent: Element,
+  tag: string,
+  predicate?: (el: Element) => boolean
+) {
+  return findUnique(predicate, Array.from(parent.getElementsByTagName(tag)));
 }
 
 // Checks that there is only one descendant element that matches the
 // tag, and invokes the function on it. Logs a warning if there
 // isn't exactly one.
-function withUniqueTag(parent, tag, predicate, f) {
+function withUniqueTag(
+  parent: Element,
+  tag: string,
+  predicate: (el: Element) => boolean,
+  f: (el: Element) => void
+) {
   const result = getUniqueTag(parent, tag, predicate);
   if (result) {
     return f(result);
@@ -1961,9 +1945,9 @@ function withUniqueTag(parent, tag, predicate, f) {
 
 // Given a predicate, returns the first element that matches. If predicate is
 // null, then it is treated like 'all'.
-function findFirst(predicate, array) {
+function findFirst(predicate: (el: Element) => boolean, array: Element[]) {
   const pred = checkedPredicate("findFirst", predicate ? predicate : all);
-  for (const i = 0; i < array.length; i++) {
+  for (let i = 0; i < array.length; i++) {
     const el = array[i];
     if (pred(el)) {
       return el;
@@ -1974,7 +1958,7 @@ function findFirst(predicate, array) {
 
 // Given a predicate, returns the last element that matches. If predicate is
 // null, then it is treated like 'all'.
-function findLast(predicate, array) {
+function findLast(predicate: (el: Element) => boolean, array: Element[]) {
   const pred = checkedPredicate("findLast", predicate ? predicate : all);
   for (let i = array.length - 1; i >= 0; i--) {
     const el = array[i];
@@ -1991,7 +1975,7 @@ function findLast(predicate, array) {
 function findUnique<T>(
   predicate: undefined | ((el: T) => boolean),
   array: T[]
-) {
+): T {
   const pred = checkedPredicate("findUnique", predicate ? predicate : all);
   let result = null;
   for (let i = 0; i < array.length; i++) {
@@ -2016,19 +2000,19 @@ function findUnique<T>(
 }
 
 // Inverts the result of a predicate.
-function not(p) {
-  return (x) => !p(x);
+function not(p: (x: unknown) => boolean) {
+  return (x: unknown) => !p(x);
 }
 
 // Given two predicates, uses || to combine them.
-function or(p1, p2) {
-  return (x) =>
+function or(p1: (x: unknown) => boolean, p2: (x: unknown) => boolean) {
+  return (x: unknown) =>
     checkedPredicate("left side of or", p1)(x) ||
     checkedPredicate("right side of or", p2)(x);
 }
 
-function checkedPredicate(context, predicate) {
-  return (x) => {
+function checkedPredicate(context: string, predicate: (x: unknown) => boolean) {
+  return (x: unknown) => {
     const bool = predicate(x);
     if (typeof bool !== "boolean") {
       // TODO: perhaps an exception would be better.
@@ -2044,7 +2028,7 @@ function checkedPredicate(context, predicate) {
 
 // Returns string with prefix removed.  Returns null if prefix doesn't
 // match.
-function stripPrefix(prefix, string) {
+function stripPrefix(prefix: string, string: string) {
   const found = string.slice(0, prefix.length);
   if (found === prefix) {
     return string.slice(prefix.length);
@@ -2064,9 +2048,9 @@ function all() {
 
 // Returns predicate which returns 'true' if the element has the
 // specified class.
-function matchingClass(cls) {
-  return function (el) {
-    return el.classList.contains(cls);
+function matchingClass(...cls: string[]) {
+  return function (el: Element) {
+    return cls.some((c) => el.classList.contains(c));
   };
 }
 
@@ -2078,15 +2062,19 @@ function text(x: string) {
   return document.createTextNode(x);
 }
 
-function span(...rest) {
-  return element("span", ...rest);
+function span(attrs: Record<string, string>, ...rest: Node[]) {
+  return element("span", attrs, ...rest);
 }
 
-function div(...rest) {
-  return element("div", ...rest);
+function div(attrs: Record<string, string>, ...rest: Node[]) {
+  return element("div", attrs, ...rest);
 }
 
-function element(t, attrs, ...children) {
+function element(
+  t: string,
+  attrs: Record<string, string>,
+  ...children: Node[]
+) {
   const el = document.createElement(t);
   for (const attr of Object.keys(attrs)) {
     el.setAttribute(attr, attrs[attr]);

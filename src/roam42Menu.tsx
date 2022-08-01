@@ -18,7 +18,7 @@ import ReactDOM from "react-dom";
 import { Button, Menu, MenuItem } from "@blueprintjs/core";
 import { component as qrComponent } from "./quickRef";
 import { show as tutorialShow } from "./tutorials";
-import { displayGraphStats } from "./stats";
+import { displayGraphStats, enabled } from "./stats";
 import {
   enabled as wbEnabled,
   getIsEnabled as wbGetIsEnabled,
@@ -222,15 +222,17 @@ export const displayMenu = () => {
           <Button icon={"learning"} minimal small />
           Tutorials
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            tippy.hide();
-            displayGraphStats();
-          }}
-        >
-          <Button icon={"database"} minimal small />
-          Graph DB Stats
-        </MenuItem>
+        {enabled && (
+          <MenuItem
+            onClick={() => {
+              tippy.hide();
+              displayGraphStats();
+            }}
+          >
+            <Button icon={"database"} minimal small />
+            Graph DB Stats
+          </MenuItem>
+        )}
         <hr style={{ margin: 0, padding: 0 }} />
         <MenuItem>
           <span style={{ fontSize: "9pt" }}>Toggle Features On/Off:</span>

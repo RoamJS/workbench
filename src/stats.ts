@@ -1,5 +1,8 @@
 //some stats based on work of zsolt: https://roamresearch.com/#/app/Zsolt-Blog/page/WUn5PuTDV
 
+import { getUserInformation } from "./commonFunctions";
+import { displayMessage } from "./help";
+
 const queryNonCodeBlocks = `[:find (count ?s) . :with ?e  :where [?e :block/string ?s]  
 					(not (or [(clojure.string/starts-with? ?s "${String.fromCharCode(
             96,
@@ -75,72 +78,73 @@ const queryFireBaseAttachements = `[:find (count ?e) . :where [?e :block/string 
 const queryExternalLinks = `[:find (count ?e) . :where [?e :block/string ?s] (not [(clojure.string/includes? ?s "https://firebasestorage.googleapis.com")]) (or [(clojure.string/includes? ?s "https://")] [(clojure.string/includes? ?s "https://")])]`;
 
 export const displayGraphStats = async () => {
-  roam42.help.displayMessage(
+  const { email, displayName } = getUserInformation();
+  displayMessage(
     `
 		Graph Database stats <br/>
 		========================== <br/><br/>
-		Pages:  ${await roamAlphaAPI.q(
-      "[:find (count ?p) :where [?p :node/title _]]"
-    )[0]} <br/><br/>
+		Pages:  ${
+      window.roamAlphaAPI.q("[:find (count ?p) :where [?p :node/title _]]")[0]
+    } <br/><br/>
 		Text Blocks / Words / Characters:<br/> 
-		${await roamAlphaAPI.q(queryNonCodeBlocks)} / ${await roamAlphaAPI.q(
+		${window.roamAlphaAPI.q(queryNonCodeBlocks)} / ${window.roamAlphaAPI.q(
       queryNonCodeBlockWords
-    )} /  ${await roamAlphaAPI.q(queryNonCodeBlockCharacters)} <br/><br/>
+    )} /  ${window.roamAlphaAPI.q(queryNonCodeBlockCharacters)} <br/><br/>
 
 		<a style="color:lightgrey" onclick='setTimeout(async ()=>{await roam42.common.navigateUiTo(">")},10)'>Block Quotes</a> / Words / Characters: <br/>
-		${await roamAlphaAPI.q(queryBlockquotes)} / ${await roamAlphaAPI.q(
+		${window.roamAlphaAPI.q(queryBlockquotes)} / ${window.roamAlphaAPI.q(
       queryBlockquotesWords
-    )} / ${await roamAlphaAPI.q(queryBlockquotesCharacters)}  <br/><br/>
+    )} / ${window.roamAlphaAPI.q(queryBlockquotesCharacters)}  <br/><br/>
 
 		Code Blocks / Characters:<br/> 
-		${await roamAlphaAPI.q(queryCodeBlocks)} / ${await roamAlphaAPI.q(
+		${window.roamAlphaAPI.q(queryCodeBlocks)} / ${window.roamAlphaAPI.q(
       queryCodeBlockCharacters
     )} <br/><br/>
 
-		Interconnections (refs):  ${await roamAlphaAPI.q(
+		Interconnections (refs):  ${window.roamAlphaAPI.q(
       "[:find (count ?r) . :with ?e :where [?e :block/refs ?r] ]]"
     )} <br/><br/>
 
 		<a style="color:lightgrey" onclick='setTimeout(async ()=>{await roam42.common.navigateUiTo("TODO")},10)'>TODO</a>: 
-		${await roamAlphaAPI.q(
+		${window.roamAlphaAPI.q(
       '[:find (count ?be) . :where [?e :node/title "TODO"][?be :block/refs ?e]]'
     )}  <br/>
 		<a style="color:lightgrey" onclick='setTimeout(async ()=>{await roam42.common.navigateUiTo("DONE")},10)'>DONE</a>:  
-		${await roamAlphaAPI.q(
+		${window.roamAlphaAPI.q(
       '[:find (count ?be) . :where [?e :node/title "DONE"][?be :block/refs ?e]]'
     )} <br/>
 		<a style="color:lightgrey" onclick='setTimeout(async ()=>{await roam42.common.navigateUiTo("query")},10)'>query</a>:  
-		${await roamAlphaAPI.q(
+		${window.roamAlphaAPI.q(
       '[:find (count ?be) . :where [?e :node/title "query"][?be :block/refs ?e]]'
     )} <br/>
 		<a style="color:lightgrey" onclick='setTimeout(async ()=>{await roam42.common.navigateUiTo("embed")},10)'>embed</a>:  
-		${await roamAlphaAPI.q(
+		${window.roamAlphaAPI.q(
       '[:find (count ?be) . :where [?e :node/title "embed"][?be :block/refs ?e]]'
     )} <br/>
 		<a style="color:lightgrey" onclick='setTimeout(async ()=>{await roam42.common.navigateUiTo("table")},10)'>table</a>:  
-		${await roamAlphaAPI.q(
+		${window.roamAlphaAPI.q(
       '[:find (count ?be) . :where [?e :node/title "table"][?be :block/refs ?e]]'
     )} <br/>
 		<a style="color:lightgrey" onclick='setTimeout(async ()=>{await roam42.common.navigateUiTo("kanban")},10)'>kanban</a>:  
-		${await roamAlphaAPI.q(
+		${window.roamAlphaAPI.q(
       '[:find (count ?be) . :where [?e :node/title "kanban"][?be :block/refs ?e]]'
     )} <br/>
 		<a style="color:lightgrey" onclick='setTimeout(async ()=>{await roam42.common.navigateUiTo("video")},10)'>video</a>:  
-		${await roamAlphaAPI.q(
+		${window.roamAlphaAPI.q(
       '[:find (count ?be) . :where [?e :node/title "video"][?be :block/refs ?e]]'
     )} <br/>
 		<a style="color:lightgrey" onclick='setTimeout(async ()=>{await roam42.common.navigateUiTo("roam/js")},10)'>roam/js</a>:  
-		${await roamAlphaAPI.q(
+		${window.roamAlphaAPI.q(
       '[:find (count ?be) . :where [?e :node/title "roam/js"][?be :block/refs ?e]]'
     )} <br/>
 
 		<br/>
-		Firebase Links: ${await roamAlphaAPI.q(queryFireBaseAttachements)} <br/>
-		http Links: ${await roamAlphaAPI.q(queryExternalLinks)} <br/>
+		Firebase Links: ${window.roamAlphaAPI.q(queryFireBaseAttachements)} <br/>
+		http Links: ${window.roamAlphaAPI.q(queryExternalLinks)} <br/>
 
 		<br/>
-		Display Name: ${roam42.user.displayName}<br/>
-		Email: ${roam42.user.email}<br/>
+		Display Name: ${displayName}<br/>
+		Email: ${email}<br/>
 
 		<br/><br/>
 		<a href="https://roamresearch.com/#/app/Zsolt-Blog/page/WUn5PuTDV" target=_blank>Click for more info on method of calculations"</a>
@@ -148,10 +152,5 @@ export const displayGraphStats = async () => {
     60000
   );
 };
-
-roam42.stats.testReload = () => {
-  roam42.loader.addScriptToPage("roam42stats", roam42.host + "ext/stats.js");
-  setTimeout(() => {
-    roam42.stats.displayGraphStats();
-  }, 1000);
-};
+export let enabled = true;
+export const toggleFeature = (flag: boolean) => (enabled = flag);

@@ -24,6 +24,7 @@ import * as privacyMode from "./privacyMode";
 import * as quickRef from "./quickRef";
 import * as roam42Menu from "./roam42Menu";
 import * as roamNavigator from "./deepnav";
+import * as stats from "./stats";
 import * as tutorials from "./tutorials";
 
 declare global {
@@ -45,6 +46,7 @@ declare global {
       quickRef: typeof quickRef;
       roam42Menu: typeof roam42Menu;
       roamNavigator: typeof roamNavigator;
+      stats: typeof stats;
       tutorials: typeof tutorials;
       typeAhead: typeof dictionary;
     };
@@ -84,6 +86,7 @@ export default runExtension({
         quickRef,
         roam42Menu,
         roamNavigator,
+        stats,
         tutorials,
         typeAhead: dictionary,
       };
@@ -157,6 +160,16 @@ export default runExtension({
             description: "Help menu that appears on the top right",
           },
           {
+            id: "stats",
+            name: "Stats",
+            action: {
+              type: "switch",
+              onChange: (e) => stats.toggleFeature(e.target.checked),
+            },
+            description:
+              "Get stats on your Roam usage",
+          },
+          {
             id: "tutorials",
             name: "Tutorials",
             action: {
@@ -181,8 +194,6 @@ export default runExtension({
       tutorials.toggleFeature(!!extensionAPI.settings.get("tutorials"));
 
       //extension modules
-      roam42.loader.addScriptToPage("stats", roam42.host + "ext/stats.js");
-
       roam42.loader.addScriptToPage(
         "formatConverter",
         roam42.host + "ext/formatConverter.js"
@@ -211,8 +222,6 @@ export default runExtension({
         "keyEvents",
         roam42.host + "common/keyevents.js"
       );
-
-      roam42.user = roam42.common.getUserInformation();
     }
   },
 });
