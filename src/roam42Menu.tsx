@@ -19,10 +19,7 @@ import { Button, Menu, MenuItem } from "@blueprintjs/core";
 import { component as qrComponent } from "./quickRef";
 import { show as tutorialShow } from "./tutorials";
 import { displayGraphStats, enabled } from "./stats";
-import {
-  enabled as wbEnabled,
-  getIsEnabled as wbGetIsEnabled,
-} from "./workBench";
+import { active as wbEnabled } from "./workBench";
 import {
   getRoamNavigator_IsEnabled,
   roamNavigatorStatusToast,
@@ -237,20 +234,6 @@ export const displayMenu = () => {
         <MenuItem>
           <span style={{ fontSize: "9pt" }}>Toggle Features On/Off:</span>
         </MenuItem>
-        {wbEnabled && (
-          <MenuItem
-            onClick={() => {
-              tippy.hide();
-              displayGraphStats();
-            }}
-          >
-            <Button icon={"database"} minimal small />
-            workBench{" "}
-            <span style={{ fontSize: "7pt" }}>
-              {wbGetIsEnabled() ? `(Active)` : "(Disabled)"}
-            </span>
-          </MenuItem>
-        )}
         {getRoamNavigator_IsEnabled() && (
           <MenuItem
             onClick={() => {

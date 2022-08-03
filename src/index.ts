@@ -1,8 +1,5 @@
 /* roam42 namespace structure
   roam42.keyevents         global handler for keyevents (some modules have their own key handling)
-  roam42.livePreview       Live preview features
-  roam42.formatConverter   converts current page to various formats
-  roam42.formatConverterUI UI to roam42.formatConverter
 	roam42.workBench				 Workbench engine
   roam42.KeyboardLib       imported from another library. so letting it stand as its own object
 */
@@ -28,6 +25,7 @@ import * as roam42Menu from "./roam42Menu";
 import * as roamNavigator from "./deepnav";
 import * as stats from "./stats";
 import * as tutorials from "./tutorials";
+import * as workBench from "./workBench";
 
 declare global {
   interface Window {
@@ -45,6 +43,7 @@ declare global {
       dailyNotesPopup: typeof dailyNotesPopup;
       formatConverter: typeof formatConverter;
       jumpnav: typeof jumpnav;
+      livePreview: typeof livePreview;
       privacyMode: typeof privacyMode;
       quickRef: typeof quickRef;
       roam42Menu: typeof roam42Menu;
@@ -52,6 +51,7 @@ declare global {
       stats: typeof stats;
       tutorials: typeof tutorials;
       typeAhead: typeof dictionary;
+      workBench: typeof workBench;
     };
     loadRoam42InMobile?: boolean;
     roam42KeyboardLib: typeof roam42KeyboardLib;
@@ -86,6 +86,7 @@ export default runExtension({
         dailyNotesPopup,
         formatConverter,
         jumpnav,
+        livePreview,
         privacyMode,
         quickRef,
         roam42Menu,
@@ -93,6 +94,7 @@ export default runExtension({
         stats,
         tutorials,
         typeAhead: dictionary,
+        workBench,
       };
       window.roam42KeyboardLib = roam42KeyboardLib;
 
@@ -134,6 +136,15 @@ export default runExtension({
               onChange: (e) => jumpnav.toggleFeature(e.target.checked),
             },
             description: "Hot Keys for easy Jump Navigation",
+          },
+          {
+            id: "livePreview",
+            name: "Live Preview",
+            action: {
+              type: "switch",
+              onChange: (e) => livePreview.toggleFeature(e.target.checked),
+            },
+            description: "Live preview pages upon hovering over tag",
           },
           {
             id: "privacyMode",
@@ -179,8 +190,7 @@ export default runExtension({
               type: "switch",
               onChange: (e) => stats.toggleFeature(e.target.checked),
             },
-            description:
-              "Get stats on your Roam usage",
+            description: "Get stats on your Roam usage",
           },
           {
             id: "tutorials",
@@ -192,6 +202,16 @@ export default runExtension({
             description:
               "Learn how to use WorkBench features and Roam basics right from within Roam",
           },
+          {
+            id: "workBench",
+            name: "Command Palette Commands",
+            action: {
+              type: "switch",
+              onChange: (e) => workBench.toggleFeature(e.target.checked),
+            },
+            description:
+              "Whether or not to include the core set of workBench commands in the Roam Command Palette",
+          },
         ],
       });
 
@@ -199,29 +219,17 @@ export default runExtension({
         !!extensionAPI.settings.get("dailyNotesPopup")
       );
       dictionary.toggleFeature(!!extensionAPI.settings.get("dictionary"));
-      formatConverter.toggleFeature(!!extensionAPI.settings.get("formatConverter"));
+      formatConverter.toggleFeature(
+        !!extensionAPI.settings.get("formatConverter")
+      );
       jumpnav.toggleFeature(!!extensionAPI.settings.get("jumpNav"));
+      livePreview.toggleFeature(!!extensionAPI.settings.get("livePreview"));
       privacyMode.toggleFeature(!!extensionAPI.settings.get("privacyMode"));
       quickRef.toggleFeature(!!extensionAPI.settings.get("quickRef"));
       roam42Menu.toggleFeature(!!extensionAPI.settings.get("roam42Menu"));
       roamNavigator.toggleFeature(!!extensionAPI.settings.get("roamNavigator"));
       tutorials.toggleFeature(!!extensionAPI.settings.get("tutorials"));
-
-      //extension modules
-      roam42.loader.addScriptToPage(
-        "livePreview",
-        roam42.host + "ext/livePreview.js"
-      );
-
-      roam42.loader.addScriptToPage(
-        "workBench",
-        roam42.host + "ext/workBench.js"
-      );
-      roam42.loader.addCSSToPage(
-        "workBenchCss",
-        roam42.host + "css/workBench.css"
-      );
-      roam42.wB.initialize();
+      workBench.toggleFeature(!!extensionAPI.settings.get("workBench"));
 
       roam42.keyevents.loadKeyEvents();
       roam42.loader.addScriptToPage(

@@ -95,17 +95,14 @@ export const navigateUiTo = async function (
   }
 };
 
-export const commandPaletteAdd = async (
-  label: string,
-  callback: () => void
-) => {
+export const commandPaletteAdd = (label: string, callback: () => void) => {
   return window.roamAlphaAPI.ui.commandPalette.addCommand({
     label,
     callback,
   });
 };
 
-export const sortObjectByKey = (o: { key: string }[]) => {
+export const sortObjectByKey = <T extends { key: string }>(o: T[]) => {
   return o.sort(function (a, b) {
     return a.key.localeCompare(b.key);
   });
@@ -707,9 +704,9 @@ export const getPageNamesFromBlockUidList = async (blockUidList: string[]) => {
   return results;
 };
 
-type Node = { string: string; uid: string; children: Node[] };
+export type BlockNode = { string: string; uid: string; children: BlockNode[] };
 
-export const getBlocksReferringToThisPage = (title: string): Node[][] => {
+export const getBlocksReferringToThisPage = (title: string): BlockNode[][] => {
   try {
     return window.roamAlphaAPI.q(`
           [:find (pull ?refs [:block/string :block/uid {:block/children ...}])
@@ -719,7 +716,9 @@ export const getBlocksReferringToThisPage = (title: string): Node[][] => {
   }
 };
 
-export const getBlocksReferringToThisBlockRef = (uid: string): Node[][] => {
+export const getBlocksReferringToThisBlockRef = (
+  uid: string
+): BlockNode[][] => {
   try {
     return window.roamAlphaAPI.q(`
           [:find (pull ?refs [:block/string :block/uid {:block/children ...}])
