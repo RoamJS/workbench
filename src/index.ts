@@ -19,6 +19,8 @@ import * as help from "./help";
 // exts
 import * as dailyNotesPopup from "./dailyNotesPopup";
 import * as dictionary from "./dictionary";
+import * as formatConverter from "./formatConverter";
+import * as livePreview from "./livePreview";
 import * as jumpnav from "./jumpNav";
 import * as privacyMode from "./privacyMode";
 import * as quickRef from "./quickRef";
@@ -41,6 +43,7 @@ declare global {
       settings: typeof settings;
 
       dailyNotesPopup: typeof dailyNotesPopup;
+      formatConverter: typeof formatConverter;
       jumpnav: typeof jumpnav;
       privacyMode: typeof privacyMode;
       quickRef: typeof quickRef;
@@ -81,6 +84,7 @@ export default runExtension({
         settings,
 
         dailyNotesPopup,
+        formatConverter,
         jumpnav,
         privacyMode,
         quickRef,
@@ -112,6 +116,15 @@ export default runExtension({
               onChange: (e) => dictionary.toggleFeature(e.target.checked),
             },
             description: "Look up terms in the dictionary",
+          },
+          {
+            id: "formatConverter",
+            name: "Format Converter",
+            action: {
+              type: "switch",
+              onChange: (e) => formatConverter.toggleFeature(e.target.checked),
+            },
+            description: "Outputs the current page to various formats",
           },
           {
             id: "jumpNav",
@@ -186,6 +199,7 @@ export default runExtension({
         !!extensionAPI.settings.get("dailyNotesPopup")
       );
       dictionary.toggleFeature(!!extensionAPI.settings.get("dictionary"));
+      formatConverter.toggleFeature(!!extensionAPI.settings.get("formatConverter"));
       jumpnav.toggleFeature(!!extensionAPI.settings.get("jumpNav"));
       privacyMode.toggleFeature(!!extensionAPI.settings.get("privacyMode"));
       quickRef.toggleFeature(!!extensionAPI.settings.get("quickRef"));
@@ -194,14 +208,6 @@ export default runExtension({
       tutorials.toggleFeature(!!extensionAPI.settings.get("tutorials"));
 
       //extension modules
-      roam42.loader.addScriptToPage(
-        "formatConverter",
-        roam42.host + "ext/formatConverter.js"
-      );
-      roam42.loader.addScriptToPage(
-        "formatConverterUI",
-        roam42.host + "ext/formatConverterUI.js"
-      );
       roam42.loader.addScriptToPage(
         "livePreview",
         roam42.host + "ext/livePreview.js"

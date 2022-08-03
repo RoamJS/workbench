@@ -12,6 +12,19 @@ export const baseUrl = () => {
   return url;
 };
 
+export type BlockInfo = {
+  title: string;
+  string: string;
+  uid: string;
+  heading: number;
+  order: number;
+  open: boolean;
+  "view-type": string;
+  "text-align": string;
+  children: BlockInfo[];
+  parents: BlockInfo[];
+};
+
 export const getBlockInfoByUID = (
   uid: string,
   withChildren = false,
@@ -28,7 +41,7 @@ export const getBlockInfoByUID = (
                 :where [?page :block/uid "${uid}"]  ]`;
     var results = window.roamAlphaAPI.q(q);
     if (results.length == 0) return null;
-    return results;
+    return results as [BlockInfo][];
   } catch (e) {
     return null;
   }

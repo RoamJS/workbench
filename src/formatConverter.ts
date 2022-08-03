@@ -1,5 +1,204 @@
-export const formatter = {};
-export const currentPageName = "";
+import Cookies from "js-cookie";
+// @ts-ignore
+import jsPanel from "jspanel4";
+import {
+  BlockInfo,
+  currentPageZoomLevelUID,
+  getBlockInfoByUID,
+  getBlocksReferringToThisPage,
+} from "./commonFunctions";
+import { displayMessage } from "./help";
+
+type JSONNode = {
+  uid: string;
+  order: number;
+  parentUID: string;
+  level: number;
+  blockText: string;
+};
+
+let output: string | JSONNode[] = "";
+
+export const formatter = {
+  pureText_SpaceIndented: async (
+    blockText: string,
+    nodeCurrent?: BlockInfo,
+    level = 0
+  ) => {
+    if (nodeCurrent?.title) return;
+    blockText = roamMarkupScrubber(blockText, true);
+    let leadingSpaces = level > 1 ? "  ".repeat(level - 1) : "";
+    output += leadingSpaces + blockText + "\n";
+  },
+  pureText_TabIndented: async (
+    blockText: string,
+    nodeCurrent?: BlockInfo,
+    level = 0
+  ) => {
+    if (nodeCurrent?.title) return;
+    try {
+      blockText = roamMarkupScrubber(blockText, true);
+    } catch (e) {}
+    let leadingSpaces = level > 1 ? "\t".repeat(level - 1) : "";
+    output += leadingSpaces + blockText + "\n";
+  },
+  pureText_NoIndentation: async (
+    blockText: string,
+    nodeCurrent?: BlockInfo
+  ) => {
+    if (nodeCurrent?.title) return;
+    try {
+      blockText = roamMarkupScrubber(blockText, true);
+    } catch (e) {}
+    output += blockText + "\n";
+  },
+  markdownGithub: async (
+    blockText: string,
+    nodeCurrent?: BlockInfo,
+    level?: number,
+    parent?: BlockInfo,
+    flatten?: boolean
+  ) => {
+    // console.log("1",blockText)
+    // console.log(flatten)
+    if (flatten == true) {
+      level = 0;
+    } else {
+      level = level - 1;
+    }
+    if (nodeCurrent.title) {
+      output += "# " + blockText;
+      return;
+    }
+
+    //convert soft line breaks, but not with code blocks
+    if (blockText.substring(0, 3) != "```")
+      blockText = blockText.replaceAll("\n", "<br/>");
+
+    if (nodeCurrent.heading == 1) blockText = "# " + blockText;
+    if (nodeCurrent.heading == 2) blockText = "## " + blockText;
+    if (nodeCurrent.heading == 3) blockText = "### " + blockText;
+    // process todo's
+    var todoPrefix = level > 0 ? "" : "- "; //todos on first level need a dash before them
+    if (blockText.substring(0, 12) == "{{[[TODO]]}}") {
+      blockText = blockText.replace("{{[[TODO]]}}", todoPrefix + "[ ]");
+    } else if (blockText.substring(0, 8) == "{{TODO}}") {
+      blockText = blockText.replace("{{TODO}}", todoPrefix + "[ ]");
+    } else if (blockText.substring(0, 12) == "{{[[DONE]]}}") {
+      blockText = blockText.replace("{{[[DONE]]}}", todoPrefix + "[x]");
+    } else if (blockText.substring(0, 8) == "{{DONE}}") {
+      blockText = blockText.replace("{{DONE}}", todoPrefix + "[x]");
+    }
+    // console.log("2",blockText)
+    try {
+      blockText = roamMarkupScrubber(blockText, false);
+    } catch (e) {}
+    // console.log("3",blockText)
+
+    if (level > 0 && blockText.substring(0, 3) != "```") {
+      //handle indenting (first level is treated as no level, second level treated as first level)
+      if (parent["view-type"] == "numbered") {
+        output += "    ".repeat(level - 1) + "1. ";
+      } else {
+        output += "  ".repeat(level) + "- ";
+      }
+    } else {
+      //level 1, add line break before
+      blockText = "\n" + blockText;
+    }
+    // console.log("4",blockText)
+    output += blockText + "  \n";
+  },
+  htmlSimple: async (uid: string) => {
+    var md = await iterateThroughTree(uid, formatter.markdownGithub);
+    const { marked } = await window.RoamLazy.Marked();
+    marked.setOptions({
+      gfm: true,
+      xhtml: false,
+      pedantic: false,
+    });
+    md = md.replaceAll("- [ ] [", "- [ ]&nbsp;&nbsp;["); //fixes odd isue of task and alis on same line
+    md = md.replaceAll("- [x] [", "- [x]&nbsp;["); //fixes odd isue of task and alis on same line
+    md = md.replaceAll(/\{\{\youtube\: (.+?)\}\} /g, (str, lnk) => {
+      lnk = lnk.replace("youtube.com/", "youtube.com/embed/");
+      lnk = lnk.replace("youtu.be/", "youtube.com/embed/");
+      lnk = lnk.replace("watch?v=", "");
+      return `<iframe width="560" height="315" class="embededYoutubeVieo" src="${lnk}" frameborder="0"></iframe>`;
+    });
+
+    //lATEX handling
+    md = md.replace(/  \- (\$\$)/g, "\n\n$1"); //Latex is centered
+    const tokenizer = {
+      codespan(src: string) {
+        var match = src.match(/\$\$(.*?)\$\$/);
+        if (match) {
+          var str = match[0];
+          str = str.replaceAll("<br>", " ");
+          str = str.replaceAll("<br/>", " ");
+          str = `<div>${str}</div>`;
+          return { type: "text" as const, raw: match[0], text: str };
+        }
+        // return false to use original codespan tokenizer
+        return false;
+      },
+    };
+    // @ts-ignore
+    marked.use({ tokenizer });
+    md = marked(md);
+
+    return `<html>\n
+                <head>
+                </head>
+                <body>\n${md}\n
+                </body>\n
+              </html>`;
+  },
+  htmlMarkdownFlatten: async (uid: string) => {
+    var md = await iterateThroughTree(uid, formatter.markdownGithub, true);
+    const { marked } = await window.RoamLazy.Marked();
+    marked.setOptions({
+      gfm: true,
+      xhtml: false,
+      pedantic: false,
+    });
+    md = md.replaceAll("- [ ] [", "- [ ]&nbsp;&nbsp;["); //fixes odd isue of task and alis on same line
+    md = md.replaceAll("- [x] [", "- [x]&nbsp;["); //fixes odd isue of task and alis on same line
+    md = md.replaceAll(/\{\{\youtube\: (.+?)\}\} /g, (str, lnk) => {
+      lnk = lnk.replace("youtube.com/", "youtube.com/embed/");
+      lnk = lnk.replace("youtu.be/", "youtube.com/embed/");
+      lnk = lnk.replace("watch?v=", "");
+      return `<iframe width="560" height="315" class="embededYoutubeVieo" src="${lnk}" frameborder="0"></iframe>`;
+    });
+
+    //lATEX handling
+    md = md.replace(/  \- (\$\$)/g, "\n\n$1"); //Latex is centered
+    const tokenizer = {
+      codespan(src: string) {
+        var match = src.match(/\$\$(.*?)\$\$/);
+        if (match) {
+          var str = match[0];
+          str = str.replaceAll("<br>", " ");
+          str = str.replaceAll("<br/>", " ");
+          str = `<div>${str}</div>`;
+          return { type: "text", raw: match[0], text: str };
+        }
+        // return false to use original codespan tokenizer
+        return false;
+      },
+    };
+    // @ts-ignore
+    marked.use({ tokenizer });
+    md = marked(md);
+
+    return `<html>\n
+                <head>
+                </head>
+                <body>\n${md}\n
+                </body>\n
+              </html>`;
+  },
+};
+export let currentPageName = "";
 export let enabled = false;
 export const toggleFeature = (flag: boolean) => (enabled = flag);
 
@@ -62,21 +261,25 @@ export const show = () => {
     callback: async function () {
       formatConverterUITextArea = document.getElementById(
         "formatConverterUITextArea"
-      );
+      ) as HTMLTextAreaElement;
       setTimeout(async () => {
         // document.querySelector('#r42formatConvertUI').style.backgroundColor='red !important';
-        document.getElementById("r42formatConverterSelection")[
-          roam42.formatConverterUI.getLastFormat()
-        ].selected = true;
-        roam42.formatConverterUI.changeFormat();
+        (
+          (
+            document.getElementById(
+              "r42formatConverterSelection"
+            ) as HTMLSelectElement
+          )[getLastFormat()] as HTMLOptionElement
+        ).selected = true;
+        changeFormat();
       }, 100);
     },
   });
 }; //END roam42.formatConverterUI.show
 
 export const htmlview = async () => {
-  var uid = await roam42.common.currentPageZoomLevelUID();
-  var results = await roam42.formatConverter.formatter.htmlSimple(uid);
+  var uid = await currentPageZoomLevelUID();
+  var results = await formatter.htmlSimple(uid);
 
   var winPrint = await window.open(
     "",
@@ -85,9 +288,7 @@ export const htmlview = async () => {
   );
   results = results.replace("<html>", "<!DOCTYPE html>");
   // add custom css
-  var customCSSNode = await roam42.common.getBlocksReferringToThisPage(
-    "42WebViewCSS"
-  );
+  var customCSSNode = await getBlocksReferringToThisPage("42WebViewCSS");
   if (customCSSNode.length > 0 && customCSSNode[0][0].children) {
     var childCSS = customCSSNode[0][0].children[0].string;
     if (childCSS.substring(0, 6) == "```css") {
@@ -107,11 +308,15 @@ export const htmlview = async () => {
   winPrint.document.write(results);
 
   setTimeout(() => {
-    const addElementToPage = (element, tagId, typeT) => {
+    const addElementToPage = (
+      element: HTMLElement,
+      tagId: string,
+      typeT: string
+    ) => {
       Object.assign(element, { type: typeT, async: false, tagId: tagId });
       winPrint.document.getElementsByTagName("head")[0].appendChild(element);
     };
-    const addCSSToPage = (tagId, cssToAdd) => {
+    const addCSSToPage = (tagId: string, cssToAdd: string) => {
       addElementToPage(
         Object.assign(winPrint.document.createElement("link"), {
           href: cssToAdd,
@@ -121,7 +326,7 @@ export const htmlview = async () => {
         "text/css"
       );
     };
-    const addScriptToPage = (tagId, script) => {
+    const addScriptToPage = (tagId: string, script: string) => {
       addElementToPage(
         Object.assign(document.createElement("script"), { src: script }),
         tagId,
@@ -140,50 +345,45 @@ export const htmlview = async () => {
       "KatexJS-auto",
       "https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
     );
-    addCSSToPage("myStyle", roam42.host + "css/markdown/default.css");
+    addCSSToPage(
+      "myStyle",
+      "https://roamjs.com/roam42/css/markdown/default.css"
+    );
     winPrint.document.title = "Roam42 Viewer";
   }, 50);
 };
 
-var sortObjectsByOrder = async (o) => {
+var sortObjectsByOrder = async (o: BlockInfo[]) => {
   return o.sort(function (a, b) {
     return a.order - b.order;
   });
 };
 
-var sortObjectByString = async (o) => {
-  return o.sort(function (a, b) {
-    return a.string.localeCompare(b.string);
-  });
-};
-
-// output( blockText, nodeCurrent, level, parent, flatten )
-
 var walkDocumentStructureAndFormat = async (
-  nodeCurrent,
-  level,
-  outputFunction,
-  parent,
-  flatten
+  nodeCurrent: BlockInfo,
+  level: number,
+  outputFunction: (
+    t: string,
+    n: BlockInfo,
+    l: number,
+    p: BlockInfo,
+    f: boolean
+  ) => void,
+  parent: BlockInfo,
+  flatten: boolean
 ) => {
-  // console.log('walkDocumentStructureAndFormat ' + flatten)
   if (typeof nodeCurrent.title != "undefined") {
-    // Title of page
     outputFunction(nodeCurrent.title, nodeCurrent, 0, parent, flatten);
-    roam42.formatConverter.currentPageName = nodeCurrent.title;
+    currentPageName = nodeCurrent.title;
   } else if (typeof nodeCurrent.string != "undefined") {
-    // Text of a block
-    // check if there are embeds and convert text to that
     let blockText = nodeCurrent.string;
-    // First: check for block embed
     blockText = blockText.replaceAll("{{embed:", "{{[[embed]]:");
     let embeds = blockText.match(/\{\{\[\[embed\]\]\: \(\(.+?\)\)\}\}/g);
-    //Test for block embeds
     if (embeds != null) {
       for (const e of embeds) {
         let uid = e.replace("{{[[embed]]: ", "").replace("}}", "");
         uid = uid.replaceAll("(", "").replaceAll(")", "");
-        let embedResults = await roam42.common.getBlockInfoByUID(uid, true);
+        let embedResults = await getBlockInfoByUID(uid, true);
         try {
           blockText = await blockText.replace(e, embedResults[0][0].string);
           //test if the newly generated block has any block refs
@@ -210,7 +410,6 @@ var walkDocumentStructureAndFormat = async (
                   );
                 },
                 embedResults[0][0],
-                parent,
                 flatten
               );
             }
@@ -237,20 +436,19 @@ var walkDocumentStructureAndFormat = async (
   }
 };
 
-var resolveBlockRefsInText = async (blockText) => {
+export const resolveBlockRefsInText = async (blockText: string) => {
   let refs = blockText.match(/\(\(.+?\)\)/g);
   if (refs != null) {
     for (const e of refs) {
       let uid = e.replaceAll("(", "").replaceAll(")", "");
-      let results = await roam42.common.getBlockInfoByUID(uid, false);
+      let results = await getBlockInfoByUID(uid, false);
       if (results) blockText = blockText.replace(e, results[0][0].string);
     }
   }
   return blockText;
 };
-roam42.formatConverter.resolveBlockRefsInText = resolveBlockRefsInText;
 
-var roamMarkupScrubber = (blockText, removeMarkdown = true) => {
+var roamMarkupScrubber = (blockText: string, removeMarkdown = true) => {
   if (
     blockText.substring(0, 9) == "{{[[query" ||
     blockText.substring(0, 7) == "{{query"
@@ -309,207 +507,14 @@ var roamMarkupScrubber = (blockText, removeMarkdown = true) => {
   return blockText;
 };
 
-roam42.formatConverter.formatter.pureText_SpaceIndented = async (
-  blockText,
-  nodeCurrent,
-  level,
-  parent,
-  flatten
-) => {
-  if (nodeCurrent.title) return;
-  blockText = roamMarkupScrubber(blockText, true);
-  let leadingSpaces = level > 1 ? "  ".repeat(level - 1) : "";
-  output += leadingSpaces + blockText + "\n";
-};
-
-roam42.formatConverter.formatter.pureText_TabIndented = async (
-  blockText,
-  nodeCurrent,
-  level,
-  parent,
-  flatten
-) => {
-  if (nodeCurrent.title) return;
-  try {
-    blockText = roamMarkupScrubber(blockText, true);
-  } catch (e) {}
-  let leadingSpaces = level > 1 ? "\t".repeat(level - 1) : "";
-  output += leadingSpaces + blockText + "\n";
-};
-
-roam42.formatConverter.formatter.pureText_NoIndentation = async (
-  blockText,
-  nodeCurrent,
-  level,
-  parent,
-  flatten
-) => {
-  if (nodeCurrent.title) return;
-  try {
-    blockText = roamMarkupScrubber(blockText, true);
-  } catch (e) {}
-  output += blockText + "\n";
-};
-
-roam42.formatConverter.formatter.markdownGithub = async (
-  blockText,
-  nodeCurrent,
-  level,
-  parent,
-  flatten
-) => {
-  // console.log("1",blockText)
-  // console.log(flatten)
-  if (flatten == true) {
-    level = 0;
-  } else {
-    level = level - 1;
-  }
-  if (nodeCurrent.title) {
-    output += "# " + blockText;
-    return;
-  }
-
-  //convert soft line breaks, but not with code blocks
-  if (blockText.substring(0, 3) != "```")
-    blockText = blockText.replaceAll("\n", "<br/>");
-
-  if (nodeCurrent.heading == 1) blockText = "# " + blockText;
-  if (nodeCurrent.heading == 2) blockText = "## " + blockText;
-  if (nodeCurrent.heading == 3) blockText = "### " + blockText;
-  // process todo's
-  var todoPrefix = level > 0 ? "" : "- "; //todos on first level need a dash before them
-  if (blockText.substring(0, 12) == "{{[[TODO]]}}") {
-    blockText = blockText.replace("{{[[TODO]]}}", todoPrefix + "[ ]");
-  } else if (blockText.substring(0, 8) == "{{TODO}}") {
-    blockText = blockText.replace("{{TODO}}", todoPrefix + "[ ]");
-  } else if (blockText.substring(0, 12) == "{{[[DONE]]}}") {
-    blockText = blockText.replace("{{[[DONE]]}}", todoPrefix + "[x]");
-  } else if (blockText.substring(0, 8) == "{{DONE}}") {
-    blockText = blockText.replace("{{DONE}}", todoPrefix + "[x]");
-  }
-  // console.log("2",blockText)
-  try {
-    blockText = roamMarkupScrubber(blockText, false);
-  } catch (e) {}
-  // console.log("3",blockText)
-
-  if (level > 0 && blockText.substring(0, 3) != "```") {
-    //handle indenting (first level is treated as no level, second level treated as first level)
-    if (parent["view-type"] == "numbered") {
-      output += "    ".repeat(level - 1) + "1. ";
-    } else {
-      output += "  ".repeat(level) + "- ";
-    }
-  } else {
-    //level 1, add line break before
-    blockText = "\n" + blockText;
-  }
-  // console.log("4",blockText)
-  output += blockText + "  \n";
-};
-
-roam42.formatConverter.formatter.htmlSimple = async (uid) => {
-  var md = await roam42.formatConverter.iterateThroughTree(
-    uid,
-    roam42.formatConverter.formatter.markdownGithub
-  );
-  marked.setOptions({
-    gfm: true,
-    xhtml: false,
-    pedantic: false,
-  });
-  md = md.replaceAll("- [ ] [", "- [ ]&nbsp;&nbsp;["); //fixes odd isue of task and alis on same line
-  md = md.replaceAll("- [x] [", "- [x]&nbsp;["); //fixes odd isue of task and alis on same line
-  md = md.replaceAll(/\{\{\youtube\: (.+?)\}\} /g, (str, lnk) => {
-    lnk = lnk.replace("youtube.com/", "youtube.com/embed/");
-    lnk = lnk.replace("youtu.be/", "youtube.com/embed/");
-    lnk = lnk.replace("watch?v=", "");
-    return `<iframe width="560" height="315" class="embededYoutubeVieo" src="${lnk}" frameborder="0"></iframe>`;
-  });
-
-  //lATEX handling
-  md = md.replace(/  \- (\$\$)/g, "\n\n$1"); //Latex is centered
-  const tokenizer = {
-    codespan(src) {
-      var match = src.match(/\$\$(.*?)\$\$/);
-      if (match) {
-        var str = match[0];
-        str = str.replaceAll("<br>", " ");
-        str = str.replaceAll("<br/>", " ");
-        str = `<div>${str}</div>`;
-        return { type: "text", raw: match[0], text: str };
-      }
-      // return false to use original codespan tokenizer
-      return false;
-    },
-  };
-  marked.use({ tokenizer });
-  md = marked(md);
-
-  return `<html>\n
-              <head>
-              </head>
-              <body>\n${md}\n
-              </body>\n
-            </html>`;
-};
-
-roam42.formatConverter.formatter.htmlMarkdownFlatten = async (uid) => {
-  var md = await roam42.formatConverter.iterateThroughTree(
-    uid,
-    roam42.formatConverter.formatter.markdownGithub,
-    true
-  );
-  marked.setOptions({
-    gfm: true,
-    xhtml: false,
-    pedantic: false,
-  });
-  md = md.replaceAll("- [ ] [", "- [ ]&nbsp;&nbsp;["); //fixes odd isue of task and alis on same line
-  md = md.replaceAll("- [x] [", "- [x]&nbsp;["); //fixes odd isue of task and alis on same line
-  md = md.replaceAll(/\{\{\youtube\: (.+?)\}\} /g, (str, lnk) => {
-    lnk = lnk.replace("youtube.com/", "youtube.com/embed/");
-    lnk = lnk.replace("youtu.be/", "youtube.com/embed/");
-    lnk = lnk.replace("watch?v=", "");
-    return `<iframe width="560" height="315" class="embededYoutubeVieo" src="${lnk}" frameborder="0"></iframe>`;
-  });
-
-  //lATEX handling
-  md = md.replace(/  \- (\$\$)/g, "\n\n$1"); //Latex is centered
-  const tokenizer = {
-    codespan(src) {
-      var match = src.match(/\$\$(.*?)\$\$/);
-      if (match) {
-        var str = match[0];
-        str = str.replaceAll("<br>", " ");
-        str = str.replaceAll("<br/>", " ");
-        str = `<div>${str}</div>`;
-        return { type: "text", raw: match[0], text: str };
-      }
-      // return false to use original codespan tokenizer
-      return false;
-    },
-  };
-  marked.use({ tokenizer });
-  md = marked(md);
-
-  return `<html>\n
-              <head>
-              </head>
-              <body>\n${md}\n
-              </body>\n
-            </html>`;
-};
-
-roam42.formatConverter.flatJson = async (
-  uid,
+export const flatJson = async (
+  uid: string,
   withIndents = false,
   formatOutputAsJsonString = true
 ) => {
   //creates a very simple json output in the order of the document
-  var results = await roam42.common.getBlockInfoByUID(uid, true);
-  var jsonOutput = [];
+  var results = await getBlockInfoByUID(uid, true);
+  var jsonOutput: JSONNode[] = [];
   if (results == null) return;
   //nodeCurrent, level, outputFunction, parent, flatten
   await walkDocumentStructureAndFormat(
@@ -534,19 +539,17 @@ roam42.formatConverter.flatJson = async (
     false
   );
   if (formatOutputAsJsonString == true)
-    output = JSON.stringify(jsonOutput, 0, 2);
+    output = JSON.stringify(jsonOutput, null, 2);
   else output = jsonOutput;
   return output;
 };
 
-var output = "";
-
-roam42.formatConverter.iterateThroughTree = async (
-  uid,
-  formatterFunction,
-  flatten
+export const iterateThroughTree = async (
+  uid: string,
+  formatterFunction: (s: string) => Promise<void>,
+  flatten = false
 ) => {
-  var results = await roam42.common.getBlockInfoByUID(uid, true);
+  var results = await getBlockInfoByUID(uid, true);
   output = "";
   //nodeCurrent, level, outputFunction, parent, flatten
   await walkDocumentStructureAndFormat(
@@ -559,100 +562,73 @@ roam42.formatConverter.iterateThroughTree = async (
   return output;
 };
 
-window.roam42.formatConverter.testingReload = () => {
-  console.clear();
-  roam42.loader.addScriptToPage(
-    "formatConverter",
-    roam42.host + "ext/formatConverter.js"
-  );
-  //    roam42.loader.addScriptToPage( 'formatConverterUI', roam42.host + 'ext/formatConverterUI.js');
-  setTimeout(async () => {
-    var uid = await roam42.common.currentPageUID();
-    console.log("uid", uid);
-    // console.log(x)
-    //roam42.test
-  }, 1000);
-};
-
-roam42.formatConverterUI = {};
-
-let formatConverterUITextArea = null;
+let formatConverterUITextArea: HTMLTextAreaElement = null;
 let clipboardConvertedText = "";
 
-roam42.formatConverterUI.getLastFormat = () => {
+export const getLastFormat = () => {
   var lastValue = Cookies.get("formatConverterUI_lastFormat");
-  console.log(lastValue);
   if (lastValue === undefined) {
     return 0;
   } else {
-    return lastValue;
+    return Number(lastValue);
   }
 };
 
-roam42.formatConverterUI.setLastFormat = (val) => {
-  Cookies.set("formatConverterUI_lastFormat", val, { expires: 365 });
+export const setLastFormat = (val: number) => {
+  Cookies.set("formatConverterUI_lastFormat", val.toString(), { expires: 365 });
 };
 
-roam42.formatConverterUI.changeFormat = async () => {
+export const changeFormat = async () => {
   //save selection state
-  roam42.formatConverterUI.setLastFormat(
-    document.getElementById("r42formatConverterSelection").selectedIndex
-  );
-  var uid = await roam42.common.currentPageZoomLevelUID();
+  const sel = document.getElementById(
+    "r42formatConverterSelection"
+  ) as HTMLSelectElement;
+  setLastFormat(sel.selectedIndex);
+  var uid = await currentPageZoomLevelUID();
   clipboardConvertedText = "";
-  switch (document.getElementById("r42formatConverterSelection").value) {
+  switch (sel.value) {
     case "puretext_Tab":
-      clipboardConvertedText = await roam42.formatConverter.iterateThroughTree(
+      clipboardConvertedText = await iterateThroughTree(
         uid,
-        roam42.formatConverter.formatter.pureText_TabIndented
+        formatter.pureText_TabIndented
       );
       break;
     case "puretext_Space":
-      clipboardConvertedText = await roam42.formatConverter.iterateThroughTree(
+      clipboardConvertedText = await iterateThroughTree(
         uid,
-        roam42.formatConverter.formatter.pureText_SpaceIndented
+        formatter.pureText_SpaceIndented
       );
       break;
     case "pureText_NoIndentation":
-      clipboardConvertedText = await roam42.formatConverter.iterateThroughTree(
+      clipboardConvertedText = await iterateThroughTree(
         uid,
-        roam42.formatConverter.formatter.pureText_NoIndentation
+        formatter.pureText_NoIndentation
       );
       break;
     case "markdown_Github":
-      clipboardConvertedText = await roam42.formatConverter.iterateThroughTree(
+      clipboardConvertedText = await iterateThroughTree(
         uid,
-        roam42.formatConverter.formatter.markdownGithub
+        formatter.markdownGithub
       );
       break;
     case "markdown_Github_flatten":
-      clipboardConvertedText = await roam42.formatConverter.iterateThroughTree(
+      clipboardConvertedText = await iterateThroughTree(
         uid,
-        roam42.formatConverter.formatter.markdownGithub,
+        formatter.markdownGithub,
         true
       );
       break;
     case "html_Simple":
-      clipboardConvertedText =
-        await roam42.formatConverter.formatter.htmlSimple(uid);
+      clipboardConvertedText = await formatter.htmlSimple(uid);
       break;
     case "html_Markdown_Github_flatten":
-      clipboardConvertedText =
-        await roam42.formatConverter.formatter.htmlMarkdownFlatten(uid);
+      clipboardConvertedText = await formatter.htmlMarkdownFlatten(uid);
       break;
     case "json_Simple":
-      clipboardConvertedText = await roam42.formatConverter.flatJson(
-        uid,
-        false,
-        true
-      );
+      clipboardConvertedText = (await flatJson(uid, false, true)) as string;
       break;
     case "json_Simple_withIndentation":
-      clipboardConvertedText = await roam42.formatConverter.flatJson(
-        uid,
-        true,
-        true
-      );
+      clipboardConvertedText = (await flatJson(uid, true, true)) as string;
       break;
   }
   formatConverterUITextArea.value = clipboardConvertedText;
@@ -660,11 +636,11 @@ roam42.formatConverterUI.changeFormat = async () => {
   formatConverterUITextArea.scrollTop = 0;
 };
 
-roam42.formatConverterUI.copyToClipboard = async () => {
+export const copyToClipboard = async () => {
   navigator.clipboard.writeText(clipboardConvertedText);
 };
 
-function download(filename, text) {
+function download(filename: string, text: string) {
   var element = document.createElement("a");
   element.setAttribute(
     "href",
@@ -677,28 +653,10 @@ function download(filename, text) {
   document.body.removeChild(element);
 }
 
-roam42.formatConverterUI.saveToFile = async () => {
+export const saveToFile = async () => {
   var dt = new Date().toISOString();
-  var filename =
-    roam42.formatConverter.currentPageName + "-" + new Date().toISOString();
+  var filename = currentPageName + "-" + new Date().toISOString();
   filename = filename.replace(/(\W+)/gi, "-") + ".txt";
   download(filename, formatConverterUITextArea.value);
-  roam42.help.displayMessage("File saved: " + filename, 3000);
-};
-
-window.roam42.formatConverterUI.testingReload = () => {
-  if (document.querySelector("#r42formatConvertUI"))
-    document.querySelector("#r42formatConvertUI").remove();
-  roam42.loader.addScriptToPage(
-    "formatConverter",
-    roam42.host + "ext/formatConverter.js"
-  );
-  roam42.loader.addScriptToPage(
-    "formatConverterUI",
-    roam42.host + "ext/formatConverterUI.js"
-  );
-  setTimeout(async () => {
-    // roam42.formatConverterUI.show()
-    roam42.formatConverterUI.htmlview();
-  }, 500);
+  displayMessage("File saved: " + filename, 3000);
 };
