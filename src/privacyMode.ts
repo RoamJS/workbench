@@ -8,12 +8,14 @@ let roamPageWithPrivacyList = "Roam42 Privacy Mode List";
 
 export const keyboardHandler = (ev: KeyboardEvent) => {
   if (window != window.parent) {
-    return;
+    return false;
   }
   if (ev.shiftKey && ev.altKey && ev.code == "KeyP") {
     ev.preventDefault();
     toggle();
+    return true;
   }
+  return false;
 };
 
 export const active = () => {

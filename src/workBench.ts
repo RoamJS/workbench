@@ -22,6 +22,7 @@ import {
   batchCreateBlocks,
   deleteBlock,
   currentPageUID,
+  moveForwardToDate,
 } from "./commonFunctions";
 import { getRoamDate, parseTextForDates } from "./dateProcessing";
 import {
@@ -957,6 +958,12 @@ export const initialize = async () => {
   );
   commandAddRunFromAnywhere("Roam42 Tutorials", showTutorials);
   commandAddRunFromAnywhere("Roam42 Graph DB Stats", displayGraphStats);
+  commandAddRunFromAnywhere("Goto next day - Roam42 (ctrl-shift-.)", () => {
+    moveForwardToDate(true);
+  });
+  commandAddRunFromAnywhere("Goto previous day - Roam42 (ctrl-shift-.)", () => {
+    moveForwardToDate(false);
+  });
 
   commandAddRunFromBlock("Heading 1 (Alt+Shift+1)", () => {
     jumpCommandByActiveElement("ctrl+j 5");

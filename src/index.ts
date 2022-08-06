@@ -231,11 +231,183 @@ export default runExtension({
       tutorials.toggleFeature(!!extensionAPI.settings.get("tutorials"));
       workBench.toggleFeature(!!extensionAPI.settings.get("workBench"));
 
-      roam42.keyevents.loadKeyEvents();
-      roam42.loader.addScriptToPage(
-        "keyEvents",
-        roam42.host + "common/keyevents.js"
-      );
+      const keyDownListener = (ev: KeyboardEvent) => {
+        const target = ev.target as HTMLElement;
+        try {
+          if (livePreview.keyboardHandlerLivePreview(ev)) {
+            return;
+          }
+        } catch (e) {}
+        try {
+          if (ev.altKey == true && ev.shiftKey == true && ev.code == "KeyJ") {
+            ev.preventDefault();
+            const roamNativeDate = document.querySelector<HTMLSpanElement>(
+              "div.rm-topbar span.bp3-icon-calendar"
+            );
+            if (roamNativeDate) {
+              roamNativeDate.click();
+              setTimeout(() => {
+                const day = new Date().getDate();
+                const dayEl = Array.from(
+                  document.querySelectorAll<HTMLSpanElement>(".DayPicker-Day")
+                ).find((d) => d.innerText === `${day}`);
+                dayEl?.focus?.();
+              }, 1);
+            }
+            return true;
+          }
+
+          if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Comma") {
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (target.nodeName === "TEXTAREA") {
+              roam42KeyboardLib.pressEsc();
+              setTimeout(async () => {
+                await roam42KeyboardLib.pressEsc();
+                common.moveForwardToDate(false);
+              }, 300);
+            } else {
+              common.moveForwardToDate(false);
+            }
+            return true;
+          }
+
+          if (
+            ev.ctrlKey == true &&
+            ev.shiftKey == true &&
+            ev.code == "Period"
+          ) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (target.nodeName === "TEXTAREA") {
+              roam42KeyboardLib.pressEsc();
+              setTimeout(async () => {
+                await roam42KeyboardLib.pressEsc();
+                common.moveForwardToDate(true);
+              }, 300);
+            } else {
+              common.moveForwardToDate(true);
+            }
+            return true;
+          }
+        } catch (e) {}
+        try {
+          if (quickRef.component.keyboardHandler(ev)) {
+            return;
+          }
+        } catch (e) {}
+        try {
+          if (privacyMode.keyboardHandler(ev)) {
+            return;
+          }
+        } catch (e) {}
+
+        //Open right side bar
+        if (ev.altKey && ev.shiftKey && ev.code == "Slash") {
+          ev.preventDefault();
+          common.sidebarRightToggle();
+          return;
+        }
+
+        //open left side bar
+        if (
+          ev.altKey &&
+          ev.shiftKey &&
+          (ev.code == "Backslash" || ev.key == "«")
+        ) {
+          ev.preventDefault();
+          setTimeout(async () => {
+            await common.sidebarLeftToggle();
+          }, 50);
+          return;
+        }
+
+        //Date NLP
+        if (ev.altKey && ev.shiftKey && ev.code == "KeyD") {
+          if (target.nodeName === "TEXTAREA") {
+            var processText = dateProcessing.parseTextForDates(
+              (target as HTMLTextAreaElement).value
+            );
+            common.setEmptyNodeValue(
+              document.getElementById(target.id),
+              processText
+            );
+            ev.preventDefault();
+            ev.stopPropagation();
+          }
+          return;
+        }
+
+        //Dictonary Lookup
+        if (
+          ev.altKey &&
+          ev.shiftKey &&
+          (ev.code == "Period" || ev.key == "˘")
+        ) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          dictionary.typeAheadLookup();
+          return;
+        }
+
+        // Daily notes page
+        if (ev.altKey && ev.shiftKey && (ev.key == "¯" || ev.code == "Comma")) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (window != window.parent) {
+            window.parent.document.querySelector<HTMLIFrameElement>(
+              "#jsPanelDNP"
+            ).style.visibility = "hidden";
+          } else {
+            dailyNotesPopup.component.toggleVisible();
+          }
+          return;
+        }
+
+        // Daily notes page toggle in and out
+        if (ev.altKey && (ev.key == "y" || ev.code == "KeyY")) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (window != window.parent) {
+            window.parent.focus();
+          } else {
+            // window.parent.document.querySelector('#jsPanelDNP').style.visibility = 'hidden';
+            dailyNotesPopup.component.panelDNP.style.visibility = "hidden";
+            setTimeout(() => {
+              dailyNotesPopup.component.panelDNP.style.visibility = "visible";
+              document.getElementById("iframePanelDNP").focus();
+            }, 10);
+          }
+          return;
+        }
+
+        //simple markdown
+        if (ev.altKey && ev.shiftKey == false && ev.code == "KeyM") {
+          if (formatConverter.enabled) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            formatConverter.show();
+          }
+          return;
+        }
+
+        //HTML view
+        if (ev.altKey && ev.shiftKey == true && ev.code == "KeyM") {
+          if (formatConverter.enabled) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            formatConverter.htmlview();
+          }
+          return;
+        }
+      };
+      document.addEventListener("keydown", keyDownListener);
+      return {
+        domListeners: [
+          { el: document, type: "keydown", listener: keyDownListener },
+        ],
+      };
     }
+    return {};
   },
 });

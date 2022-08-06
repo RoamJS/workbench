@@ -1,6 +1,7 @@
+import iziToast, { IziToastTransitionIn } from "izitoast";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import type { SidebarWindowInput } from "roamjs-components/types/native";
-import { getRoamDate } from "./dateProcessing";
+import { getRoamDate, testIfRoamDateAndConvert } from "./dateProcessing";
 import { simulateKey } from "./r42kb_lib";
 
 export const sleep = (m: number) => new Promise((r) => setTimeout(r, m));
@@ -813,4 +814,45 @@ export const getRandomBlockFromBlock = async (uid: string) => {
   var random_result = results[Math.floor(Math.random() * results.length)];
 
   return random_result[0].uid;
+};
+
+export const moveForwardToDate = (bForward: boolean) => {
+  let jumpDate = testIfRoamDateAndConvert(
+    document.querySelector<HTMLHeadingElement>(".rm-title-display").innerText
+  );
+  let directionTip: IziToastTransitionIn = "bounceInDown";
+  if (jumpDate != null) {
+    if (bForward) {
+      jumpDate.setDate(jumpDate.getDate() + 1);
+      directionTip = "bounceInRight";
+    } else {
+      jumpDate.setDate(jumpDate.getDate() - 1);
+      directionTip = "bounceInLeft";
+    }
+    var dDate = getRoamDate(jumpDate);
+    navigateUiTo(dDate, false);
+  }
+
+  iziToast.destroy();
+  iziToast.show({
+    message: [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ][jumpDate.getDay()],
+    theme: "dark",
+    transitionIn: directionTip,
+    position: "center",
+    icon: "bp3-button bp3-minimal bp3-icon-pivot",
+    progressBar: true,
+    animateInside: false,
+    close: false,
+    timeout: 1500,
+    closeOnClick: true,
+    displayMode: 2,
+  });
 };
