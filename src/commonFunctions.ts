@@ -108,7 +108,7 @@ export const sortObjectByKey = <T extends { key: string }>(o: T[]) => {
   });
 };
 
-export const sortObjectsByOrder = (o: { order: number }[]) => {
+export const sortObjectsByOrder = <T extends { order: number }>(o: T[]) => {
   return o.sort(function (a, b) {
     return a.order - b.order;
   });

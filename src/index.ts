@@ -204,7 +204,7 @@ export default runExtension({
           },
           {
             id: "workBench",
-            name: "Command Palette Commands",
+            name: "Command Palette Plus",
             action: {
               type: "switch",
               onChange: (e) => workBench.toggleFeature(e.target.checked),

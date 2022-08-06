@@ -289,7 +289,7 @@ var customChrono42 = new chrono.Chrono();
 customChrono42.parsers.push(chronoCustomParser);
 customChrono42.parsers.unshift(comingWeekdayParser);
 
-export const parseTextForDates = (str: string, reference_date: Date) => {
+export const parseTextForDates = (str: string, reference_date = new Date()) => {
   var str_with_pages_removed = str.replace(/\[+\[[^)]+\]+\] */g, "");
   var txt = [];
 
@@ -306,7 +306,7 @@ export const parseTextForDates = (str: string, reference_date: Date) => {
       str = str.replace(element.text, roamDate);
     });
     return str;
-  } else { 
+  } else {
     return str;
   }
 };

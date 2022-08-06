@@ -8,7 +8,7 @@
     "js-search": "2.0.0",
     "jspanel4": "^4.11.3",
     "mousetrap": "1.6.5",
-    "roamjs-components": "^0.70.11",
+    "roamjs-components": "^0.71.1",
     "smalltalk": "4.1.1",
     "tippy.js": "^6.3.7"
   },
