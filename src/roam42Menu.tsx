@@ -268,7 +268,7 @@ export const displayMenu = () => {
       <div
         style={{ position: "absolute", bottom: -7, right: -2, zIndex: 1000 }}
       >
-        <img width="40px" src={window.roam42.loader.logo2HC} />
+        <img width="40px" src={"https://raw.githubusercontent.com/dvargas92495/roamjs-workbench/img/logo/42logo-2hc.png"} />
       </div>
     </>,
     menu

@@ -1,8 +1,3 @@
-/* roam42 namespace structure
-  roam42.keyevents         global handler for keyevents (some modules have their own key handling)
-	roam42.workBench				 Workbench engine
-  roam42.KeyboardLib       imported from another library. so letting it stand as its own object
-*/
 import runExtension from "roamjs-components/util/runExtension";
 import "roamjs-components/types";
 
@@ -31,30 +26,7 @@ declare global {
   interface Window {
     roam42?: {
       buildID: string;
-      loader: {
-        logo2HC: string;
-      };
-
-      common: typeof common;
-      dateProcessing: typeof dateProcessing;
-      help: typeof help;
-      settings: typeof settings;
-
-      dailyNotesPopup: typeof dailyNotesPopup;
-      formatConverter: typeof formatConverter;
-      jumpnav: typeof jumpnav;
-      livePreview: typeof livePreview;
-      privacyMode: typeof privacyMode;
-      quickRef: typeof quickRef;
-      roam42Menu: typeof roam42Menu;
-      roamNavigator: typeof roamNavigator;
-      stats: typeof stats;
-      tutorials: typeof tutorials;
-      typeAhead: typeof dictionary;
-      workBench: typeof workBench;
     };
-    loadRoam42InMobile?: boolean;
-    roam42KeyboardLib: typeof roam42KeyboardLib;
   }
 }
 
@@ -62,352 +34,317 @@ const extensionId = "workbench";
 
 export default runExtension({
   extensionId,
-  run: ({ extensionAPI }) => {
-    if (
-      typeof window.roam42 == "undefined" &&
-      !(
-        window.roamAlphaAPI.platform.isMobile &&
-        (typeof window.loadRoam42InMobile === "undefined" ||
-          !window.loadRoam42InMobile)
-      )
-    ) {
-      window.roam42 = {
-        buildID: process.env.ROAMJS_VERSION || "Version Not Found",
-        loader: {
-          logo2HC:
-            "https://raw.githubusercontent.com/dvargas92495/roamjs-workbench/img/logo/42logo-2hc.png",
+  run: ({ extensionAPI, ...extension }) => {
+    console.log(extension);
+    window.roam42 = {
+      buildID: process.env.ROAMJS_VERSION || "Version Not Found",
+    };
+
+    extensionAPI.settings.panel.create({
+      tabTitle: "WorkBench (Roam42)",
+      settings: [
+        {
+          id: "workBench",
+          name: "Command Palette+",
+          action: {
+            type: "switch",
+            onChange: (e) => workBench.toggleFeature(e.target.checked),
+          },
+          description:
+            "Whether or not to include the core set of workBench commands in the Roam Command Palette",
+        },
+        {
+          id: "dailyNotesPopup",
+          name: "Daily Notes Popup",
+          action: {
+            type: "switch",
+            onChange: (e) => dailyNotesPopup.toggleFeature(e.target.checked),
+          },
+          description: "A popup window with the current Daily Notes Page",
+        },
+        {
+          id: "roamNavigator",
+          name: "Deep Nav",
+          action: {
+            type: "switch",
+            onChange: (e) => roamNavigator.toggleFeature(e.target.checked),
+          },
+          description: "Help menu that appears on the top right",
+        },
+        {
+          id: "dictionary",
+          name: "Dictionary",
+          action: {
+            type: "switch",
+            onChange: (e) => dictionary.toggleFeature(e.target.checked),
+          },
+          description: "Look up terms in the dictionary",
+        },
+        {
+          id: "formatConverter",
+          name: "Format Converter",
+          action: {
+            type: "switch",
+            onChange: (e) => formatConverter.toggleFeature(e.target.checked),
+          },
+          description: "Outputs the current page to various formats",
+        },
+        {
+          id: "jumpNav",
+          name: "Hot Keys",
+          action: {
+            type: "switch",
+            onChange: (e) => jumpnav.toggleFeature(e.target.checked),
+          },
+          description:
+            "Keyboard shortcuts for interacting with the Roam user interface",
+        },
+        {
+          id: "livePreview",
+          name: "Live Preview",
+          action: {
+            type: "switch",
+            onChange: (e) => livePreview.toggleFeature(e.target.checked),
+          },
+          description:
+            "See live and editable preview of pages upon hovering over tags and page links",
+        },
+        {
+          id: "privacyMode",
+          name: "Privacy Mode",
+          description: "Redacts content from your Roam",
+          action: {
+            type: "switch",
+            onChange: (e) => privacyMode.toggleFeature(e.target.checked),
+          },
         },
 
-        common,
-        dateProcessing,
-        help,
-        settings,
+        // TODO: Combine the bottom three into one tutorials feature
+        {
+          id: "quickRef",
+          name: "Quick Reference",
+          action: {
+            type: "switch",
+            onChange: (e) => quickRef.toggleFeature(e.target.checked),
+          },
+          description:
+            "A quick help section of WorkBench's and Roam's features",
+        },
+        {
+          id: "roam42Menu",
+          name: "Roam42 Menu",
+          action: {
+            type: "switch",
+            onChange: (e) => roam42Menu.toggleFeature(e.target.checked),
+          },
+          description: "Help menu that appears on the top right",
+        },
+        {
+          id: "stats",
+          name: "Stats",
+          action: {
+            type: "switch",
+            onChange: (e) => stats.toggleFeature(e.target.checked),
+          },
+          description: "Get stats on your Roam usage",
+        },
+        {
+          id: "tutorials",
+          name: "Tutorials",
+          action: {
+            type: "switch",
+            onChange: (e) => tutorials.toggleFeature(e.target.checked),
+          },
+          description:
+            "Learn how to use WorkBench features and Roam basics right from within Roam",
+        },
+      ],
+    });
 
-        dailyNotesPopup,
-        formatConverter,
-        jumpnav,
-        livePreview,
-        privacyMode,
-        quickRef,
-        roam42Menu,
-        roamNavigator,
-        stats,
-        tutorials,
-        typeAhead: dictionary,
-        workBench,
-      };
-      window.roam42KeyboardLib = roam42KeyboardLib;
+    workBench.toggleFeature(!!extensionAPI.settings.get("workBench"));
+    dailyNotesPopup.toggleFeature(
+      !!extensionAPI.settings.get("dailyNotesPopup")
+    );
+    dictionary.toggleFeature(!!extensionAPI.settings.get("dictionary"));
+    formatConverter.toggleFeature(
+      !!extensionAPI.settings.get("formatConverter")
+    );
+    jumpnav.toggleFeature(!!extensionAPI.settings.get("jumpNav"));
+    livePreview.toggleFeature(!!extensionAPI.settings.get("livePreview"));
+    privacyMode.toggleFeature(!!extensionAPI.settings.get("privacyMode"));
+    quickRef.toggleFeature(!!extensionAPI.settings.get("quickRef"));
+    roam42Menu.toggleFeature(!!extensionAPI.settings.get("roam42Menu"));
+    roamNavigator.toggleFeature(!!extensionAPI.settings.get("roamNavigator"));
+    tutorials.toggleFeature(!!extensionAPI.settings.get("tutorials"));
 
-      extensionAPI.settings.panel.create({
-        tabTitle: "WorkBench (Roam42)",
-        settings: [
-          {
-            id: "dailyNotesPopup",
-            name: "Daily Notes Popup",
-            action: {
-              type: "switch",
-              onChange: (e) => dailyNotesPopup.toggleFeature(e.target.checked),
-            },
-            description: "A popup window with the current Daily Notes Page",
-          },
-          {
-            id: "dictionary",
-            name: "Dictionary",
-            action: {
-              type: "switch",
-              onChange: (e) => dictionary.toggleFeature(e.target.checked),
-            },
-            description: "Look up terms in the dictionary",
-          },
-          {
-            id: "formatConverter",
-            name: "Format Converter",
-            action: {
-              type: "switch",
-              onChange: (e) => formatConverter.toggleFeature(e.target.checked),
-            },
-            description: "Outputs the current page to various formats",
-          },
-          {
-            id: "jumpNav",
-            name: "Jump Navigation",
-            action: {
-              type: "switch",
-              onChange: (e) => jumpnav.toggleFeature(e.target.checked),
-            },
-            description: "Hot Keys for easy Jump Navigation",
-          },
-          {
-            id: "livePreview",
-            name: "Live Preview",
-            action: {
-              type: "switch",
-              onChange: (e) => livePreview.toggleFeature(e.target.checked),
-            },
-            description: "Live preview pages upon hovering over tag",
-          },
-          {
-            id: "privacyMode",
-            name: "Privacy Mode",
-            description: "Redacts content from your Roam",
-            action: {
-              type: "switch",
-              onChange: (e) => privacyMode.toggleFeature(e.target.checked),
-            },
-          },
-          {
-            id: "quickRef",
-            name: "Quick Reference",
-            action: {
-              type: "switch",
-              onChange: (e) => quickRef.toggleFeature(e.target.checked),
-            },
-            description:
-              "A quick help section of WorkBench's and Roam's features",
-          },
-          {
-            id: "roam42Menu",
-            name: "Roam42 Menu",
-            action: {
-              type: "switch",
-              onChange: (e) => roam42Menu.toggleFeature(e.target.checked),
-            },
-            description: "Help menu that appears on the top right",
-          },
-          {
-            id: "roamNavigator",
-            name: "Deep Nav",
-            action: {
-              type: "switch",
-              onChange: (e) => roamNavigator.toggleFeature(e.target.checked),
-            },
-            description: "Help menu that appears on the top right",
-          },
-          {
-            id: "stats",
-            name: "Stats",
-            action: {
-              type: "switch",
-              onChange: (e) => stats.toggleFeature(e.target.checked),
-            },
-            description: "Get stats on your Roam usage",
-          },
-          {
-            id: "tutorials",
-            name: "Tutorials",
-            action: {
-              type: "switch",
-              onChange: (e) => tutorials.toggleFeature(e.target.checked),
-            },
-            description:
-              "Learn how to use WorkBench features and Roam basics right from within Roam",
-          },
-          {
-            id: "workBench",
-            name: "Command Palette Plus",
-            action: {
-              type: "switch",
-              onChange: (e) => workBench.toggleFeature(e.target.checked),
-            },
-            description:
-              "Whether or not to include the core set of workBench commands in the Roam Command Palette",
-          },
-        ],
-      });
-
-      dailyNotesPopup.toggleFeature(
-        !!extensionAPI.settings.get("dailyNotesPopup")
-      );
-      dictionary.toggleFeature(!!extensionAPI.settings.get("dictionary"));
-      formatConverter.toggleFeature(
-        !!extensionAPI.settings.get("formatConverter")
-      );
-      jumpnav.toggleFeature(!!extensionAPI.settings.get("jumpNav"));
-      livePreview.toggleFeature(!!extensionAPI.settings.get("livePreview"));
-      privacyMode.toggleFeature(!!extensionAPI.settings.get("privacyMode"));
-      quickRef.toggleFeature(!!extensionAPI.settings.get("quickRef"));
-      roam42Menu.toggleFeature(!!extensionAPI.settings.get("roam42Menu"));
-      roamNavigator.toggleFeature(!!extensionAPI.settings.get("roamNavigator"));
-      tutorials.toggleFeature(!!extensionAPI.settings.get("tutorials"));
-      workBench.toggleFeature(!!extensionAPI.settings.get("workBench"));
-
-      const keyDownListener = (ev: KeyboardEvent) => {
-        const target = ev.target as HTMLElement;
-        try {
-          if (livePreview.keyboardHandlerLivePreview(ev)) {
-            return;
-          }
-        } catch (e) {}
-        try {
-          if (ev.altKey == true && ev.shiftKey == true && ev.code == "KeyJ") {
-            ev.preventDefault();
-            const roamNativeDate = document.querySelector<HTMLSpanElement>(
-              "div.rm-topbar span.bp3-icon-calendar"
-            );
-            if (roamNativeDate) {
-              roamNativeDate.click();
-              setTimeout(() => {
-                const day = new Date().getDate();
-                const dayEl = Array.from(
-                  document.querySelectorAll<HTMLSpanElement>(".DayPicker-Day")
-                ).find((d) => d.innerText === `${day}`);
-                dayEl?.focus?.();
-              }, 1);
-            }
-            return true;
-          }
-
-          if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Comma") {
-            ev.preventDefault();
-            ev.stopPropagation();
-            if (target.nodeName === "TEXTAREA") {
-              roam42KeyboardLib.pressEsc();
-              setTimeout(async () => {
-                await roam42KeyboardLib.pressEsc();
-                common.moveForwardToDate(false);
-              }, 300);
-            } else {
-              common.moveForwardToDate(false);
-            }
-            return true;
-          }
-
-          if (
-            ev.ctrlKey == true &&
-            ev.shiftKey == true &&
-            ev.code == "Period"
-          ) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            if (target.nodeName === "TEXTAREA") {
-              roam42KeyboardLib.pressEsc();
-              setTimeout(async () => {
-                await roam42KeyboardLib.pressEsc();
-                common.moveForwardToDate(true);
-              }, 300);
-            } else {
-              common.moveForwardToDate(true);
-            }
-            return true;
-          }
-        } catch (e) {}
-        try {
-          if (quickRef.component.keyboardHandler(ev)) {
-            return;
-          }
-        } catch (e) {}
-        try {
-          if (privacyMode.keyboardHandler(ev)) {
-            return;
-          }
-        } catch (e) {}
-
-        //Open right side bar
-        if (ev.altKey && ev.shiftKey && ev.code == "Slash") {
-          ev.preventDefault();
-          common.sidebarRightToggle();
+    const keyDownListener = (ev: KeyboardEvent) => {
+      const target = ev.target as HTMLElement;
+      try {
+        if (livePreview.keyboardHandlerLivePreview(ev)) {
           return;
         }
-
-        //open left side bar
-        if (
-          ev.altKey &&
-          ev.shiftKey &&
-          (ev.code == "Backslash" || ev.key == "«")
-        ) {
+      } catch (e) {}
+      try {
+        if (ev.altKey == true && ev.shiftKey == true && ev.code == "KeyJ") {
           ev.preventDefault();
-          setTimeout(async () => {
-            await common.sidebarLeftToggle();
-          }, 50);
-          return;
-        }
-
-        //Date NLP
-        if (ev.altKey && ev.shiftKey && ev.code == "KeyD") {
-          if (target.nodeName === "TEXTAREA") {
-            var processText = dateProcessing.parseTextForDates(
-              (target as HTMLTextAreaElement).value
-            );
-            common.setEmptyNodeValue(
-              document.getElementById(target.id),
-              processText
-            );
-            ev.preventDefault();
-            ev.stopPropagation();
-          }
-          return;
-        }
-
-        //Dictonary Lookup
-        if (
-          ev.altKey &&
-          ev.shiftKey &&
-          (ev.code == "Period" || ev.key == "˘")
-        ) {
-          ev.preventDefault();
-          ev.stopPropagation();
-          dictionary.typeAheadLookup();
-          return;
-        }
-
-        // Daily notes page
-        if (ev.altKey && ev.shiftKey && (ev.key == "¯" || ev.code == "Comma")) {
-          ev.preventDefault();
-          ev.stopPropagation();
-          if (window != window.parent) {
-            window.parent.document.querySelector<HTMLIFrameElement>(
-              "#jsPanelDNP"
-            ).style.visibility = "hidden";
-          } else {
-            dailyNotesPopup.component.toggleVisible();
-          }
-          return;
-        }
-
-        // Daily notes page toggle in and out
-        if (ev.altKey && (ev.key == "y" || ev.code == "KeyY")) {
-          ev.preventDefault();
-          ev.stopPropagation();
-          if (window != window.parent) {
-            window.parent.focus();
-          } else {
-            // window.parent.document.querySelector('#jsPanelDNP').style.visibility = 'hidden';
-            dailyNotesPopup.component.panelDNP.style.visibility = "hidden";
+          const roamNativeDate = document.querySelector<HTMLSpanElement>(
+            "div.rm-topbar span.bp3-icon-calendar"
+          );
+          if (roamNativeDate) {
+            roamNativeDate.click();
             setTimeout(() => {
-              dailyNotesPopup.component.panelDNP.style.visibility = "visible";
-              document.getElementById("iframePanelDNP").focus();
-            }, 10);
+              const day = new Date().getDate();
+              const dayEl = Array.from(
+                document.querySelectorAll<HTMLSpanElement>(".DayPicker-Day")
+              ).find((d) => d.innerText === `${day}`);
+              dayEl?.focus?.();
+            }, 1);
           }
-          return;
+          return true;
         }
 
-        //simple markdown
-        if (ev.altKey && ev.shiftKey == false && ev.code == "KeyM") {
-          if (formatConverter.enabled) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            formatConverter.show();
+        if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Comma") {
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (target.nodeName === "TEXTAREA") {
+            roam42KeyboardLib.pressEsc();
+            setTimeout(async () => {
+              await roam42KeyboardLib.pressEsc();
+              common.moveForwardToDate(false);
+            }, 300);
+          } else {
+            common.moveForwardToDate(false);
           }
-          return;
+          return true;
         }
 
-        //HTML view
-        if (ev.altKey && ev.shiftKey == true && ev.code == "KeyM") {
-          if (formatConverter.enabled) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            formatConverter.htmlview();
+        if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Period") {
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (target.nodeName === "TEXTAREA") {
+            roam42KeyboardLib.pressEsc();
+            setTimeout(async () => {
+              await roam42KeyboardLib.pressEsc();
+              common.moveForwardToDate(true);
+            }, 300);
+          } else {
+            common.moveForwardToDate(true);
           }
+          return true;
+        }
+      } catch (e) {}
+      try {
+        if (quickRef.component.keyboardHandler(ev)) {
           return;
         }
-      };
-      document.addEventListener("keydown", keyDownListener);
-      return {
-        domListeners: [
-          { el: document, type: "keydown", listener: keyDownListener },
-        ],
-      };
-    }
-    return {};
+      } catch (e) {}
+      try {
+        if (privacyMode.keyboardHandler(ev)) {
+          return;
+        }
+      } catch (e) {}
+
+      //Open right side bar
+      if (ev.altKey && ev.shiftKey && ev.code == "Slash") {
+        ev.preventDefault();
+        common.sidebarRightToggle();
+        return;
+      }
+
+      //open left side bar
+      if (
+        ev.altKey &&
+        ev.shiftKey &&
+        (ev.code == "Backslash" || ev.key == "«")
+      ) {
+        ev.preventDefault();
+        setTimeout(async () => {
+          await common.sidebarLeftToggle();
+        }, 50);
+        return;
+      }
+
+      //Date NLP
+      if (ev.altKey && ev.shiftKey && ev.code == "KeyD") {
+        if (target.nodeName === "TEXTAREA") {
+          var processText = dateProcessing.parseTextForDates(
+            (target as HTMLTextAreaElement).value
+          );
+          common.setEmptyNodeValue(
+            document.getElementById(target.id),
+            processText
+          );
+          ev.preventDefault();
+          ev.stopPropagation();
+        }
+        return;
+      }
+
+      //Dictonary Lookup
+      if (ev.altKey && ev.shiftKey && (ev.code == "Period" || ev.key == "˘")) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        dictionary.typeAheadLookup();
+        return;
+      }
+
+      // Daily notes page
+      if (ev.altKey && ev.shiftKey && (ev.key == "¯" || ev.code == "Comma")) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (window != window.parent) {
+          window.parent.document.querySelector<HTMLIFrameElement>(
+            "#jsPanelDNP"
+          ).style.visibility = "hidden";
+        } else {
+          dailyNotesPopup.component.toggleVisible();
+        }
+        return;
+      }
+
+      // Daily notes page toggle in and out
+      if (ev.altKey && (ev.key == "y" || ev.code == "KeyY")) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (window != window.parent) {
+          window.parent.focus();
+        } else {
+          // window.parent.document.querySelector('#jsPanelDNP').style.visibility = 'hidden';
+          dailyNotesPopup.component.panelDNP.style.visibility = "hidden";
+          setTimeout(() => {
+            dailyNotesPopup.component.panelDNP.style.visibility = "visible";
+            document.getElementById("iframePanelDNP").focus();
+          }, 10);
+        }
+        return;
+      }
+
+      //simple markdown
+      if (ev.altKey && ev.shiftKey == false && ev.code == "KeyM") {
+        if (formatConverter.enabled) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          formatConverter.show();
+        }
+        return;
+      }
+
+      //HTML view
+      if (ev.altKey && ev.shiftKey == true && ev.code == "KeyM") {
+        if (formatConverter.enabled) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          formatConverter.htmlview();
+        }
+        return;
+      }
+    };
+    document.addEventListener("keydown", keyDownListener);
+    
+    return {
+      domListeners: [
+        { el: document, type: "keydown", listener: keyDownListener },
+      ],
+    };
   },
 });
