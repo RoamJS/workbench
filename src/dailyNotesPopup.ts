@@ -1,7 +1,7 @@
 import { get } from "./settings";
 import { baseUrl, simulateMouseOver } from "./commonFunctions";
 // @ts-ignore
-import jsPanel from "jspanel4";
+import { jsPanel } from "jspanel4";
 import Cookies from "js-cookie";
 
 export let state = "off";

@@ -10,6 +10,7 @@ import {
   show as formatConverterShow,
 } from "./formatConverter";
 import {
+  enabled as privacyEnabled,
   active as privacyActive,
   toggle as privacyToggle,
 } from "./privacyMode";
@@ -19,7 +20,6 @@ import { Button, Menu, MenuItem } from "@blueprintjs/core";
 import { component as qrComponent } from "./quickRef";
 import { show as tutorialShow } from "./tutorials";
 import { displayGraphStats, enabled } from "./stats";
-import { active as wbEnabled } from "./workBench";
 import {
   getRoamNavigator_IsEnabled,
   roamNavigatorStatusToast,
@@ -33,8 +33,8 @@ export let tippy: Instance = undefined;
 export const toggleFeature = (flag: boolean) => {
   if (flag) initialize();
   else {
-    document.querySelector("#roam42-menu").remove();
-    document.querySelector("#roam42-menu-spacer").remove();
+    document.querySelector("#roam42-menu")?.remove();
+    document.querySelector("#roam42-menu-spacer")?.remove();
   }
 };
 
@@ -161,7 +161,7 @@ export const displayMenu = () => {
             Dictionary <span style={{ fontSize: "7pt" }}>(Alt-Shift-.)</span>
           </MenuItem>
         )}
-        {privacyActive() && (
+        {privacyEnabled && (
           <MenuItem
             onClick={() => {
               tippy.hide();

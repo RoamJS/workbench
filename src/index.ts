@@ -5,8 +5,6 @@ import "roamjs-components/types";
 import * as common from "./commonFunctions";
 import * as dateProcessing from "./dateProcessing";
 import * as roam42KeyboardLib from "./r42kb_lib";
-import * as settings from "./settings";
-import * as help from "./help";
 
 // exts
 import * as dailyNotesPopup from "./dailyNotesPopup";
@@ -41,7 +39,7 @@ export default runExtension({
     };
 
     extensionAPI.settings.panel.create({
-      tabTitle: "WorkBench (Roam42)",
+      tabTitle: "WorkBench",
       settings: [
         {
           id: "workBench",

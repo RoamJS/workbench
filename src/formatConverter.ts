@@ -1,6 +1,6 @@
 import Cookies from "js-cookie";
 // @ts-ignore
-import jsPanel from "jspanel4";
+import { jsPanel } from "jspanel4";
 import {
   BlockInfo,
   currentPageZoomLevelUID,

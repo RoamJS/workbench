@@ -1,5 +1,5 @@
 // @ts-ignore
-import jsPanel from "jspanel4";
+import { jsPanel } from "jspanel4";
 
 export const show = () => {
   // if already open, do nothing
@@ -50,6 +50,6 @@ export const toggleFeature = (flag: boolean) => {
   if (flag) {
     show();
   } else {
-    document.querySelector("#r42Tutorials").remove();
+    document.querySelector("#r42Tutorials")?.remove();
   }
 };

@@ -9,7 +9,6 @@ import {
   getUserInformation,
   sortObjectByKey,
   createSiblingBlock,
-  createBlock,
   moveBlock,
   navigateUiTo,
   baseUrl,
@@ -31,10 +30,18 @@ import {
   show as showFormatConverter,
 } from "./formatConverter";
 import { displayMessage } from "./help";
-import { pressEsc } from "./r42kb_lib";
-import createOverlayRender from "roamjs-components/util/createOverlayRender";
-import FormDialog, { prompt } from "roamjs-components/components/FormDialog";
-import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
+import openBlockInSidebar from "roamjs-components/writes/openBlockInSidebar";
+import {
+  prompt,
+  render as renderFormDialog,
+} from "roamjs-components/components/FormDialog";
+import { render as renderToast } from "roamjs-components/components/Toast";
+import extractRef from "roamjs-components/util/extractRef";
+import extractTag from "roamjs-components/util/extractTag";
+import createBlock from "roamjs-components/writes/createBlock";
+import getChildrenLengthByParentUid from "roamjs-components/queries/getChildrenLengthByPageUid";
+import getOrderByBlockUid from "roamjs-components/queries/getOrderByBlockUid";
+import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
 import { render as renderSimpleAlert } from "roamjs-components/components/SimpleAlert";
 import { toggle as togglePrivacy } from "./privacyMode";
 import { component as quickRefComponent } from "./quickRef";
@@ -43,40 +50,18 @@ import { displayGraphStats } from "./stats";
 import { jumpCommandByActiveElement } from "./jumpNav";
 import iziToast, { IziToast } from "izitoast";
 import { get } from "./settings";
+import focusMainWindowBlock from "roamjs-components/util/focusMainWindowBlock";
 
 export let active = false;
-export const triggeredState: {
-  activeElementId: null | string;
-  selectedNodes: null | Element[];
-  activeElementSelectionStart: null | number;
-  activeElementSelectionEnd: null | number;
-} = {
-  activeElementId: null,
-  selectedNodes: null,
-  activeElementSelectionStart: null,
-  activeElementSelectionEnd: null,
-}; //tracks state of when the CP was triggered
 
-export let UI_Visible = false;
-export let keystate = {
+let keystate = {
   shiftKey: false,
-}; //tracks key state of CP input control
-type Context = "*" | "+" | "-";
+};
 type Command = {
   display: string;
-  searchText: string;
-  img: string;
   cmd: () => void;
-  context: Context;
 };
-
-type PathCallback = (
-  lastUid: string,
-  lastString: string,
-  uidPath?: string,
-  path?: string
-) => void;
-export let _commands: Command[] = []; //commands visible in CP
+let _commands: Command[] = [];
 
 const confirm = (content: string) =>
   new Promise<boolean>((resolve) =>
@@ -94,108 +79,6 @@ const getBlocksByParent = (uid: string) =>
       `[:find (pull ?c [:block/string, :block/uid]) :where [?b :block/uid "${uid}"] [?c :block/page ?b]]`
     )
     .map((a) => a[0]);
-
-const moveBlocks = async (
-  destinationUID: string,
-  iLocation: number,
-  zoom = 0,
-  makeBlockRef: boolean | string = false
-) => {
-  //zoom  = 0  do nothing, 1 move blocks opened in sidebar, 2, zoomed in main window
-  let zoomUID = "";
-  if (triggeredState.selectedNodes != null) {
-    if (iLocation == 0) {
-      //adding to top
-      for (let i = triggeredState.selectedNodes.length - 1; i >= 0; i--) {
-        const blockToMove = triggeredState.selectedNodes[i]
-          .querySelector(".rm-block-text")
-          .id.slice(-9);
-        if (makeBlockRef == true) {
-          await createSiblingBlock(blockToMove, `((${blockToMove}))`);
-          await sleep(50);
-        }
-        if (makeBlockRef === "reverse") {
-          createBlock(destinationUID, iLocation, `((${blockToMove}))`);
-        } else {
-          moveBlock(destinationUID, iLocation, blockToMove);
-        }
-        if (!zoomUID) zoomUID = destinationUID; //go to first block in move
-      }
-    } else {
-      for (let i = 0; i <= triggeredState.selectedNodes.length - 1; i++) {
-        const blockToMove = triggeredState.selectedNodes[i]
-          .querySelector(".rm-block-text")
-          .id.slice(-9);
-        if (makeBlockRef == true) {
-          await createSiblingBlock(blockToMove, `((${blockToMove}))`);
-          await sleep(50);
-        }
-        if (makeBlockRef === "reverse") {
-          createBlock(destinationUID, iLocation, `((${blockToMove}))`);
-        } else {
-          moveBlock(destinationUID, iLocation, blockToMove);
-        }
-        if (!zoomUID) zoomUID = destinationUID; //go to first block in move
-      }
-    }
-  } else if (triggeredState.activeElementId != null) {
-    if (destinationUID != triggeredState.activeElementId.slice(-9)) {
-      //single block move
-      let blockToMove = triggeredState.activeElementId.slice(-9);
-      if (makeBlockRef == true) {
-        await createSiblingBlock(blockToMove, `((${blockToMove}))`);
-        await sleep(50);
-      }
-      if (makeBlockRef === "reverse") {
-        createBlock(destinationUID, iLocation, `((${blockToMove}))`);
-      } else {
-        moveBlock(destinationUID, iLocation, blockToMove);
-      }
-      zoomUID = blockToMove;
-    }
-  }
-  if (zoom > 0) await sleep(150);
-  if (zoom == 1 && !!zoomUID)
-    //open in  side bar
-    navigateUiTo(zoomUID, true, "block");
-  else if (zoom == 2 && !!zoomUID)
-    //jump to in main page
-    navigateUiTo(zoomUID, false);
-};
-
-const MoveBlockDNP = async () => {
-  let dateExpression = await prompt({
-    title: "Roam42 WorkBench",
-    question: "Move this block to the top of what date?",
-    defaultAnswer: "Tomorrow",
-  });
-  if (!dateExpression) return;
-  let parsedDate = parseTextForDates(dateExpression);
-  if (parsedDate == dateExpression) {
-    displayMessage("Invalid date: " + dateExpression, 5000);
-    return;
-  } else parsedDate = parsedDate.substring(2, parsedDate.length - 3);
-  let makeBlockRef = await confirm("Leave Block Reference?");
-  //move the block, and leave behind a block ref
-  let destinationPage = await getPageUidByPageTitle(parsedDate);
-  if (destinationPage == "") {
-    //DNP does not exist, create it before going further
-    await createPage(parsedDate);
-    await sleep(150);
-    destinationPage = await getPageUidByPageTitle(parsedDate);
-  }
-  setTimeout(() => {
-    path.launch(
-      async (uid) => {
-        moveBlocks(uid, 0, 0, makeBlockRef);
-      },
-      excludeSelectedBlocks(),
-      destinationPage,
-      parsedDate.toString(),
-      true
-    );
-  }, 200);
-};
 
 const runInboxCommand = async (children: BlockNode[]) => {
   let pageUID = null;
@@ -265,7 +148,7 @@ const runInboxCommand = async (children: BlockNode[]) => {
         : false;
   }
 
-  await moveBlocks(pageUID, locationTopBotomValue, 0, blockRef);
+  // await moveBlocks(pageUID, locationTopBotomValue, 0, blockRef);
   textName = textName == null ? "" : " > " + textName;
   displayMessage(`Block(s) moved to ${pageName}${textName}`, 3000);
 };
@@ -389,61 +272,186 @@ export const userCommands = {
   },
 };
 
-export const restoreCurrentBlockSelection = async () => {
-  simulateMouseClick(document.body);
-  await sleep(100);
-  simulateMouseClick(document.getElementById(triggeredState.activeElementId));
-  await sleep(150);
-  const ta = document.activeElement as HTMLTextAreaElement;
-  ta.selectionStart = triggeredState.activeElementSelectionStart;
-  ta.selectionEnd = triggeredState.activeElementSelectionEnd;
-};
-const excludeSelectedBlocks = () => {
-  let nodes = [];
-  if (triggeredState.activeElementId != null)
-    nodes = [triggeredState.activeElementId.slice(-9)];
-  else if (triggeredState.selectedNodes != null)
-    for (const node of triggeredState.selectedNodes)
-      nodes.push(node.querySelector(".rm-block-text").id.slice(-9));
-  return nodes;
-};
-
 export const commandAddRunFromAnywhere = async (
   textToDisplay: string,
-  callback: () => void
+  callback: (uids: string[]) => void
 ) => {
   const callbackFunction = async () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
-    if (uid) {
-      const el = document.querySelector(`div[id*="${uid}"]`);
-      triggeredState.activeElementId = el?.id;
-    } else {
-      triggeredState.activeElementId = null;
-    }
-    triggeredState.selectedNodes = Array.from(
-      document.querySelectorAll(`.block-highlight-blue`)
-    );
-    if (triggeredState.activeElementId) {
-      await pressEsc(100);
-      await restoreCurrentBlockSelection();
-    }
-    callback();
+    const uids = uid
+      ? [uid]
+      : Array.from(document.querySelectorAll(`.block-highlight-blue`)).map(
+          (d) => extractRef(d.querySelector(".roam-block").id)
+        );
+    callback(uids);
   };
   commandPaletteAdd("(WB) " + textToDisplay, callbackFunction);
   _commands.push({
     display: textToDisplay,
-    searchText: textToDisplay.toLowerCase(),
-    img: "https://roamjs.com/roam42/img/wb/command.png",
     cmd: callbackFunction,
-    context: "*",
   });
 };
-// using the command palette has made these methods useless
-export const commandAddRunFromBlock = commandAddRunFromAnywhere;
-export const commandAddRunFromMultiBlockSelection = commandAddRunFromAnywhere;
+
+const moveBlocks = ({
+  uids,
+  base = 0,
+  parentUid,
+}: {
+  uids: string[];
+  base?: number;
+  parentUid: string;
+}) =>
+  Promise.all(
+    uids.map((uid, order) =>
+      window.roamAlphaAPI.moveBlock({
+        location: { "parent-uid": parentUid, order: base + order },
+        block: { uid },
+      })
+    )
+  );
+
+const leaveBlockReferences = ({ uids }: { uids: string[] }) =>
+  uids.map((uid) =>
+    createBlock({
+      parentUid: getParentUidByBlockUid(uid),
+      order: getOrderByBlockUid(uid),
+      node: { text: `((${uid}))` },
+    })
+  );
+
+const promptMoveBlocks = ({
+  uids,
+  getBase,
+}: {
+  uids: string[];
+  getBase: (n: string) => number;
+}) => {
+  if (!uids.length) {
+    renderToast({
+      content: "No blocks selected to move",
+      intent: "warning",
+      id: "workbench-warning",
+    });
+    return Promise.resolve(false);
+  } else {
+    return new Promise<boolean>((resolve) =>
+      renderFormDialog({
+        // @ts-ignore
+        onClose: () => resolve(false),
+        onSubmit: (data: { page: string; block: string }) => {
+          const parentUid = data.block || getPageUidByPageTitle(data.page);
+          if (parentUid) {
+            return moveBlocks({
+              uids,
+              parentUid,
+              base: getBase(parentUid),
+            }).then(() => resolve(true));
+          } else {
+            renderToast({
+              content: "Could not find parent to move blocks to.",
+              intent: "warning",
+              id: "workbench-warning",
+            });
+            resolve(false);
+          }
+        },
+        content: "Select either a page or block to move the block(s) to.",
+        fields: {
+          page: { type: "page", label: "Page" },
+          block: { type: "block", label: "Block" },
+        },
+      })
+    );
+  }
+};
 
 export const initialize = async () => {
   active = true;
+
+  commandAddRunFromAnywhere("Move Block(s) - to top (mbt)", async (uids) => {
+    promptMoveBlocks({ uids, getBase: () => 0 });
+  });
+  commandAddRunFromAnywhere("Move Block(s) - to bottom (mbb)", async (uids) => {
+    promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid });
+  });
+  commandAddRunFromAnywhere("Move Block(s) - DNP (mbdnp)", async (uids) => {
+    const dateExpression = await prompt({
+      title: "Roam42 WorkBench",
+      question: "Move this block to the top of what date?",
+      defaultAnswer: "Tomorrow",
+    });
+    if (!dateExpression) return;
+    const parsedDate = extractTag(parseTextForDates(dateExpression).trim());
+    if (!parsedDate) {
+      displayMessage("Invalid date: " + dateExpression, 5000);
+      return;
+    }
+    const makeBlockRef = await confirm("Leave Block Reference?");
+    if (makeBlockRef) {
+      await leaveBlockReferences({ uids });
+    }
+    //move the block, and leave behind a block ref
+    const destinationPage =
+      getPageUidByPageTitle(parsedDate) || (await createPage(parsedDate));
+    const base = getChildrenLengthByParentUid(destinationPage);
+    return moveBlocks({ base, uids, parentUid: destinationPage });
+  });
+  commandAddRunFromAnywhere(
+    "Move Block(s) - to top with block Ref (mbtr)",
+    async (uids) => {
+      await leaveBlockReferences({ uids });
+      promptMoveBlocks({ uids, getBase: () => 0 });
+    }
+  );
+  commandAddRunFromAnywhere(
+    "Move Block(s) - to bottom with block ref (mbbr)",
+    async (uids) => {
+      await leaveBlockReferences({ uids });
+      promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid });
+    }
+  );
+  commandAddRunFromAnywhere(
+    "Move Block(s) - to top & zoom (mbtz)",
+    async (uids) => {
+      promptMoveBlocks({ uids, getBase: () => 0 }).then(
+        (success) =>
+          success &&
+          window.roamAlphaAPI.ui.mainWindow.openBlock({
+            block: { uid: getParentUidByBlockUid(uids[0]) },
+          })
+      );
+    }
+  );
+  commandAddRunFromAnywhere(
+    "Move Block(s) - to bottom & zoom (mbbz)",
+    async (uids) => {
+      promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
+        (success) =>
+          success &&
+          window.roamAlphaAPI.ui.mainWindow.openBlock({
+            block: { uid: getParentUidByBlockUid(uids[0]) },
+          })
+      );
+    }
+  );
+  commandAddRunFromAnywhere(
+    "Move Block(s) - to top & sidebar (mbts)",
+    async (uids) => {
+      promptMoveBlocks({ uids, getBase: () => 0 }).then(
+        (success) => success && openBlockInSidebar(uids[0])
+      );
+    }
+  );
+  commandAddRunFromAnywhere(
+    "Move Block(s) - to bottom & sidebar (mbbs)",
+    async (uids) => {
+      promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
+        (success) => success && openBlockInSidebar(uids[0])
+      );
+    }
+  );
+
+  // COMMANDS BELOW THIS LINE HAVE NOT BEEN TESTED
   (await userCommands.UserDefinedCommandList()).forEach(({ key, ...item }) => {
     commandAddRunFromAnywhere(key, () => userCommands.runComand(item));
   });
@@ -458,13 +466,9 @@ export const initialize = async () => {
   });
   commandAddRunFromAnywhere(
     "Right Sidebar - close window panes (rscwp)",
-    async () => {
-      await pressEsc(100);
-      await pressEsc(100);
+    async (uids) => {
       await rightSidebarCloseWindow(0, false);
-      try {
-        await restoreCurrentBlockSelection();
-      } catch (e) {}
+      if (uids.length === 1) focusMainWindowBlock(uids[0]);
     }
   );
   commandAddRunFromAnywhere(
@@ -526,287 +530,65 @@ export const initialize = async () => {
       }
     }
   );
-  commandAddRunFromAnywhere("Sidebars - open both (sob)", async () => {
+  commandAddRunFromAnywhere("Sidebars - open both (sob)", async (uids) => {
     await setSideBarState(3);
     await setSideBarState(1);
-    if (triggeredState.activeElementId != null) {
-      await sleep(500);
-      await restoreCurrentBlockSelection();
-    }
+    if (uids.length === 1) focusMainWindowBlock(uids[0]);
   });
-  commandAddRunFromAnywhere("Sidebars - close both (scb)", async () => {
+  commandAddRunFromAnywhere("Sidebars - close both (scb)", async (uids) => {
     await setSideBarState(2);
     await setSideBarState(4);
-    if (triggeredState.activeElementId != null) {
-      await sleep(500);
-      await restoreCurrentBlockSelection();
-    }
+    if (uids.length === 1) focusMainWindowBlock(uids[0]);
   });
-  commandAddRunFromBlock("Move Block - to bottom (mbb)", async () => {
-    path.launch(
-      async (uid) => {
-        moveBlocks(uid, 10000);
-      },
-      excludeSelectedBlocks(),
-      null,
-      null,
-      true
-    );
-  });
-  commandAddRunFromMultiBlockSelection(
-    "Move Blocks - to bottom (mbb)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          moveBlocks(uid, 10000);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
-  commandAddRunFromBlock("Move Block - to top (mbt)", async () => {
-    path.launch(
-      async (uid) => {
-        moveBlocks(uid, 0);
-      },
-      excludeSelectedBlocks(),
-      null,
-      null,
-      true
-    );
-  });
-  commandAddRunFromMultiBlockSelection(
-    "Move Blocks - to top (mbt)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          moveBlocks(uid, 0);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
-  commandAddRunFromBlock(
-    "Move Block - to bottom with block ref (mbbr)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          moveBlocks(uid, 10000, 0, true);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
-  commandAddRunFromMultiBlockSelection(
-    "Move Blocks - to bottom with block ref (mbbr)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          moveBlocks(uid, 10000, 0, true);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
-  commandAddRunFromBlock(
-    "Move Block - to top with block Ref (mbtr)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          moveBlocks(uid, 0, 0, true);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
-  commandAddRunFromMultiBlockSelection(
-    "Move Blocks - to top with block refs (mbtr)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          moveBlocks(uid, 0, 0, true);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
-  commandAddRunFromBlock("Move Block - to bottom & zoom (mbbz)", async () => {
-    path.launch(
-      async (uid) => {
-        moveBlocks(uid, 10000, 2);
-      },
-      excludeSelectedBlocks(),
-      null,
-      null,
-      true
-    );
-  });
-  commandAddRunFromMultiBlockSelection(
-    "Move Blocks - to bottom & zoom (mbbz)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          moveBlocks(uid, 10000, 2);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
-  commandAddRunFromBlock("Move Block - to top & zoom (mbtz)", async () => {
-    path.launch(
-      async (uid) => {
-        moveBlocks(uid, 0, 2);
-      },
-      excludeSelectedBlocks(),
-      null,
-      null,
-      true
-    );
-  });
-  commandAddRunFromMultiBlockSelection(
-    "Move Blocks - to top & zoom (mbtz)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          moveBlocks(uid, 0, 2);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
-  commandAddRunFromBlock(
-    "Move Block - to bottom & sidebar (mbbs)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          moveBlocks(uid, 10000, 1);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
-  commandAddRunFromMultiBlockSelection(
-    "Move Blocks -to bottom & sidebar (mbbs)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          moveBlocks(uid, 10000, 1);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
-  commandAddRunFromBlock("Move Block - to top & sidebar (mbts)", async () => {
-    path.launch(
-      async (uid) => {
-        moveBlocks(uid, 0, 1);
-      },
-      excludeSelectedBlocks(),
-      null,
-      null,
-      true
-    );
-  });
-  commandAddRunFromMultiBlockSelection(
-    "Move Blocks -to top & sidebar (mbts)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          moveBlocks(uid, 0, 1);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
   commandAddRunFromAnywhere("Open Page (opp)", async () => {
-    path.launch(
-      async (uid) => {
-        navigateUiTo(uid);
-      },
-      [],
-      null,
-      null,
-      true
-    );
+    // path.launch(
+    //   async (uid) => {
+    //     navigateUiTo(uid);
+    //   },
+    //   [],
+    //   null,
+    //   null,
+    //   true
+    // );
   });
   commandAddRunFromAnywhere("Open Page in Sidebar (ops)", async () => {
-    path.launch(
-      async (uid) => {
-        navigateUiTo(uid, true);
-      },
-      [],
-      null,
-      null,
-      true
-    );
+    // path.launch(
+    //   async (uid) => {
+    //     navigateUiTo(uid, true);
+    //   },
+    //   [],
+    //   null,
+    //   null,
+    //   true
+    // );
   });
-
-  commandAddRunFromBlock("Move Block - DNP (mbdnp)", async () => {
-    MoveBlockDNP();
-  });
-  commandAddRunFromMultiBlockSelection(
-    "Move Blocks - DNP (mbdnp)",
-    async () => {
-      MoveBlockDNP();
-    }
-  );
 
   const pullBlockToThisBlock = async (
     uidToMove: string,
     makeBlockRef = false
   ) => {
-    const activeBlockUID = triggeredState.activeElementId.slice(-9);
+    const activeBlockUID = ""; // triggeredState.activeElementId.slice(-9);
     if (makeBlockRef == true) {
       await createSiblingBlock(uidToMove, `((${uidToMove}))`);
       await sleep(50);
     }
     await moveBlock(activeBlockUID, 0, uidToMove);
     await sleep(250);
-    await restoreCurrentBlockSelection();
+    // await restoreCurrentBlockSelection();
   };
-  commandAddRunFromBlock("Pull block (pbb)", async () => {
-    path.launch(async (uid) => {
-      pullBlockToThisBlock(uid);
-    }, excludeSelectedBlocks());
+  commandAddRunFromAnywhere("Pull block (pbb)", async () => {
+    // path.launch(async (uid) => {
+    //   pullBlockToThisBlock(uid);
+    // }, excludeSelectedBlocks());
   });
-  commandAddRunFromBlock("Pull block and leave block ref (pbr)", async () => {
-    path.launch(async (uid) => {
-      pullBlockToThisBlock(uid, true);
-    }, excludeSelectedBlocks());
-  });
+  commandAddRunFromAnywhere(
+    "Pull block and leave block ref (pbr)",
+    async () => {
+      // path.launch(async (uid) => {
+      //   pullBlockToThisBlock(uid, true);
+      // }, excludeSelectedBlocks());
+    }
+  );
 
   const pullChildBlocksToThisBlock = async (
     uidParent: string,
@@ -820,7 +602,7 @@ export const initialize = async () => {
         parentBlockInfo[0][0].children
       );
       for (let i = childBlocks.length - 1; i >= 0; i--) {
-        const activeBlockUID = triggeredState.activeElementId.slice(-9);
+        const activeBlockUID = ""; //triggeredState.activeElementId.slice(-9);
         if (makeBlockRef == true) {
           await createSiblingBlock(
             childBlocks[i].uid,
@@ -831,62 +613,53 @@ export const initialize = async () => {
         await moveBlock(activeBlockUID, 0, childBlocks[i].uid);
         await sleep(50);
       }
-      await restoreCurrentBlockSelection();
+      // await restoreCurrentBlockSelection();
     }
   };
-  commandAddRunFromBlock("Pull child blocks  (pcb)", async () => {
-    path.launch(async (uid) => {
-      pullChildBlocksToThisBlock(uid);
-    }, excludeSelectedBlocks());
+  commandAddRunFromAnywhere("Pull child blocks  (pcb)", async () => {
+    // path.launch(async (uid) => {
+    //   pullChildBlocksToThisBlock(uid);
+    // }, excludeSelectedBlocks());
   });
-  commandAddRunFromBlock(
+  commandAddRunFromAnywhere(
     "Pull child block and leave block ref (pcr)",
     async () => {
-      path.launch(async (uid) => {
-        pullChildBlocksToThisBlock(uid, true);
-      }, excludeSelectedBlocks());
+      // path.launch(async (uid) => {
+      //   pullChildBlocksToThisBlock(uid, true);
+      // }, excludeSelectedBlocks());
     }
   );
 
   commandAddRunFromAnywhere("Jump to Block in page (jbp)", async () => {
-    path.launch(
-      async (uid) => {
-        if (uid != path.trailUID[0]) {
-          navigateUiTo(path.trailUID[0], false);
-          await sleep(500);
-        }
-        document.querySelector(`[id*="${uid}"]`).scrollIntoView();
-        await sleep(200);
-        simulateMouseClick(document.body);
-        await sleep(50);
-        simulateMouseClick(document.querySelector(`[id*="${uid}"]`));
-        await sleep(250);
-        const ta = document.activeElement as HTMLTextAreaElement;
-        ta.selectionStart = ta.value.length;
-        ta.selectionEnd = ta.value.length;
-      },
-      excludeSelectedBlocks(),
-      null,
-      null,
-      true
-    );
+    // path.launch(
+    //   async (uid) => {
+    //     if (uid != path.trailUID[0]) {
+    //       navigateUiTo(path.trailUID[0], false);
+    //       await sleep(500);
+    //     }
+    //     document.querySelector(`[id*="${uid}"]`).scrollIntoView();
+    //     await sleep(200);
+    //     simulateMouseClick(document.body);
+    //     await sleep(50);
+    //     simulateMouseClick(document.querySelector(`[id*="${uid}"]`));
+    //     await sleep(250);
+    //     const ta = document.activeElement as HTMLTextAreaElement;
+    //     ta.selectionStart = ta.value.length;
+    //     ta.selectionEnd = ta.value.length;
+    //   },
+    //   excludeSelectedBlocks(),
+    //   null,
+    //   null,
+    //   true
+    // );
   });
 
   const sendBlockRefToThisBlock = async (
     destinationUID: string,
+    uids: string[],
     locationTop = true
   ) => {
-    let blockRefUIDS = [];
-    if (triggeredState.selectedNodes != null)
-      for (let i = 0; i <= triggeredState.selectedNodes.length - 1; i++)
-        blockRefUIDS.push(
-          triggeredState.selectedNodes[i]
-            .querySelector(".rm-block-text")
-            .id.slice(-9)
-        );
-    else if (triggeredState.activeElementId != null)
-      blockRefUIDS.push(triggeredState.activeElementId.slice(-9));
-    const makeBlockRefs = blockRefUIDS.map((e) => `((${e}))`);
+    const makeBlockRefs = uids.map((e) => `((${e}))`);
     if (locationTop == true) {
       //add to top
       await batchCreateBlocks(destinationUID, 0, makeBlockRefs);
@@ -895,59 +668,53 @@ export const initialize = async () => {
     }
     await sleep(150);
     try {
-      await restoreCurrentBlockSelection();
+      // await restoreCurrentBlockSelection();
     } catch (e) {}
   };
-  commandAddRunFromBlock("Send block ref - to top (sbrt)", async () => {
-    path.launch(
-      async (uid) => {
-        sendBlockRefToThisBlock(uid, true);
-      },
-      excludeSelectedBlocks(),
-      null,
-      null,
-      true
-    );
+  commandAddRunFromAnywhere("Send block ref - to top (sbrt)", async () => {
+    // path.launch(
+    //   async (uid) => {
+    //     sendBlockRefToThisBlock(uid, true);
+    //   },
+    //   excludeSelectedBlocks(),
+    //   null,
+    //   null,
+    //   true
+    // );
   });
-  commandAddRunFromMultiBlockSelection(
-    "Send block refs - to top (sbrt)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          sendBlockRefToThisBlock(uid, true);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
-  commandAddRunFromBlock("Send block ref - to bottom (sbrb)", async () => {
-    path.launch(
-      async (uid) => {
-        sendBlockRefToThisBlock(uid, false);
-      },
-      excludeSelectedBlocks(),
-      null,
-      null,
-      true
-    );
+  commandAddRunFromAnywhere("Send block refs - to top (sbrt)", async () => {
+    // path.launch(
+    //   async (uid) => {
+    //     sendBlockRefToThisBlock(uid, true);
+    //   },
+    //   excludeSelectedBlocks(),
+    //   null,
+    //   null,
+    //   true
+    // );
   });
-  commandAddRunFromMultiBlockSelection(
-    "Send block refs - to bottom (sbrb)",
-    async () => {
-      path.launch(
-        async (uid) => {
-          sendBlockRefToThisBlock(uid, false);
-        },
-        excludeSelectedBlocks(),
-        null,
-        null,
-        true
-      );
-    }
-  );
+  commandAddRunFromAnywhere("Send block ref - to bottom (sbrb)", async () => {
+    // path.launch(
+    //   async (uid) => {
+    //     sendBlockRefToThisBlock(uid, false);
+    //   },
+    //   excludeSelectedBlocks(),
+    //   null,
+    //   null,
+    //   true
+    // );
+  });
+  commandAddRunFromAnywhere("Send block refs - to bottom (sbrb)", async () => {
+    // path.launch(
+    //   async (uid) => {
+    //     sendBlockRefToThisBlock(uid, false);
+    //   },
+    //   excludeSelectedBlocks(),
+    //   null,
+    //   null,
+    //   true
+    // );
+  });
 
   commandAddRunFromAnywhere("Roam42 Privacy Mode (alt-shift-p)", togglePrivacy);
   commandAddRunFromAnywhere("Roam42 Converter (alt-m)", showFormatConverter);
@@ -965,20 +732,23 @@ export const initialize = async () => {
     moveForwardToDate(false);
   });
 
-  commandAddRunFromBlock("Heading 1 (Alt+Shift+1)", () => {
+  commandAddRunFromAnywhere("Heading 1 (Alt+Shift+1)", () => {
     jumpCommandByActiveElement("ctrl+j 5");
   });
-  commandAddRunFromBlock("Heading 2 (Alt+Shift+2)", () => {
+  commandAddRunFromAnywhere("Heading 2 (Alt+Shift+2)", () => {
     jumpCommandByActiveElement("ctrl+j 6");
   });
-  commandAddRunFromBlock("Heading 3 (Alt+Shift+3)", () => {
+  commandAddRunFromAnywhere("Heading 3 (Alt+Shift+3)", () => {
     jumpCommandByActiveElement("ctrl+j 7");
   });
 
-  commandAddRunFromBlock("Copy Block Reference - Jump Nav (Meta-j r)", () => {
-    jumpCommandByActiveElement("ctrl+j r");
-  });
-  commandAddRunFromBlock(
+  commandAddRunFromAnywhere(
+    "Copy Block Reference - Jump Nav (Meta-j r)",
+    () => {
+      jumpCommandByActiveElement("ctrl+j r");
+    }
+  );
+  commandAddRunFromAnywhere(
     "Copy Block Reference as alias - Jump Nav (Meta-j s)",
     () => {
       jumpCommandByActiveElement("ctrl+j s");
@@ -1040,21 +810,21 @@ export const initialize = async () => {
   };
 
   const deleteSomePage = async () => {
-    await path.launch(
-      async (uid) => {
-        const blockInfo = await getBlockInfoByUID(uid, false, true);
-        let currentPageTitle = blockInfo[0][0].title;
-        if (currentPageTitle == undefined) {
-          currentPageTitle = blockInfo[0][0].parents[0].title;
-          uid = blockInfo[0][0].parents[0].uid;
-        }
-        confirmDeletePage(uid, currentPageTitle);
-      },
-      [],
-      null,
-      null,
-      true
-    );
+    // await path.launch(
+    //   async (uid) => {
+    //     const blockInfo = await getBlockInfoByUID(uid, false, true);
+    //     let currentPageTitle = blockInfo[0][0].title;
+    //     if (currentPageTitle == undefined) {
+    //       currentPageTitle = blockInfo[0][0].parents[0].title;
+    //       uid = blockInfo[0][0].parents[0].uid;
+    //     }
+    //     confirmDeletePage(uid, currentPageTitle);
+    //   },
+    //   [],
+    //   null,
+    //   null,
+    //   true
+    // );
   };
   commandAddRunFromAnywhere("Delete current page (dcp)", async () => {
     deleteCurrentPage();
@@ -1161,13 +931,11 @@ export const initialize = async () => {
     return finalString.normalize(`NFC`); // return the `finalString` (without any Unicode `lineTerminators`)
   };
 
-  commandAddRunFromMultiBlockSelection(
+  commandAddRunFromAnywhere(
     "Remove blank blocks at current level (rbbcl) - not recursive",
-    async () => {
-      for (let i = triggeredState.selectedNodes.length - 1; i >= 0; i--) {
-        const blockToAnalyze = triggeredState.selectedNodes[i]
-          .querySelector(".rm-block-text")
-          .id.slice(-9);
+    async (uids) => {
+      for (let i = uids.length - 1; i >= 0; i--) {
+        const blockToAnalyze = uids[i];
         const blockInfo = await getBlockInfoByUID(blockToAnalyze, true);
         if (!blockInfo[0][0].children) {
           //don't process if it has child blocks
@@ -1296,7 +1064,7 @@ export const initialize = async () => {
     });
   });
 
-  commandAddRunFromBlock("Create vanity block UID (cvbu)", () => {
+  commandAddRunFromAnywhere("Create vanity block UID (cvbu)", () => {
     iziToast.info({
       timeout: 120000,
       overlay: true,
@@ -1351,7 +1119,7 @@ export const initialize = async () => {
             instance.hide({ transitionOut: "fadeOut" }, toast, "button");
             await window.roamAlphaAPI.createBlock({
               location: {
-                "parent-uid": triggeredState.activeElementId.slice(-9),
+                "parent-uid": "", // triggeredState.activeElementId.slice(-9),
                 order: 0,
               },
               block: {
@@ -1411,11 +1179,11 @@ export const initialize = async () => {
                 .padStart(2, "0")} `;
               const newPageUID = await createPage(newPageTitle);
 
-              const userCommandsParentUID = await createBlock(
-                newPageUID,
-                0,
-                "**User Defined Commands**"
-              );
+              const userCommandsParentUID = await createBlock({
+                parentUid: newPageUID,
+                order: 0,
+                node: { text: "**User Defined Commands**" },
+              });
               const userCommandsArray = userDefinedCommands.map((c) => c.key);
               await batchCreateBlocks(
                 userCommandsParentUID,
@@ -1423,11 +1191,11 @@ export const initialize = async () => {
                 userCommandsArray
               );
 
-              const builtinCommandsParentUID = await createBlock(
-                newPageUID,
-                1,
-                "**Built-in Commands**"
-              );
+              const builtinCommandsParentUID = await createBlock({
+                parentUid: newPageUID,
+                order: 1,
+                node: { text: "**Built-in Commands**" },
+              });
               const builtinCommandsArray = _commands.map((c) => c.display);
               await batchCreateBlocks(
                 builtinCommandsParentUID,
@@ -1460,47 +1228,4 @@ export const toggleFeature = (flag: boolean) => {
     );
     active = false;
   }
-};
-
-export const path = {
-  level: 0, // tracks level of path nav. 0 is page level, 1 is child blocks
-  UI_Visible: false,
-  trailUID: null as null | string[],
-  trailString: null as null | string[],
-  excludeUIDs: [] as string[],
-  callBack: null as null | PathCallback,
-  allPagesForGraphSearch: null as null | {},
-  currentPageBlocks: null as null | {},
-  canPageBeSelected: false,
-  launch: (
-    callBackFunction: PathCallback,
-    excludeUIDs: string[] = [],
-    startUID: string = null,
-    startString: string = null,
-    canPageBeSelected = false
-  ) => {
-    path.level = 0;
-    path.trailUID = [startUID];
-    path.trailString = [startString];
-    path.excludeUIDs = excludeUIDs;
-    path.callBack = callBackFunction;
-    path.canPageBeSelected = canPageBeSelected;
-    path.allPagesForGraphSearch = null;
-    path.currentPageBlocks = null;
-
-    if (startUID != null) path.level = 1;
-    createOverlayRender(
-      "roam42-wB-path-container",
-      FormDialog
-    )({
-      onSubmit: (data: { page: string }) => {
-        path.callBack(data.page, getPageTitleByPageUid(data.page));
-        path.callBack = null;
-      },
-      fields: {
-        page: { type: "page", label: "Enter Page Name" },
-      },
-    });
-  },
-  initialize: async () => {},
 };

@@ -3,8 +3,10 @@ import { displayMessage } from "./help";
 
 let privacyList: string[] = [];
 let observer: MutationObserver = undefined;
+export let enabled = false;
 let _active = false;
 let roamPageWithPrivacyList = "Roam42 Privacy Mode List";
+const TOGGLE_EVENT = "roamjs:workbench:togglePrivacy";
 
 export const keyboardHandler = (ev: KeyboardEvent) => {
   if (window != window.parent) {
@@ -354,7 +356,7 @@ const scanBlocksForPageReferences = () => {
       }
     });
   });
-}; // end of   scanBlocksForPageReferences()
+};
 
 export const observe = async () => {
   var privacyDefined = await getPrivateBlockDetails();
@@ -372,33 +374,35 @@ export const destroy = () => {
   document
     .querySelectorAll("div[modifiedPrivacyMode]")
     .forEach((e) => e.removeAttribute("modifiedPrivacyMode"));
-  observer.disconnect();
+  observer?.disconnect();
   observer = undefined;
   privacyList = [];
   _active = false;
 };
 
+const toggleChildIframes = () => {
+  if (_active) destroy();
+  else observe();
+};
+
 export const toggle = () => {
-  toggleChildIframes();
   try {
     (
       document.getElementById("roam42-live-preview-iframe") as HTMLIFrameElement
-    ).contentWindow.roam42.privacyMode.toggleChildIframes();
+    ).contentWindow.document.body.dispatchEvent(new Event(TOGGLE_EVENT));
     (
       document.getElementById("iframePanelDNP") as HTMLIFrameElement
-    ).contentWindow.roam42.privacyMode.toggleChildIframes();
-  } catch (e) {}
-};
-
-export const toggleChildIframes = () => {
-  if (_active) {
-    destroy();
-  } else {
-    observe();
+    ).contentWindow.document.body.dispatchEvent(new Event(TOGGLE_EVENT));
+  } catch (e) {
+    console.error(e);
   }
 };
 
 export const toggleFeature = (flag: boolean) => {
-  if (flag) observe();
-  else destroy();
+  enabled = flag;
+  if (flag) {
+    document.body.addEventListener(TOGGLE_EVENT, toggleChildIframes);
+  } else {
+    document.body.removeEventListener(TOGGLE_EVENT, toggleChildIframes);
+  }
 };

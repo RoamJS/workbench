@@ -16,14 +16,14 @@ export const typeAheadLookup = (target?: Element) => {
 
 export const typeaheadDisplayTextArea = (srcElementId: string) => {
   currentTextArea = srcElementId;
-  $("#rmSearch").show();
-  $("#rmSearchBox").focus();
+  document.getElementById("rmSearch").style.display = "block";
+  document.getElementById("rmSearchBox").focus();
 };
 
 export const typeaheadDisplayOtherAreas = () => {
   currentTextArea = "OTHERAREAS";
   document.getElementById("rmSearch").style.display = "block";
-  document.getElementById("#rmSearchBox").focus();
+  document.getElementById("rmSearchBox").focus();
 };
 
 const TypeAhead = () => {

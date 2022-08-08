@@ -2,6 +2,7 @@ import iziToast, { IziToastTransitionIn } from "izitoast";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import type { SidebarWindowInput } from "roamjs-components/types/native";
 import { getRoamDate, testIfRoamDateAndConvert } from "./dateProcessing";
+import { displayMessage } from "./help";
 import { simulateKey } from "./r42kb_lib";
 
 export const sleep = (m: number) => new Promise((r) => setTimeout(r, m));
@@ -268,7 +269,7 @@ export const currentPageUID = () => {
 export const swapWithSideBar = async (paneNumber = 1) => {
   const panes = await window.roamAlphaAPI.ui.rightSidebar.getWindows();
   if (panes.length == 0) {
-    window.roam42.help.displayMessage(
+    displayMessage(
       "No open side windows to swap with.",
       5000
     );
