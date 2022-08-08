@@ -32,10 +32,9 @@ const extensionId = "workbench";
 
 export default runExtension({
   extensionId,
-  run: ({ extensionAPI, ...extension }) => {
-    console.log(extension);
+  run: ({ extensionAPI, extension }) => {
     window.roam42 = {
-      buildID: process.env.ROAMJS_VERSION || "Version Not Found",
+      buildID: extension.version,
     };
 
     extensionAPI.settings.panel.create({
@@ -338,7 +337,7 @@ export default runExtension({
       }
     };
     document.addEventListener("keydown", keyDownListener);
-    
+
     return {
       domListeners: [
         { el: document, type: "keydown", listener: keyDownListener },

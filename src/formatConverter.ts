@@ -4,10 +4,10 @@ import { jsPanel } from "jspanel4";
 import {
   BlockInfo,
   currentPageZoomLevelUID,
+  displayMessage,
   getBlockInfoByUID,
   getBlocksReferringToThisPage,
 } from "./commonFunctions";
-import { displayMessage } from "./help";
 
 type JSONNode = {
   uid: string;

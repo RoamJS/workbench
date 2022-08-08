@@ -1,7 +1,6 @@
 //some stats based on work of zsolt: https://roamresearch.com/#/app/Zsolt-Blog/page/WUn5PuTDV
 
-import { getUserInformation } from "./commonFunctions";
-import { displayMessage } from "./help";
+import { displayMessage, getUserInformation } from "./commonFunctions";
 
 const queryNonCodeBlocks = `[:find (count ?s) . :with ?e  :where [?e :block/string ?s]  
 					(not (or [(clojure.string/starts-with? ?s "${String.fromCharCode(

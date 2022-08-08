@@ -1,5 +1,4 @@
-import { navigateUiTo } from "./commonFunctions";
-import { displayMessage } from "./help";
+import { navigateUiTo, displayMessage } from "./commonFunctions";
 
 let privacyList: string[] = [];
 let observer: MutationObserver = undefined;

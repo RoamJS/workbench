@@ -2,8 +2,21 @@ import iziToast, { IziToastTransitionIn } from "izitoast";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import type { SidebarWindowInput } from "roamjs-components/types/native";
 import { getRoamDate, testIfRoamDateAndConvert } from "./dateProcessing";
-import { displayMessage } from "./help";
 import { simulateKey } from "./r42kb_lib";
+import { render as renderToast } from "roamjs-components/components/Toast";
+
+export const currentPageUID =
+  window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid;
+
+export const displayMessage = (content: string, timeout?: number) =>
+  renderToast({
+    content,
+    intent: "warning",
+    id: "workbench-warning",
+    timeout,
+  });
+
+// EVERYTHING BELOW HERE IS DEPRECATED
 
 export const sleep = (m: number) => new Promise((r) => setTimeout(r, m));
 
@@ -218,77 +231,6 @@ export const restoreLocationParametersOfTexArea = (locationFacts: {
       el.selectionEnd = locationFacts.selEnd;
     }, 100);
   }, 100);
-};
-
-export const rightSidebarCloseWindow = async (
-  iWindow: number,
-  bRestoreLocation = true
-) => {
-  //iWindow = 0 to close all windows, otherwise the number of the window to close
-  if ((await window.roamAlphaAPI.ui.rightSidebar.getWindows().length) > 0) {
-    let restoreLocation = bRestoreLocation
-      ? saveLocationParametersOfTextArea(
-          document.activeElement as HTMLTextAreaElement
-        )
-      : null;
-    await window.roamAlphaAPI.ui.rightSidebar.open();
-    await sleep(250);
-    var panes = document.querySelectorAll(".sidebar-content .bp3-icon-cross");
-    if (iWindow == 0) {
-      const numberOfPanes = panes.length;
-      for (let i = 0; i <= numberOfPanes - 1; i++) {
-        simulateMouseClick(
-          document.querySelector(".sidebar-content .bp3-icon-cross")
-        );
-        await sleep(100);
-      }
-    } else {
-      simulateMouseClick(panes[iWindow - 1]);
-    }
-    if (bRestoreLocation) restoreLocationParametersOfTexArea(restoreLocation);
-    await sleep(300);
-  }
-};
-
-export const currentPageUID = () => {
-  let uid = "";
-  if (window.location.href.includes("page")) {
-    uid = window.location.href.replace(baseUrl().href + "/", "");
-    try {
-      //test uid if it is the title
-      const testForParents = getBlockInfoByUID(uid, false, true);
-      if (testForParents[0][0].parents)
-        uid = testForParents[0][0].parents[0].uid;
-    } catch (e) {}
-  } else {
-    uid = window.roamAlphaAPI.util.dateToPageUid(new Date());
-  }
-  return uid;
-};
-
-export const swapWithSideBar = async (paneNumber = 1) => {
-  const panes = await window.roamAlphaAPI.ui.rightSidebar.getWindows();
-  if (panes.length == 0) {
-    displayMessage(
-      "No open side windows to swap with.",
-      5000
-    );
-    return;
-  }
-  const mainPageUID = currentPageUID();
-  const pane = window.roamAlphaAPI.ui.rightSidebar.getWindows()[paneNumber - 1];
-  let paneToSwap =
-    pane.type === "outline"
-      ? pane["page-uid"]
-      : pane.type === "mentions"
-      ? pane["mentions-uid"]
-      : pane["block-uid"];
-  if (paneToSwap != undefined) {
-    navigateUiTo(paneToSwap, false); //move to main window
-    navigateUiTo(mainPageUID, true); //move to side bar main page
-    await sleep(500);
-    await rightSidebarCloseWindow(paneNumber + 1, false);
-  }
 };
 
 export const sidebarRightToggle = () => {

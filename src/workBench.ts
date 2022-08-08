@@ -1,9 +1,11 @@
-import Cookies from "js-cookie";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
+import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
+import getPageTitleByBlockUid from "roamjs-components/queries/getPageTitleByBlockUid";
+import getPageUidByBlockUid from "roamjs-components/queries/getPageUidByBlockUid";
+import createPage from "roamjs-components/writes/createPage";
 import {
   commandPaletteAdd,
   getBlocksReferringToThisPage,
-  simulateMouseClick,
   sleep,
   BlockNode,
   getUserInformation,
@@ -12,15 +14,12 @@ import {
   moveBlock,
   navigateUiTo,
   baseUrl,
-  rightSidebarCloseWindow,
-  swapWithSideBar,
   getBlockInfoByUID,
-  setSideBarState,
-  createPage,
   sortObjectsByOrder,
   batchCreateBlocks,
   deleteBlock,
   currentPageUID,
+  displayMessage,
   moveForwardToDate,
 } from "./commonFunctions";
 import { getRoamDate, parseTextForDates } from "./dateProcessing";
@@ -29,7 +28,6 @@ import {
   resolveBlockRefsInText,
   show as showFormatConverter,
 } from "./formatConverter";
-import { displayMessage } from "./help";
 import openBlockInSidebar from "roamjs-components/writes/openBlockInSidebar";
 import {
   prompt,
@@ -51,6 +49,8 @@ import { jumpCommandByActiveElement } from "./jumpNav";
 import iziToast, { IziToast } from "izitoast";
 import { get } from "./settings";
 import focusMainWindowBlock from "roamjs-components/util/focusMainWindowBlock";
+import React from "react";
+import { SidebarWindow } from "roamjs-components/types/native";
 
 export let active = false;
 
@@ -274,7 +274,8 @@ export const userCommands = {
 
 export const commandAddRunFromAnywhere = async (
   textToDisplay: string,
-  callback: (uids: string[]) => void
+  callback: (uids: string[]) => Promise<unknown>,
+  restoreFocus?: true
 ) => {
   const callbackFunction = async () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
@@ -283,11 +284,16 @@ export const commandAddRunFromAnywhere = async (
       : Array.from(document.querySelectorAll(`.block-highlight-blue`)).map(
           (d) => extractRef(d.querySelector(".roam-block").id)
         );
-    callback(uids);
+    callback(uids).then(() => {
+      if (restoreFocus && uids.length === 1) {
+        focusMainWindowBlock(uids[0]);
+      }
+    });
   };
-  commandPaletteAdd("(WB) " + textToDisplay, callbackFunction);
+  const display = "(WB) " + textToDisplay;
+  commandPaletteAdd(display, callbackFunction);
   _commands.push({
-    display: textToDisplay,
+    display,
     cmd: callbackFunction,
   });
 };
@@ -319,16 +325,18 @@ const leaveBlockReferences = ({ uids }: { uids: string[] }) =>
     })
   );
 
-const promptMoveBlocks = ({
-  uids,
-  getBase,
+const promptPathAndCallback = ({
+  valid: check,
+  callback,
+  supportPages,
 }: {
-  uids: string[];
-  getBase: (n: string) => number;
+  valid: boolean;
+  callback: (inputUid: string) => Promise<unknown>;
+  supportPages?: boolean;
 }) => {
-  if (!uids.length) {
+  if (!check) {
     renderToast({
-      content: "No blocks selected to move",
+      content: "No blocks selected",
       intent: "warning",
       id: "workbench-warning",
     });
@@ -338,36 +346,129 @@ const promptMoveBlocks = ({
       renderFormDialog({
         // @ts-ignore
         onClose: () => resolve(false),
-        onSubmit: (data: { page: string; block: string }) => {
-          const parentUid = data.block || getPageUidByPageTitle(data.page);
+        onSubmit: (data: { block: string; page?: string }) => {
+          const parentUid = data.page
+            ? getPageUidByPageTitle(data.page) || data.block
+            : data.block;
           if (parentUid) {
-            return moveBlocks({
-              uids,
-              parentUid,
-              base: getBase(parentUid),
-            }).then(() => resolve(true));
+            return callback(parentUid)
+              .then(() => resolve(true))
+              .catch((e) => {
+                renderToast({
+                  content: `Failed to act on user inputs: ${e.message}`,
+                  intent: "warning",
+                  id: "workbench-warning",
+                });
+                resolve(false);
+              });
           } else {
             renderToast({
-              content: "Could not find parent to move blocks to.",
+              content: "Could not find ref based on user input",
               intent: "warning",
               id: "workbench-warning",
             });
             resolve(false);
           }
         },
-        content: "Select either a page or block to move the block(s) to.",
-        fields: {
-          page: { type: "page", label: "Page" },
-          block: { type: "block", label: "Block" },
-        },
+        content: React.createElement(
+          "div",
+          { className: "mb-4 text-lg font-semibold" },
+          supportPages ? "Select either a page or block" : "Select a block"
+        ),
+        fields: supportPages
+          ? {
+              page: { type: "page", label: "Page" },
+              block: { type: "block", label: "Block" },
+            }
+          : {
+              block: { type: "block", label: "Block" },
+            },
       })
     );
   }
 };
 
+const promptMoveBlocks = ({
+  uids,
+  getBase,
+}: {
+  uids: string[];
+  getBase: (n: string) => number;
+}) =>
+  promptPathAndCallback({
+    valid: !!uids.length,
+    supportPages: true,
+    callback: (inputUid) =>
+      moveBlocks({
+        uids,
+        parentUid: inputUid,
+        base: getBase(inputUid),
+      }),
+  });
+
+const promptPullBlock = async (uids: string[], makeBlockRef = false) => {
+  promptPathAndCallback({
+    valid: !!uids.length,
+    callback: (inputUid) => {
+      const targetUid = uids[0];
+      const setup = makeBlockRef
+        ? createBlock({
+            parentUid: getParentUidByBlockUid(inputUid),
+            node: { text: `((${inputUid}))` },
+            order: getOrderByBlockUid(inputUid),
+          })
+        : Promise.resolve();
+      return setup.then(() =>
+        window.roamAlphaAPI.moveBlock({
+          location: { "parent-uid": targetUid, order: 0 },
+          block: { uid: inputUid },
+        })
+      );
+    },
+  });
+};
+
+const swapWithSideBar = async (index = 0) => {
+  const panes = window.roamAlphaAPI.ui.rightSidebar.getWindows();
+  if (panes.length == 0) {
+    renderToast({
+      content: "No open sidebar windows to swap with.",
+      id: "workbench-warning",
+    });
+    return;
+  }
+  const mainPageUID = await currentPageUID();
+  const pane = panes[index];
+  const paneToSwap =
+    pane.type === "outline"
+      ? pane["page-uid"]
+      : pane.type === "mentions"
+      ? pane["mentions-uid"]
+      : pane["block-uid"];
+  if (paneToSwap != undefined) {
+    window.roamAlphaAPI.ui.mainWindow.openBlock({
+      block: { uid: paneToSwap },
+    });
+    window.roamAlphaAPI.ui.rightSidebar.removeWindow({
+      window: { "block-uid": paneToSwap, type: pane.type },
+    });
+    window.roamAlphaAPI.ui.rightSidebar.addWindow({
+      window: { "block-uid": mainPageUID, type: "outline" },
+    });
+  }
+};
+
+const getWindowUid = (pane: SidebarWindow) =>
+  pane["type"] === "mentions"
+    ? pane["mentions-uid"]
+    : pane["type"] == "outline"
+    ? pane["page-uid"]
+    : pane["block-uid"];
+
 export const initialize = async () => {
   active = true;
 
+  // Commands are ordered in line with the docs at: https://roamjs.com/extensions/workbench/command_palette_plus
   commandAddRunFromAnywhere("Move Block(s) - to top (mbt)", async (uids) => {
     promptMoveBlocks({ uids, getBase: () => 0 });
   });
@@ -392,7 +493,8 @@ export const initialize = async () => {
     }
     //move the block, and leave behind a block ref
     const destinationPage =
-      getPageUidByPageTitle(parsedDate) || (await createPage(parsedDate));
+      getPageUidByPageTitle(parsedDate) ||
+      (await createPage({ title: parsedDate }));
     const base = getChildrenLengthByParentUid(destinationPage);
     return moveBlocks({ base, uids, parentUid: destinationPage });
   });
@@ -451,30 +553,35 @@ export const initialize = async () => {
     }
   );
 
-  // COMMANDS BELOW THIS LINE HAVE NOT BEEN TESTED
-  (await userCommands.UserDefinedCommandList()).forEach(({ key, ...item }) => {
-    commandAddRunFromAnywhere(key, () => userCommands.runComand(item));
-  });
-  commandAddRunFromAnywhere("Daily Notes (dn)", () => {
-    navigateUiTo(getRoamDate(new Date()), keystate.shiftKey);
-  });
-  commandAddRunFromAnywhere("All Pages", () => {
-    document.location.href = baseUrl().href.replace("page", "") + "/search";
-  });
-  commandAddRunFromAnywhere("Graph Overview", () => {
-    document.location.href = baseUrl().href.replace("page", "") + "/graph";
+  commandAddRunFromAnywhere("Pull block (pbb)", async (uids) => {
+    promptPullBlock(uids);
   });
   commandAddRunFromAnywhere(
-    "Right Sidebar - close window panes (rscwp)",
+    "Pull block and leave block ref (pbr)",
     async (uids) => {
-      await rightSidebarCloseWindow(0, false);
-      if (uids.length === 1) focusMainWindowBlock(uids[0]);
+      promptPullBlock(uids, true);
     }
   );
+
+  commandAddRunFromAnywhere("Jump to Block in page (jbp)", async () => {
+    promptPathAndCallback({
+      valid: true,
+      callback: (inputUid) => {
+        return window.roamAlphaAPI.ui.mainWindow
+          .openPage({
+            page: { uid: getPageUidByBlockUid(inputUid) },
+          })
+          .then(() => {
+            focusMainWindowBlock(inputUid);
+          });
+      },
+    });
+  });
+
   commandAddRunFromAnywhere(
     "Sidebars - swap with main window (swap)",
     async () => {
-      await swapWithSideBar();
+      swapWithSideBar();
     }
   );
   commandAddRunFromAnywhere(
@@ -488,12 +595,7 @@ export const initialize = async () => {
       let outputString = "";
       let iCounter = 1;
       for (const pane of panes) {
-        let paneUID =
-          pane["type"] === "mentions"
-            ? pane["mentions-uid"]
-            : pane["type"] == "outline"
-            ? pane["page-uid"]
-            : pane["block-uid"];
+        let paneUID = getWindowUid(pane);
         if (paneUID != undefined) {
           let paneInfo = (await getBlockInfoByUID(paneUID, false, true))[0][0];
           if (paneInfo.title)
@@ -525,70 +627,119 @@ export const initialize = async () => {
           paneToSwapVal > 0 &&
           paneToSwapVal <= panes.length
         )
-          await swapWithSideBar(paneToSwapVal);
+          await swapWithSideBar(paneToSwapVal - 1);
         else displayMessage("Not  a valid number for a sidebar pane", 5000);
       }
     }
   );
-  commandAddRunFromAnywhere("Sidebars - open both (sob)", async (uids) => {
-    await setSideBarState(3);
-    await setSideBarState(1);
-    if (uids.length === 1) focusMainWindowBlock(uids[0]);
-  });
-  commandAddRunFromAnywhere("Sidebars - close both (scb)", async (uids) => {
-    await setSideBarState(2);
-    await setSideBarState(4);
-    if (uids.length === 1) focusMainWindowBlock(uids[0]);
-  });
+  commandAddRunFromAnywhere(
+    "Right Sidebar - close window panes (rscwp)",
+    async () => {
+      await Promise.all(
+        window.roamAlphaAPI.ui.rightSidebar
+          .getWindows()
+          .map((w) =>
+            window.roamAlphaAPI.ui.rightSidebar.removeWindow({
+              window: { type: w.type, "block-uid": getWindowUid(w) },
+            })
+          )
+          .concat(window.roamAlphaAPI.ui.rightSidebar.close())
+      );
+    },
+    true
+  );
+  commandAddRunFromAnywhere(
+    "Sidebars - open both (sob)",
+    async () => {
+      await Promise.all([
+        window.roamAlphaAPI.ui.rightSidebar.open(),
+        window.roamAlphaAPI.ui.leftSidebar.open(),
+      ]);
+    },
+    true
+  );
+  commandAddRunFromAnywhere(
+    "Sidebars - close both (scb)",
+    async () => {
+      await Promise.all([
+        window.roamAlphaAPI.ui.rightSidebar.close(),
+        window.roamAlphaAPI.ui.leftSidebar.close(),
+      ]);
+    },
+    true
+  );
   commandAddRunFromAnywhere("Open Page (opp)", async () => {
-    // path.launch(
-    //   async (uid) => {
-    //     navigateUiTo(uid);
-    //   },
-    //   [],
-    //   null,
-    //   null,
-    //   true
-    // );
+    promptPathAndCallback({
+      valid: true,
+      supportPages: true,
+      callback: (inputUid) =>
+        window.roamAlphaAPI.ui.mainWindow.openBlock({
+          block: { uid: inputUid },
+        }),
+    });
   });
   commandAddRunFromAnywhere("Open Page in Sidebar (ops)", async () => {
-    // path.launch(
-    //   async (uid) => {
-    //     navigateUiTo(uid, true);
-    //   },
-    //   [],
-    //   null,
-    //   null,
-    //   true
-    // );
+    promptPathAndCallback({
+      valid: true,
+      supportPages: true,
+      callback: (inputUid) => openBlockInSidebar(inputUid),
+    });
   });
 
-  const pullBlockToThisBlock = async (
-    uidToMove: string,
-    makeBlockRef = false
-  ) => {
-    const activeBlockUID = ""; // triggeredState.activeElementId.slice(-9);
-    if (makeBlockRef == true) {
-      await createSiblingBlock(uidToMove, `((${uidToMove}))`);
-      await sleep(50);
-    }
-    await moveBlock(activeBlockUID, 0, uidToMove);
-    await sleep(250);
-    // await restoreCurrentBlockSelection();
+  //DELETE PAGE
+  const confirmDeletePage = (pageUID: string, pageTitle: string) => {
+    return confirm(
+      `Are you sure you want to **DELETE** the page?\n\n**${pageTitle}**`
+    ).then(
+      (success) =>
+        success &&
+        window.roamAlphaAPI.ui.mainWindow
+          .openDailyNotes()
+          .then(() =>
+            window.roamAlphaAPI.deletePage({ page: { uid: pageUID } })
+          )
+    );
   };
-  commandAddRunFromAnywhere("Pull block (pbb)", async () => {
-    // path.launch(async (uid) => {
-    //   pullBlockToThisBlock(uid);
-    // }, excludeSelectedBlocks());
+  commandAddRunFromAnywhere("Delete current page (dcp)", async () => {
+    const uid = await currentPageUID();
+    if ((await get("workBenchDcpConfirm")) == "off") {
+      return window.roamAlphaAPI.ui.mainWindow
+        .openDailyNotes()
+        .then(() => window.roamAlphaAPI.deletePage({ page: { uid } }));
+    } else {
+      const currentPageTitle = getPageTitleByPageUid(uid);
+      confirmDeletePage(uid, currentPageTitle);
+    }
   });
   commandAddRunFromAnywhere(
-    "Pull block and leave block ref (pbr)",
+    "Delete a page using Path Navigator (dap)",
     async () => {
-      // path.launch(async (uid) => {
-      //   pullBlockToThisBlock(uid, true);
-      // }, excludeSelectedBlocks());
+      promptPathAndCallback({
+        valid: true,
+        supportPages: true,
+        callback: (inputUid) => {
+          const title =
+            getPageTitleByPageUid(inputUid) || getPageTitleByBlockUid(inputUid);
+          return confirmDeletePage(getPageUidByPageTitle(title), title);
+        },
+      });
     }
   );
+
+  // COMMANDS BELOW THIS LINE HAVE NOT BEEN TESTED
+
+  (await userCommands.UserDefinedCommandList()).forEach(({ key, ...item }) => {
+    commandAddRunFromAnywhere(key, () => userCommands.runComand(item));
+  });
+  commandAddRunFromAnywhere("Daily Notes (dn)", async () => {
+    navigateUiTo(getRoamDate(new Date()), keystate.shiftKey);
+  });
+  commandAddRunFromAnywhere("All Pages", async () => {
+    document.location.href = baseUrl().href.replace("page", "") + "/search";
+  });
+  commandAddRunFromAnywhere("Graph Overview", async () => {
+    document.location.href = baseUrl().href.replace("page", "") + "/graph";
+  });
 
   const pullChildBlocksToThisBlock = async (
     uidParent: string,
@@ -629,30 +780,6 @@ export const initialize = async () => {
       // }, excludeSelectedBlocks());
     }
   );
-
-  commandAddRunFromAnywhere("Jump to Block in page (jbp)", async () => {
-    // path.launch(
-    //   async (uid) => {
-    //     if (uid != path.trailUID[0]) {
-    //       navigateUiTo(path.trailUID[0], false);
-    //       await sleep(500);
-    //     }
-    //     document.querySelector(`[id*="${uid}"]`).scrollIntoView();
-    //     await sleep(200);
-    //     simulateMouseClick(document.body);
-    //     await sleep(50);
-    //     simulateMouseClick(document.querySelector(`[id*="${uid}"]`));
-    //     await sleep(250);
-    //     const ta = document.activeElement as HTMLTextAreaElement;
-    //     ta.selectionStart = ta.value.length;
-    //     ta.selectionEnd = ta.value.length;
-    //   },
-    //   excludeSelectedBlocks(),
-    //   null,
-    //   null,
-    //   true
-    // );
-  });
 
   const sendBlockRefToThisBlock = async (
     destinationUID: string,
@@ -716,123 +843,53 @@ export const initialize = async () => {
     // );
   });
 
-  commandAddRunFromAnywhere("Roam42 Privacy Mode (alt-shift-p)", togglePrivacy);
-  commandAddRunFromAnywhere("Roam42 Converter (alt-m)", showFormatConverter);
-  commandAddRunFromAnywhere("Roam42 Web View (alt-shift-m)", htmlview);
-  commandAddRunFromAnywhere(
-    "Roam42 Help",
-    quickRefComponent.toggleQuickReference
+  commandAddRunFromAnywhere("Roam42 Privacy Mode (alt-shift-p)", async () =>
+    togglePrivacy()
   );
-  commandAddRunFromAnywhere("Roam42 Tutorials", showTutorials);
+  commandAddRunFromAnywhere("Roam42 Converter (alt-m)", async () =>
+    showFormatConverter()
+  );
+  commandAddRunFromAnywhere("Roam42 Web View (alt-shift-m)", async () =>
+    htmlview()
+  );
+  commandAddRunFromAnywhere("Roam42 Help", async () =>
+    quickRefComponent.toggleQuickReference()
+  );
+  commandAddRunFromAnywhere("Roam42 Tutorials", async () => showTutorials());
   commandAddRunFromAnywhere("Roam42 Graph DB Stats", displayGraphStats);
-  commandAddRunFromAnywhere("Goto next day - Roam42 (ctrl-shift-.)", () => {
-    moveForwardToDate(true);
-  });
-  commandAddRunFromAnywhere("Goto previous day - Roam42 (ctrl-shift-.)", () => {
-    moveForwardToDate(false);
-  });
+  commandAddRunFromAnywhere(
+    "Goto next day - Roam42 (ctrl-shift-.)",
+    async () => {
+      moveForwardToDate(true);
+    }
+  );
+  commandAddRunFromAnywhere(
+    "Goto previous day - Roam42 (ctrl-shift-.)",
+    async () => {
+      moveForwardToDate(false);
+    }
+  );
 
-  commandAddRunFromAnywhere("Heading 1 (Alt+Shift+1)", () => {
+  commandAddRunFromAnywhere("Heading 1 (Alt+Shift+1)", async () => {
     jumpCommandByActiveElement("ctrl+j 5");
   });
-  commandAddRunFromAnywhere("Heading 2 (Alt+Shift+2)", () => {
+  commandAddRunFromAnywhere("Heading 2 (Alt+Shift+2)", async () => {
     jumpCommandByActiveElement("ctrl+j 6");
   });
-  commandAddRunFromAnywhere("Heading 3 (Alt+Shift+3)", () => {
+  commandAddRunFromAnywhere("Heading 3 (Alt+Shift+3)", async () => {
     jumpCommandByActiveElement("ctrl+j 7");
   });
 
   commandAddRunFromAnywhere(
     "Copy Block Reference - Jump Nav (Meta-j r)",
-    () => {
+    async () => {
       jumpCommandByActiveElement("ctrl+j r");
     }
   );
   commandAddRunFromAnywhere(
     "Copy Block Reference as alias - Jump Nav (Meta-j s)",
-    () => {
-      jumpCommandByActiveElement("ctrl+j s");
-    }
-  );
-
-  const navToDnp = () => {
-    const d = new Date();
-    window.roamAlphaAPI.ui.mainWindow.openPage({
-      page: { uid: `${d.getMonth() + 1}-${d.getDate()}-${d.getFullYear()}` },
-    });
-  };
-
-  //DELETE PAGE
-  const confirmDeletePage = (pageUID: string, pageTitle: string) => {
-    iziToast.question({
-      timeout: 20000,
-      close: false,
-      overlay: true,
-      displayMode: 1,
-      id: "question",
-      color: "red",
-      zindex: 999,
-      position: "center",
-      message: `Are you sure you want to <span style='color:red'><b>DELETE</b></span> the page? <br><br> <b>${pageTitle}</b> <br><br>`,
-      buttons: [
-        [
-          "<button>NO</button>",
-          (instance, toast) => {
-            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
-          },
-          true,
-        ],
-        [
-          "<button><b>YES</b></button>",
-          (instance, toast) => {
-            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
-            navigateUiTo(getRoamDate(new Date()));
-            setTimeout(async () => {
-              await deleteBlock(pageUID);
-              navToDnp();
-            }, 500);
-          },
-          false,
-        ],
-      ],
-    });
-  };
-
-  const deleteCurrentPage = async () => {
-    const uid = await currentPageUID();
-    const currentPageTitle = (await getBlockInfoByUID(uid))[0][0].title;
-    if ((await get("workBenchDcpConfirm")) == "off") {
-      await deleteBlock(uid);
-      navToDnp();
-    } else {
-      confirmDeletePage(uid, currentPageTitle);
-    }
-  };
-
-  const deleteSomePage = async () => {
-    // await path.launch(
-    //   async (uid) => {
-    //     const blockInfo = await getBlockInfoByUID(uid, false, true);
-    //     let currentPageTitle = blockInfo[0][0].title;
-    //     if (currentPageTitle == undefined) {
-    //       currentPageTitle = blockInfo[0][0].parents[0].title;
-    //       uid = blockInfo[0][0].parents[0].uid;
-    //     }
-    //     confirmDeletePage(uid, currentPageTitle);
-    //   },
-    //   [],
-    //   null,
-    //   null,
-    //   true
-    // );
-  };
-  commandAddRunFromAnywhere("Delete current page (dcp)", async () => {
-    deleteCurrentPage();
-  });
-  commandAddRunFromAnywhere(
-    "Delete a page using Path Navigator (dap)",
     async () => {
-      deleteSomePage();
+      jumpCommandByActiveElement("ctrl+j s");
     }
   );
 
@@ -853,7 +910,7 @@ export const initialize = async () => {
             .focus();
         } else {
           instance.hide({ transitionOut: "fadeOut" }, toast, "button");
-          await createPage(textInput);
+          await createPage({ title: textInput });
           await sleep(50);
           navigateUiTo(textInput, shiftKey);
         }
@@ -1064,7 +1121,7 @@ export const initialize = async () => {
     });
   });
 
-  commandAddRunFromAnywhere("Create vanity block UID (cvbu)", () => {
+  commandAddRunFromAnywhere("Create vanity block UID (cvbu)", async () => {
     iziToast.info({
       timeout: 120000,
       overlay: true,
@@ -1142,7 +1199,7 @@ export const initialize = async () => {
     });
   });
 
-  commandAddRunFromAnywhere("workBench - Generate command list", () => {
+  commandAddRunFromAnywhere("workBench - Generate command list", async () => {
     iziToast.question({
       timeout: 20000,
       close: false,
@@ -1177,7 +1234,7 @@ export const initialize = async () => {
                 .getMinutes()
                 .toString()
                 .padStart(2, "0")} `;
-              const newPageUID = await createPage(newPageTitle);
+              const newPageUID = await createPage({ title: newPageTitle });
 
               const userCommandsParentUID = await createBlock({
                 parentUid: newPageUID,

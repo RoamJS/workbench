@@ -3,6 +3,7 @@ import {
   blockDelete,
   blockInsertAbove,
   blockInsertBelow,
+  displayMessage,
   moveCursorToNextBlock,
   moveCursorToPreviousBlock,
   restoreLocationParametersOfTexArea,
@@ -14,7 +15,6 @@ import {
   simulateMouseOver,
   sleep,
 } from "./commonFunctions";
-import { displayMessage } from "./help";
 import { component as queryRef } from "./quickRef";
 import { component as dailyNotesPopup } from "./dailyNotesPopup";
 import { pressEsc, simulateKey } from "./r42kb_lib";
