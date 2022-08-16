@@ -4,30 +4,21 @@ import getPageTitleByBlockUid from "roamjs-components/queries/getPageTitleByBloc
 import getPageUidByBlockUid from "roamjs-components/queries/getPageUidByBlockUid";
 import createPage from "roamjs-components/writes/createPage";
 import {
-  commandPaletteAdd,
   getBlocksReferringToThisPage,
-  sleep,
   BlockNode,
   getUserInformation,
   sortObjectByKey,
-  createSiblingBlock,
-  moveBlock,
-  navigateUiTo,
-  baseUrl,
   getBlockInfoByUID,
-  sortObjectsByOrder,
-  batchCreateBlocks,
-  deleteBlock,
   currentPageUID,
   displayMessage,
   moveForwardToDate,
-} from "./commonFunctions";
-import { getRoamDate, parseTextForDates } from "./dateProcessing";
+} from "../commonFunctions";
+import { parseTextForDates } from "../dateProcessing";
 import {
   htmlview,
   resolveBlockRefsInText,
   show as showFormatConverter,
-} from "./formatConverter";
+} from "../formatConverter";
 import openBlockInSidebar from "roamjs-components/writes/openBlockInSidebar";
 import {
   prompt,
@@ -41,11 +32,11 @@ import getChildrenLengthByParentUid from "roamjs-components/queries/getChildrenL
 import getOrderByBlockUid from "roamjs-components/queries/getOrderByBlockUid";
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
 import { render as renderSimpleAlert } from "roamjs-components/components/SimpleAlert";
-import { toggle as togglePrivacy } from "./privacyMode";
-import { component as quickRefComponent } from "./quickRef";
-import { show as showTutorials } from "./tutorials";
-import { displayGraphStats } from "./stats";
-import { get } from "./settings";
+import { toggle as togglePrivacy } from "../privacyMode";
+import { component as quickRefComponent } from "../quickRef";
+import { show as showTutorials } from "../tutorials";
+import { displayGraphStats } from "../stats";
+import { get } from "../settings";
 import focusMainWindowBlock from "roamjs-components/util/focusMainWindowBlock";
 import React from "react";
 import { SidebarWindow } from "roamjs-components/types/native";
@@ -289,7 +280,10 @@ export const commandAddRunFromAnywhere = async (
     });
   };
   const display = "(WB) " + textToDisplay;
-  commandPaletteAdd(display, callbackFunction);
+  window.roamAlphaAPI.ui.commandPalette.addCommand({
+    label: display,
+    callback: callbackFunction,
+  });
   _commands.push({
     display,
     cmd: callbackFunction,

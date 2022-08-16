@@ -18,7 +18,7 @@ import * as roam42Menu from "./roam42Menu";
 import * as roamNavigator from "./deepnav";
 import * as stats from "./stats";
 import * as tutorials from "./tutorials";
-import * as workBench from "./workBench";
+import * as workBench from "./ext/workBench";
 
 declare global {
   interface Window {
@@ -29,6 +29,7 @@ declare global {
 }
 
 const extensionId = "workbench";
+let unload: () => void;
 
 export default runExtension({
   extensionId,
@@ -116,7 +117,7 @@ export default runExtension({
           },
         },
 
-        // TODO: Combine the bottom three into one tutorials feature
+        // TODO: Combine the bottom four into one tutorials feature
         {
           id: "quickRef",
           name: "Quick Reference",
@@ -182,55 +183,6 @@ export default runExtension({
         }
       } catch (e) {}
       try {
-        if (ev.altKey == true && ev.shiftKey == true && ev.code == "KeyJ") {
-          ev.preventDefault();
-          const roamNativeDate = document.querySelector<HTMLSpanElement>(
-            "div.rm-topbar span.bp3-icon-calendar"
-          );
-          if (roamNativeDate) {
-            roamNativeDate.click();
-            setTimeout(() => {
-              const day = new Date().getDate();
-              const dayEl = Array.from(
-                document.querySelectorAll<HTMLSpanElement>(".DayPicker-Day")
-              ).find((d) => d.innerText === `${day}`);
-              dayEl?.focus?.();
-            }, 1);
-          }
-          return true;
-        }
-
-        if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Comma") {
-          ev.preventDefault();
-          ev.stopPropagation();
-          if (target.nodeName === "TEXTAREA") {
-            roam42KeyboardLib.pressEsc();
-            setTimeout(async () => {
-              await roam42KeyboardLib.pressEsc();
-              common.moveForwardToDate(false);
-            }, 300);
-          } else {
-            common.moveForwardToDate(false);
-          }
-          return true;
-        }
-
-        if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Period") {
-          ev.preventDefault();
-          ev.stopPropagation();
-          if (target.nodeName === "TEXTAREA") {
-            roam42KeyboardLib.pressEsc();
-            setTimeout(async () => {
-              await roam42KeyboardLib.pressEsc();
-              common.moveForwardToDate(true);
-            }, 300);
-          } else {
-            common.moveForwardToDate(true);
-          }
-          return true;
-        }
-      } catch (e) {}
-      try {
         if (quickRef.component.keyboardHandler(ev)) {
           return;
         }
@@ -240,26 +192,6 @@ export default runExtension({
           return;
         }
       } catch (e) {}
-
-      //Open right side bar
-      if (ev.altKey && ev.shiftKey && ev.code == "Slash") {
-        ev.preventDefault();
-        common.sidebarRightToggle();
-        return;
-      }
-
-      //open left side bar
-      if (
-        ev.altKey &&
-        ev.shiftKey &&
-        (ev.code == "Backslash" || ev.key == "«")
-      ) {
-        ev.preventDefault();
-        setTimeout(async () => {
-          await common.sidebarLeftToggle();
-        }, 50);
-        return;
-      }
 
       //Date NLP
       if (ev.altKey && ev.shiftKey && ev.code == "KeyD") {
@@ -285,37 +217,6 @@ export default runExtension({
         return;
       }
 
-      // Daily notes page
-      if (ev.altKey && ev.shiftKey && (ev.key == "¯" || ev.code == "Comma")) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        if (window != window.parent) {
-          window.parent.document.querySelector<HTMLIFrameElement>(
-            "#jsPanelDNP"
-          ).style.visibility = "hidden";
-        } else {
-          dailyNotesPopup.component.toggleVisible();
-        }
-        return;
-      }
-
-      // Daily notes page toggle in and out
-      if (ev.altKey && (ev.key == "y" || ev.code == "KeyY")) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        if (window != window.parent) {
-          window.parent.focus();
-        } else {
-          // window.parent.document.querySelector('#jsPanelDNP').style.visibility = 'hidden';
-          dailyNotesPopup.component.panelDNP.style.visibility = "hidden";
-          setTimeout(() => {
-            dailyNotesPopup.component.panelDNP.style.visibility = "visible";
-            document.getElementById("iframePanelDNP").focus();
-          }, 10);
-        }
-        return;
-      }
-
       //simple markdown
       if (ev.altKey && ev.shiftKey == false && ev.code == "KeyM") {
         if (formatConverter.enabled) {
@@ -336,12 +237,27 @@ export default runExtension({
         return;
       }
     };
+
     document.addEventListener("keydown", keyDownListener);
 
+    unload = () => {
+      workBench.toggleFeature(false);
+      dailyNotesPopup.toggleFeature(false);
+      dictionary.toggleFeature(false);
+      formatConverter.toggleFeature(false);
+      jumpnav.toggleFeature(false);
+      livePreview.toggleFeature(false);
+      privacyMode.toggleFeature(false);
+      quickRef.toggleFeature(false);
+      roam42Menu.toggleFeature(false);
+      roamNavigator.toggleFeature(false);
+      tutorials.toggleFeature(false);
+    };
     return {
       domListeners: [
         { el: document, type: "keydown", listener: keyDownListener },
       ],
     };
   },
+  unload,
 });

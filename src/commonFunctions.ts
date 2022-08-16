@@ -110,13 +110,6 @@ export const navigateUiTo = async function (
   }
 };
 
-export const commandPaletteAdd = (label: string, callback: () => void) => {
-  return window.roamAlphaAPI.ui.commandPalette.addCommand({
-    label,
-    callback,
-  });
-};
-
 export const sortObjectByKey = <T extends { key: string }>(o: T[]) => {
   return o.sort(function (a, b) {
     return a.key.localeCompare(b.key);

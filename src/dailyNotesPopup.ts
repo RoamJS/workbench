@@ -1,35 +1,90 @@
+import { moveForwardToDate } from "./commonFunctions";
+import { pressEsc } from "./r42kb_lib";
 import { get } from "./settings";
-import { baseUrl, simulateMouseOver } from "./commonFunctions";
-// @ts-ignore
-import { jsPanel } from "jspanel4";
-import Cookies from "js-cookie";
 
 export let state = "off";
 let observerHeadings: MutationObserver = undefined;
+
+const listener = (ev: KeyboardEvent) => {
+  if (ev.altKey && ev.shiftKey && (ev.key == "¯" || ev.code == "Comma")) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (window != window.parent) {
+      window.parent.document.querySelector<HTMLIFrameElement>(
+        "#jsPanelDNP"
+      ).style.visibility = "hidden";
+    } else {
+      component.toggleVisible();
+    }
+    return;
+  }
+
+  const target = ev.target as HTMLElement;
+  if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Comma") {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (target.nodeName === "TEXTAREA") {
+      pressEsc();
+      setTimeout(async () => {
+        await pressEsc();
+        moveForwardToDate(false);
+      }, 300);
+    } else {
+      moveForwardToDate(false);
+    }
+    return true;
+  }
+
+  if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Period") {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (target.nodeName === "TEXTAREA") {
+      pressEsc();
+      setTimeout(async () => {
+        await pressEsc();
+        moveForwardToDate(true);
+      }, 300);
+    } else {
+      moveForwardToDate(true);
+    }
+    return true;
+  }
+  
+  if (ev.altKey == true && ev.shiftKey == true && ev.code == "KeyJ") {
+    ev.preventDefault();
+    const roamNativeDate = document.querySelector<HTMLSpanElement>(
+      "div.rm-topbar span.bp3-icon-calendar"
+    );
+    if (roamNativeDate) {
+      roamNativeDate.click();
+      setTimeout(() => {
+        const day = new Date().getDate();
+        const dayEl = Array.from(
+          document.querySelectorAll<HTMLSpanElement>(".DayPicker-Day")
+        ).find((d) => d.innerText === `${day}`);
+        dayEl?.focus?.();
+      }, 1);
+    }
+    return true;
+  }
+};
 
 export const component = {
   panelDNP: undefined as HTMLDivElement,
   idPanelDNP: "jsPanelDNP",
 
   async initialize() {
-    var loadState = get("DailyNotePopup"); //if null, feature not loaded
-
-    if (loadState == null) {
-      state = "off"; //default state
-      return;
-    } else state = loadState;
-
-    var base = baseUrl().href.replace("page", "");
-
-    if (state === "optimized") base = base + "?disablejs=true";
-
+    // Features todo:
+    // - Use Dialog and renderBlock to render in view
+    // - Make title bar draggable for the full window. no backdrop, interactable
+    // - Make edges of window draggable - save in the extensionAPI.settings or localStorage
+    const jsPanel = {
+      create: (_: Record<string, unknown>) => document.createElement("iframe"),
+    };
     this.panelDNP = jsPanel.create({
       id: this.idPanelDNP,
       header: "auto-show-hide",
       headerControls: { smallify: "remove", maximize: "remove" },
-      content: `<div style="position:absolute;left:1px;top:1px;right:1px;bottom:1px;">
-                  <iframe src="${base}" id="iframePanelDNP" style="top:-1px;left:-1px;width:100%;height:100%; border:0px solid white"></iframe>
-                  </div>`,
       headerTitle:
         '<div style="font-variant: normal;position:relative;left:5px;z-index:1000;width:200px;color:white !important;padding-top:2px;">Daily Notes</div>',
       iconfont: [
@@ -48,11 +103,11 @@ export const component = {
         at: "left-center",
         of: document.body,
       },
-      callback: (panel: typeof jsPanel) => {
+      callback: (panel: HTMLDivElement) => {
         panel.querySelector<HTMLDivElement>("#iframePanelDNP").onload =
           function () {
-            var loc = Cookies.get("DNP_Parameters_Dimensions")
-              ? JSON.parse(Cookies.get("DNP_Parameters_Dimensions"))
+            var loc = localStorage.getItem("DNP_Parameters_Dimensions")
+              ? JSON.parse(localStorage.getItem("DNP_Parameters_Dimensions"))
               : "";
             var lWidth = 500;
             var lHeight = 300;
@@ -75,13 +130,13 @@ export const component = {
               lX = -10;
             }
             panel.style.visibility = "hidden";
-            panel.reposition({
-              my: lPosition,
-              at: lPosition,
-              offsetX: lX,
-              offsetY: lY,
-            });
-            panel.resize({ width: lWidth, height: lHeight });
+            // panel.reposition({
+            //   my: lPosition,
+            //   at: lPosition,
+            //   offsetX: lX,
+            //   offsetY: lY,
+            // });
+            // panel.resize({ width: lWidth, height: lHeight });
             component.addPanelEvents();
           };
       },
@@ -120,9 +175,6 @@ export const component = {
             "bp3-icon-menu-closed"
           )[0] as HTMLButtonElement
         ).click();
-        simulateMouseOver(
-          iframe.contentDocument.getElementsByClassName("roam-article")[0]
-        );
       } catch (e) {} //if on ipad, the above command fails, so go to next step
       iframe.contentDocument.head.appendChild(style);
       iframe.contentDocument.getElementById("app").classList.add("roam42-DNP");
@@ -216,6 +268,8 @@ export const component = {
         subtree: true,
       });
     }
+
+    document.body.addEventListener("keydown", listener);
   },
 
   saveUIChanges() {
@@ -225,9 +279,7 @@ export const component = {
       left: this.panelDNP.currentData.left.replace("px", ""),
       top: this.panelDNP.currentData.top.replace("px", ""),
     };
-    Cookies.set("DNP_Parameters_Dimensions", JSON.stringify(UIValues), {
-      expires: 365,
-    });
+    localStorage.setItem("DNP_Parameters_Dimensions", JSON.stringify(UIValues));
   },
 
   addPanelEvents() {
@@ -291,6 +343,7 @@ export const component = {
 export const toggleFeature = (flag: boolean) => {
   if (flag) component.initialize();
   else {
+    document.body.removeEventListener("keydown", listener);
     observerHeadings?.disconnect();
     document.querySelector("#jsPanelDNP")?.remove?.();
   }
