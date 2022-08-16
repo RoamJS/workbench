@@ -45,12 +45,12 @@ import { toggle as togglePrivacy } from "./privacyMode";
 import { component as quickRefComponent } from "./quickRef";
 import { show as showTutorials } from "./tutorials";
 import { displayGraphStats } from "./stats";
-import { jumpCommandByActiveElement } from "./jumpNav";
-import iziToast, { IziToast } from "izitoast";
 import { get } from "./settings";
 import focusMainWindowBlock from "roamjs-components/util/focusMainWindowBlock";
 import React from "react";
 import { SidebarWindow } from "roamjs-components/types/native";
+import getShallowTreeByParentUid from "roamjs-components/queries/getShallowTreeByParentUid";
+import updateBlock from "roamjs-components/writes/updateBlock";
 
 export let active = false;
 
@@ -132,7 +132,6 @@ const runInboxCommand = async (children: BlockNode[]) => {
     children,
     "location:"
   );
-  const locationTopBotomValue = locationTopBotom == "bottom" ? 10000 : 0;
 
   const blockrefValues = { true: true, reverse: "reverse" };
   let blockRef: boolean | string = await userCommands.findBlockAmongstChildren(
@@ -148,7 +147,6 @@ const runInboxCommand = async (children: BlockNode[]) => {
         : false;
   }
 
-  // await moveBlocks(pageUID, locationTopBotomValue, 0, blockRef);
   textName = textName == null ? "" : " > " + textName;
   displayMessage(`Block(s) moved to ${pageName}${textName}`, 3000);
 };
@@ -406,6 +404,29 @@ const promptMoveBlocks = ({
       }),
   });
 
+const promptMoveRefs = ({
+  uids,
+  getBase,
+}: {
+  uids: string[];
+  getBase: (n: string) => number;
+}) =>
+  promptPathAndCallback({
+    valid: !!uids.length,
+    callback: (inputUid) => {
+      const base = getBase(inputUid);
+      return Promise.all(
+        uids.map((uid, order) =>
+          createBlock({
+            parentUid: inputUid,
+            order: base + order,
+            node: { text: `((${uid}))` },
+          })
+        )
+      );
+    },
+  });
+
 const promptPullBlock = async (uids: string[], makeBlockRef = false) => {
   promptPathAndCallback({
     valid: !!uids.length,
@@ -417,6 +438,33 @@ const promptPullBlock = async (uids: string[], makeBlockRef = false) => {
             node: { text: `((${inputUid}))` },
             order: getOrderByBlockUid(inputUid),
           })
+        : Promise.resolve();
+      return setup.then(() =>
+        window.roamAlphaAPI.moveBlock({
+          location: { "parent-uid": targetUid, order: 0 },
+          block: { uid: inputUid },
+        })
+      );
+    },
+  });
+};
+
+const promptPullChildBlocks = async (uids: string[], makeBlockRef = false) => {
+  promptPathAndCallback({
+    valid: !!uids.length,
+    callback: (inputUid) => {
+      const targetUid = uids[0];
+      const childBlocks = getShallowTreeByParentUid(inputUid);
+      const setup = makeBlockRef
+        ? Promise.all(
+            childBlocks.map((cuid, order) =>
+              createBlock({
+                parentUid: inputUid,
+                node: { text: `((${cuid}))` },
+                order,
+              })
+            )
+          )
         : Promise.resolve();
       return setup.then(() =>
         window.roamAlphaAPI.moveBlock({
@@ -552,6 +600,15 @@ export const initialize = async () => {
       );
     }
   );
+  commandAddRunFromAnywhere("Send block ref - to top (sbrt)", async (uids) => {
+    promptMoveRefs({ uids, getBase: () => 0 });
+  });
+  commandAddRunFromAnywhere(
+    "Send block refs - to bottom (sbrb)",
+    async (uids) => {
+      promptMoveRefs({ uids, getBase: getChildrenLengthByParentUid });
+    }
+  );
 
   commandAddRunFromAnywhere("Pull block (pbb)", async (uids) => {
     promptPullBlock(uids);
@@ -560,6 +617,15 @@ export const initialize = async () => {
     "Pull block and leave block ref (pbr)",
     async (uids) => {
       promptPullBlock(uids, true);
+    }
+  );
+  commandAddRunFromAnywhere("Pull child blocks  (pcb)", async (uids) => {
+    promptPullChildBlocks(uids);
+  });
+  commandAddRunFromAnywhere(
+    "Pull child block and leave block ref (pcr)",
+    async (uids) => {
+      promptPullChildBlocks(uids, true);
     }
   );
 
@@ -576,6 +642,12 @@ export const initialize = async () => {
           });
       },
     });
+  });
+  commandAddRunFromAnywhere("Copy Block Reference", async (uids) => {
+    window.navigator.clipboard.writeText(`((${uids[0] || ""}))`);
+  });
+  commandAddRunFromAnywhere("Copy Block Reference as alias", async (uids) => {
+    window.navigator.clipboard.writeText(`[*](((${uids[0] || ""})))`);
   });
 
   commandAddRunFromAnywhere(
@@ -686,7 +758,27 @@ export const initialize = async () => {
     });
   });
 
-  //DELETE PAGE
+  commandAddRunFromAnywhere("Create a page (cap)", async () => {
+    prompt({
+      title: "Create Page",
+      question: "Enter page title",
+      defaultAnswer: "",
+    }).then((title) => {
+      if (getPageUidByPageTitle(title)) {
+        renderToast({
+          intent: "warning",
+          content: `Page ${title} already exists.`,
+          id: "workbench-warning",
+        });
+      } else {
+        createPage({ title }).then((uid) =>
+          window.roamAlphaAPI.ui.mainWindow.openPage({
+            page: { uid },
+          })
+        );
+      }
+    });
+  });
   const confirmDeletePage = (pageUID: string, pageTitle: string) => {
     return confirm(
       `Are you sure you want to **DELETE** the page?\n\n**${pageTitle}**`
@@ -726,121 +818,32 @@ export const initialize = async () => {
     }
   );
 
-  // COMMANDS BELOW THIS LINE HAVE NOT BEEN TESTED
-
-  (await userCommands.UserDefinedCommandList()).forEach(({ key, ...item }) => {
-    commandAddRunFromAnywhere(key, () => userCommands.runComand(item));
-  });
   commandAddRunFromAnywhere("Daily Notes (dn)", async () => {
-    navigateUiTo(getRoamDate(new Date()), keystate.shiftKey);
+    if (keystate.shiftKey) {
+      openBlockInSidebar(window.roamAlphaAPI.util.dateToPageUid(new Date()));
+    } else {
+      window.roamAlphaAPI.ui.mainWindow.openDailyNotes();
+    }
   });
+  const graphTypes = {
+    hosted: "app",
+    offline: "offline",
+  };
   commandAddRunFromAnywhere("All Pages", async () => {
-    document.location.href = baseUrl().href.replace("page", "") + "/search";
+    document.location.hash = `#/${graphTypes[window.roamAlphaAPI.graph.type]}/${
+      window.roamAlphaAPI.graph.name
+    }/search`;
   });
   commandAddRunFromAnywhere("Graph Overview", async () => {
-    document.location.href = baseUrl().href.replace("page", "") + "/graph";
+    document.location.hash = `#/${graphTypes[window.roamAlphaAPI.graph.type]}/${
+      window.roamAlphaAPI.graph.name
+    }/graph`;
   });
-
-  const pullChildBlocksToThisBlock = async (
-    uidParent: string,
-    makeBlockRef = false
-  ) => {
-    const parentBlockInfo = await getBlockInfoByUID(uidParent, true);
-    if (!parentBlockInfo[0][0].children)
-      displayMessage("This block has no children to pull.", 5000);
-    else {
-      const childBlocks = await sortObjectsByOrder(
-        parentBlockInfo[0][0].children
-      );
-      for (let i = childBlocks.length - 1; i >= 0; i--) {
-        const activeBlockUID = ""; //triggeredState.activeElementId.slice(-9);
-        if (makeBlockRef == true) {
-          await createSiblingBlock(
-            childBlocks[i].uid,
-            `((${childBlocks[i].uid}))`
-          );
-          await sleep(50);
-        }
-        await moveBlock(activeBlockUID, 0, childBlocks[i].uid);
-        await sleep(50);
-      }
-      // await restoreCurrentBlockSelection();
-    }
-  };
-  commandAddRunFromAnywhere("Pull child blocks  (pcb)", async () => {
-    // path.launch(async (uid) => {
-    //   pullChildBlocksToThisBlock(uid);
-    // }, excludeSelectedBlocks());
+  commandAddRunFromAnywhere("Goto next day", async () => {
+    moveForwardToDate(true);
   });
-  commandAddRunFromAnywhere(
-    "Pull child block and leave block ref (pcr)",
-    async () => {
-      // path.launch(async (uid) => {
-      //   pullChildBlocksToThisBlock(uid, true);
-      // }, excludeSelectedBlocks());
-    }
-  );
-
-  const sendBlockRefToThisBlock = async (
-    destinationUID: string,
-    uids: string[],
-    locationTop = true
-  ) => {
-    const makeBlockRefs = uids.map((e) => `((${e}))`);
-    if (locationTop == true) {
-      //add to top
-      await batchCreateBlocks(destinationUID, 0, makeBlockRefs);
-    } else {
-      await batchCreateBlocks(destinationUID, 100000, makeBlockRefs);
-    }
-    await sleep(150);
-    try {
-      // await restoreCurrentBlockSelection();
-    } catch (e) {}
-  };
-  commandAddRunFromAnywhere("Send block ref - to top (sbrt)", async () => {
-    // path.launch(
-    //   async (uid) => {
-    //     sendBlockRefToThisBlock(uid, true);
-    //   },
-    //   excludeSelectedBlocks(),
-    //   null,
-    //   null,
-    //   true
-    // );
-  });
-  commandAddRunFromAnywhere("Send block refs - to top (sbrt)", async () => {
-    // path.launch(
-    //   async (uid) => {
-    //     sendBlockRefToThisBlock(uid, true);
-    //   },
-    //   excludeSelectedBlocks(),
-    //   null,
-    //   null,
-    //   true
-    // );
-  });
-  commandAddRunFromAnywhere("Send block ref - to bottom (sbrb)", async () => {
-    // path.launch(
-    //   async (uid) => {
-    //     sendBlockRefToThisBlock(uid, false);
-    //   },
-    //   excludeSelectedBlocks(),
-    //   null,
-    //   null,
-    //   true
-    // );
-  });
-  commandAddRunFromAnywhere("Send block refs - to bottom (sbrb)", async () => {
-    // path.launch(
-    //   async (uid) => {
-    //     sendBlockRefToThisBlock(uid, false);
-    //   },
-    //   excludeSelectedBlocks(),
-    //   null,
-    //   null,
-    //   true
-    // );
+  commandAddRunFromAnywhere("Goto previous day", async () => {
+    moveForwardToDate(false);
   });
 
   commandAddRunFromAnywhere("Roam42 Privacy Mode (alt-shift-p)", async () =>
@@ -857,432 +860,34 @@ export const initialize = async () => {
   );
   commandAddRunFromAnywhere("Roam42 Tutorials", async () => showTutorials());
   commandAddRunFromAnywhere("Roam42 Graph DB Stats", displayGraphStats);
-  commandAddRunFromAnywhere(
-    "Goto next day - Roam42 (ctrl-shift-.)",
-    async () => {
-      moveForwardToDate(true);
-    }
+
+  commandAddRunFromAnywhere("Heading 1", async (uids) => {
+    uids.map((uid) => updateBlock({ uid, heading: 1 }));
+  });
+  commandAddRunFromAnywhere("Heading 2", async (uids) => {
+    uids.map((uid) => updateBlock({ uid, heading: 2 }));
+  });
+  commandAddRunFromAnywhere("Heading 3", async (uids) => {
+    uids.map((uid) => updateBlock({ uid, heading: 3 }));
+  });
+
+  (await userCommands.UserDefinedCommandList()).forEach(({ key, ...item }) => {
+    commandAddRunFromAnywhere(key, () => userCommands.runComand(item));
+  });
+  commandAddRunFromAnywhere("Refresh Inboxes", async () => {
+    shutdown();
+    initialize();
+  });
+};
+
+export const shutdown = () => {
+  _commands.forEach((c) =>
+    window.roamAlphaAPI.ui.commandPalette.removeCommand({ label: c.display })
   );
-  commandAddRunFromAnywhere(
-    "Goto previous day - Roam42 (ctrl-shift-.)",
-    async () => {
-      moveForwardToDate(false);
-    }
-  );
-
-  commandAddRunFromAnywhere("Heading 1 (Alt+Shift+1)", async () => {
-    jumpCommandByActiveElement("ctrl+j 5");
-  });
-  commandAddRunFromAnywhere("Heading 2 (Alt+Shift+2)", async () => {
-    jumpCommandByActiveElement("ctrl+j 6");
-  });
-  commandAddRunFromAnywhere("Heading 3 (Alt+Shift+3)", async () => {
-    jumpCommandByActiveElement("ctrl+j 7");
-  });
-
-  commandAddRunFromAnywhere(
-    "Copy Block Reference - Jump Nav (Meta-j r)",
-    async () => {
-      jumpCommandByActiveElement("ctrl+j r");
-    }
-  );
-  commandAddRunFromAnywhere(
-    "Copy Block Reference as alias - Jump Nav (Meta-j s)",
-    async () => {
-      jumpCommandByActiveElement("ctrl+j s");
-    }
-  );
-
-  //CREATE  PAGE
-  const createThisPage = (
-    instance: IziToast,
-    toast: HTMLDivElement,
-    textInput: string,
-    shiftKey: boolean
-  ) => {
-    if (textInput.length > 0) {
-      setTimeout(async () => {
-        const pageUID = await getPageUidByPageTitle(textInput);
-        if (pageUID != "") {
-          displayMessage(`Page <b>${textInput}</b> already exists.`, 5000);
-          document
-            .querySelector<HTMLInputElement>("#roam42-wB-CreatePage-input")
-            .focus();
-        } else {
-          instance.hide({ transitionOut: "fadeOut" }, toast, "button");
-          await createPage({ title: textInput });
-          await sleep(50);
-          navigateUiTo(textInput, shiftKey);
-        }
-      }, 10);
-    }
-  };
-  commandAddRunFromAnywhere("Create a page (cap)", async () => {
-    let textInput = "";
-    iziToast.info({
-      timeout: 120000,
-      overlay: true,
-      displayMode: 1,
-      id: "inputs",
-      zindex: 999,
-      title: "Create Page",
-      position: "center",
-      drag: false,
-      inputs: [
-        [
-          '<input type="text" id="roam42-wB-CreatePage-input">',
-          "keyup",
-          (instance, toast, input, e) => {
-            textInput = input.value;
-            document.querySelector<HTMLDivElement>(
-              "#roam42-wB-createPage-CREATE"
-            ).style.visibility = input.value.length > 0 ? "visible" : "hidden";
-            const ke = e as KeyboardEvent;
-            if (ke.key == "Enter")
-              createThisPage(instance, toast, textInput, ke.shiftKey);
-          },
-          true,
-        ],
-      ],
-      buttons: [
-        [
-          '<button id="roam42-wB-createPage-CREATE" style="visibility:hidden"><b>CREATE</b></button>',
-          (instance, toast) => {
-            createThisPage(instance, toast, textInput, false);
-          },
-          false,
-        ],
-        [
-          "<button>CANCEL</button>",
-          (instance, toast) => {
-            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
-          },
-          false,
-        ],
-      ],
-    });
-  });
-
-  // from https://stackoverflow.com/a/44438404
-  // replaces all "new line" characters contained in `someString` with the given `replacementString`
-  const replaceNewLineChars = (someString: string, replacementString = ``) => {
-    // defaults to just removing
-    const LF = `\u{000a}`; // Line Feed (\n)
-    const VT = `\u{000b}`; // Vertical Tab
-    const FF = `\u{000c}`; // Form Feed
-    const CR = `\u{000d}`; // Carriage Return (\r)
-    const CRLF = `${CR}${LF}`; // (\r\n)
-    const NEL = `\u{0085}`; // Next Line
-    const LS = `\u{2028}`; // Line Separator
-    const PS = `\u{2029}`; // Paragraph Separator
-    const ZW = `\u{200B}`; // Zero  white space https://www.fileformat.info/info/unicode/char/200b/index.htm
-    const lineTerminators = [LF, VT, FF, CR, CRLF, NEL, LS, PS, ZW]; // all Unicode `lineTerminators`
-    let finalString = someString.normalize(`NFD`); // better safe than sorry? Or is it?
-    for (let lineTerminator of lineTerminators) {
-      if (finalString.includes(lineTerminator)) {
-        // check if the string contains the current `lineTerminator`
-        let regex = new RegExp(lineTerminator.normalize(`NFD`), `gu`); // create the `regex` for the current `lineTerminator`
-        finalString = finalString.replace(regex, replacementString); // perform the replacement
-      }
-    }
-    return finalString.normalize(`NFC`); // return the `finalString` (without any Unicode `lineTerminators`)
-  };
-
-  commandAddRunFromAnywhere(
-    "Remove blank blocks at current level (rbbcl) - not recursive",
-    async (uids) => {
-      for (let i = uids.length - 1; i >= 0; i--) {
-        const blockToAnalyze = uids[i];
-        const blockInfo = await getBlockInfoByUID(blockToAnalyze, true);
-        if (!blockInfo[0][0].children) {
-          //don't process if it has child blocks
-          if (
-            blockInfo[0][0].string.trim().length == 0 ||
-            blockInfo[0][0].string == ""
-          )
-            //this is a blank, should delete
-            await deleteBlock(blockToAnalyze);
-          else if (blockInfo[0][0].string.trim().length == 1) {
-            //test if this is a line break
-            const stringText = replaceNewLineChars(
-              blockInfo[0][0].string.trim()
-            );
-            if (stringText.length == 0) await deleteBlock(blockToAnalyze);
-          }
-        }
-      }
-    }
-  );
-
-  commandAddRunFromAnywhere("Create Vanity Page UID (cvpu)", async () => {
-    iziToast.info({
-      timeout: 120000,
-      overlay: true,
-      displayMode: 1,
-      id: "inputs",
-      zindex: 999,
-      title: "Vanity Page UID",
-      position: "center",
-      drag: false,
-      inputs: [
-        [
-          '<input type="text" placeholder="Page Name" id="roam42-wB-CreateVanityPage-PageName">',
-          "keyup",
-          (instance, toast, input, e) => {},
-          true,
-        ],
-        [
-          '<input type="text" placeholder="Vanity UID" id="roam42-wB-CreateVanityPage-UID">',
-          "keyup",
-          (instance, toast, input, e) => {},
-          false,
-        ],
-      ],
-      buttons: [
-        [
-          '<button id="roam42-wB-CreateVanityPage-CREATE"><b>CREATE</b></button>',
-          async (instance, toast) => {
-            //validate page name
-            const pageName = document
-              .querySelector<HTMLInputElement>(
-                "#roam42-wB-CreateVanityPage-PageName"
-              )
-              .value.trim();
-            if (pageName.length == 0) {
-              displayMessage("Page name is not valid.", 3000);
-              document
-                .querySelector<HTMLInputElement>(
-                  "#roam42-wB-CreateVanityPage-PageName"
-                )
-                .focus();
-              return;
-            } else {
-              //test if page is in use
-              if ((await getPageUidByPageTitle(pageName)) != "") {
-                displayMessage(
-                  "This page name is already in use, try again.",
-                  3000
-                );
-                document
-                  .querySelector<HTMLInputElement>(
-                    "#roam42-wB-CreateVanityPage-PageName"
-                  )
-                  .focus();
-                return;
-              }
-            }
-            //validate UID
-            const vanityUID = document
-              .querySelector<HTMLInputElement>(
-                "#roam42-wB-CreateVanityPage-UID"
-              )
-              .value.trim();
-            const regex = new RegExp("^[a-zA-Z0-9]+$");
-            if (vanityUID.length != 9 || !regex.test(vanityUID)) {
-              displayMessage(
-                "UID is not valid. It must be exactly 9 characters and it contain only alpha-numeric characters. It is also case-sensitive.",
-                3000
-              );
-              document
-                .querySelector<HTMLInputElement>(
-                  "#roam42-wB-CreateVanityPage-UID"
-                )
-                .focus();
-              return;
-            } else {
-              //test if UID is in use
-              if ((await getBlockInfoByUID(vanityUID)) != null) {
-                displayMessage("This UID is already in use, try again.", 3000);
-                document
-                  .querySelector<HTMLInputElement>(
-                    "#roam42-wB-CreateVanityPage-UID"
-                  )
-                  .focus();
-                return;
-              }
-            }
-            const success = await window.roamAlphaAPI.createPage({
-              page: { title: pageName, uid: vanityUID },
-            });
-            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
-            await sleep(50);
-            navigateUiTo(pageName);
-          },
-          false,
-        ],
-        [
-          "<button>CANCEL</button>",
-          (instance, toast) => {
-            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
-          },
-          false,
-        ],
-      ],
-    });
-  });
-
-  commandAddRunFromAnywhere("Create vanity block UID (cvbu)", async () => {
-    iziToast.info({
-      timeout: 120000,
-      overlay: true,
-      displayMode: 1,
-      id: "inputs",
-      zindex: 999,
-      title: "Vanity Block UID",
-      position: "center",
-      drag: false,
-      inputs: [
-        [
-          '<input type="text" placeholder="Vanity UID" id="roam42-wB-CreateVanityBlock-UID">',
-          "keyup",
-          (instance, toast, input, e) => {},
-          true,
-        ],
-      ],
-      buttons: [
-        [
-          '<button id="roam42-wB-CreateVanityBlock-CREATE"><b>CREATE</b></button>',
-          async (instance, toast) => {
-            //validate UID
-            const vanityUID = document
-              .querySelector<HTMLInputElement>(
-                "#roam42-wB-CreateVanityBlock-UID"
-              )
-              .value.trim();
-            const regex = new RegExp("^[a-zA-Z0-9]+$");
-            if (vanityUID.length != 9 || !regex.test(vanityUID)) {
-              displayMessage(
-                "UID is not valid. It must be exactly 9 characters and it contain only alpha-numeric characters. It is also case-sensitive.",
-                3000
-              );
-              document
-                .querySelector<HTMLInputElement>(
-                  "#roam42-wB-CreateVanityBlock-UID"
-                )
-                .focus();
-              return;
-            } else {
-              //test if UID is in use
-              if ((await getBlockInfoByUID(vanityUID)) != null) {
-                displayMessage("This UID is already in use, try again.", 3000);
-                document
-                  .querySelector<HTMLInputElement>(
-                    "#roam42-wB-CreateVanityBlock-UID"
-                  )
-                  .focus();
-                return;
-              }
-            }
-            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
-            await window.roamAlphaAPI.createBlock({
-              location: {
-                "parent-uid": "", // triggeredState.activeElementId.slice(-9),
-                order: 0,
-              },
-              block: {
-                string: `This is a new block with the UID: ${vanityUID}`,
-                uid: vanityUID,
-              },
-            });
-            await sleep(50);
-          },
-          false,
-        ],
-        [
-          "<button>CANCEL</button>",
-          (instance, toast) => {
-            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
-          },
-          false,
-        ],
-      ],
-    });
-  });
-
-  commandAddRunFromAnywhere("workBench - Generate command list", async () => {
-    iziToast.question({
-      timeout: 20000,
-      close: false,
-      overlay: true,
-      displayMode: 1,
-      id: "question",
-      color: "green",
-      zindex: 999,
-      position: "center",
-      message: `Create a page with a list of workBench commands. Proceed?`,
-      buttons: [
-        [
-          "<button><b>YES</b></button>",
-          (instance, toast) => {
-            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
-            setTimeout(async () => {
-              const userDefinedCommands =
-                await userCommands.UserDefinedCommandList();
-
-              const date = new Date();
-              const newPageTitle = `#[[42workBench]] Command List as of ${date.getFullYear()}-${(
-                date.getMonth() + 1
-              )
-                .toString()
-                .padStart(2, "0")}-${date
-                .getDate()
-                .toString()
-                .padStart(2, "0")} ${date
-                .getHours()
-                .toString()
-                .padStart(2, "0")}:${date
-                .getMinutes()
-                .toString()
-                .padStart(2, "0")} `;
-              const newPageUID = await createPage({ title: newPageTitle });
-
-              const userCommandsParentUID = await createBlock({
-                parentUid: newPageUID,
-                order: 0,
-                node: { text: "**User Defined Commands**" },
-              });
-              const userCommandsArray = userDefinedCommands.map((c) => c.key);
-              await batchCreateBlocks(
-                userCommandsParentUID,
-                0,
-                userCommandsArray
-              );
-
-              const builtinCommandsParentUID = await createBlock({
-                parentUid: newPageUID,
-                order: 1,
-                node: { text: "**Built-in Commands**" },
-              });
-              const builtinCommandsArray = _commands.map((c) => c.display);
-              await batchCreateBlocks(
-                builtinCommandsParentUID,
-                0,
-                builtinCommandsArray
-              );
-
-              await navigateUiTo(newPageTitle);
-            }, 10);
-          },
-          true,
-        ],
-        [
-          "<button>NO</button>",
-          (instance, toast) => {
-            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
-          },
-          false,
-        ],
-      ],
-    });
-  });
+  active = false;
 };
 
 export const toggleFeature = (flag: boolean) => {
   if (flag) initialize();
-  else {
-    _commands.forEach((c) =>
-      window.roamAlphaAPI.ui.commandPalette.removeCommand({ label: c.display })
-    );
-    active = false;
-  }
+  else shutdown();
 };
