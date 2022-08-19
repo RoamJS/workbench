@@ -63,7 +63,7 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
         : {
             height: 300,
             width: 500,
-            left: window.innerWidth /2 - 300,
+            left: window.innerWidth / 2 - 300,
             top: window.innerHeight / 2 - 150,
           },
     []
@@ -98,8 +98,40 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
       setLoaded(true);
     }
   }, [containerRef.current, loaded, setLoaded]);
-
-  return (
+  const onDragEnd = () => component.saveUIChanges({ width, top, left, height });
+  const dragRef = useRef({ top: 0, left: 0 });
+  return minimized ? (
+    <div
+      className="absolute bottom-0 left-0 px-4 py-2 text-white flex justify-between items-center gap-12"
+      style={{ background: "#565c70" }}
+    >
+      <span>Daily Notes</span>
+      <span>
+        <Button
+          icon={"expand-all"}
+          minimal
+          onClick={() => setMinimized(false)}
+          style={{
+            minHeight: 16,
+            minWidth: 16,
+            height: 16,
+            width: 16,
+          }}
+        />
+        <Button
+          icon={"cross"}
+          minimal
+          onClick={onClose}
+          style={{
+            minHeight: 16,
+            minWidth: 16,
+            height: 16,
+            width: 16,
+          }}
+        />
+      </span>
+    </div>
+  ) : (
     <Overlay
       isOpen={true}
       onClose={onClose}
@@ -110,7 +142,7 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
       canEscapeKeyClose={false}
       portalClassName={"roamjs-daily-notes-portal"}
     >
-      <div>
+      <div style={{ top, left }}>
         <style>
           {`.roamjs-daily-notes-popup {
   background: transparent;
@@ -122,18 +154,27 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
   padding: 8px 16px;
   background: transparent;
   color: transparent;
+  
+  .bp3-icon {
+    color: transparent;
+  }
+}
+
+.roamjs-daily-notes-popup .bp3-dialog-header .bp3-icon {
+  color: transparent;
 }
 
 .roamjs-daily-notes-popup .bp3-dialog-header:hover {
-  background: #b0bec4;
+  background: #565c70;
   color: white;
+
+  .bp3-icon {
+    color: white;
+  }
 }
 
-.roamjs-daily-notes-popup .bp3-dialog-header .bp3-button {
-  min-height: 16px;
-  min-width: 16px;
-  height: 16px;
-  width: 16px;
+.roamjs-daily-notes-popup .bp3-dialog-header:hover .bp3-icon {
+  color: white;
 }
 
 .roamjs-dialog-body > .rm-block > .rm-block-main {
@@ -149,29 +190,70 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
 }
 
 .roamjs-daily-notes-popup .bp3-overlay-content {
-  top: ${top}px;
-  left: ${left}px;
   box-shadow: 0 19px 38px rgb(0 0 0 / 30%), 0 15px 12px rgb(0 0 0 / 22%);
 }`}
         </style>
         <div
           tabIndex={-1}
-          className="bp3-dialog-header"
+          className="bp3-dialog-header absolute left-0 bottom-full right-0"
           draggable
-          onDrag={(e) => {
-            setTop(e.clientY)
-            setLeft(e.clientX)
+          onDragStart={(e) => {
+            const rect = (e.target as HTMLDivElement).getBoundingClientRect();
+            if (e.clientX && e.clientY) {
+              dragRef.current = {
+                top: e.clientY - rect.top - rect.height,
+                left: e.clientX - rect.left,
+              };
+            }
           }}
+          onDrag={(e) => {
+            if (e.clientX && e.clientY) {
+              setTop(e.clientY - dragRef.current.top);
+              setLeft(e.clientX - dragRef.current.left);
+            }
+          }}
+          onDragEnd={onDragEnd}
         >
-          <div className="text-white flex justify-between">
+          <div className="flex justify-between items-center">
             <span>Daily Notes</span>
-            <Button
-              icon={"caret-down"}
-              minimal
-              onClick={() => setMinimized(true)}
-            />
+            <span>
+              <Button
+                icon={"caret-down"}
+                minimal
+                onClick={() => setMinimized(true)}
+                style={{
+                  minHeight: 16,
+                  minWidth: 16,
+                  height: 16,
+                  width: 16,
+                }}
+              />
+              <Button
+                icon={"cross"}
+                minimal
+                onClick={onClose}
+                style={{
+                  minHeight: 16,
+                  minWidth: 16,
+                  height: 16,
+                  width: 16,
+                }}
+              />
+            </span>
           </div>
         </div>
+        <div
+          className="absolute cursor-s-resize h-3 left-2 -bottom-1 bg-red"
+          style={{ width: "calc(100% - 16px)" }}
+          draggable
+          onDrag={(e) => {
+            const rect = (e.target as HTMLDivElement).getBoundingClientRect();
+            if (e.clientY) {
+              setHeight(e.clientY - rect.top);
+            }
+          }}
+          onDragEnd={onDragEnd}
+        />
         <div className={`bg-white`} style={{ width, height }}>
           <h1 className={"text-bold text-4xl mb-8 mt-0 pt-6 pl-6"}>
             {window.roamAlphaAPI.util.dateToPageTitle(new Date())}
@@ -332,13 +414,12 @@ export const component = {
     document.body.addEventListener("keydown", listener);
   },
 
-  saveUIChanges() {
-    var UIValues = {
-      width: this.panelDNP.currentData.width.replace("px", ""),
-      height: this.panelDNP.currentData.height.replace("px", ""),
-      left: this.panelDNP.currentData.left.replace("px", ""),
-      top: this.panelDNP.currentData.top.replace("px", ""),
-    };
+  saveUIChanges(UIValues: {
+    width: number;
+    height: number;
+    left: number;
+    top: number;
+  }) {
     localStorage.setItem("DNP_Parameters_Dimensions", JSON.stringify(UIValues));
   },
 
