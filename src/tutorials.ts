@@ -1,9 +1,9 @@
-// @ts-ignore
-import { jsPanel } from "jspanel4";
-
 export const show = () => {
   // if already open, do nothing
   if (document.querySelector("#r42Tutorials")) return;
+  const jsPanel = {
+    create: (a: unknown) => a,
+  };
 
   jsPanel.create({
     id: "r42Tutorials",

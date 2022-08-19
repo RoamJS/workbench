@@ -1,6 +1,4 @@
 import Cookies from "js-cookie";
-// @ts-ignore
-import { jsPanel } from "jspanel4";
 import {
   BlockInfo,
   currentPageZoomLevelUID,
@@ -8,6 +6,10 @@ import {
   getBlockInfoByUID,
   getBlocksReferringToThisPage,
 } from "./commonFunctions";
+
+const jsPanel = {
+  create: (a: unknown) => a,
+};
 
 type JSONNode = {
   uid: string;

@@ -16,7 +16,7 @@ import {
   sleep,
 } from "./commonFunctions";
 import { component as queryRef } from "./quickRef";
-import { component as dailyNotesPopup } from "./dailyNotesPopup";
+import { component as dailyNotesPopup } from "./ext/dailyNotesPopup";
 import { pressEsc, simulateKey } from "./r42kb_lib";
 import { get } from "./settings";
 import { typeAheadLookup } from "./dictionary";
@@ -345,10 +345,11 @@ export const jumpCommand = (target: Element, handler: string) => {
       switch (handler) {
         case "ctrl+j x": // expand block
           window.roamAlphaAPI.updateBlock({ block: { uid, open: true } });
-          window.roamAlphaAPI
-            .q(
+          (
+            window.roamAlphaAPI.q(
               `[:find (pull ?p [:block/uid]) :where [?b :block/uid "${uid}"] [?p :block/parents ?b]]`
-            )
+            ) as [{ uid: string }][]
+          )
             .map((a) => a[0].uid)
             .forEach((u) =>
               window.roamAlphaAPI.updateBlock({ block: { uid: u, open: true } })
@@ -356,10 +357,11 @@ export const jumpCommand = (target: Element, handler: string) => {
           break;
         case "ctrl+j l": // collapse block
           window.roamAlphaAPI.updateBlock({ block: { uid, open: false } });
-          window.roamAlphaAPI
-            .q(
+          (
+            window.roamAlphaAPI.q(
               `[:find (pull ?p [:block/uid]) :where [?b :block/uid "${uid}"] [?p :block/parents ?b]]`
-            )
+            ) as [{ uid: string }][]
+          )
             .map((a) => a[0].uid)
             .forEach((u) =>
               window.roamAlphaAPI.updateBlock({
@@ -446,10 +448,11 @@ export const jumpCommand = (target: Element, handler: string) => {
       switch (handler) {
         case "ctrl+j e":
           window.roamAlphaAPI.updateBlock({ block: { uid, open: true } });
-          window.roamAlphaAPI
-            .q(
+          (
+            window.roamAlphaAPI.q(
               `[:find (pull ?p [:block/uid]) :where [?b :block/uid "${uid}"] [?p :block/parents ?b]]`
-            )
+            ) as [{ uid: string }][]
+          )
             .map((a) => a[0].uid)
             .forEach((u) =>
               window.roamAlphaAPI.updateBlock({ block: { uid: u, open: true } })
@@ -457,10 +460,11 @@ export const jumpCommand = (target: Element, handler: string) => {
           break;
         case "ctrl+j c":
           window.roamAlphaAPI.updateBlock({ block: { uid, open: false } });
-          window.roamAlphaAPI
-            .q(
+          (
+            window.roamAlphaAPI.q(
               `[:find (pull ?p [:block/uid]) :where [?b :block/uid "${uid}"] [?p :block/parents ?b]]`
-            )
+            ) as [{ uid: string }][]
+          )
             .map((a) => a[0].uid)
             .forEach((u) =>
               window.roamAlphaAPI.updateBlock({

@@ -1,5 +1,6 @@
-//@ts-ignore
-import { jsPanel } from "jspanel4";
+const jsPanel = {
+  create: (a: unknown) => a,
+};
 
 const windowListener = function (e: MessageEvent) {
   if (e.data === "roamquickrefclosewindow") {

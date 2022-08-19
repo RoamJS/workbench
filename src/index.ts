@@ -7,7 +7,7 @@ import * as dateProcessing from "./dateProcessing";
 import * as roam42KeyboardLib from "./r42kb_lib";
 
 // exts
-import * as dailyNotesPopup from "./dailyNotesPopup";
+import * as dailyNotesPopup from "./ext/dailyNotesPopup";
 import * as dictionary from "./dictionary";
 import * as formatConverter from "./formatConverter";
 import * as livePreview from "./livePreview";
@@ -259,5 +259,5 @@ export default runExtension({
       ],
     };
   },
-  unload,
+  unload: () => unload(),
 });

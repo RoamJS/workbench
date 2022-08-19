@@ -1,7 +1,3 @@
-import iziToast, { IziToastTransitionIn } from "izitoast";
-import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
-import type { SidebarWindowInput } from "roamjs-components/types/native";
-import { getRoamDate, testIfRoamDateAndConvert } from "./dateProcessing";
 import { simulateKey } from "./r42kb_lib";
 import { render as renderToast } from "roamjs-components/components/Toast";
 
@@ -68,46 +64,6 @@ export const createPage = async (page_title: string) => {
     page: { title: page_title.toString(), uid: newUID },
   });
   return newUID;
-};
-
-export const navigateUiTo = async function (
-  destinationPage: string,
-  openInSideBar = false,
-  sSidebarType: SidebarWindowInput["type"] = "outline"
-) {
-  //sSidebarType = block, outline, graph
-  const prefix = destinationPage.substring(0, 2);
-  const suffix = destinationPage.substring(
-    destinationPage.length - 2,
-    destinationPage.length
-  );
-  if (sSidebarType == "outline" && prefix == "((" && suffix == "))")
-    //test if block ref to open in block mode
-    sSidebarType = "block"; //chnage to block mode
-  if ((prefix == "[[" && suffix == "]]") || (prefix == "((" && suffix == "))"))
-    destinationPage = destinationPage.substring(2, destinationPage.length - 2);
-  let uid = getPageUidByPageTitle(destinationPage);
-  if (uid == "") {
-    //test if UID for zooming in, if not create page
-    const info = getBlockInfoByUID(destinationPage);
-    if (info == null) {
-      //not a page, nor UID so create page
-      if (destinationPage.length > 255)
-        destinationPage = destinationPage.substring(0, 254);
-      await createPage(destinationPage);
-      await sleep(50);
-      uid = getPageUidByPageTitle(destinationPage);
-    } else {
-      uid = destinationPage; //seems to be a UID, zoom it
-    }
-  }
-  if (openInSideBar == false)
-    document.location.assign(baseUrl().href + "/" + uid);
-  else {
-    await window.roamAlphaAPI.ui.rightSidebar.addWindow({
-      window: { "block-uid": uid, type: sSidebarType },
-    });
-  }
 };
 
 export const sortObjectByKey = <T extends { key: string }>(o: T[]) => {
@@ -540,12 +496,12 @@ export const deletePage = async (page_uid: string) => {
 };
 
 //returns the direct parent block  {order: 2, parentUID: "szmOXpDwT"}
-export const getDirectBlockParentUid = async (uid: string) => {
-  var r = await window.roamAlphaAPI.q(`[:find ?uid ?order 
+export const getDirectBlockParentUid = (uid: string) => {
+  var r = window.roamAlphaAPI.q(`[:find ?uid ?order 
 							:where  [?cur_block :block/uid "${uid}"]
 											[?cur_block :block/order ?order]
 											[?parent :block/children ?cur_block]
-											[?parent :block/uid ?uid]]`);
+											[?parent :block/uid ?uid]]`) as [string, number][];
   return r.length > 0 ? { order: r[0][1], parentUID: r[0][0] } : null;
 };
 
@@ -647,7 +603,9 @@ export const getBlocksReferringToThisPage = (title: string): BlockNode[][] => {
   try {
     return window.roamAlphaAPI.q(`
           [:find (pull ?refs [:block/string :block/uid {:block/children ...}])
-              :where [?refs :block/refs ?title][?title :node/title "${title}"]]`);
+              :where [?refs :block/refs ?title][?title :node/title "${title}"]]`) as [
+      BlockNode
+    ][];
   } catch (e) {
     return [];
   }
@@ -659,7 +617,9 @@ export const getBlocksReferringToThisBlockRef = (
   try {
     return window.roamAlphaAPI.q(`
           [:find (pull ?refs [:block/string :block/uid {:block/children ...}])
-              :where [?refs :block/refs ?block][?block :block/uid "${uid}"]]`);
+              :where [?refs :block/refs ?block][?block :block/uid "${uid}"]]`) as [
+      BlockNode
+    ][];
   } catch (e) {
     return [];
   }
@@ -725,7 +685,9 @@ export const getRandomBlockFromPage = async (page_title: string) => {
                                  [?page :node/title ?page_title]
                                  (ancestor ?block ?page)]`;
 
-  var results = await window.roamAlphaAPI.q(query, page_title, rule);
+  var results = (await window.roamAlphaAPI.q(query, page_title, rule)) as [
+    BlockNode
+  ][];
   var random_result = results[Math.floor(Math.random() * results.length)];
 
   return random_result[0].uid;
@@ -746,49 +708,8 @@ export const getRandomBlockFromBlock = async (uid: string) => {
                                  [?page :block/uid ?uid]
                                  (ancestor ?block ?page)]`;
 
-  var results = await window.roamAlphaAPI.q(query, uid, rule);
+  var results = window.roamAlphaAPI.q(query, uid, rule) as [BlockNode][];
   var random_result = results[Math.floor(Math.random() * results.length)];
 
   return random_result[0].uid;
-};
-
-export const moveForwardToDate = (bForward: boolean) => {
-  let jumpDate = testIfRoamDateAndConvert(
-    document.querySelector<HTMLHeadingElement>(".rm-title-display").innerText
-  );
-  let directionTip: IziToastTransitionIn = "bounceInDown";
-  if (jumpDate != null) {
-    if (bForward) {
-      jumpDate.setDate(jumpDate.getDate() + 1);
-      directionTip = "bounceInRight";
-    } else {
-      jumpDate.setDate(jumpDate.getDate() - 1);
-      directionTip = "bounceInLeft";
-    }
-    var dDate = getRoamDate(jumpDate);
-    navigateUiTo(dDate, false);
-  }
-
-  iziToast.destroy();
-  iziToast.show({
-    message: [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ][jumpDate.getDay()],
-    theme: "dark",
-    transitionIn: directionTip,
-    position: "center",
-    icon: "bp3-button bp3-minimal bp3-icon-pivot",
-    progressBar: true,
-    animateInside: false,
-    close: false,
-    timeout: 1500,
-    closeOnClick: true,
-    displayMode: 2,
-  });
 };

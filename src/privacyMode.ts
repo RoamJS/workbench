@@ -1,4 +1,4 @@
-import { navigateUiTo, displayMessage } from "./commonFunctions";
+import { displayMessage } from "./commonFunctions";
 
 let privacyList: string[] = [];
 let observer: MutationObserver = undefined;
@@ -43,13 +43,14 @@ var flattenObject = function (ob: unknown) {
   return toReturn;
 };
 
+type BlockNode = { title?: string; string?: string; children: BlockNode[] };
 async function getPrivateBlockDetails() {
   //get blocks from page Roam42 Privacy Mode List
-  var blocksFromRoam42PrivacyModeList = await window.roamAlphaAPI.q(`
+  var blocksFromRoam42PrivacyModeList = window.roamAlphaAPI.q(`
           [:find (pull ?e [ :node/title :block/string :block/children {:block/children ...} ])
             :where
             [?e :node/title "Roam42 Privacy Mode List"]]
-        `);
+        `) as [BlockNode][];
 
   //loop through blocks and retrive UIDs for all [[page links]] or #tags
   if (blocksFromRoam42PrivacyModeList.length == 0) {
@@ -106,7 +107,9 @@ async function getPrivateBlockDetails() {
 }
 
 const helpBannerForPrivacyMode = async () => {
-  await navigateUiTo(roamPageWithPrivacyList);
+  await window.roamAlphaAPI.ui.mainWindow.openPage({
+    page: { title: roamPageWithPrivacyList },
+  });
   _active = false;
   setTimeout(() => {
     displayMessage(

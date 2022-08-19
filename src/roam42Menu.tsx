@@ -2,7 +2,7 @@ import tippyJs, { Instance } from "tippy.js";
 import {
   component as dnpComponent,
   state as dnpState,
-} from "./dailyNotesPopup";
+} from "./ext/dailyNotesPopup";
 import { enabled as typeAheadEnabled, typeAheadLookup } from "./dictionary";
 import {
   enabled as formatConverterEnabled,

@@ -9,9 +9,8 @@
   "dependencies": {
     "izitoast": "1.4.0",
     "js-cookie": "3.0.0-rc.1",
-    "jspanel4": "^4.11.3",
     "mousetrap": "1.6.5",
-    "roamjs-components": "^0.72.0",
+    "roamjs-components": "^0.72.7",
     "tippy.js": "^6.3.7"
   },
   "devDependencies": {

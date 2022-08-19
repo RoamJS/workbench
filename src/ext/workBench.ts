@@ -11,7 +11,6 @@ import {
   getBlockInfoByUID,
   currentPageUID,
   displayMessage,
-  moveForwardToDate,
 } from "../commonFunctions";
 import { parseTextForDates } from "../dateProcessing";
 import {
@@ -42,6 +41,7 @@ import React from "react";
 import { SidebarWindow } from "roamjs-components/types/native";
 import getShallowTreeByParentUid from "roamjs-components/queries/getShallowTreeByParentUid";
 import updateBlock from "roamjs-components/writes/updateBlock";
+import { moveForwardToDate } from "./dailyNotesPopup";
 
 export let active = false;
 
@@ -69,7 +69,7 @@ const getBlocksByParent = (uid: string) =>
     .q(
       `[:find (pull ?c [:block/string, :block/uid]) :where [?b :block/uid "${uid}"] [?c :block/page ?b]]`
     )
-    .map((a) => a[0]);
+    .map((a) => a[0]) as { string: string; uid: string }[];
 
 const runInboxCommand = async (children: BlockNode[]) => {
   let pageUID = null;
@@ -105,7 +105,10 @@ const runInboxCommand = async (children: BlockNode[]) => {
 
   if (textName != null && textUID == null) {
     //text location doesnt exist,
-    textUID = { uid: window.roamAlphaAPI.util.generateUID() };
+    textUID = {
+      uid: window.roamAlphaAPI.util.generateUID(),
+      string: textUID.string,
+    };
     await window.roamAlphaAPI.createBlock({
       location: { "parent-uid": pageUID, order: 0 },
       block: { uid: textUID.uid, string: textName },
@@ -243,7 +246,10 @@ export const userCommands = {
 
     if (textName != null && textUID == null) {
       //text location doesnt exist,
-      textUID = { uid: window.roamAlphaAPI.util.generateUID() };
+      textUID = {
+        uid: window.roamAlphaAPI.util.generateUID(),
+        string: textUID.string,
+      };
       await window.roamAlphaAPI.createBlock({
         location: { "parent-uid": pageUID, order: 0 },
         block: { uid: textUID.uid, string: textName },

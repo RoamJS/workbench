@@ -70,15 +70,6 @@ export const nthDate = (d: number) => {
   }
 };
 
-export const getRoamDate = (dateString: Date | string) => {
-  const d = new Date(dateString);
-  const year = d.getFullYear();
-  const date = d.getDate();
-  const month = monthsDateProcessing[d.getMonth()];
-  const nthStr = nthDate(date);
-  return `${month} ${date}${nthStr}, ${year}`;
-};
-
 export const format_time = (date_obj: Date) => {
   // formats a javascript Date object into a 12h AM/PM time string
   var hour = date_obj.getHours();
@@ -302,7 +293,9 @@ export const parseTextForDates = (str: string, reference_date = new Date()) => {
 
   if (txt.length > 0) {
     txt.forEach(function (element) {
-      var roamDate = `[[${getRoamDate(element.start.date())}]] `;
+      var roamDate = `[[${window.roamAlphaAPI.util.dateToPageTitle(
+        element.start.date()
+      )}]] `;
       str = str.replace(element.text, roamDate);
     });
     return str;
