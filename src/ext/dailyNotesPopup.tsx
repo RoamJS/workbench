@@ -73,7 +73,7 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
   const [top, setTop] = useState(loc.top);
   const [left, setLeft] = useState(loc.left);
   useEffect(() => {
-    if (containerRef.current) {
+    if (containerRef.current && !minimized) {
       window.roamAlphaAPI.ui.components.renderBlock({
         el: containerRef.current,
         uid: pageUid,
@@ -84,22 +84,32 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
             node: { text: "" },
             parentUid: pageUid,
           })
-      ).then((uid) =>
+      ).then((uid) => {
+        const { windowId } = getUids(
+          containerRef.current.querySelector(".roam-block")
+        );
+        console.log(uid, windowId);
         window.roamAlphaAPI.ui.setBlockFocusAndSelection({
           location: {
             "block-uid": uid,
-            "window-id": getUids(
-              containerRef.current.querySelector(".roam-block")
-            ).windowId,
+            "window-id": windowId,
           },
-        })
-      );
+        });
+      });
     } else if (!loaded) {
       setLoaded(true);
     }
-  }, [containerRef.current, loaded, setLoaded]);
+  }, [containerRef.current, loaded, setLoaded, minimized]);
   const onDragEnd = () => component.saveUIChanges({ width, top, left, height });
-  const dragRef = useRef({ top: 0, left: 0 });
+  const dragImage = useMemo(() => {
+    const img = document.createElement('img'); 
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+    return img;
+  }, []);
+  const cancelDragImage = (e: React.DragEvent) => {
+    e.dataTransfer.setDragImage(dragImage, 0, 0);
+  }
+  const dragRef = useRef({ top: 0, left: 0, width: 0, height: 0 });
   return minimized ? (
     <div
       className="absolute bottom-0 left-0 px-4 py-2 text-white flex justify-between items-center gap-12"
@@ -198,12 +208,11 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           className="bp3-dialog-header absolute left-0 bottom-full right-0"
           draggable
           onDragStart={(e) => {
+            cancelDragImage(e);
             const rect = (e.target as HTMLDivElement).getBoundingClientRect();
             if (e.clientX && e.clientY) {
-              dragRef.current = {
-                top: e.clientY - rect.top - rect.height,
-                left: e.clientX - rect.left,
-              };
+              dragRef.current.top = e.clientY - rect.top - rect.height;
+              dragRef.current.left = e.clientX - rect.left;
             }
           }}
           onDrag={(e) => {
@@ -243,18 +252,185 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           </div>
         </div>
         <div
-          className="absolute cursor-s-resize h-3 left-2 -bottom-1 bg-red"
-          style={{ width: "calc(100% - 16px)" }}
+          className="absolute h-3 left-2 -bottom-1"
+          style={{ width: "calc(100% - 16px)", cursor: "s-resize" }}
           draggable
+          onDragStart={(e) => {
+            cancelDragImage(e);
+            const rect = (e.target as HTMLDivElement).parentElement
+              .querySelector(".dnp-content")
+              .getBoundingClientRect();
+            dragRef.current.top = rect.top;
+          }}
           onDrag={(e) => {
-            const rect = (e.target as HTMLDivElement).getBoundingClientRect();
             if (e.clientY) {
-              setHeight(e.clientY - rect.top);
+              setHeight(e.clientY - dragRef.current.top);
             }
           }}
           onDragEnd={onDragEnd}
         />
-        <div className={`bg-white`} style={{ width, height }}>
+        <div
+          className="absolute h-3 -left-1 w-3 -bottom-1"
+          style={{ cursor: "sw-resize" }}
+          draggable
+          onDragStart={(e) => {
+            cancelDragImage(e);
+            const rect = (e.target as HTMLDivElement).parentElement
+              .querySelector(".dnp-content")
+              .getBoundingClientRect();
+            dragRef.current.top = rect.top;
+            dragRef.current.width = rect.width;
+            dragRef.current.left = rect.left;
+          }}
+          onDrag={(e) => {
+            if (e.clientY) {
+              setHeight(e.clientY - dragRef.current.top);
+              setWidth(
+                dragRef.current.left - e.clientX + dragRef.current.width
+              );
+              setLeft(e.clientX);
+            }
+          }}
+          onDragEnd={onDragEnd}
+        />
+        <div
+          className="absolute w-3 bottom-2 -left-1"
+          style={{ height: "calc(100% - 16px)", cursor: "w-resize" }}
+          draggable
+          onDragStart={(e) => {
+            cancelDragImage(e);
+            const rect = (e.target as HTMLDivElement).parentElement
+              .querySelector(".dnp-content")
+              .getBoundingClientRect();
+            dragRef.current.left = rect.left;
+            dragRef.current.width = rect.width;
+          }}
+          onDrag={(e) => {
+            if (e.clientY) {
+              setWidth(
+                dragRef.current.left - e.clientX + dragRef.current.width
+              );
+              setLeft(e.clientX);
+            }
+          }}
+          onDragEnd={onDragEnd}
+        />
+        <div
+          className="absolute h-3 -left-1 w-3 -top-1"
+          style={{ cursor: "nw-resize" }}
+          draggable
+          onDragStart={(e) => {
+            cancelDragImage(e);
+            const rect = (e.target as HTMLDivElement).parentElement
+              .querySelector(".dnp-content")
+              .getBoundingClientRect();
+            dragRef.current.top = rect.top;
+            dragRef.current.height = rect.height;
+            dragRef.current.left = rect.left;
+            dragRef.current.width = rect.width;
+          }}
+          onDrag={(e) => {
+            if (e.clientY) {
+              setWidth(
+                dragRef.current.left - e.clientX + dragRef.current.width
+              );
+              setHeight(
+                dragRef.current.top - e.clientY + dragRef.current.height
+              );
+              setLeft(e.clientX);
+              setTop(e.clientY);
+            }
+          }}
+          onDragEnd={onDragEnd}
+        />
+        <div
+          className="absolute h-3 left-2 -top-1"
+          style={{ width: "calc(100% - 16px)", cursor: "n-resize" }}
+          draggable
+          onDragStart={(e) => {
+            cancelDragImage(e);
+            const rect = (e.target as HTMLDivElement).parentElement
+              .querySelector(".dnp-content")
+              .getBoundingClientRect();
+            dragRef.current.top = rect.top;
+            dragRef.current.height = rect.height;
+          }}
+          onDrag={(e) => {
+            if (e.clientY) {
+              setHeight(
+                dragRef.current.top - e.clientY + dragRef.current.height
+              );
+              setTop(e.clientY);
+            }
+          }}
+          onDragEnd={onDragEnd}
+        />
+        <div
+          className="absolute h-3 -right-1 w-3 -top-1"
+          style={{ cursor: "ne-resize" }}
+          draggable
+          onDragStart={(e) => {
+            cancelDragImage(e);
+            const rect = (e.target as HTMLDivElement).parentElement
+              .querySelector(".dnp-content")
+              .getBoundingClientRect();
+            dragRef.current.top = rect.top;
+            dragRef.current.height = rect.height;
+            dragRef.current.left = rect.left;
+          }}
+          onDrag={(e) => {
+            if (e.clientY) {
+              setHeight(
+                dragRef.current.top - e.clientY + dragRef.current.height
+              );
+              setWidth(e.clientX - dragRef.current.left);
+              setTop(e.clientY);
+            }
+          }}
+          onDragEnd={onDragEnd}
+        />
+        <div
+          className="absolute w-3 bottom-2 -right-1"
+          style={{ height: "calc(100% - 16px)", cursor: "e-resize" }}
+          draggable
+          onDragStart={(e) => {
+            cancelDragImage(e);
+            const rect = (e.target as HTMLDivElement).parentElement
+              .querySelector(".dnp-content")
+              .getBoundingClientRect();
+            dragRef.current.left = rect.left;
+          }}
+          onDrag={(e) => {
+            if (e.clientY) {
+              setWidth(e.clientX - dragRef.current.left);
+            }
+          }}
+          onDragEnd={onDragEnd}
+        />
+        <div
+          className="absolute h-3 -right-1 w-3 -bottom-1"
+          style={{ cursor: "se-resize" }}
+          draggable
+          onDragStart={(e) => {
+            cancelDragImage(e);
+            const rect = (e.target as HTMLDivElement).parentElement
+              .querySelector(".dnp-content")
+              .getBoundingClientRect();
+            dragRef.current.top = rect.top;
+            dragRef.current.left = rect.left;
+          }}
+          onDrag={(e) => {
+            if (e.clientY) {
+              setWidth(e.clientX - dragRef.current.left);
+              setHeight(e.clientY - dragRef.current.top);
+            }
+          }}
+          onDragEnd={onDragEnd}
+        />
+        <div
+          className={`bg-white overflow-auto dnp-content`}
+          style={{ width, height }}
+        >
           <h1 className={"text-bold text-4xl mb-8 mt-0 pt-6 pl-6"}>
             {window.roamAlphaAPI.util.dateToPageTitle(new Date())}
           </h1>
