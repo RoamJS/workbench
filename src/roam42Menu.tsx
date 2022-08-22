@@ -21,8 +21,8 @@ import { component as qrComponent } from "./quickRef";
 import { show as tutorialShow } from "./tutorials";
 import { displayGraphStats, enabled } from "./stats";
 import {
-  getRoamNavigator_IsEnabled,
-  roamNavigatorStatusToast,
+  enabled as deepNavEnabled,
+  navigate as triggerDeepNav,
 } from "./deepnav";
 import {
   livePreviewStatusToast,
@@ -234,11 +234,11 @@ export const displayMenu = () => {
         <MenuItem>
           <span style={{ fontSize: "9pt" }}>Toggle Features On/Off:</span>
         </MenuItem>
-        {getRoamNavigator_IsEnabled() && (
+        {deepNavEnabled && (
           <MenuItem
             onClick={() => {
               tippy.hide();
-              roamNavigatorStatusToast();
+              triggerDeepNav();
             }}
           >
             <span style={{ fontSize: "8pt", paddingLeft: 15 }}>

@@ -4,7 +4,6 @@ import "roamjs-components/types";
 // common
 import * as common from "./commonFunctions";
 import * as dateProcessing from "./dateProcessing";
-import * as roam42KeyboardLib from "./r42kb_lib";
 
 // exts
 import * as dailyNotesPopup from "./ext/dailyNotesPopup";
@@ -176,7 +175,6 @@ export default runExtension({
     tutorials.toggleFeature(!!extensionAPI.settings.get("tutorials"));
 
     const keyDownListener = (ev: KeyboardEvent) => {
-      const target = ev.target as HTMLElement;
       try {
         if (livePreview.keyboardHandlerLivePreview(ev)) {
           return;
@@ -193,21 +191,21 @@ export default runExtension({
         }
       } catch (e) {}
 
-      //Date NLP
-      if (ev.altKey && ev.shiftKey && ev.code == "KeyD") {
-        if (target.nodeName === "TEXTAREA") {
-          var processText = dateProcessing.parseTextForDates(
-            (target as HTMLTextAreaElement).value
-          );
-          common.setEmptyNodeValue(
-            document.getElementById(target.id),
-            processText
-          );
-          ev.preventDefault();
-          ev.stopPropagation();
-        }
-        return;
-      }
+      //Date NLP - move to auto tag
+      // if (ev.altKey && ev.shiftKey && ev.code == "KeyD") {
+      //   if (target.nodeName === "TEXTAREA") {
+      //     var processText = dateProcessing.parseTextForDates(
+      //       (target as HTMLTextAreaElement).value
+      //     );
+      //     common.setEmptyNodeValue(
+      //       document.getElementById(target.id),
+      //       processText
+      //     );
+      //     ev.preventDefault();
+      //     ev.stopPropagation();
+      //   }
+      //   return;
+      // }
 
       //Dictonary Lookup
       if (ev.altKey && ev.shiftKey && (ev.code == "Period" || ev.key == "˘")) {
@@ -243,6 +241,9 @@ export default runExtension({
     unload = () => {
       workBench.toggleFeature(false);
       dailyNotesPopup.toggleFeature(false);
+      
+      roamNavigator.toggleFeature(false);
+      
       dictionary.toggleFeature(false);
       formatConverter.toggleFeature(false);
       jumpnav.toggleFeature(false);
@@ -250,7 +251,6 @@ export default runExtension({
       privacyMode.toggleFeature(false);
       quickRef.toggleFeature(false);
       roam42Menu.toggleFeature(false);
-      roamNavigator.toggleFeature(false);
       tutorials.toggleFeature(false);
     };
     return {

@@ -1,5 +1,137 @@
-import Cookies from "js-cookie";
-import iziToast from "izitoast";
+let finishNavigate: () => void = null;
+let oldNavigateOptions: Record<string, Item> = {};
+let currentNavigateOptions: Record<string, Item> = {};
+let currentNavigatePrefixesUsed = {};
+let currentUidToNavigateOptionsMap: Record<string, Item> = {};
+let navigateKeysPressed = "";
+let currentLinkOptions: Record<string, Item> = {};
+
+const keyIsModifier = (ev: KeyboardEvent) => {
+  return (
+    ev.key === "Shift" ||
+    ev.key === "Meta" ||
+    ev.key === "Control" ||
+    ev.key === "Alt"
+  );
+};
+
+const isNavigating = () => {
+  return finishNavigate !== null;
+};
+
+const getInputTarget = (ev: Event) => {
+  const element = ev.target as HTMLElement;
+  if (
+    element.tagName == "INPUT" ||
+    element.tagName == "SELECT" ||
+    element.tagName == "TEXTAREA" ||
+    element.isContentEditable
+  ) {
+    return element;
+  } else {
+    return null;
+  }
+};
+
+const isBlockHighlighted = () => {
+  return document.body.querySelector(".block-highlight-blue") !== null;
+};
+
+const isHotKey = (ev: KeyboardEvent) => ev.code === "KeyG" || ev.key === "g";
+
+export const navigate = () => {
+  if (isNavigating()) {
+    throw new Error("Invariant violation: navigate while already navigating");
+  }
+
+  oldNavigateOptions = {};
+  currentNavigateOptions = {};
+  currentNavigatePrefixesUsed = {};
+  currentUidToNavigateOptionsMap = {};
+  navigateKeysPressed = "";
+
+  finishNavigate = () => {
+    clearBreadcrumbs();
+  };
+
+  setupNavigate(false);
+};
+
+const keyDownListener = (ev: KeyboardEvent) => {
+  if (
+    keyIsModifier(ev) ||
+    ev.ctrlKey ||
+    (ev.altKey && (isNavigating() || !isHotKey(ev)))
+  ) {
+    return;
+  }
+  if (isNavigating()) {
+    if (getInputTarget(ev)) {
+      endNavigate();
+    } else {
+      handleNavigateKey(ev);
+    }
+  } else if (isHotKey(ev)) {
+    const inputTarget = getInputTarget(ev);
+    if (ev.altKey || !inputTarget) {
+      ev.stopImmediatePropagation();
+      ev.preventDefault();
+      // Deslect input before navigating
+      if (inputTarget) {
+        inputTarget.blur();
+      }
+      navigate();
+    }
+  }
+};
+
+export let enabled = false;
+export const toggleFeature = (flag: boolean) => {
+  enabled = flag;
+  if (flag) initialize();
+  else {
+    document.removeEventListener("keydown", keyDownListener);
+    window.removeEventListener("resize", handleScrollOrResize);
+    highlightedObserver?.disconnect?.();
+  }
+};
+
+const initialize = () => {
+  document.addEventListener("keydown", keyDownListener, true);
+
+  const handleChange = throttle(20, () => {
+    const blockHighlighted = isBlockHighlighted();
+    console.log(
+      "DOM mutation. blockHighlighted = ",
+      blockHighlighted,
+      "blockWasHighlighted = ",
+      blockWasHighlighted
+    );
+    if (isNavigating()) {
+      if (!setupNavigateCrashed) {
+        setupNavigate(false);
+      }
+      registerScrollHandlers();
+    }
+    blockWasHighlighted = blockHighlighted;
+    updateBreadcrumbs();
+  });
+
+  window.addEventListener("resize", handleScrollOrResize);
+
+  highlightedObserver = new MutationObserver(() => {
+    if (!domMutationLevel) {
+      handleChange();
+    }
+  });
+  highlightedObserver.observe(document, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+  });
+};
+
+// EVERYTHING BELOW THIS LINE IS DEPRECATED //
 
 type Item = {
   element?: Element;
@@ -19,11 +151,6 @@ const DEBUG = false;
 // Symbol used to indicate the enter key.
 const ENTER_SYMBOL = "⏎";
 
-// Key to start navigation.  Alt + this key will also trigger
-// navigation.
-const START_NAVIGATE_KEY = "KeyG";
-
-// Key sequence to navigate to daily notes.
 const DAILY_NOTES_KEY = "g";
 
 // Key sequence to navigate to graph overview.
@@ -57,59 +184,7 @@ const LEFT_SIDEBAR_KEY = "`";
 // attempt to display.
 const MAX_BREADCRUMB_COUNT = 15;
 
-export const getRoamNavigator_IsEnabled = () => {
-  if (Cookies.get("RoamNavigator_IsEnabled") === "true") {
-    return true;
-  } else {
-    return false;
-  }
-};
-
-const setRoamNavigator_IsEnabled = (val: boolean) => {
-  if (val) {
-    Cookies.set("RoamNavigator_IsEnabled", "true", { expires: 365 });
-  } else {
-    Cookies.set("RoamNavigator_IsEnabled", "false", { expires: 365 });
-  }
-};
-
-export const roamNavigatorStatusToast = () => {
-  var status = getRoamNavigator_IsEnabled();
-  iziToast.show({
-    timeout: 20000,
-    theme: "dark",
-    title: "Deep Jump Navigation",
-    message: "Status:",
-    position: "bottomRight",
-    progressBarColor: "rgb(0, 255, 184)",
-    displayMode: 2,
-    buttons: [
-      [
-        "<button>Enabled</button>",
-        function (instance, toast) {
-          setRoamNavigator_IsEnabled(true);
-          instance.hide({ transitionOut: "fadeOutUp" }, toast, "buttonName");
-        },
-        status,
-      ],
-      [
-        "<button>Disabled</button>",
-        function (instance, toast) {
-          setRoamNavigator_IsEnabled(false);
-          instance.hide({ transitionOut: "fadeOutDown" }, toast, "buttonName");
-        },
-        !status,
-      ],
-    ],
-  });
-};
-
 const MAX_NAVIGATE_PREFIX = 2;
-
-// MUTABLE. This is a set of keys to ignore for keypress / keyup
-// events. This solves an issue where keypresses involved in
-// navigation can get handled elsewhere (especially textareas).
-let keysToIgnore: Record<string, boolean> = {};
 
 // MUTABLE. Stores whether a block was highlighted last time the DOM
 // was mutated.
@@ -120,153 +195,7 @@ let blockWasHighlighted = false;
 // and so the changes should be ignored.
 let domMutationLevel = 0;
 
-const keyDownListener = (ev: KeyboardEvent) => {
-  debug("keydown", ev);
-  debug("keysToIgnore", keysToIgnore);
-  if (keyIsModifier(ev)) {
-    return;
-  }
-  // Ignore keystrokes pressed with modifier keys, as they might
-  // be used by other extensions.
-
-  if (!getRoamNavigator_IsEnabled()) {
-    // navigator disabled, don't go further
-    return;
-  }
-
-  if (
-    ev.ctrlKey ||
-    (ev.altKey &&
-      (isNavigating() || !(ev.code === START_NAVIGATE_KEY || ev.key === "g")))
-  ) {
-    delete keysToIgnore[ev.key];
-    return;
-  }
-  if (isNavigating()) {
-    if (getInputTarget(ev)) {
-      warn("Ending navigate mode as keypress target is input");
-      endNavigate();
-    } else {
-      keysToIgnore[ev.key] = true;
-      handleNavigateKey(ev);
-    }
-    return;
-  } else if (ev.code === START_NAVIGATE_KEY || ev.key === "g") {
-    const inputTarget = getInputTarget(ev);
-    if (ev.altKey || !inputTarget) {
-      ev.stopImmediatePropagation();
-      ev.preventDefault();
-      keysToIgnore = {};
-      // Deslect input before navigating
-      if (inputTarget) {
-        inputTarget.blur();
-      }
-      // Deselect block highlight before navigating.
-      if (isBlockHighlighted()) {
-        click(document.body);
-        setTimeout(navigate);
-      } else {
-        navigate();
-      }
-      return;
-    }
-  } else if (!getInputTarget(ev) && handleScrollKey(ev)) {
-    return;
-  }
-  delete keysToIgnore[ev.key];
-};
-
-const keyPressListener = (ev: KeyboardEvent) => {
-  debug("keypress", ev);
-  debug("keysToIgnore", keysToIgnore);
-  if (isNavigating() || keysToIgnore[ev.key]) {
-    ev.stopImmediatePropagation();
-    ev.preventDefault();
-  }
-};
-
-const keyUpListener = (ev: KeyboardEvent) => {
-  debug("keyup", ev);
-  debug("keysToIgnore", keysToIgnore);
-  if (isNavigating() || keysToIgnore[ev.key]) {
-    ev.stopImmediatePropagation();
-    ev.preventDefault();
-    delete keysToIgnore[ev.key];
-  }
-};
-
 let highlightedObserver: MutationObserver = undefined;
-
-function initialize() {
-  document.addEventListener("keydown", keyDownListener, true);
-  document.addEventListener("keypress", keyPressListener, true);
-  document.addEventListener("keyup", keyUpListener, true);
-
-  const handleChange = throttle(20, () => {
-    const blockHighlighted = isBlockHighlighted();
-    debug(
-      "DOM mutation. blockHighlighted = ",
-      blockHighlighted,
-      "blockWasHighlighted = ",
-      blockWasHighlighted
-    );
-    if (isNavigating()) {
-      if (!setupNavigateCrashed) {
-        setupNavigate(false);
-      }
-      registerScrollHandlers();
-    }
-    blockWasHighlighted = blockHighlighted;
-    updateBreadcrumbs();
-  });
-
-  window.addEventListener("resize", handleScrollOrResize);
-
-  highlightedObserver = new MutationObserver(() => {
-    if (!domMutationLevel) {
-      handleChange();
-    }
-  });
-  highlightedObserver.observe(document, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-  });
-}
-
-export const toggleFeature = (flag: boolean) => {
-  if (flag) initialize();
-  else {
-    document.removeEventListener("keydown", keyDownListener);
-    document.removeEventListener("keypress", keyPressListener);
-    document.removeEventListener("keyup", keyUpListener);
-    window.removeEventListener("resize", handleScrollOrResize);
-    highlightedObserver?.disconnect?.();
-  }
-};
-
-function keyIsModifier(ev: KeyboardEvent) {
-  return (
-    ev.key === "Shift" ||
-    ev.key === "Meta" ||
-    ev.key === "Control" ||
-    ev.key === "Alt"
-  );
-}
-
-function getInputTarget(ev: Event) {
-  const element = ev.target as HTMLElement;
-  if (
-    element.tagName == "INPUT" ||
-    element.tagName == "SELECT" ||
-    element.tagName == "TEXTAREA" ||
-    element.isContentEditable
-  ) {
-    return element;
-  } else {
-    return null;
-  }
-}
 
 function registerScrollHandlers() {
   const rightScroller = getById("roam-right-sidebar-content");
@@ -288,10 +217,6 @@ const handleScrollOrResize = throttle(100, () => {
   }
 });
 
-function isBlockHighlighted() {
-  return document.body.querySelector(".block-highlight-blue") !== null;
-}
-
 /*
   var IS_CHROME = /Chrom/.test(navigator.userAgent) &&
     /Google Inc/.test(navigator.vendor);
@@ -304,55 +229,7 @@ const NAVIGATE_CLASS = "roam_navigator_navigating";
 const LEFT_SIDEBAR_TOGGLE_CLASS = "roam_navigator_left_sidebar_toggle";
 const RIGHT_SIDEBAR_CLOSE_CLASS = "roam_navigator_right_sidebar_close";
 const SIDE_PAGE_CLOSE_CLASS = "roam_navigator_side_page_close";
-
-// MUTABLE. When set, this function should be called when navigate mode
-// finished.
-let finishNavigate: () => void = null;
-
-// MUTABLE. Current set of navigate options.
-let currentNavigateOptions: Record<string, Item> = {};
-
-// MUTABLE. Prefixes used in last assignment of navigate options to keys.
-let currentNavigatePrefixesUsed = {};
-
-// MUTABLE. Map from uids to navigate options.
-let currentUidToNavigateOptionsMap: Record<string, Item> = {};
-
-// MUTABLE. Used to avoid infinite recursion of 'setupNavigate' due to it
-// being called on mutation of DOM that it mutates.
-let oldNavigateOptions: Record<string, Item> = {};
-
-// MUTABLE. Current set of link options.
-let currentLinkOptions: Record<string, Item> = {};
-
-// MUTABLE. Keys the user has pressed so far.
-let navigateKeysPressed = "";
-
-// MUTABLE. Whether setupNavigate crashed last time.
 let setupNavigateCrashed = false;
-
-// Switches to a navigation mode, where navigation targets are annotated
-// with letters to press to click.
-function navigate() {
-  if (isNavigating()) {
-    throw new Error("Invariant violation: navigate while already navigating");
-  }
-
-  // Since the projects list can get reconstructed, watch for changes and
-  // reconstruct the shortcut tips.  A function to unregister the mutation
-  // observer is passed in.
-  oldNavigateOptions = {};
-  currentNavigateOptions = {};
-  currentNavigatePrefixesUsed = {};
-  currentUidToNavigateOptionsMap = {};
-  navigateKeysPressed = "";
-
-  finishNavigate = () => {
-    clearBreadcrumbs();
-  };
-
-  setupNavigate(false);
-}
 
 function endNavigate() {
   if (!isNavigating()) {
@@ -380,7 +257,7 @@ function setupNavigate(onlyLinks: boolean) {
   if (!matchingClass(NAVIGATE_CLASS)(document.body)) {
     document.body.classList.add(NAVIGATE_CLASS);
   }
-  debug("Creating navigation shortcut tips");
+  console.log("Creating navigation shortcut tips");
   try {
     if (!onlyLinks) {
       const { navigateOptions, navigatePrefixesUsed, uidToNavigateOptionsMap } =
@@ -402,9 +279,9 @@ function setupNavigate(onlyLinks: boolean) {
       currentUidToNavigateOptionsMap = uidToNavigateOptionsMap;
       oldNavigateOptions = navigateOptions;
       if (different) {
-        debug("Different set of navigation options, so re-setting them.");
+        console.log("Different set of navigation options, so re-setting them.");
       } else {
-        debug("Same set of navigation options, so not re-rendering.");
+        console.log("Same set of navigation options, so not re-rendering.");
         setupNavigateCrashed = false;
         return;
       }
@@ -493,7 +370,7 @@ function collectNavigateOptions() {
         navigateItems.push(option);
         uidToNavigateOptionsMap[ALL_PAGES_UID] = option;
       } else {
-        error("Unhandled .log-button:", text);
+        console.error("Unhandled .log-button:", text);
       }
     });
 
@@ -620,7 +497,7 @@ function findLastBlock(el: Element) {
   if (container) {
     // TODO: inefficient to query all blocks twice.
     const query = ".rm-block-text, #block-input-ghost";
-    return findLast(all, Array.from(selectAll(container, query)));
+    return findLast(all, Array.from(container.querySelectorAll(query)));
   }
   return null;
 }
@@ -742,7 +619,7 @@ function addLinks(
                 uid = link.innerText;
                 */
             } else {
-              warn("Unexpected <a> element", link);
+              console.warn("Unexpected <a> element", link);
               continue;
             }
           }
@@ -760,7 +637,10 @@ function addLinks(
             el = link;
             uid = tagAttr;
           } else {
-            error("Expected data-tag or data-link-uid attribute on", link);
+            console.error(
+              "Expected data-tag or data-link-uid attribute on",
+              link
+            );
             continue;
           }
         }
@@ -816,7 +696,7 @@ function renderTip(key: string, option: Item, skipRenderingMain: boolean) {
         renderTipInternal(prefix, rest, option.element, option.extraClasses);
       }
     } else {
-      error("element not set in", key, option);
+      console.error("element not set in", key, option);
     }
     if (option.aliased) {
       for (const el of option.aliased) {
@@ -1030,7 +910,9 @@ function assignKeysToItems(
           // shortening.
           qualifies = true;
         } else {
-          error("Inconstiant violation: unexpected mode in addViaKeyFunc");
+          console.error(
+            "Inconstiant violation: unexpected mode in addViaKeyFunc"
+          );
         }
         if (qualifies) {
           qualifying.push([keys, groupItems[0]] as const);
@@ -1166,7 +1048,7 @@ function assignKeysToItems(
   // That should have assigned keys to everything, but if there are many
   // similar number of options this case can happen.
   if (items.length !== 0) {
-    info("There must be many options, couldn't find keys for", items);
+    console.log("There must be many options, couldn't find keys for", items);
   }
   return { options, prefixesUsed };
 }
@@ -1215,7 +1097,7 @@ function handleScrollKey(ev: KeyboardEvent) {
 }
 
 function handleNavigateKey(ev: KeyboardEvent) {
-  debug("handleNavigateKey");
+  console.log("handleNavigateKey");
   let keepGoing = false;
   try {
     if (handleScrollKey(ev)) {
@@ -1223,7 +1105,7 @@ function handleNavigateKey(ev: KeyboardEvent) {
     } else if (ev.key === "Backspace") {
       // Backspace removes keys from list of pressed keys.
       navigateKeysPressed = navigateKeysPressed.slice(0, -1);
-      debug("navigateKeysPressed after backspace:", navigateKeysPressed);
+      console.log("navigateKeysPressed after backspace:", navigateKeysPressed);
       keepGoing = rerenderTips(false);
       /* TODO
       } else if (ev.key === 'x') {
@@ -1239,11 +1121,11 @@ function handleNavigateKey(ev: KeyboardEvent) {
       const key = eventToKey(ev);
       if (key) {
         navigateKeysPressed += key;
-        debug("navigateKeysPressed:", navigateKeysPressed);
+        console.log("navigateKeysPressed:", navigateKeysPressed);
         const navigateOption = currentNavigateOptions[navigateKeysPressed];
         const linkOption = currentLinkOptions[navigateKeysPressed];
         if (navigateOption && linkOption) {
-          error(
+          console.error(
             "Invariant violation: navigate and link option have same key",
             navigateKeysPressed
           );
@@ -1294,7 +1176,7 @@ function eventToKey(ev: KeyboardEvent) {
   if (result.length === 1) {
     return result;
   }
-  warn("Ignoring keypress with length =", result.length, ":", result);
+  console.warn("Ignoring keypress with length =", result.length, ":", result);
 }
 
 function navigateToElement(
@@ -1347,7 +1229,7 @@ function navigateToElement(
       } else {
         // This appears to only work in chrome - opens link in a new
         // tab without switching focus.
-        debug('MIDDLE CLICK');
+        console.log('MIDDLE CLICK');
         var middleClick = new MouseEvent( 'click', { 'button': 1, 'which': 2 });
         el.dispatchEvent(middleClick);
       }
@@ -1412,10 +1294,6 @@ function removeOldTips(onlyLinks: boolean) {
   });
 }
 
-function isNavigating() {
-  return finishNavigate !== null;
-}
-
 /*****************************************************************************
  * Recent history breadcrumbs
  */
@@ -1469,7 +1347,7 @@ function updateBreadcrumbs() {
   } else {
     // Omit graphs chooser and other non-graph pages from
     // breadcrumbs list.
-    debug("Omitting", hash, "from breadcrumbs");
+    console.log("Omitting", hash, "from breadcrumbs");
   }
   if (!(graphName in breadcrumbsByGraph)) {
     breadcrumbsByGraph[graphName] = [];
@@ -1494,7 +1372,7 @@ function updateBreadcrumbs() {
       title = document.title;
       uid = document.title;
     } else {
-      debug("Didn't find title element for page");
+      console.log("Didn't find title element for page");
       return;
     }
   }
@@ -1540,11 +1418,11 @@ function updateBreadcrumbs() {
   }
   if (changed) {
     trimExcessBreadcrumbs(breadcrumbs);
-    debug("updated breadcrumbs = ", breadcrumbs);
+    console.log("updated breadcrumbs = ", breadcrumbs);
   }
   // Update rendering of breadcrumbs.
   const alreadyVisible =
-    selectAll(document, "." + BREADCRUMBS_CLASS).length > 0;
+    document.querySelectorAll("." + BREADCRUMBS_CLASS).length > 0;
   const shouldBeVisible = isNavigating();
   if (!shouldBeVisible) {
     clearBreadcrumbs();
@@ -1629,7 +1507,7 @@ function persistentlyFindImpl(
   if (el) {
     f(el);
   } else if (n > 1000) {
-    warn("Giving up on finding after", n, "retries.");
+    console.warn("Giving up on finding after", n, "retries.");
   } else {
     setTimeout(() => persistentlyFindImpl(finder, n + 1, f), 15);
   }
@@ -1695,62 +1573,6 @@ function shiftClick(el: Element) {
   el.dispatchEvent(ev);
 }
 
-const EXTENSION_NAME = "roam-navigator";
-
-function debug(...rest: unknown[]) {
-  if (DEBUG) {
-    const args = [].slice.call(rest);
-    args.unshift(EXTENSION_NAME + ":");
-    // eslint-disable-next-line no-console
-    console.log(...args);
-  }
-}
-
-function debugWithStack(...rest: unknown[]) {
-  if (DEBUG) {
-    const args = [].slice.call(rest);
-    args.unshift(EXTENSION_NAME + ":");
-    args.push("\n" + getStack());
-    // eslint-disable-next-line no-console
-    console.log(...args);
-  }
-}
-
-// Used to notify about an issue that's expected to sometimes occur during
-// normal operation.
-function info(...rest: unknown[]) {
-  const args = [].slice.call(rest);
-  args.unshift(EXTENSION_NAME + ":");
-  args.push("(this is fine)");
-  console.log(...args);
-}
-
-function warn(...rest: unknown[]) {
-  const args = [].slice.call(rest);
-  args.unshift(EXTENSION_NAME + ":");
-  args.push("\n" + getStack());
-  console.warn(...args);
-}
-
-function error(...rest: unknown[]) {
-  const args = [].slice.call(rest);
-  args.unshift(EXTENSION_NAME + ":");
-  args.push(getStack());
-  args.push(
-    "Please report this as an issue to http://github.com/mgsloan/roam-navigator"
-  );
-  console.error(...args);
-}
-
-// https://stackoverflow.com/a/41586311/1164871
-function getStack() {
-  try {
-    throw new Error();
-  } catch (e) {
-    return e.stack;
-  }
-}
-
 // https://github.com/greasemonkey/greasemonkey/issues/2724#issuecomment-354005162
 function addCss(css: string) {
   const style = document.createElement("style");
@@ -1764,21 +1586,9 @@ function getById(id: string) {
   return document.getElementById(id);
 }
 
-// Alias for querySelectorAll.
-function selectAll(parent: Element | string | Document, query = "") {
-  if (!query || typeof parent === "string") {
-    if (typeof parent === "string") {
-      return document.querySelectorAll(parent);
-    } else {
-      return document.querySelectorAll("div");
-    }
-  }
-  return parent.querySelectorAll(query);
-}
-
 // Uses querySelectorAll, but requires a unique result.
 function selectUnique(parent: Element | Document, query: string) {
-  return findUnique(all, Array.from(selectAll(parent, query)));
+  return findUnique(all, Array.from(parent.querySelectorAll(query)));
 }
 
 // Uses querySelectorAll, and applies the provided function to each result.
@@ -1787,22 +1597,22 @@ function withQuery(
   query: string,
   f: (el: Element) => void
 ) {
-  const els = selectAll(parent, query);
+  const els = parent.querySelectorAll(query);
   for (let i = 0; i < els.length; i++) {
     f(els[i]);
   }
 }
 
-// Invokes the function for the matching id, or logs a warning.
+// Invokes the function for the matching id, or logs a console.warning.
 function withId(id: string, f: (el: Element) => void, ...rest: unknown[]) {
   if (rest.length > 0) {
-    error("Too many arguments passed to withId", rest);
+    console.error("Too many arguments passed to withId", rest);
   }
   const el = getById(id);
   if (el) {
     return f(el);
   } else {
-    warn("Couldn't find ID", id);
+    console.warn("Couldn't find ID", id);
     return null;
   }
 }
@@ -1816,7 +1626,7 @@ function withClass(
   ...rest: unknown[]
 ) {
   if (rest.length > 0) {
-    error("Too many arguments passed to withClass", rest);
+    console.error("Too many arguments passed to withClass", rest);
   }
   const els = parent.getElementsByClassName(cls);
   for (let i = 0; i < els.length; i++) {
@@ -1833,7 +1643,7 @@ function withTag(
   ...rest: unknown[]
 ) {
   if (rest.length > 0) {
-    error("Too many arguments passed to withTag", rest);
+    console.error("Too many arguments passed to withTag", rest);
   }
   const els = parent.getElementsByTagName(tag);
   for (let i = 0; i < els.length; i++) {
@@ -1888,7 +1698,7 @@ function getUniqueClass(
 }
 
 // Checks that there is only one descendant element that matches the
-// class name, and invokes the function on it. Logs a warning if
+// class name, and invokes the function on it. Logs a console.warning if
 // there isn't exactly one.
 function withUniqueClass(
   parent: Element | Document,
@@ -1900,7 +1710,7 @@ function withUniqueClass(
   if (result) {
     return f(result as HTMLElement);
   } else {
-    warn(
+    console.warn(
       "Couldn't find unique descendant with class",
       cls,
       "and matching predicate, instead got",
@@ -1922,7 +1732,7 @@ function getUniqueTag(
 }
 
 // Checks that there is only one descendant element that matches the
-// tag, and invokes the function on it. Logs a warning if there
+// tag, and invokes the function on it. Logs a console.warning if there
 // isn't exactly one.
 function withUniqueTag(
   parent: Element,
@@ -1934,7 +1744,7 @@ function withUniqueTag(
   if (result) {
     return f(result);
   } else {
-    warn(
+    console.warn(
       "Couldn't find unique descendant with tag",
       tag,
       "and passing predicate"
@@ -1984,7 +1794,7 @@ function findUnique<T>(
       if (result === null) {
         result = el;
       } else {
-        debugWithStack(
+        console.log(
           "findUnique didn't find unique element because " +
             "there are multiple results. " +
             "Here are two:",
@@ -2016,7 +1826,7 @@ function checkedPredicate(context: string, predicate: (x: unknown) => boolean) {
     const bool = predicate(x);
     if (typeof bool !== "boolean") {
       // TODO: perhaps an exception would be better.
-      error(
+      console.error(
         "In " + context + ", expected boolean result from predicate. ",
         "Instead got",
         bool
