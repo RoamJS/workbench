@@ -23,7 +23,7 @@ import { displayGraphStats, enabled } from "./stats";
 import {
   enabled as deepNavEnabled,
   navigate as triggerDeepNav,
-} from "./deepnav";
+} from "./ext/deepnav";
 import {
   livePreviewStatusToast,
   state as livePreviewState,

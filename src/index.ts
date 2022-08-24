@@ -14,7 +14,7 @@ import * as jumpnav from "./jumpNav";
 import * as privacyMode from "./privacyMode";
 import * as quickRef from "./quickRef";
 import * as roam42Menu from "./roam42Menu";
-import * as roamNavigator from "./deepnav";
+import * as roamNavigator from "./ext/deepnav";
 import * as stats from "./stats";
 import * as tutorials from "./tutorials";
 import * as workBench from "./ext/workBench";
