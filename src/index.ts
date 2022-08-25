@@ -3,7 +3,7 @@ import "roamjs-components/types";
 
 // exts
 import * as dailyNotesPopup from "./ext/dailyNotesPopup";
-import * as dictionary from "./dictionary";
+import * as dictionary from "./ext/dictionary";
 import * as formatConverter from "./formatConverter";
 import * as livePreview from "./livePreview";
 import * as jumpnav from "./jumpNav";

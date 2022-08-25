@@ -1,6 +1,6 @@
 import AutocompleteInput from "roamjs-components/components/AutocompleteInput";
 import iziToast from "izitoast";
-import { insertAtCaret } from "./commonFunctions";
+import { insertAtCaret } from "../commonFunctions";
 import React from "react";
 import ReactDOM from "react-dom";
 

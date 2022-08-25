@@ -19,7 +19,7 @@ import { component as queryRef } from "./quickRef";
 import { component as dailyNotesPopup } from "./ext/dailyNotesPopup";
 import { pressEsc, simulateKey } from "./r42kb_lib";
 import { get } from "./settings";
-import { typeAheadLookup } from "./dictionary";
+import { typeAheadLookup } from "./ext/dictionary";
 
 const oldStopCallback = Mousetrap.prototype.stopCallback;
 const bindings = [

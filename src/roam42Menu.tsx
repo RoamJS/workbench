@@ -3,7 +3,7 @@ import {
   component as dnpComponent,
   state as dnpState,
 } from "./ext/dailyNotesPopup";
-import { enabled as typeAheadEnabled, typeAheadLookup } from "./dictionary";
+import { enabled as typeAheadEnabled, typeAheadLookup } from "./ext/dictionary";
 import {
   enabled as formatConverterEnabled,
   htmlview,
