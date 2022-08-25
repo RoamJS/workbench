@@ -203,14 +203,6 @@ export default runExtension({
       //   return;
       // }
 
-      //Dictonary Lookup
-      if (ev.altKey && ev.shiftKey && (ev.code == "Period" || ev.key == "˘")) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        dictionary.typeAheadLookup();
-        return;
-      }
-
       //simple markdown
       if (ev.altKey && ev.shiftKey == false && ev.code == "KeyM") {
         if (formatConverter.enabled) {
@@ -237,17 +229,19 @@ export default runExtension({
     unload = () => {
       workBench.toggleFeature(false);
       dailyNotesPopup.toggleFeature(false);
-      
       roamNavigator.toggleFeature(false);
       
       dictionary.toggleFeature(false);
+
       formatConverter.toggleFeature(false);
       jumpnav.toggleFeature(false);
       livePreview.toggleFeature(false);
       privacyMode.toggleFeature(false);
+      
       quickRef.toggleFeature(false);
       roam42Menu.toggleFeature(false);
       tutorials.toggleFeature(false);
+      stats.toggleFeature(false);
     };
     return {
       domListeners: [

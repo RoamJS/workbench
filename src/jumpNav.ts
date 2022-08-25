@@ -607,7 +607,7 @@ export const jumpCommand = (target: Element, handler: string) => {
     return false;
   }
   if (handler == "ctrl+j .") {
-    typeAheadLookup(target);
+    typeAheadLookup();
     return false;
   }
 

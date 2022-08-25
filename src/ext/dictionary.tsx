@@ -1,115 +1,105 @@
 import AutocompleteInput from "roamjs-components/components/AutocompleteInput";
-import iziToast from "izitoast";
-import { insertAtCaret } from "../commonFunctions";
 import React from "react";
 import ReactDOM from "react-dom";
-
-export let currentTextArea = "";
-
-export const typeAheadLookup = (target?: Element) => {
-  if (target?.localName == "textarea") {
-    typeaheadDisplayTextArea(target.id);
-  } else {
-    typeaheadDisplayOtherAreas();
-  }
-};
-
-export const typeaheadDisplayTextArea = (srcElementId: string) => {
-  currentTextArea = srcElementId;
-  document.getElementById("rmSearch").style.display = "block";
-  document.getElementById("rmSearchBox").focus();
-};
-
-export const typeaheadDisplayOtherAreas = () => {
-  currentTextArea = "OTHERAREAS";
-  document.getElementById("rmSearch").style.display = "block";
-  document.getElementById("rmSearchBox").focus();
-};
-
-const TypeAhead = () => {
-  const [value, setValue] = React.useState("");
-  const [options, setOptions] = React.useState([]);
-  React.useEffect(() => {
-    if (value) {
-      fetch(`https://wordnet.glitch.me/query?search=${value}`)
-        .then((res) => res.json())
-        .then(setOptions);
-    }
-  }, [value]);
-  return React.createElement(AutocompleteInput, {
-    value,
-    setValue,
-    options,
-    placeholder: "search",
-    onConfirm: () => {
-      if (currentTextArea == "OTHERAREAS") {
-        // @ts-ignore - TODO
-        displayDataInToast(value);
-      } else {
-        insertDataIntoNode(
-          currentTextArea,
-          // @ts-ignore - TODO
-          value
-        );
-      }
-    },
-    onBlur: () => {
-      setValue("");
-      document.getElementById("rmSearch").style.display = "none";
-    },
-    // @ts-ignore - TODO
-    id: "rmSearchBox",
-    className: "typeahead",
-    renderOption: typeaheadResult,
-  });
-};
-
-export let enabled = false;
-
-export const loadTypeAhead = () => {
-  enabled = true;
-  const rmSearch = document.createElement("div");
-  rmSearch.id = "rmSearch";
-  document.body.appendChild(rmSearch);
-
-  ReactDOM.render(TypeAhead(), rmSearch);
-};
-
-export const toggleFeature = (flag: boolean) => {
-  if (flag) loadTypeAhead();
-  else {
-    document.getElementById("rmSearch")?.remove?.();
-    enabled = false;
-  }
-};
-
-export const typeaheadQueryURL =
-  "https://wordnet.glitch.me/query?search=%QUERY";
-export const typeaheadDisplayField = "word";
+import { Classes, Dialog } from "@blueprintjs/core";
+import updateBlock from "roamjs-components/writes/updateBlock";
+import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
+import { render as renderToast } from "roamjs-components/components/Toast";
+import renderOverlay, {
+  RoamOverlayProps,
+} from "roamjs-components/util/renderOverlay";
 
 type Entry = { word: string; definition: string; type: string };
 
-export const typeaheadResult = (d: Entry) => {
-  return `<div class="th-item">
-              <div class="th-term"> ${d.word}       </div>
-              <div class="th-def">  ${d.definition} </div>
-          </div>`;
-};
+export let enabled = false;
+const formatEntry = (d: Entry) => `**${d.word}** (${d.type})
+${d.definition}`;
 
 export const displayDataInToast = (d: Entry) => {
-  let display = `<b>${d.word}</b><br/> ${d.definition}`;
-  iziToast.show({
-    message: display,
-    progressBar: true,
-    animateInside: true,
-    close: true,
-    maxWidth: 250,
-    timeout: 60000,
-    closeOnClick: true,
-    displayMode: 2,
+  renderToast({
+    content: formatEntry(d),
+    id: "roamjs-workbench-dict",
+    position: "bottom-right",
   });
 };
 
-export const insertDataIntoNode = (currentTextArea: string, d: Entry) => {
-  insertAtCaret(currentTextArea, `**${d.word}** (${d.type})\n ${d.definition}`);
+const TypeAhead = ({
+  uid,
+  isOpen,
+  onClose,
+}: RoamOverlayProps<{ uid?: string }>) => {
+  const [value, setValue] = React.useState<string>();
+  const [options, setOptions] = React.useState<Entry[]>([]);
+  const timeoutRef = React.useRef(0);
+  React.useEffect(() => {
+    window.clearTimeout(timeoutRef.current);
+    if (value) {
+      timeoutRef.current = window.setTimeout(
+        () =>
+          fetch(`https://wordnet.glitch.me/query?search=${value}`)
+            .then((res) => res.json())
+            .then(setOptions),
+        1000
+      );
+    }
+  }, [value]);
+  return (
+    <Dialog isOpen={isOpen} onClose={onClose} title={"Workbench Dictionary"}>
+      <div className={Classes.DIALOG_BODY}>
+        <AutocompleteInput
+          value={value}
+          setValue={setValue}
+          options={options.map((w) => w.word)}
+          placeholder={"search"}
+          onConfirm={() => {
+            const entry = options.find((o) => o.word === value);
+            if (!uid) {
+              displayDataInToast(entry);
+              onClose();
+            } else {
+              const existing = getTextByBlockUid(uid);
+              updateBlock({
+                text: existing
+                  ? `${existing}\n${formatEntry(entry)}`
+                  : formatEntry(entry),
+                uid,
+              }).then(onClose);
+            }
+          }}
+          autoFocus
+          // renderOption={typeaheadResult}
+        />
+      </div>
+    </Dialog>
+  );
 };
+
+export const typeAheadLookup = () => {
+  const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+  renderOverlay({ Overlay: TypeAhead, props: { uid } });
+};
+
+const keydownListener = (ev: KeyboardEvent) => {
+  if (ev.altKey && ev.shiftKey && (ev.code == "Period" || ev.key == "˘")) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    typeAheadLookup();
+  }
+};
+
+export const toggleFeature = (flag: boolean) => {
+  enabled = flag;
+  if (flag) {
+    document.addEventListener("keydown", keydownListener);
+  } else {
+    document.getElementById("rmSearch")?.remove?.();
+    document.removeEventListener("keydown", keydownListener);
+  }
+};
+
+// export const typeaheadResult = (d: Entry) => {
+//   return `<div class="th-item">
+//               <div class="th-term"> ${d.word}       </div>
+//               <div class="th-def">  ${d.definition} </div>
+//           </div>`;
+// };
