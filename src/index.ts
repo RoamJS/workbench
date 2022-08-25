@@ -1,10 +1,6 @@
 import runExtension from "roamjs-components/util/runExtension";
 import "roamjs-components/types";
 
-// common
-import * as common from "./commonFunctions";
-import * as dateProcessing from "./dateProcessing";
-
 // exts
 import * as dailyNotesPopup from "./ext/dailyNotesPopup";
 import * as dictionary from "./dictionary";
@@ -66,7 +62,7 @@ export default runExtension({
             type: "switch",
             onChange: (e) => roamNavigator.toggleFeature(e.target.checked),
           },
-          description: "Help menu that appears on the top right",
+          description: "Quick navigation through Roam's UI using the keyboard",
         },
         {
           id: "dictionary",

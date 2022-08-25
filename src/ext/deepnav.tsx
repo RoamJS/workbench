@@ -4,21 +4,20 @@ import addStyle from "roamjs-components/dom/addStyle";
 import ReactDOM from "react-dom";
 import getUids from "roamjs-components/dom/getUids";
 import { SidebarWindowInput } from "roamjs-components/types";
+import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 
 type Breadcrumbs = { hash: string; title: string; uid?: string }[];
 
 type Item = {
-  element?: HTMLElement;
+  element: HTMLElement;
   navigate: () => Promise<void>;
   mustBeKeys?: string | null;
   text?: string;
   initials?: string;
-  isNavigateOption?: boolean;
   keepGoing?: boolean;
   extraClasses?: string[];
 };
 
-let finishNavigate: () => void = null;
 let currentOptions: Record<string, Item> = {};
 let currentNavigatePrefixesUsed: Record<string, boolean> = {};
 let navigateKeysPressed = "";
@@ -36,9 +35,6 @@ const IS_DAILY_NOTES_REGEX = /#\/(offline|app)\/[^\/]+$/;
 const IS_ALL_PAGES_REGEX = /#\/(offline|app)\/[^\/]+\/search$/;
 const IS_GRAPH_OVERVIEW_REGEX = /#\/(offline|app)\/[^\/]+\/graph$/;
 const ENTER_SYMBOL = "⏎";
-const DAILY_NOTES_KEY = "g";
-const GRAPH_OVERVIEW_KEY = "o" + ENTER_SYMBOL;
-const ALL_PAGES_KEYS = "ap";
 const SIDEBAR_BLOCK_PREFIX = "s";
 const CLOSE_BUTTON_PREFIX = "x";
 const LAST_BLOCK_KEY = "b";
@@ -58,9 +54,7 @@ const keyIsModifier = (ev: KeyboardEvent) => {
   );
 };
 
-const isNavigating = () => {
-  return finishNavigate !== null;
-};
+let isNavigating = false;
 
 const getInputTarget = (ev: Event) => {
   const element = ev.target as HTMLElement;
@@ -123,7 +117,7 @@ const updateBreadcrumbs = async () => {
   // Update rendering of breadcrumbs.
   const alreadyVisible =
     document.querySelectorAll("." + BREADCRUMBS_CLASS).length > 0;
-  const shouldBeVisible = isNavigating();
+  const shouldBeVisible = isNavigating;
   if (!shouldBeVisible) {
     clearBreadcrumbs();
   } else if (changed || !alreadyVisible) {
@@ -139,14 +133,20 @@ const updateBreadcrumbs = async () => {
                 key={breadcrumb.hash}
                 title={breadcrumb.title}
                 data-link-title={breadcrumb.title}
-                data-link-uid={breadcrumb.uid}
                 onClick={() => {
-                  window.location.hash = breadcrumb.hash;
+                  if (breadcrumb.uid) {
+                    window.roamAlphaAPI.ui.mainWindow.openBlock({
+                      block: { uid: breadcrumb.uid },
+                    });
+                  } else {
+                    window.location.hash = breadcrumb.hash;
+                  }
                 }}
               >
                 <span
                   tabIndex={-1}
                   className={"rm-page-ref rm-page-ref-link-color"}
+                  data-link-uid={breadcrumb.uid}
                 >
                   {breadcrumb.title}
                 </span>
@@ -262,92 +262,74 @@ const addLinks = (linkItems: Item[], container: Element) => {
   const links = container.querySelectorAll<HTMLElement>(
     [".rm-page-ref", "a"].join(", ")
   );
-  for (let i = 0; i < links.length; i++) {
-    const link = links[i];
+  links.forEach((link) => {
     const boundingRect = link.getBoundingClientRect();
     const visible = container.classList.contains(BREADCRUMBS_CLASS)
       ? boundingRect.top < 45
       : boundingRect.bottom > 50 && boundingRect.top < window.innerHeight - 10;
     if (visible) {
       const parent = link.parentElement;
-      let el;
-      let uid: string;
-      // let isExternalLink = false;
+      const text = link.innerText;
+      const pushLink = (el: HTMLElement, navigate: () => Promise<void>) =>
+        linkItems.push({
+          element: el,
+          mustBeKeys: null,
+          text: preprocessItemText(text),
+          initials: getItemInitials(text),
+          extraClasses: [LINK_HINT_CLASS],
+          keepGoing: true,
+          navigate,
+        });
       if (link.tagName === "A") {
         if (parent.classList.contains("rm-ref-page-view-title")) {
-          // Link in linked references
-          el = parent;
-          uid = link.innerText;
+          pushLink(parent, () =>
+            window.roamAlphaAPI.ui.mainWindow.openPage({
+              page: { title: link.innerText },
+            })
+          );
         } else if (link.classList.contains("rm-alias")) {
-          el = link;
-          uid = link.innerText;
+          pushLink(link, async () => link.click());
+        } else if (link.hasAttribute("href")) {
+          pushLink(link, async () => {
+            window.open(link.getAttribute("href"));
+          });
         } else {
-          const hrefAttr = link.getAttribute("href");
-          if (hrefAttr) {
-            // External link
-            el = link;
-            uid = hrefAttr;
-            // isExternalLink = true;
-          } else {
-            if (link.parentElement.tagName === "H1") {
-              //TODO: omitting because the tip on sidebar title gets clipped.
-              continue;
-              /*
-                el = link.parentElement;
-                uid = link.innerText;
-                */
-            } else {
-              console.warn("Unexpected <a> element", link);
-              continue;
-            }
-          }
+          console.warn("Unexpected <a> element", link);
         }
       } else if (link.classList.contains("rm-page-ref")) {
         const uidAttr = parent.getAttribute("data-link-uid");
         if (uidAttr) {
-          // Internal link
-          el = parent;
-          uid = uidAttr;
+          pushLink(parent, () =>
+            window.roamAlphaAPI.ui.mainWindow.openBlock({
+              block: { uid: uidAttr },
+            })
+          );
+        } else if (link.hasAttribute("data-tag")) {
+          pushLink(link, () =>
+            window.roamAlphaAPI.ui.mainWindow.openPage({
+              page: { title: link.getAttribute("data-tag") },
+            })
+          );
         } else {
-          const tagAttr = link.getAttribute("data-tag");
-          if (tagAttr) {
-            // Internal tag
-            el = link;
-            uid = tagAttr;
-          } else {
-            console.error(
-              "Expected data-tag or data-link-uid attribute on",
-              link
-            );
-            continue;
-          }
+          console.warn("Unxpected .rm-page-ref element", link);
         }
       }
-      const text = link.innerText;
-      linkItems.push({
-        element: el,
-        mustBeKeys: null,
-        text: preprocessItemText(text),
-        initials: getItemInitials(text),
-        extraClasses: [LINK_HINT_CLASS],
-        keepGoing: true,
-        navigate: () =>
-          window.roamAlphaAPI.ui.mainWindow.openBlock({ block: { uid } }),
-      });
     }
-  }
+  });
 };
 
 const removeOldTips = () => {
-  Array.from(document.querySelectorAll(HINT_CLASS)).forEach((d) => d.remove());
+  Array.from(document.querySelectorAll(`.${HINT_CLASS}`)).forEach((d) =>
+    d.remove()
+  );
 };
 
 const endNavigate = () => {
-  if (!isNavigating()) {
+  if (!isNavigating) {
     throw new Error("Invariant violation: endNavigate while not navigating.");
   }
-  finishNavigate();
-  finishNavigate = null;
+  isNavigating = false;
+  clearBreadcrumbs();
   currentOptions = {};
   removeOldTips();
   if (document.body.classList.contains(NAVIGATE_CLASS)) {
@@ -369,53 +351,47 @@ const renderTip = (key: string, option: Item) => {
   const prefix = key.slice(0, navigateKeysPressed.length);
   const rest = key.slice(navigateKeysPressed.length);
   if (prefix === navigateKeysPressed) {
-    if (option.element) {
-      renderTipInternal(prefix, rest, option.element, option.extraClasses);
+    const { element: el, extraClasses = [] } = option;
+    const Tip = () => (
+      <div className={`${HINT_CLASS} ${extraClasses.join(" ")}`}>
+        {prefix.length > 0 && (
+          <span className={HINT_TYPED_CLASS}>{prefix}</span>
+        )}
+        {rest}
+      </div>
+    );
+    const render = (el: HTMLElement) => {
+      const root = document.createElement("div");
+      el.prepend(root);
+      ReactDOM.render(<Tip />, root);
+    };
+    if (
+      el.classList.contains("rm-block-text") ||
+      el.id === "block-input-ghost"
+    ) {
+      const parent = el.closest(".rm-block-main")?.parentElement;
+      if (parent) render(parent);
+    } else if (
+      extraClasses &&
+      extraClasses.some((x) =>
+        [
+          LEFT_SIDEBAR_TOGGLE_CLASS,
+          RIGHT_SIDEBAR_CLOSE_CLASS,
+          SIDE_PAGE_CLOSE_CLASS,
+        ].includes(x)
+      )
+    ) {
+      // Typically if the parent doesn't exist, then a re-render is
+      // scheduled to properly render the sidebar toggle.
+      if (el.parentElement) {
+        render(el.parentElement);
+      }
     } else {
-      console.error("element not set in", key, option);
+      render(el);
     }
     return true;
   }
   return false;
-};
-
-const renderTipInternal = (
-  prefix: string,
-  rest: string,
-  el: HTMLElement,
-  extraClasses: string[]
-) => {
-  const Tip = () => (
-    <div className={`${HINT_CLASS} ${extraClasses.join(" ")}`}>
-      {prefix.length > 0 && <span className={HINT_TYPED_CLASS}>{prefix}</span>}
-      {rest}
-    </div>
-  );
-  const render = (el: HTMLElement) => {
-    const root = document.createElement("div");
-    el.prepend(root);
-    ReactDOM.render(<Tip />, root);
-  };
-  if (el.classList.contains("rm-block-text") || el.id === "block-input-ghost") {
-    const parent = el.closest(".rm-block-main").parentElement;
-    render(parent);
-  } else if (
-    extraClasses &&
-    extraClasses.findIndex(
-      (x) =>
-        x === LEFT_SIDEBAR_TOGGLE_CLASS ||
-        x === RIGHT_SIDEBAR_CLOSE_CLASS ||
-        x === SIDE_PAGE_CLOSE_CLASS
-    ) >= 0
-  ) {
-    // Typically if the parent doesn't exist, then a re-render is
-    // scheduled to properly render the sidebar toggle.
-    if (el.parentElement) {
-      render(el.parentElement);
-    }
-  } else {
-    render(el);
-  }
 };
 
 // Assign keys to items based on their text.
@@ -593,15 +569,13 @@ const setupNavigate = () => {
       Array.from(sidebar.getElementsByClassName("log-button")).forEach(
         (logButton: HTMLDivElement) => {
           const text = (
-            Array.from(logButton.childNodes).find((c) => c.nodeName === "#text")
-              ?.nodeValue || ""
+            logButton.querySelector(".icon")?.nextSibling?.nodeValue || ""
           ).toLowerCase();
           if (text === "daily notes") {
             const option = {
               element: logButton,
-              mustBeKeys: DAILY_NOTES_KEY,
+              mustBeKeys: "g",
               keepGoing: true,
-              isNavigateOption: true,
               navigate: () =>
                 window.roamAlphaAPI.ui.mainWindow.openDailyNotes(),
             };
@@ -609,9 +583,8 @@ const setupNavigate = () => {
           } else if (text === "graph overview") {
             const option = {
               element: logButton,
-              mustBeKeys: GRAPH_OVERVIEW_KEY,
+              mustBeKeys: "o" + ENTER_SYMBOL,
               keepGoing: true,
-              isNavigateOption: true,
               navigate: async () => {
                 window.location.hash = `#/${
                   window.roamAlphaAPI.graph.type === "hosted"
@@ -624,15 +597,24 @@ const setupNavigate = () => {
           } else if (text === "all pages") {
             const option = {
               element: logButton,
-              mustBeKeys: ALL_PAGES_KEYS,
+              mustBeKeys: "ap",
               keepGoing: true,
-              isNavigateOption: true,
               navigate: async () => {
                 window.location.hash = `#/${
                   window.roamAlphaAPI.graph.type === "hosted"
                     ? "app"
                     : "offline"
                 }/${window.roamAlphaAPI.graph.name}/search`;
+              },
+            };
+            navigateItems.push(option);
+          } else if (text === "roam depot") {
+            const option = {
+              element: logButton,
+              mustBeKeys: "rd",
+              keepGoing: true,
+              navigate: async () => {
+                logButton.click();
               },
             };
             navigateItems.push(option);
@@ -655,7 +637,6 @@ const setupNavigate = () => {
               mustBeKeys: null,
               text: preprocessItemText(text),
               initials: getItemInitials(text),
-              isNavigateOption: true,
               keepGoing: true,
               navigate: () =>
                 window.roamAlphaAPI.ui.mainWindow.openPage({
@@ -767,7 +748,7 @@ const setupNavigate = () => {
     assignKeysToItems(navigateItems);
 
     // Finish navigation immediately if no tips to render.
-    if (!rerenderTips() && finishNavigate) {
+    if (!rerenderTips() && isNavigating) {
       endNavigate();
     }
   } catch (ex) {
@@ -777,15 +758,14 @@ const setupNavigate = () => {
 };
 
 export const navigate = () => {
-  if (isNavigating()) {
+  if (isNavigating) {
     throw new Error("Invariant violation: navigate while already navigating");
   }
 
   currentOptions = {};
   currentNavigatePrefixesUsed = {};
   navigateKeysPressed = "";
-
-  finishNavigate = clearBreadcrumbs;
+  isNavigating = true;
 
   setupNavigate();
 };
@@ -842,7 +822,7 @@ const handleNavigateKey = (ev: KeyboardEvent) => {
       }
     }
   } finally {
-    if (!keepGoing && isNavigating()) {
+    if (!keepGoing && isNavigating) {
       endNavigate();
     }
   }
@@ -852,11 +832,11 @@ const keyDownListener = (ev: KeyboardEvent) => {
   if (
     keyIsModifier(ev) ||
     ev.ctrlKey ||
-    (ev.altKey && (isNavigating() || !isHotKey(ev)))
+    (ev.altKey && (isNavigating || !isHotKey(ev)))
   ) {
     return;
   }
-  if (isNavigating()) {
+  if (isNavigating) {
     if (getInputTarget(ev)) {
       endNavigate();
     } else {
@@ -880,7 +860,7 @@ let scrollRef = 0;
 const handleScrollOrResize = () => {
   window.clearTimeout(scrollRef);
   scrollRef = window.setTimeout(() => {
-    if (isNavigating()) {
+    if (isNavigating) {
       setupNavigate();
     }
   }, 100);
