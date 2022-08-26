@@ -4,7 +4,7 @@ import "roamjs-components/types";
 // exts
 import * as dailyNotesPopup from "./ext/dailyNotesPopup";
 import * as dictionary from "./ext/dictionary";
-import * as formatConverter from "./formatConverter";
+import * as formatConverter from "./ext/formatConverter";
 import * as livePreview from "./livePreview";
 import * as jumpnav from "./jumpNav";
 import * as privacyMode from "./privacyMode";
@@ -202,26 +202,6 @@ export default runExtension({
       //   }
       //   return;
       // }
-
-      //simple markdown
-      if (ev.altKey && ev.shiftKey == false && ev.code == "KeyM") {
-        if (formatConverter.enabled) {
-          ev.preventDefault();
-          ev.stopPropagation();
-          formatConverter.show();
-        }
-        return;
-      }
-
-      //HTML view
-      if (ev.altKey && ev.shiftKey == true && ev.code == "KeyM") {
-        if (formatConverter.enabled) {
-          ev.preventDefault();
-          ev.stopPropagation();
-          formatConverter.htmlview();
-        }
-        return;
-      }
     };
 
     document.addEventListener("keydown", keyDownListener);
@@ -230,10 +210,10 @@ export default runExtension({
       workBench.toggleFeature(false);
       dailyNotesPopup.toggleFeature(false);
       roamNavigator.toggleFeature(false);
-      
       dictionary.toggleFeature(false);
 
       formatConverter.toggleFeature(false);
+
       jumpnav.toggleFeature(false);
       livePreview.toggleFeature(false);
       privacyMode.toggleFeature(false);

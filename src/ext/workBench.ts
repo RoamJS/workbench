@@ -15,10 +15,10 @@ import {
 import { parseTextForDates } from "../dateProcessing";
 import {
   htmlview,
-  resolveBlockRefsInText,
   show as showFormatConverter,
-} from "../formatConverter";
+} from "./formatConverter";
 import openBlockInSidebar from "roamjs-components/writes/openBlockInSidebar";
+import resolveRefs from "roamjs-components/dom/resolveRefs";
 import {
   prompt,
   render as renderFormDialog,
@@ -152,7 +152,7 @@ export const userCommands = {
   ) => {
     //loops through array and returns node where the text matches
     for (let c of childrenBlocks) {
-      let resolvedBlockString = await resolveBlockRefsInText(c.string);
+      let resolvedBlockString = resolveRefs(c.string);
       let searchString = resolvedBlockString.toString().toLowerCase();
       let comparisonString = startsWith.toLowerCase();
       if (searchString.startsWith(comparisonString))

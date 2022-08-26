@@ -1,6 +1,5 @@
 import AutocompleteInput from "roamjs-components/components/AutocompleteInput";
 import React from "react";
-import ReactDOM from "react-dom";
 import { Classes, Dialog } from "@blueprintjs/core";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";

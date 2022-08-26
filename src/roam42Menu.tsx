@@ -8,7 +8,7 @@ import {
   enabled as formatConverterEnabled,
   htmlview,
   show as formatConverterShow,
-} from "./formatConverter";
+} from "./ext/formatConverter";
 import {
   enabled as privacyEnabled,
   active as privacyActive,

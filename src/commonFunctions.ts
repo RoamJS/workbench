@@ -12,17 +12,6 @@ export const displayMessage = (content: string, timeout?: number) =>
     timeout,
   });
 
-// EVERYTHING BELOW HERE IS DEPRECATED
-
-export const sleep = (m: number) => new Promise((r) => setTimeout(r, m));
-
-export const baseUrl = () => {
-  const url = new URL(window.location.href);
-  const parts = url.hash.split("/");
-  url.hash = parts.slice(0, 3).concat(["page"]).join("/");
-  return url;
-};
-
 export type BlockInfo = {
   title: string;
   string: string;
@@ -34,6 +23,17 @@ export type BlockInfo = {
   "text-align": string;
   children: BlockInfo[];
   parents: BlockInfo[];
+};
+
+// EVERYTHING BELOW HERE IS DEPRECATED
+
+export const sleep = (m: number) => new Promise((r) => setTimeout(r, m));
+
+export const baseUrl = () => {
+  const url = new URL(window.location.href);
+  const parts = url.hash.split("/");
+  url.hash = parts.slice(0, 3).concat(["page"]).join("/");
+  return url;
 };
 
 export const getBlockInfoByUID = (
