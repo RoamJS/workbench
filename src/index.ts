@@ -5,7 +5,7 @@ import "roamjs-components/types";
 import * as dailyNotesPopup from "./ext/dailyNotesPopup";
 import * as dictionary from "./ext/dictionary";
 import * as formatConverter from "./ext/formatConverter";
-import * as livePreview from "./livePreview";
+import * as livePreview from "./ext/livePreview";
 import * as jumpnav from "./ext/jumpNav";
 import * as privacyMode from "./privacyMode";
 import * as quickRef from "./quickRef";
@@ -172,11 +172,6 @@ export default runExtension({
 
     const keyDownListener = (ev: KeyboardEvent) => {
       try {
-        if (livePreview.keyboardHandlerLivePreview(ev)) {
-          return;
-        }
-      } catch (e) {}
-      try {
         if (quickRef.component.keyboardHandler(ev)) {
           return;
         }
@@ -211,11 +206,10 @@ export default runExtension({
       dailyNotesPopup.toggleFeature(false);
       roamNavigator.toggleFeature(false);
       dictionary.toggleFeature(false);
-
       formatConverter.toggleFeature(false);
-
       jumpnav.toggleFeature(false);
       livePreview.toggleFeature(false);
+      
       privacyMode.toggleFeature(false);
       
       quickRef.toggleFeature(false);

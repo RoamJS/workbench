@@ -24,10 +24,7 @@ import {
   enabled as deepNavEnabled,
   navigate as triggerDeepNav,
 } from "./ext/deepnav";
-import {
-  livePreviewStatusToast,
-  state as livePreviewState,
-} from "./livePreview";
+import { enabled as livePreviewState } from "./ext/livePreview";
 
 export let tippy: Instance = undefined;
 export const toggleFeature = (flag: boolean) => {
@@ -246,18 +243,6 @@ export const displayMenu = () => {
             </span>
           </MenuItem>
         )}
-        {livePreviewState != "off" && (
-          <MenuItem
-            onClick={() => {
-              tippy.hide();
-              livePreviewStatusToast();
-            }}
-          >
-            <span style={{ fontSize: "8pt", paddingLeft: "15px" }}>
-              Live Preview
-            </span>
-          </MenuItem>
-        )}
         <hr style={{ margin: 0, marginTop: 5, padding: 0 }} />
         <MenuItem>
           <span style={{ fontSize: "8pt", paddingLeft: "15px" }}>
@@ -268,7 +253,12 @@ export const displayMenu = () => {
       <div
         style={{ position: "absolute", bottom: -7, right: -2, zIndex: 1000 }}
       >
-        <img width="40px" src={"https://raw.githubusercontent.com/dvargas92495/roamjs-workbench/img/logo/42logo-2hc.png"} />
+        <img
+          width="40px"
+          src={
+            "https://raw.githubusercontent.com/dvargas92495/roamjs-workbench/img/logo/42logo-2hc.png"
+          }
+        />
       </div>
     </>,
     menu
