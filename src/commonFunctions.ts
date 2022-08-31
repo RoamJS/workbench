@@ -293,16 +293,6 @@ export const currentActiveBlockUID = () => {
   else return null;
 };
 
-export const blockDelete = (block: HTMLTextAreaElement) => {
-  if (block.localName == "textarea") {
-    setTimeout(async () => {
-      await moveCursorToPreviousBlock(block);
-      await sleep(100);
-      await deleteBlock(block.id.slice(-9));
-    }, 50);
-  }
-};
-
 export const blockInsertBelow = (block: HTMLElement) => {
   //Block is the HTMLElement of the currently selected block
   if (block.localName == "textarea") {
@@ -478,11 +468,6 @@ export const replaceBlock = async (
 
   var newBlockRefString = "((" + parent_uid + "))";
   updateBlock(block_to_move_uid, newBlockRefString, true);
-};
-
-export const deleteBlock = async (block_uid: string) => {
-  block_uid = block_uid.replace("((", "").replace("))", "");
-  return window.roamAlphaAPI.deleteBlock({ block: { uid: block_uid } });
 };
 
 export const updatePage = async (page_uid: string, page_new_title: string) => {
