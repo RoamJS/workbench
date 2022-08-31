@@ -1,9 +1,9 @@
-import { get } from "./settings";
+import { get } from "../settings";
 import getFirstChildUidByBlockUid from "roamjs-components/queries/getFirstChildUidByBlockUid";
 import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
 import getShallowTreeByParentUid from "roamjs-components/queries/getShallowTreeByParentUid";
 import openBlockInSidebar from "roamjs-components/writes/openBlockInSidebar";
-import { displayMessage } from "./commonFunctions";
+import { displayMessage } from "../commonFunctions";
 import getOrderByBlockUid from "roamjs-components/queries/getOrderByBlockUid";
 import createBlock from "roamjs-components/writes/createBlock";
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";

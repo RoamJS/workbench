@@ -6,7 +6,7 @@ import * as dailyNotesPopup from "./ext/dailyNotesPopup";
 import * as dictionary from "./ext/dictionary";
 import * as formatConverter from "./ext/formatConverter";
 import * as livePreview from "./livePreview";
-import * as jumpnav from "./jumpNav";
+import * as jumpnav from "./ext/jumpNav";
 import * as privacyMode from "./privacyMode";
 import * as quickRef from "./quickRef";
 import * as roam42Menu from "./roam42Menu";
