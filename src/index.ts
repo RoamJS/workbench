@@ -10,213 +10,119 @@ import * as jumpnav from "./features/jumpNav";
 import * as privacyMode from "./features/privacyMode";
 import * as roamNavigator from "./features/deepnav";
 import * as workBench from "./features/workBench";
-
-import * as quickRef from "./quickRef";
-import * as roam42Menu from "./roam42Menu";
-import * as stats from "./stats";
 import * as tutorials from "./features/tutorials";
 
-declare global {
-  interface Window {
-    roam42?: {
-      buildID: string;
-    };
-  }
-}
+import * as roam42Menu from "./roam42Menu";
+import * as stats from "./stats";
 
 const extensionId = "workbench";
-let unload: () => void;
+const FEATURES = [
+  {
+    id: "workBench",
+    name: "Command Palette+",
+    description:
+      "Whether or not to include the core set of workBench commands in the Roam Command Palette",
+    module: workBench,
+  },
+  {
+    id: "dailyNotesPopup",
+    name: "Daily Notes Popup",
+    module: dailyNotesPopup,
+    description: "A popup window with the current Daily Notes Page",
+  },
+  {
+    id: "roamNavigator",
+    name: "Deep Nav",
+    module: roamNavigator,
+    description: "Quick navigation through Roam's UI using the keyboard",
+  },
+  {
+    id: "dictionary",
+    name: "Dictionary",
+    module: dictionary,
+    description: "Look up terms in the dictionary",
+  },
+  {
+    id: "formatConverter",
+    name: "Format Converter",
+    module: formatConverter,
+    description: "Outputs the current page to various formats",
+  },
+  {
+    id: "jumpNav",
+    name: "Hot Keys",
+    module: jumpnav,
+    description:
+      "Keyboard shortcuts for interacting with the Roam user interface",
+  },
+  {
+    id: "livePreview",
+    name: "Live Preview",
+    module: livePreview,
+    description:
+      "See live and editable preview of pages upon hovering over tags and page links",
+  },
+  {
+    id: "privacyMode",
+    name: "Privacy Mode",
+    description: "Redacts content from your Roam",
+    module: privacyMode,
+  },
+  {
+    id: "tutorials",
+    name: "Tutorials",
+    module: tutorials,
+    description:
+      "Learn how to use WorkBench features and Roam basics right from within Roam",
+  },
+];
 
 export default runExtension({
   extensionId,
   run: ({ extensionAPI, extension }) => {
-    window.roam42 = {
-      buildID: extension.version,
-    };
+    tutorials.setVersion(extension.version);
 
     extensionAPI.settings.panel.create({
       tabTitle: "WorkBench",
-      settings: [
-        {
-          id: "workBench",
-          name: "Command Palette+",
-          action: {
-            type: "switch",
-            onChange: (e) => workBench.toggleFeature(e.target.checked),
-          },
-          description:
-            "Whether or not to include the core set of workBench commands in the Roam Command Palette",
+      settings: FEATURES.map((f) => ({
+        id: f.id,
+        description: f.description,
+        name: f.name,
+        action: {
+          type: "switch",
+          onChange: (e) => f.module.toggleFeature(e.target.checked),
         },
-        {
-          id: "dailyNotesPopup",
-          name: "Daily Notes Popup",
-          action: {
-            type: "switch",
-            onChange: (e) => dailyNotesPopup.toggleFeature(e.target.checked),
-          },
-          description: "A popup window with the current Daily Notes Page",
-        },
-        {
-          id: "roamNavigator",
-          name: "Deep Nav",
-          action: {
-            type: "switch",
-            onChange: (e) => roamNavigator.toggleFeature(e.target.checked),
-          },
-          description: "Quick navigation through Roam's UI using the keyboard",
-        },
-        {
-          id: "dictionary",
-          name: "Dictionary",
-          action: {
-            type: "switch",
-            onChange: (e) => dictionary.toggleFeature(e.target.checked),
-          },
-          description: "Look up terms in the dictionary",
-        },
-        {
-          id: "formatConverter",
-          name: "Format Converter",
-          action: {
-            type: "switch",
-            onChange: (e) => formatConverter.toggleFeature(e.target.checked),
-          },
-          description: "Outputs the current page to various formats",
-        },
-        {
-          id: "jumpNav",
-          name: "Hot Keys",
-          action: {
-            type: "switch",
-            onChange: (e) => jumpnav.toggleFeature(e.target.checked),
-          },
-          description:
-            "Keyboard shortcuts for interacting with the Roam user interface",
-        },
-        {
-          id: "livePreview",
-          name: "Live Preview",
-          action: {
-            type: "switch",
-            onChange: (e) => livePreview.toggleFeature(e.target.checked),
-          },
-          description:
-            "See live and editable preview of pages upon hovering over tags and page links",
-        },
-        {
-          id: "privacyMode",
-          name: "Privacy Mode",
-          description: "Redacts content from your Roam",
-          action: {
-            type: "switch",
-            onChange: (e) => privacyMode.toggleFeature(e.target.checked),
-          },
-        },
-
-        // TODO: Combine the bottom four into one tutorials feature
-        {
-          id: "quickRef",
-          name: "Quick Reference",
-          action: {
-            type: "switch",
-            onChange: (e) => quickRef.toggleFeature(e.target.checked),
-          },
-          description:
-            "A quick help section of WorkBench's and Roam's features",
-        },
-        {
-          id: "roam42Menu",
-          name: "Roam42 Menu",
-          action: {
-            type: "switch",
-            onChange: (e) => roam42Menu.toggleFeature(e.target.checked),
-          },
-          description: "Help menu that appears on the top right",
-        },
-        {
-          id: "stats",
-          name: "Stats",
-          action: {
-            type: "switch",
-            onChange: (e) => stats.toggleFeature(e.target.checked),
-          },
-          description: "Get stats on your Roam usage",
-        },
-        {
-          id: "tutorials",
-          name: "Tutorials",
-          action: {
-            type: "switch",
-            onChange: (e) => tutorials.toggleFeature(e.target.checked),
-          },
-          description:
-            "Learn how to use WorkBench features and Roam basics right from within Roam",
-        },
-      ],
+      })),
     });
 
-    workBench.toggleFeature(!!extensionAPI.settings.get("workBench"));
-    dailyNotesPopup.toggleFeature(
-      !!extensionAPI.settings.get("dailyNotesPopup")
-    );
-    dictionary.toggleFeature(!!extensionAPI.settings.get("dictionary"));
-    formatConverter.toggleFeature(
-      !!extensionAPI.settings.get("formatConverter")
-    );
-    jumpnav.toggleFeature(!!extensionAPI.settings.get("jumpNav"));
-    livePreview.toggleFeature(!!extensionAPI.settings.get("livePreview"));
-    privacyMode.toggleFeature(!!extensionAPI.settings.get("privacyMode"));
-    quickRef.toggleFeature(!!extensionAPI.settings.get("quickRef"));
-    roam42Menu.toggleFeature(!!extensionAPI.settings.get("roam42Menu"));
-    roamNavigator.toggleFeature(!!extensionAPI.settings.get("roamNavigator"));
-    tutorials.toggleFeature(!!extensionAPI.settings.get("tutorials"));
+    FEATURES.forEach(({ id, module }) => {
+      const flag = extensionAPI.settings.get(id);
+      if (typeof flag === "undefined") extensionAPI.settings.set(id, true);
+      module.toggleFeature(typeof flag === "undefined" || (flag as boolean));
+    });
 
-    const keyDownListener = (ev: KeyboardEvent) => {
-      try {
-        if (quickRef.component.keyboardHandler(ev)) {
-          return;
-        }
-      } catch (e) {}
+    //Date NLP - move to auto tag
+    // if (ev.altKey && ev.shiftKey && ev.code == "KeyD") {
+    //   if (target.nodeName === "TEXTAREA") {
+    //     var processText = dateProcessing.parseTextForDates(
+    //       (target as HTMLTextAreaElement).value
+    //     );
+    //     common.setEmptyNodeValue(
+    //       document.getElementById(target.id),
+    //       processText
+    //     );
+    //     ev.preventDefault();
+    //     ev.stopPropagation();
+    //   }
+    //   return;
+    // }
 
-      //Date NLP - move to auto tag
-      // if (ev.altKey && ev.shiftKey && ev.code == "KeyD") {
-      //   if (target.nodeName === "TEXTAREA") {
-      //     var processText = dateProcessing.parseTextForDates(
-      //       (target as HTMLTextAreaElement).value
-      //     );
-      //     common.setEmptyNodeValue(
-      //       document.getElementById(target.id),
-      //       processText
-      //     );
-      //     ev.preventDefault();
-      //     ev.stopPropagation();
-      //   }
-      //   return;
-      // }
-    };
 
-    document.addEventListener("keydown", keyDownListener);
+    return () => {
+      FEATURES.forEach(({ module }) => module.toggleFeature(false));
 
-    unload = () => {
-      workBench.toggleFeature(false);
-      dailyNotesPopup.toggleFeature(false);
-      roamNavigator.toggleFeature(false);
-      dictionary.toggleFeature(false);
-      formatConverter.toggleFeature(false);
-      jumpnav.toggleFeature(false);
-      livePreview.toggleFeature(false);
-      privacyMode.toggleFeature(false);
-      
-      quickRef.toggleFeature(false);
       roam42Menu.toggleFeature(false);
-      tutorials.toggleFeature(false);
       stats.toggleFeature(false);
     };
-    return {
-      domListeners: [
-        { el: document, type: "keydown", listener: keyDownListener },
-      ],
-    };
   },
-  unload: () => unload(),
 });

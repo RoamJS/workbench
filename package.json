@@ -10,7 +10,7 @@
     "izitoast": "1.4.0",
     "js-cookie": "3.0.0-rc.1",
     "mousetrap": "1.6.5",
-    "roamjs-components": "^0.72.11",
+    "roamjs-components": "^0.73.3",
     "tippy.js": "^6.3.7"
   },
   "devDependencies": {
