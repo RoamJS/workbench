@@ -13,10 +13,7 @@ import {
   displayMessage,
 } from "../commonFunctions";
 import { parseTextForDates } from "../dateProcessing";
-import {
-  htmlview,
-  show as showFormatConverter,
-} from "./formatConverter";
+import { htmlview, show as showFormatConverter } from "./formatConverter";
 import openBlockInSidebar from "roamjs-components/writes/openBlockInSidebar";
 import resolveRefs from "roamjs-components/dom/resolveRefs";
 import {
@@ -32,9 +29,6 @@ import getOrderByBlockUid from "roamjs-components/queries/getOrderByBlockUid";
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
 import { render as renderSimpleAlert } from "roamjs-components/components/SimpleAlert";
 import { toggle as togglePrivacy } from "./privacyMode";
-import { component as quickRefComponent } from "../quickRef";
-import { show as showTutorials } from "./tutorials";
-import { displayGraphStats } from "../stats";
 import { get } from "../settings";
 import focusMainWindowBlock from "roamjs-components/util/focusMainWindowBlock";
 import React from "react";
@@ -52,7 +46,7 @@ type Command = {
   display: string;
   cmd: () => void;
 };
-let _commands: Command[] = [];
+let _commands: Set<Command> = new Set();
 
 const confirm = (content: string) =>
   new Promise<boolean>((resolve) =>
@@ -267,9 +261,9 @@ export const userCommands = {
   },
 };
 
-export const commandAddRunFromAnywhere = async (
+export const addCommand = (
   textToDisplay: string,
-  callback: (uids: string[]) => Promise<unknown>,
+  callback: (uids: string[]) => unknown | Promise<unknown>,
   restoreFocus?: true
 ) => {
   const callbackFunction = async () => {
@@ -279,7 +273,7 @@ export const commandAddRunFromAnywhere = async (
       : Array.from(document.querySelectorAll(`.block-highlight-blue`)).map(
           (d) => extractRef(d.querySelector(".roam-block").id)
         );
-    callback(uids).then(() => {
+    Promise.resolve(callback(uids)).then(() => {
       if (restoreFocus && uids.length === 1) {
         focusMainWindowBlock(uids[0]);
       }
@@ -290,10 +284,12 @@ export const commandAddRunFromAnywhere = async (
     label: display,
     callback: callbackFunction,
   });
-  _commands.push({
+  const command = {
     display,
     cmd: callbackFunction,
-  });
+  };
+  _commands.add(command);
+  return () => _commands.delete(command);
 };
 
 const moveBlocks = ({
@@ -517,13 +513,13 @@ export const initialize = async () => {
   active = true;
 
   // Commands are ordered in line with the docs at: https://roamjs.com/extensions/workbench/command_palette_plus
-  commandAddRunFromAnywhere("Move Block(s) - to top (mbt)", async (uids) => {
+  addCommand("Move Block(s) - to top (mbt)", async (uids) => {
     promptMoveBlocks({ uids, getBase: () => 0 });
   });
-  commandAddRunFromAnywhere("Move Block(s) - to bottom (mbb)", async (uids) => {
+  addCommand("Move Block(s) - to bottom (mbb)", async (uids) => {
     promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid });
   });
-  commandAddRunFromAnywhere("Move Block(s) - DNP (mbdnp)", async (uids) => {
+  addCommand("Move Block(s) - DNP (mbdnp)", async (uids) => {
     const dateExpression = await prompt({
       title: "Roam42 WorkBench",
       question: "Move this block to the top of what date?",
@@ -546,90 +542,66 @@ export const initialize = async () => {
     const base = getChildrenLengthByParentUid(destinationPage);
     return moveBlocks({ base, uids, parentUid: destinationPage });
   });
-  commandAddRunFromAnywhere(
-    "Move Block(s) - to top with block Ref (mbtr)",
-    async (uids) => {
-      await leaveBlockReferences({ uids });
-      promptMoveBlocks({ uids, getBase: () => 0 });
-    }
-  );
-  commandAddRunFromAnywhere(
+  addCommand("Move Block(s) - to top with block Ref (mbtr)", async (uids) => {
+    await leaveBlockReferences({ uids });
+    promptMoveBlocks({ uids, getBase: () => 0 });
+  });
+  addCommand(
     "Move Block(s) - to bottom with block ref (mbbr)",
     async (uids) => {
       await leaveBlockReferences({ uids });
       promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid });
     }
   );
-  commandAddRunFromAnywhere(
-    "Move Block(s) - to top & zoom (mbtz)",
-    async (uids) => {
-      promptMoveBlocks({ uids, getBase: () => 0 }).then(
-        (success) =>
-          success &&
-          window.roamAlphaAPI.ui.mainWindow.openBlock({
-            block: { uid: getParentUidByBlockUid(uids[0]) },
-          })
-      );
-    }
-  );
-  commandAddRunFromAnywhere(
-    "Move Block(s) - to bottom & zoom (mbbz)",
-    async (uids) => {
-      promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
-        (success) =>
-          success &&
-          window.roamAlphaAPI.ui.mainWindow.openBlock({
-            block: { uid: getParentUidByBlockUid(uids[0]) },
-          })
-      );
-    }
-  );
-  commandAddRunFromAnywhere(
-    "Move Block(s) - to top & sidebar (mbts)",
-    async (uids) => {
-      promptMoveBlocks({ uids, getBase: () => 0 }).then(
-        (success) => success && openBlockInSidebar(uids[0])
-      );
-    }
-  );
-  commandAddRunFromAnywhere(
-    "Move Block(s) - to bottom & sidebar (mbbs)",
-    async (uids) => {
-      promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
-        (success) => success && openBlockInSidebar(uids[0])
-      );
-    }
-  );
-  commandAddRunFromAnywhere("Send block ref - to top (sbrt)", async (uids) => {
+  addCommand("Move Block(s) - to top & zoom (mbtz)", async (uids) => {
+    promptMoveBlocks({ uids, getBase: () => 0 }).then(
+      (success) =>
+        success &&
+        window.roamAlphaAPI.ui.mainWindow.openBlock({
+          block: { uid: getParentUidByBlockUid(uids[0]) },
+        })
+    );
+  });
+  addCommand("Move Block(s) - to bottom & zoom (mbbz)", async (uids) => {
+    promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
+      (success) =>
+        success &&
+        window.roamAlphaAPI.ui.mainWindow.openBlock({
+          block: { uid: getParentUidByBlockUid(uids[0]) },
+        })
+    );
+  });
+  addCommand("Move Block(s) - to top & sidebar (mbts)", async (uids) => {
+    promptMoveBlocks({ uids, getBase: () => 0 }).then(
+      (success) => success && openBlockInSidebar(uids[0])
+    );
+  });
+  addCommand("Move Block(s) - to bottom & sidebar (mbbs)", async (uids) => {
+    promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
+      (success) => success && openBlockInSidebar(uids[0])
+    );
+  });
+  addCommand("Send block ref - to top (sbrt)", async (uids) => {
     promptMoveRefs({ uids, getBase: () => 0 });
   });
-  commandAddRunFromAnywhere(
-    "Send block refs - to bottom (sbrb)",
-    async (uids) => {
-      promptMoveRefs({ uids, getBase: getChildrenLengthByParentUid });
-    }
-  );
+  addCommand("Send block refs - to bottom (sbrb)", async (uids) => {
+    promptMoveRefs({ uids, getBase: getChildrenLengthByParentUid });
+  });
 
-  commandAddRunFromAnywhere("Pull block (pbb)", async (uids) => {
+  addCommand("Pull block (pbb)", async (uids) => {
     promptPullBlock(uids);
   });
-  commandAddRunFromAnywhere(
-    "Pull block and leave block ref (pbr)",
-    async (uids) => {
-      promptPullBlock(uids, true);
-    }
-  );
-  commandAddRunFromAnywhere("Pull child blocks  (pcb)", async (uids) => {
+  addCommand("Pull block and leave block ref (pbr)", async (uids) => {
+    promptPullBlock(uids, true);
+  });
+  addCommand("Pull child blocks  (pcb)", async (uids) => {
     promptPullChildBlocks(uids);
   });
-  commandAddRunFromAnywhere(
-    "Pull child block and leave block ref (pcr)",
-    async (uids) => {
-      promptPullChildBlocks(uids, true);
-    }
-  );
+  addCommand("Pull child block and leave block ref (pcr)", async (uids) => {
+    promptPullChildBlocks(uids, true);
+  });
 
-  commandAddRunFromAnywhere("Jump to Block in page (jbp)", async () => {
+  addCommand("Jump to Block in page (jbp)", async () => {
     promptPathAndCallback({
       valid: true,
       callback: (inputUid) => {
@@ -643,20 +615,17 @@ export const initialize = async () => {
       },
     });
   });
-  commandAddRunFromAnywhere("Copy Block Reference", async (uids) => {
+  addCommand("Copy Block Reference", async (uids) => {
     window.navigator.clipboard.writeText(`((${uids[0] || ""}))`);
   });
-  commandAddRunFromAnywhere("Copy Block Reference as alias", async (uids) => {
+  addCommand("Copy Block Reference as alias", async (uids) => {
     window.navigator.clipboard.writeText(`[*](((${uids[0] || ""})))`);
   });
 
-  commandAddRunFromAnywhere(
-    "Sidebars - swap with main window (swap)",
-    async () => {
-      swapWithSideBar();
-    }
-  );
-  commandAddRunFromAnywhere(
+  addCommand("Sidebars - swap with main window (swap)", async () => {
+    swapWithSideBar();
+  });
+  addCommand(
     "Sidebars - swap with main window & choose window (swc)",
     async () => {
       const panes = await window.roamAlphaAPI.ui.rightSidebar.getWindows();
@@ -704,7 +673,7 @@ export const initialize = async () => {
       }
     }
   );
-  commandAddRunFromAnywhere(
+  addCommand(
     "Right Sidebar - close window panes (rscwp)",
     async () => {
       await Promise.all(
@@ -720,7 +689,7 @@ export const initialize = async () => {
     },
     true
   );
-  commandAddRunFromAnywhere(
+  addCommand(
     "Sidebars - open both (sob)",
     async () => {
       await Promise.all([
@@ -730,7 +699,7 @@ export const initialize = async () => {
     },
     true
   );
-  commandAddRunFromAnywhere(
+  addCommand(
     "Sidebars - close both (scb)",
     async () => {
       await Promise.all([
@@ -740,7 +709,7 @@ export const initialize = async () => {
     },
     true
   );
-  commandAddRunFromAnywhere("Open Page (opp)", async () => {
+  addCommand("Open Page (opp)", async () => {
     promptPathAndCallback({
       valid: true,
       supportPages: true,
@@ -750,7 +719,7 @@ export const initialize = async () => {
         }),
     });
   });
-  commandAddRunFromAnywhere("Open Page in Sidebar (ops)", async () => {
+  addCommand("Open Page in Sidebar (ops)", async () => {
     promptPathAndCallback({
       valid: true,
       supportPages: true,
@@ -758,7 +727,7 @@ export const initialize = async () => {
     });
   });
 
-  commandAddRunFromAnywhere("Create a page (cap)", async () => {
+  addCommand("Create a page (cap)", async () => {
     prompt({
       title: "Create Page",
       question: "Enter page title",
@@ -792,7 +761,7 @@ export const initialize = async () => {
           )
     );
   };
-  commandAddRunFromAnywhere("Delete current page (dcp)", async () => {
+  addCommand("Delete current page (dcp)", async () => {
     const uid = await currentPageUID();
     if ((await get("workBenchDcpConfirm")) == "off") {
       return window.roamAlphaAPI.ui.mainWindow
@@ -803,22 +772,19 @@ export const initialize = async () => {
       confirmDeletePage(uid, currentPageTitle);
     }
   });
-  commandAddRunFromAnywhere(
-    "Delete a page using Path Navigator (dap)",
-    async () => {
-      promptPathAndCallback({
-        valid: true,
-        supportPages: true,
-        callback: (inputUid) => {
-          const title =
-            getPageTitleByPageUid(inputUid) || getPageTitleByBlockUid(inputUid);
-          return confirmDeletePage(getPageUidByPageTitle(title), title);
-        },
-      });
-    }
-  );
+  addCommand("Delete a page using Path Navigator (dap)", async () => {
+    promptPathAndCallback({
+      valid: true,
+      supportPages: true,
+      callback: (inputUid) => {
+        const title =
+          getPageTitleByPageUid(inputUid) || getPageTitleByBlockUid(inputUid);
+        return confirmDeletePage(getPageUidByPageTitle(title), title);
+      },
+    });
+  });
 
-  commandAddRunFromAnywhere("Daily Notes (dn)", async () => {
+  addCommand("Daily Notes (dn)", async () => {
     if (keystate.shiftKey) {
       openBlockInSidebar(window.roamAlphaAPI.util.dateToPageUid(new Date()));
     } else {
@@ -829,52 +795,41 @@ export const initialize = async () => {
     hosted: "app",
     offline: "offline",
   };
-  commandAddRunFromAnywhere("All Pages", async () => {
+  addCommand("All Pages", async () => {
     document.location.hash = `#/${graphTypes[window.roamAlphaAPI.graph.type]}/${
       window.roamAlphaAPI.graph.name
     }/search`;
   });
-  commandAddRunFromAnywhere("Graph Overview", async () => {
+  addCommand("Graph Overview", async () => {
     document.location.hash = `#/${graphTypes[window.roamAlphaAPI.graph.type]}/${
       window.roamAlphaAPI.graph.name
     }/graph`;
   });
-  commandAddRunFromAnywhere("Goto next day", async () => {
+  addCommand("Goto next day", async () => {
     moveForwardToDate(true);
   });
-  commandAddRunFromAnywhere("Goto previous day", async () => {
+  addCommand("Goto previous day", async () => {
     moveForwardToDate(false);
   });
 
-  commandAddRunFromAnywhere("Roam42 Privacy Mode (alt-shift-p)", async () =>
-    togglePrivacy()
-  );
-  commandAddRunFromAnywhere("Roam42 Converter (alt-m)", async () =>
-    showFormatConverter()
-  );
-  commandAddRunFromAnywhere("Roam42 Web View (alt-shift-m)", async () =>
-    htmlview()
-  );
-  commandAddRunFromAnywhere("Roam42 Help", async () =>
-    quickRefComponent.toggleQuickReference()
-  );
-  commandAddRunFromAnywhere("Roam42 Tutorials", async () => showTutorials());
-  commandAddRunFromAnywhere("Roam42 Graph DB Stats", displayGraphStats);
+  addCommand("Privacy Mode (alt-shift-p)", async () => togglePrivacy());
+  addCommand("Format Converter (alt-m)", async () => showFormatConverter());
+  addCommand("Web View (alt-shift-m)", async () => htmlview());
 
-  commandAddRunFromAnywhere("Heading 1", async (uids) => {
+  addCommand("Heading 1", async (uids) => {
     uids.map((uid) => updateBlock({ uid, heading: 1 }));
   });
-  commandAddRunFromAnywhere("Heading 2", async (uids) => {
+  addCommand("Heading 2", async (uids) => {
     uids.map((uid) => updateBlock({ uid, heading: 2 }));
   });
-  commandAddRunFromAnywhere("Heading 3", async (uids) => {
+  addCommand("Heading 3", async (uids) => {
     uids.map((uid) => updateBlock({ uid, heading: 3 }));
   });
 
   (await userCommands.UserDefinedCommandList()).forEach(({ key, ...item }) => {
-    commandAddRunFromAnywhere(key, () => userCommands.runComand(item));
+    addCommand(key, () => userCommands.runComand(item));
   });
-  commandAddRunFromAnywhere("Refresh Inboxes", async () => {
+  addCommand("Refresh Inboxes", async () => {
     shutdown();
     initialize();
   });
@@ -884,6 +839,7 @@ export const shutdown = () => {
   _commands.forEach((c) =>
     window.roamAlphaAPI.ui.commandPalette.removeCommand({ label: c.display })
   );
+  _commands.clear();
   active = false;
 };
 

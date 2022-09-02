@@ -11,7 +11,6 @@ import getFirstChildUidByBlockUid from "roamjs-components/queries/getFirstChildU
 import createBlock from "roamjs-components/writes/createBlock";
 import getUids from "roamjs-components/dom/getUids";
 
-export let state = "off";
 let observerHeadings: MutationObserver = undefined;
 let closeDailyNotesPopup: () => void;
 
@@ -102,13 +101,14 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
   }, [containerRef.current, loaded, setLoaded, minimized]);
   const onDragEnd = () => component.saveUIChanges({ width, top, left, height });
   const dragImage = useMemo(() => {
-    const img = document.createElement('img'); 
-    img.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+    const img = document.createElement("img");
+    img.src =
+      "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
     return img;
   }, []);
   const cancelDragImage = (e: React.DragEvent) => {
     e.dataTransfer.setDragImage(dragImage, 0, 0);
-  }
+  };
   const dragRef = useRef({ top: 0, left: 0, width: 0, height: 0 });
   return minimized ? (
     <div
@@ -615,9 +615,11 @@ export const component = {
   },
 };
 
+export let enabled = false;
 export const toggleFeature = (flag: boolean) => {
-  if (flag) component.initialize();
-  else {
+  if (flag) {
+    component.initialize();
+  } else {
     document.body.removeEventListener("keydown", listener);
     observerHeadings?.disconnect();
   }

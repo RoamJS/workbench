@@ -1,7 +1,7 @@
 import runExtension from "roamjs-components/util/runExtension";
 import "roamjs-components/types";
 
-// exts
+// features
 import * as dailyNotesPopup from "./features/dailyNotesPopup";
 import * as dictionary from "./features/dictionary";
 import * as formatConverter from "./features/formatConverter";
@@ -11,9 +11,6 @@ import * as privacyMode from "./features/privacyMode";
 import * as roamNavigator from "./features/deepnav";
 import * as workBench from "./features/workBench";
 import * as tutorials from "./features/tutorials";
-
-import * as roam42Menu from "./roam42Menu";
-import * as stats from "./stats";
 
 const extensionId = "workbench";
 const FEATURES = [
@@ -97,32 +94,13 @@ export default runExtension({
 
     FEATURES.forEach(({ id, module }) => {
       const flag = extensionAPI.settings.get(id);
-      if (typeof flag === "undefined") extensionAPI.settings.set(id, true);
-      module.toggleFeature(typeof flag === "undefined" || (flag as boolean));
+      const unset = typeof flag === "undefined" || flag === null;
+      if (unset) extensionAPI.settings.set(id, true);
+      module.toggleFeature(unset || (flag as boolean));
     });
-
-    //Date NLP - move to auto tag
-    // if (ev.altKey && ev.shiftKey && ev.code == "KeyD") {
-    //   if (target.nodeName === "TEXTAREA") {
-    //     var processText = dateProcessing.parseTextForDates(
-    //       (target as HTMLTextAreaElement).value
-    //     );
-    //     common.setEmptyNodeValue(
-    //       document.getElementById(target.id),
-    //       processText
-    //     );
-    //     ev.preventDefault();
-    //     ev.stopPropagation();
-    //   }
-    //   return;
-    // }
-
 
     return () => {
       FEATURES.forEach(({ module }) => module.toggleFeature(false));
-
-      roam42Menu.toggleFeature(false);
-      stats.toggleFeature(false);
     };
   },
 });
