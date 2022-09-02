@@ -176,11 +176,6 @@ export default runExtension({
           return;
         }
       } catch (e) {}
-      try {
-        if (privacyMode.keyboardHandler(ev)) {
-          return;
-        }
-      } catch (e) {}
 
       //Date NLP - move to auto tag
       // if (ev.altKey && ev.shiftKey && ev.code == "KeyD") {
@@ -209,7 +204,6 @@ export default runExtension({
       formatConverter.toggleFeature(false);
       jumpnav.toggleFeature(false);
       livePreview.toggleFeature(false);
-      
       privacyMode.toggleFeature(false);
       
       quickRef.toggleFeature(false);

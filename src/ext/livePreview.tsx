@@ -117,7 +117,7 @@ const LivePreview = ({ tag, registerMouseEvents, timeout }: Props) => {
       placement={"right"}
       isOpen={isOpen}
       ref={ref}
-      className={"roamjs-workbench-livepreview-toolip"}
+      popoverClassName={"roamjs-workbench-livepreview-toolip"}
     >
       <span />
     </Tooltip>
@@ -183,6 +183,7 @@ export const toggleFeature = (flag: boolean) => {
 
 .roamjs-workbench-livepreview-toolip.bp3-tooltip .bp3-popover-content {
   background: white;
+  padding: 0;
 }`,
       "roamjs-workbench-livepreview-css"
     );

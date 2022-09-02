@@ -169,7 +169,7 @@ export const displayMenu = () => {
               icon={"shield"}
               minimal
               small
-              intent={privacyActive() ? "warning" : "none"}
+              intent={privacyActive ? "warning" : "none"}
             />
             Privacy Mode <span style={{ fontSize: "7pt" }}>(Alt-Shift-p)</span>
           </MenuItem>
