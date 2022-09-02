@@ -2,18 +2,19 @@ import runExtension from "roamjs-components/util/runExtension";
 import "roamjs-components/types";
 
 // exts
-import * as dailyNotesPopup from "./ext/dailyNotesPopup";
-import * as dictionary from "./ext/dictionary";
-import * as formatConverter from "./ext/formatConverter";
-import * as livePreview from "./ext/livePreview";
-import * as jumpnav from "./ext/jumpNav";
-import * as privacyMode from "./ext/privacyMode";
+import * as dailyNotesPopup from "./features/dailyNotesPopup";
+import * as dictionary from "./features/dictionary";
+import * as formatConverter from "./features/formatConverter";
+import * as livePreview from "./features/livePreview";
+import * as jumpnav from "./features/jumpNav";
+import * as privacyMode from "./features/privacyMode";
+import * as roamNavigator from "./features/deepnav";
+import * as workBench from "./features/workBench";
+
 import * as quickRef from "./quickRef";
 import * as roam42Menu from "./roam42Menu";
-import * as roamNavigator from "./ext/deepnav";
 import * as stats from "./stats";
 import * as tutorials from "./tutorials";
-import * as workBench from "./ext/workBench";
 
 declare global {
   interface Window {

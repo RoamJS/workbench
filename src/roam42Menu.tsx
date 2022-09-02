@@ -2,18 +2,18 @@ import tippyJs, { Instance } from "tippy.js";
 import {
   component as dnpComponent,
   state as dnpState,
-} from "./ext/dailyNotesPopup";
-import { enabled as typeAheadEnabled, typeAheadLookup } from "./ext/dictionary";
+} from "./features/dailyNotesPopup";
+import { enabled as typeAheadEnabled, typeAheadLookup } from "./features/dictionary";
 import {
   enabled as formatConverterEnabled,
   htmlview,
   show as formatConverterShow,
-} from "./ext/formatConverter";
+} from "./features/formatConverter";
 import {
   enabled as privacyEnabled,
   active as privacyActive,
   toggle as privacyToggle,
-} from "./ext/privacyMode";
+} from "./features/privacyMode";
 import React from "react";
 import ReactDOM from "react-dom";
 import { Button, Menu, MenuItem } from "@blueprintjs/core";
@@ -23,8 +23,8 @@ import { displayGraphStats, enabled } from "./stats";
 import {
   enabled as deepNavEnabled,
   navigate as triggerDeepNav,
-} from "./ext/deepnav";
-import { enabled as livePreviewState } from "./ext/livePreview";
+} from "./features/deepnav";
+import { enabled as livePreviewState } from "./features/livePreview";
 
 export let tippy: Instance = undefined;
 export const toggleFeature = (flag: boolean) => {
