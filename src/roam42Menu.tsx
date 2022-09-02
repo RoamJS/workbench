@@ -18,7 +18,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { Button, Menu, MenuItem } from "@blueprintjs/core";
 import { component as qrComponent } from "./quickRef";
-import { show as tutorialShow } from "./tutorials";
+import { show as tutorialShow } from "./features/tutorials";
 import { displayGraphStats, enabled } from "./stats";
 import {
   enabled as deepNavEnabled,

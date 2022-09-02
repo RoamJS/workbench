@@ -33,7 +33,7 @@ import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBloc
 import { render as renderSimpleAlert } from "roamjs-components/components/SimpleAlert";
 import { toggle as togglePrivacy } from "./privacyMode";
 import { component as quickRefComponent } from "../quickRef";
-import { show as showTutorials } from "../tutorials";
+import { show as showTutorials } from "./tutorials";
 import { displayGraphStats } from "../stats";
 import { get } from "../settings";
 import focusMainWindowBlock from "roamjs-components/util/focusMainWindowBlock";

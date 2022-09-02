@@ -46,6 +46,7 @@ export const show = () => {
   });
 };
 
+export let active = false;
 export const toggleFeature = (flag: boolean) => {
   if (flag) {
     show();

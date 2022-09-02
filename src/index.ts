@@ -14,7 +14,7 @@ import * as workBench from "./features/workBench";
 import * as quickRef from "./quickRef";
 import * as roam42Menu from "./roam42Menu";
 import * as stats from "./stats";
-import * as tutorials from "./tutorials";
+import * as tutorials from "./features/tutorials";
 
 declare global {
   interface Window {
