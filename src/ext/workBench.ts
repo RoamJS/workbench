@@ -31,7 +31,7 @@ import getChildrenLengthByParentUid from "roamjs-components/queries/getChildrenL
 import getOrderByBlockUid from "roamjs-components/queries/getOrderByBlockUid";
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
 import { render as renderSimpleAlert } from "roamjs-components/components/SimpleAlert";
-import { toggle as togglePrivacy } from "../privacyMode";
+import { toggle as togglePrivacy } from "./privacyMode";
 import { component as quickRefComponent } from "../quickRef";
 import { show as showTutorials } from "../tutorials";
 import { displayGraphStats } from "../stats";

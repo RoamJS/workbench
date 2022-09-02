@@ -1,7 +1,7 @@
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import createPage from "roamjs-components/writes/createPage";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
-import { displayMessage } from "./commonFunctions";
+import { displayMessage } from "../commonFunctions";
 import type { RoamBasicNode } from "roamjs-components/types";
 import extractTag from "roamjs-components/util/extractTag";
 import addStyle from "roamjs-components/dom/addStyle";

@@ -13,7 +13,7 @@ import {
   enabled as privacyEnabled,
   active as privacyActive,
   toggle as privacyToggle,
-} from "./privacyMode";
+} from "./ext/privacyMode";
 import React from "react";
 import ReactDOM from "react-dom";
 import { Button, Menu, MenuItem } from "@blueprintjs/core";

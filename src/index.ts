@@ -7,7 +7,7 @@ import * as dictionary from "./ext/dictionary";
 import * as formatConverter from "./ext/formatConverter";
 import * as livePreview from "./ext/livePreview";
 import * as jumpnav from "./ext/jumpNav";
-import * as privacyMode from "./privacyMode";
+import * as privacyMode from "./ext/privacyMode";
 import * as quickRef from "./quickRef";
 import * as roam42Menu from "./roam42Menu";
 import * as roamNavigator from "./ext/deepnav";
