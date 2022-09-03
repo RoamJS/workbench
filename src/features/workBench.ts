@@ -525,7 +525,7 @@ export const initialize = async () => {
   });
   addCommand("Move Block(s) - DNP (mbdnp)", async (uids) => {
     const dateExpression = await prompt({
-      title: "Roam42 WorkBench",
+      title: "WorkBench",
       question: "Move this block to the top of what date?",
       defaultAnswer: "Tomorrow",
     });
@@ -670,7 +670,7 @@ export const initialize = async () => {
         }
       }
       let paneToSwap = await prompt({
-        title: "Roam42 WorkBench",
+        title: "WorkBench",
         question: "Which window pane to swap? (type number)\n\n" + outputString,
         defaultAnswer: "1",
       });

@@ -13,18 +13,18 @@ const privacyClassName = "privacyClassName";
 
 const getPrivateBlockDetails = () => {
   const parentUid = getPageUidByPageTitle(roamPageWithPrivacyList);
-  const blocksFromRoam42PrivacyModeList = getBasicTreeByParentUid(parentUid);
+  const blocksFromPrivacyModeList = getBasicTreeByParentUid(parentUid);
 
-  if (blocksFromRoam42PrivacyModeList.length == 0) {
+  if (blocksFromPrivacyModeList.length == 0) {
     return [];
   } else {
-    const blocksFromNestedRoam42PrivacyModeList =
-      blocksFromRoam42PrivacyModeList.flatMap(function flatten(
+    const blocksFromNestedPrivacyModeList =
+      blocksFromPrivacyModeList.flatMap(function flatten(
         n
       ): RoamBasicNode[] {
         return [n].concat(n.children.flatMap(flatten));
       });
-    return blocksFromNestedRoam42PrivacyModeList.map((b) => {
+    return blocksFromNestedPrivacyModeList.map((b) => {
       const block = b.text.trim();
       const pageTitleOnly = /^!/.test(block);
       const title = extractTag(block.replace(/^!/, ""));

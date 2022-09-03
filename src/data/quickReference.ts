@@ -7,7 +7,7 @@ const quickReference: {
 }[] = [
   {
     type: "keyboard",
-    topic: "Roam42 features",
+    topic: "WorkBench features",
     id: 10,
     header: { c1: "Action", c2: "Primary", c3: "Alternatives" },
     items: [
@@ -45,12 +45,12 @@ const quickReference: {
   },
   {
     type: "featurecenter",
-    topic: "Roam42 Jump nav",
+    topic: "Hot Keys",
     id: 11,
     items: [
-      { c1: "Activate Jump Nav", c2: "Meta-j or Alt-j or Ctrl-j or CMD-j" },
+      { c1: "Activate Hot Keys", c2: "Meta-j or Alt-j or Ctrl-j or CMD-j" },
       {
-        c1: "<em>Press Jump nav key, followed by command below</em>",
+        c1: "<em>Press Main hot key, followed by command below</em>",
         c2: "",
       },
       { c1: "", c2: "" },
@@ -90,224 +90,9 @@ const quickReference: {
       { c1: "<b>Others<b>", c2: "" },
       { c1: "Toggle left sidebar", c2: "n" },
       { c1: "Toggle right sidebar", c2: "m" },
-      { c1: "Roam42 Help", c2: "q" },
+      { c1: "WorkBench Help", c2: "q" },
       { c1: "Daily Notes Popup", c2: "," },
       { c1: "Dictionary", c2: "." },
-    ],
-  },
-  {
-    type: "feature",
-    topic: "SmartBlocks",
-    id: 12,
-    items: [
-      {
-        c1: "Processing Order",
-        c2: "<a target='_blank' href='https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamhacker%2F-GnzmjDA9C.png?alt=media&token=51f66881-04e9-401b-a581-65c47734aaaf'>Diagram of command processing order</a>.",
-      },
-      {
-        c1: "SmartBlock Button",
-        c2: "{{caption:42SmartBlock:workflow name}} or vars :variableName1=value1,`",
-      },
-      {
-        c1: "Javascript Development",
-        c2: "roam42.smartBlocks.activeWorkflow.vars or roam42.sb.vars['varName']",
-      },
-      { c1: "---------- Commands ----------", c2: "" },
-      {
-        c1: "%42SETTING",
-        c2: "Roam42 supports the ability to define a setting that is used in the Roam42 engine. A setting is defined with the tag #42Setting followed by the setting name and then the setting value. This can be used by a SmartBlock Builder to store permanent values to be used in a script. <a href='https://www.loom.com/share/474e7e90089d4747be53d19a38dcfb15' target='_blank'>Video</a><br/>1: Name of the setting to retrieve",
-      },
-      {
-        c1: "BLOCKMENTIONS",
-        c2: "returns a list of blocks that mention a page reference, with optional filtering. This is a multi-block commands and has some limitations how it interacts with other commands. <a target='_blank' href='https://www.loom.com/share/e7b5cc79438a4875ba8ffef332a6d43a'>Video</a><br/>1: Maximum amount of block references to return.- if set to -1, will return only count of matches <br/>2: Page name or tag name (This parameter is case-sensitive and must match your page or tag name as used in your graph) <br/>3 to X: Optional filtering parameters, with support for include and excluding blocks based on their text with simple text comparison",
-      },
-      {
-        c1: "BLOCKMENTIONSDATED",
-        c2: "returns a list of blocks that mention a page reference, based on a specified date range, with optional filtering. This is a multi-block commands and has some limitations how it interacts with other commands.<br/>1: Maximum amount of block references to return. If set to -1, will return only count of matches <br/>2: Page name or tag name (This parameter is case-sensitive and must match your page or tag name as used in your graph)<br/>3: Start date tasks with a date from start date and beyond until parameter 3 (End Date). Date NLP is supported, so you can do something like: Today, yesterday, 2020-12-31 and other formats. Set to 0 for no start date. Set parameter 3 and 4 to -1 to have it return blocks that have no date in them<br/>4: End Date all tasks from the end date and before, until parameter 2 (start date).  Date NLP is supported, so you can do something like: Today, yesterday, 2020-12-31 and other formats. Set to 0 for no end date<br/>5 to X: Sort Order: ASC, DESC, NONE <br/>6: Optional filtering parameters, with support for include and excluding blocks based on their text with simple text comparison. Filters are processed before date processing. This means if filters are designed to include or exclude text, they will be processed before the dates are processed.<br/>",
-      },
-      {
-        c1: "BREADCRUMBS",
-        c2: "Returns the path of parents for a given block reference<br/>1: Block Reference UID.  + UID to get back just the parent block - to get back just the path, without the parent block <br/> 2: Separator to be used to separate each parent",
-      },
-      { c1: "CLEARVARS", c2: "Removes all variables from memory" },
-      {
-        c1: "CLIPBOARDCOPY",
-        c2: "Writes text content to the clipboard.<br/>1. text to be written to the clipboard.",
-      },
-      {
-        c1: "CLIPBOARDPASTETEXT",
-        c2: "Reads the text of the clipboard as text",
-      },
-      {
-        c1: "CONCAT",
-        c2: "Combines a comma separated list of strings into one string.<br/>1. Comma separated list",
-      },
-      {
-        c1: "CURRENTPAGENAME",
-        c2: "Returns the name of the current page. ",
-      },
-      {
-        c1: "CURRENTBLOCKREF",
-        c2: "Stores the current block reference in a variable that can be used later by GET or JavaScript.<br/>1. Name of variable",
-      },
-      {
-        c1: "CURSOR",
-        c2: "Define where cursor should be located after the workflow completes. if a workflow contains multiple <%CURSOR%> commands, the last instance of it will be used. If there were multiple <%CURSOR%> commands left over after workflow is run, only the last instance is replaced.",
-      },
-      {
-        c1: "DATE",
-        c2: "Using Roam42's date natural language processor, to return a properly formatted Roam date is resolved from the provided parameter. An optional second parameter allows you to control the format of the date returned.<br/>1: An expression that will resolve to a date. <br/>2: Optional parameter that tells Roam42 to not return a Roam formatted date, but a date formatted in the format you specify. Roam42 supports the date formats defined here: https://day.js.org/docs/en/parse/string-format",
-      },
-      {
-        c1: "DATEBASIS",
-        c2: "Changes the date basis used by Roam42 in determining the context in which dates are calculated. By default TODAY's date is the basis for all commands. <a target='_blank' href='https://youtu.be/czgw0YVH410'>Video</a><br/>1: Date basis to be used in the workflow.  If DNP - will use the date of the Daily Notes Page if the workflow is rune on a DNP. Otherwise provide a NLP date command to determine the date basis",
-      },
-      {
-        c1: "EXIT",
-        c2: "Stops the workflow from going further after completing the current block.",
-      },
-      {
-        c1: "FOCUSONBLOCK",
-        c2: "Will focus on this block after the workflow finish's running.",
-      },
-      {
-        c1: "GET",
-        c2: "Retrieves a variable from memory.<br/>1. Variable name. Should contain only letters and number, no special symbols. Variables are case-sensitive.",
-      },
-      {
-        c1: "GOTOBLOCK",
-        c2: "Subcommand works with OPENPAGE and SIDEBARWINDOWOPEN<br/>1. set to 1 for first block, set to -1 for last",
-      },
-      {
-        c1: "IF",
-        c2: "Performs simple IF/Then type logic commands. Intended for outputing text, not for processing other commands. Use IFTRUE if needed with other commands. Use in combination with <%THEN%> and <%ELSE%><br/>1. Logic to be evaluated. Uses Javascript like comparison logic.",
-      },
-      {
-        c1: "IFDAYOFMONTH",
-        c2: "Using todays date, compares to the day in the month to see if there is a match.<br/>1. a number from 1 to 31 corresponding to the day in the month. Optionally a comma separated list of numbers to test for multiple days.",
-      },
-      {
-        c1: "IFDAYOFWEEK",
-        c2: "Using today's date, compares to the parameter to see if there is a match.<br/>1. a number from 1 to 7, 1 is Monday, 2 is Tuesday and so on. Optionally a comma separated list of numbers to test for multiple days.",
-      },
-      {
-        c1: "IFTRUE",
-        c2: "Tests the parameter if it is true. If it evaluates to true, the rest of the block is output. if false, the block is skipped (and all child blocks of the IFTRUE block).<br/>1. Logic to be evaluated. Uses Javascript like comparison logic. ",
-      },
-      {
-        c1: "INDENT/UNINDENT",
-        c2: "Indent or unindent the current block if possible. Indentation and unindentation may not work in every context. So test carefully.",
-      },
-      {
-        c1: "INPUT",
-        c2: "prompts user for input which will then be inserted into the block.<br/>1. Text that will be displayed to the user (required). To provide a default value for the input, use %% as a separator to the first parameter (this parameter is optional)",
-      },
-      {
-        c1: "JAVASCRIPT or J",
-        c2: "Executes Javascript code, and the results are inserted into the block.<br/>1. a string of javascript code. Note this can be combined with the RESOLVEBLOCKREF to use a block to store javascript code. ",
-      },
-      {
-        c1: "JAVASCRIPTASYNC or JA",
-        c2: "Executes Javascript code using ASYNC, and the results are inserted into the block. Async is good for web services and functions that deal with call backs.<br/>1. a string of javascript code. Note this can be combined with the RESOLVEBLOCKREF to use a block to store javascript code. ",
-      },
-      {
-        c1: "NOBLOCKOUTPUT",
-        c2: "Will prevent the block from being output from the workflow, no matter what other commands it contains. This is useful to do operations in the workflow that have no visual rendering (reading clipboard, setting variables).",
-      },
-      {
-        c1: "NOCURSOR",
-        c2: "NOCURSOR is a directive that runs at the SmartBlock level. So do not use it in a block as a normal command, but rather in the parent block where the SmartBlock is defined you add this command. Example: #42SmartBlock NameOfSmartBlock <%NOCURSOR%>",
-      },
-      {
-        c1: "NOTIFICATION",
-        c2: "Displays a small popup notification message in the lower right.<br/>1: Number of seconds the notification is visible.<br/>2: Message to be displayed. Supports basic HTML elements in the  message.",
-      },
-      {
-        c1: "ONBLOCKEXIT",
-        c2: "This is a helper function for JavaScript developers to work with the DOM or to perform post processing. It is called after a block has completely processed by the Roam42, just before the next block from the workflow is processed.  ONBLOCKEXIT accepts async Javascript.",
-      },
-      {
-        c1: "OPENPAGE",
-        c2: "Opens or creates a page or block ref<br/>1. Page name or block",
-      },
-      {
-        c1: "RANDOMBLOCK",
-        c2: "Serendipity generator. Grabs a random block from your graph and inserts it.",
-      },
-      {
-        c1: "RANDOMBLOCKFROM",
-        c2: "returns a random block from a page or a child block from a parent block provided in the parameter.<br/>Option 1: Page name or tag name (Do not include brackets [[]] or hashtag # unless they are a part of the page name)<br/>2. Option 2: Parent block UID",
-      },
-      {
-        c1: "RANDOMBLOCKMENTION",
-        c2: " returns a random block from places where the page is referenced.<br/>1. Page name or tag name (Do not include brackets [[]] or hashtag # unless they are a part of the page name).",
-      },
-      {
-        c1: "RANDOMPAGE ",
-        c2: "Serendipity generator. Grabs a random page from your graph and inserts it.",
-      },
-      {
-        c1: "REPEAT",
-        c2: "Repeats the current block a specified amount of times. <%GET%> works with Repeat as a parameter, but no other commands can be used as a paremeter. NOTE: Do not use with multi-block commands. <a target='_blank' href='https://www.loom.com/share/4620e810a382484daa16db369662b23c'>Video</a>.<br/>1. Count of repeats.",
-      },
-      {
-        c1: "RESOLVEBLOCKREF",
-        c2: "Converts a block reference (()) into its text equivalent<br/>1. Block Reference.",
-      },
-      {
-        c1: "RESOLVEBLOCKREFATEND",
-        c2: "Does the same things as RESOLVEBLOCKREF, however runs toward the end of the Workflow after most other commands have been run. The parameters and usage are the same as defined for RESOLVEBLOCKREF.",
-      },
-      {
-        c1: "SEARCH",
-        c2: "searches all blocks for a specific string of case-sensitive text and returns a list of matching block references, with optional filtering. This is a multi-block commands and has some limitations how it interacts with other commands. <a target='_blank' href='https://www.loom.com/share/63f67de0df854f89bda3386536d38f14'>Video</a><br/>1. List of comma separated parameters.",
-      },
-      {
-        c1: "SIDEBARWINDOWOPEN",
-        c2: "Opens or creates a page in the sidebar<br/>1. Page name or block",
-      },
-      {
-        c1: "SIDEBARWINDOWCLOSE",
-        c2: "Closes sidebar pane<br/>1. number of side pane to close. Use 0 to close all p",
-      },
-      {
-        c1: "SIDEBARSTATE",
-        c2: "Toggles state of sidebars<br/Value of  1 to 4. <br/>1 - open left sidebar <br/>2 - close left side bar <br/>3 - open right side bar <br/>4 - close right sidebar",
-      },
-      {
-        c1: "SMARTBLOCK",
-        c2: "This is an experimental feature that is not currently being supported. This means it works reasonably well, but will fail in many cases.<br/>1. Name of SmartBlock.",
-      },
-      {
-        c1: "SET",
-        c2: "Sets the value of a variable in memory. Variables are case-sensitive.<br/>1: Variable name <br/>2: Value of the variable.",
-      },
-      { c1: "TIME", c2: "Inserts the time in 24 hour format." },
-      { c1: "TIMEAMPM", c2: "Inserts the time in AM/PM format." },
-      {
-        c1: "TODOFUTURE",
-        c2: "Returns a list of block references of TODOs for future TODOs. That is TODOs that have a dated page reference in them.Includes support for the <%PAGE%> <%PATH%>.<br/>1. Maximum amount of block references to return.",
-      },
-      {
-        c1: "TODOFUTUREDNP",
-        c2: "Returns a list of block references of TODOs for future TODOs. That is TODOs that have a dated page reference in them. Additionally TODOs that are on a Daily Notes Page (DNP) without a date on a future date. The idea is if you put a TODO on a DNP in the future, its likely also considered a future task.<br/>1. Maximum amount of block references to return.<br/>2. optional filter parameter based on a comma separated list (case-insensitive). Can use - in front of a word to exclude it.",
-      },
-      {
-        c1: "TODOOVERDUE",
-        c2: "Returns a list of block references of TODOs for overdue TODOs. That is TODOs that have a dated page reference in them.<br/>1. Maximum amount of block references to return.<br/>2. optional filter parameter based on a comma separated list (case-insensitive). Can use - in front of a word to exclude it.",
-      },
-      {
-        c1: "TODOOVERDUEDNP",
-        c2: "Returns a list of block references of TODOs for overdue TODOs. That is TODOs that have a dated page reference in them. Additionally TODOs that are on a Daily Notes Page (DNP) without a date from the past. The idea is if you put a TODO on a DNP and its not finished, its likely overdue when that date has passed.<br/>1. Maximum amount of block references to return.",
-      },
-      {
-        c1: "TODOTODAY",
-        c2: "Returns a list of block references of TODOs for today.<br/>1. Maximum amount of block references to return.<br/>2. optional filter parameter based on a comma separated list (case-insensitive). Can use - in front of a word to exclude it.",
-      },
-      {
-        c1: "TODOUNDATED",
-        c2: "Returns a list of block references of TODOs with no date.<br/>1. Maximum amount of block references to return.<br/>2. 2. optional filter parameter based on a comma separated list (case-insensitive). Can use - in front of a word to exclude it.",
-      },
     ],
   },
   {

@@ -561,7 +561,35 @@ export const htmlview = async () => {
       `    <link href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" rel="stylesheet" type="text/css" id="KatexCSS">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" type="text/javascript" id="KatexJS">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" type="text/javascript" id="KatexJS-auto"></script>
-    <link href="https://roamjs.com/roam42/css/markdown/default.css" rel="stylesheet" type="text/css" id="myStyle">
+    <style>img {
+  max-width: 600px;
+}
+
+/* font sizes */
+body {
+    font: 12pt Georgia, "Times New Roman", Times, serif;
+    line-height: 1.3;
+    color: #000;
+}
+
+h1 { font-size: 24pt }
+
+h2 { font-size: 14pt; margin-top: 25px }
+
+aside h2 { font-size: 18pt }
+
+header .print { display: block }
+
+img { border: 0 }
+
+header { margin-bottom: 40px }
+
+blockquote {
+    font-size: 13pt;
+    font-style: italic;
+}
+
+p a { color: #000 }</style>
 </head>`
     );
 

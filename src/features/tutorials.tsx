@@ -64,16 +64,15 @@ const TutorialOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
           <style
             dangerouslySetInnerHTML={{
               __html:
-                "div.workbench-tutorials-big-picture { width: auto; }\n .roam42guide {\n      border-bottom: 1px solid DarkSlateGray;\n      margin-bottom: 30px;\n      padding-bottom: 5px;\n    }\n    .roam42guide .sectionheaders{\n      font-size: 14pt;\n      font-weight: bold;\n      color: DarkSlateGray;\n      height: 25px;\n      margin-bottom: 0px;\n      padding-top:    2px;\n      padding-bottom: 7px;\n      padding-left: 5px;\n      border-bottom: 1px solid DarkSlateGray;\n      border-top:    1px solid DarkSlateGray;\n     }\n    .row {\n      display: flex; \n      flex-wrap: wrap;\n      margin-bottom: 10px;\n      margin-top: 10px;\n      padding-left: 5px;\n    }\n    .roam42guide .item {\n      padding-right:15px;\n      padding-bottom:10px;\n      cursor: pointer;\n    }\n    .roam42guide .itemheader {\n      font-weight:    bold;\n      font-size:      11pt;\n      color: DarkSlateGray;\n      padding-left: 2px;\n      padding-bottom: 4px;\n      border-bottom: 1px solid DarkSlateGray;\n    }\n    .roam42guide .itemimage {\n      width:   100px;\n            border-left: 1px solid DarkSlateGray;\n\n    }\n  ",
+                "div.workbench-tutorials-big-picture { width: auto; }\n .workbench-guide {\n      border-bottom: 1px solid DarkSlateGray;\n      margin-bottom: 30px;\n      padding-bottom: 5px;\n    }\n    .workbench-guide .sectionheaders{\n      font-size: 14pt;\n      font-weight: bold;\n      color: DarkSlateGray;\n      height: 25px;\n      margin-bottom: 0px;\n      padding-top:    2px;\n      padding-bottom: 7px;\n      padding-left: 5px;\n      border-bottom: 1px solid DarkSlateGray;\n      border-top:    1px solid DarkSlateGray;\n     }\n    .row {\n      display: flex; \n      flex-wrap: wrap;\n      margin-bottom: 10px;\n      margin-top: 10px;\n      padding-left: 5px;\n    }\n    .workbench-guide .item {\n      padding-right:15px;\n      padding-bottom:10px;\n      cursor: pointer;\n    }\n    .workbench-guide .itemheader {\n      font-weight:    bold;\n      font-size:      11pt;\n      color: DarkSlateGray;\n      padding-left: 2px;\n      padding-bottom: 4px;\n      border-bottom: 1px solid DarkSlateGray;\n    }\n    .workbench-guide .itemimage {\n      width:   100px;\n            border-left: 1px solid DarkSlateGray;\n\n    }\n  ",
             }}
           />
           <div
-            className="roam42guide"
+            className="workbench-guide"
             style={{ borderBottom: 0, marginBottom: 0, paddingBottom: 5 }}
           >
             <div className="sectionheaders">
-              Roam<sup style={{ fontSize: "12pt" }}>42</sup> SmartBlocks
-              Tutorials
+              SmartBlocks Tutorials
             </div>
             <div className="row">
               <div className="item" onClick={() => playYT("xfnr5F4Yz8Y")}>
@@ -127,9 +126,9 @@ const TutorialOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
               </div>
             </div>
           </div>
-          <div className="roam42guide">
+          <div className="workbench-guide">
             <div className="sectionheaders">
-              Roam<sup style={{ fontSize: "12pt" }}>42</sup> Features
+              WorkBench Features
             </div>
             <div className="row">
               <div className="item" onClick={() => playYT("f1UR9dMR_k0")}>
