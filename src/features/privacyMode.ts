@@ -1,7 +1,7 @@
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import createPage from "roamjs-components/writes/createPage";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
-import { displayMessage } from "../commonFunctions";
+import { render as renderToast } from "roamjs-components/components/Toast";
 import type { RoamBasicNode } from "roamjs-components/types";
 import extractTag from "roamjs-components/util/extractTag";
 import addStyle from "roamjs-components/dom/addStyle";
@@ -233,11 +233,13 @@ export const toggle = async () => {
         page: { title: roamPageWithPrivacyList },
       });
       active = false;
-      displayMessage(
-        `WorkBench Privacy Mode List page is not defined.
-    Please create a block with the [[page name]] or #tag you want
-    included in privacy mode. For more information, please visit the [docs](https://roamjs.com/extensions/workbench/privacy_mode).`
-      );
+      renderToast({
+        content: `WorkBench Privacy Mode List page is not defined.
+        Please create a block with the [[page name]] or #tag you want
+        included in privacy mode. For more information, please visit the [docs](https://roamjs.com/extensions/workbench/privacy_mode).`,
+        intent: "warning",
+        id: "workbench-warning",
+      });
     } else {
       scanBlocksForPageReferences(privacyDefined);
       observer = new MutationObserver(() =>

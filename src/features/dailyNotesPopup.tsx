@@ -1,44 +1,50 @@
-import { pressEsc } from "../r42kb_lib";
 import { get } from "../settings";
-import { Button, Classes, Overlay } from "@blueprintjs/core";
+import { Button, Overlay } from "@blueprintjs/core";
 import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { testIfRoamDateAndConvert } from "../dateProcessing";
 import { render as renderToast } from "roamjs-components/components/Toast";
 import getFirstChildUidByBlockUid from "roamjs-components/queries/getFirstChildUidByBlockUid";
 import createBlock from "roamjs-components/writes/createBlock";
 import getUids from "roamjs-components/dom/getUids";
+import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
 
 let observerHeadings: MutationObserver = undefined;
 let closeDailyNotesPopup: () => void;
 
 export const moveForwardToDate = (bForward: boolean) => {
-  let jumpDate = testIfRoamDateAndConvert(
-    document.querySelector<HTMLHeadingElement>(".rm-title-display").innerText
-  );
-  if (jumpDate != null) {
-    if (bForward) {
-      jumpDate.setDate(jumpDate.getDate() + 1);
-    } else {
-      jumpDate.setDate(jumpDate.getDate() - 1);
+  window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid().then((uid) => {
+    if (uid) {
+      const title = getPageTitleByPageUid(uid);
+      if (title) {
+        const jumpDate = window.roamAlphaAPI.util.pageTitleToDate(title);
+        if (jumpDate) {
+          if (bForward) {
+            jumpDate.setDate(jumpDate.getDate() + 1);
+          } else {
+            jumpDate.setDate(jumpDate.getDate() - 1);
+          }
+          const dDate = window.roamAlphaAPI.util.dateToPageTitle(jumpDate);
+          window.roamAlphaAPI.ui.mainWindow
+            .openPage({ page: { title: dDate } })
+            .then(() => {
+              renderToast({
+                content: [
+                  "Sunday",
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                ][jumpDate.getDay()],
+                id: "jump-date",
+              });
+            });
+        }
+      }
     }
-    const dDate = window.roamAlphaAPI.util.dateToPageTitle(jumpDate);
-    window.roamAlphaAPI.ui.mainWindow.openPage({ page: { title: dDate } });
-  }
-
-  renderToast({
-    content: [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ][jumpDate.getDay()],
-    id: "jump-date",
   });
 };
 
@@ -460,15 +466,7 @@ const listener = (ev: KeyboardEvent) => {
   if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Period") {
     ev.preventDefault();
     ev.stopPropagation();
-    if (target.nodeName === "TEXTAREA") {
-      pressEsc();
-      setTimeout(async () => {
-        await pressEsc();
-        moveForwardToDate(true);
-      }, 300);
-    } else {
-      moveForwardToDate(true);
-    }
+    moveForwardToDate(true);
     return true;
   }
 

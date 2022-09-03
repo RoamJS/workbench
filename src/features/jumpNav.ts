@@ -3,7 +3,6 @@ import getFirstChildUidByBlockUid from "roamjs-components/queries/getFirstChildU
 import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
 import getShallowTreeByParentUid from "roamjs-components/queries/getShallowTreeByParentUid";
 import openBlockInSidebar from "roamjs-components/writes/openBlockInSidebar";
-import { displayMessage } from "../commonFunctions";
 import getOrderByBlockUid from "roamjs-components/queries/getOrderByBlockUid";
 import createBlock from "roamjs-components/writes/createBlock";
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
@@ -11,6 +10,7 @@ import getNthChildUidByBlockUid from "roamjs-components/queries/getNthChildUidBy
 import getChildrenLengthByParentUid from "roamjs-components/queries/getChildrenLengthByParentUid";
 import deleteBlock from "roamjs-components/writes/deleteBlock";
 import updateBlock from "roamjs-components/writes/updateBlock";
+import { render as renderToast } from "roamjs-components/components/Toast";
 
 const jumpNavIgnore = get("jumpNavIgnore");
 const ignoreBindings = new Set(jumpNavIgnore ? jumpNavIgnore.split(",") : []);
@@ -123,7 +123,12 @@ const hotkeys: Record<string, () => unknown> = {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
     if (uid) {
       navigator.clipboard.writeText(`((${uid}))`);
-      displayMessage(`Copied: ((${uid}))`, 2000);
+      renderToast({
+        content: `Copied: ((${uid}))`,
+        intent: "warning",
+        id: "workbench-warning",
+        timeout: 2000,
+      });
     }
   },
   s: () => {
@@ -140,10 +145,12 @@ const hotkeys: Record<string, () => unknown> = {
         ? `"${selectedText}" [*](((${uid})))`
         : `[*](((${uid})))`;
     navigator.clipboard.writeText(outputText);
-    displayMessage(
-      `<b>Roam<sup>42</sup></b><br/>Copied:<br/> ${outputText}`,
-      2000
-    );
+    renderToast({
+      content: `Copied: ${outputText}`,
+      intent: "warning",
+      id: "workbench-warning",
+      timeout: 2000,
+    });
   },
   x: () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];

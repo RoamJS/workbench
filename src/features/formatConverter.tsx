@@ -4,15 +4,13 @@ import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
 import MenuItemSelect from "roamjs-components/components/MenuItemSelect";
-import {
-  BlockInfo,
-  displayMessage,
-  getBlockInfoByUID,
-} from "../commonFunctions";
 import resolveRefs from "roamjs-components/dom/resolveRefs";
 import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
 import getBlockUidsAndTextsReferencingPage from "roamjs-components/queries/getBlockUidsAndTextsReferencingPage";
 import getFirstChildTextByBlockUid from "roamjs-components/queries/getFirstChildTextByBlockUid";
+import { render as renderToast } from "roamjs-components/components/Toast";
+import type { TreeNode } from "roamjs-components/types/native";
+import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
 
 const OPTIONS: Record<string, string> = {
   puretext_Space: "Text with space indentation",
@@ -27,7 +25,7 @@ const OPTIONS: Record<string, string> = {
     "JSON in simple format with Indentation in text string",
 };
 
-const sortObjectsByOrder = (o: BlockInfo[]) => {
+const sortObjectsByOrder = (o: TreeNode[]) => {
   return o.sort(function (a, b) {
     return a.order - b.order;
   });
@@ -93,61 +91,59 @@ const roamMarkupScrubber = (blockText: string, removeMarkdown = true) => {
 };
 
 const walkDocumentStructureAndFormat = async (
-  nodeCurrent: BlockInfo,
+  nodeCurrent: TreeNode,
   level: number,
   outputFunction: (
     t: string,
-    n: BlockInfo,
+    n: TreeNode,
     l: number,
-    p: BlockInfo,
+    p: TreeNode,
     f: boolean
   ) => Promise<string>,
-  parent: BlockInfo,
+  parent: TreeNode,
   flatten: boolean
 ): Promise<string> => {
-  const mainText =
-    typeof nodeCurrent.title !== "undefined"
-      ? await outputFunction(nodeCurrent.title, nodeCurrent, 0, parent, flatten)
-      : typeof nodeCurrent.string !== "undefined"
-      ? await Promise.resolve(nodeCurrent.string).then(async (blockText) => {
-          const embeds = await Promise.all(
-            Array.from(
-              blockText
-                .matchAll(/\{\{(?:\[\[)embed(?:\]\])\:\s*\(\((.{9})\)\)\s*\}\}/g)
-            ).map((e) => {
-              const uid = e[1];
-              const node = getBlockInfoByUID(uid, true)[0][0];
-              return walkDocumentStructureAndFormat(
-                node,
-                level,
-                outputFunction,
-                parent,
-                flatten
-              ).then((output) => ({
-                output,
-                index: e.index,
-                length: e[0].length,
-              }));
-            })
-          );
-          const { text } = embeds.reduce(
-            (p, c) => ({
-              text: `${p.text.slice(0, c.index + p.offset)}${
-                c.output
-              }${p.text.slice(c.index + c.length + p.offset)}`,
-              offset: p.offset + c.output.length - c.length,
-            }),
-            { text: blockText, offset: 0 }
-          );
-          return outputFunction(
-            resolveRefs(text),
-            nodeCurrent,
+  const mainText = await Promise.resolve(nodeCurrent.text).then(
+    async (blockText) => {
+      const embeds = await Promise.all(
+        Array.from(
+          blockText.matchAll(
+            /\{\{(?:\[\[)embed(?:\]\])\:\s*\(\((.{9})\)\)\s*\}\}/g
+          )
+        ).map((e) => {
+          const uid = e[1];
+          const node = getFullTreeByParentUid(uid);
+          return walkDocumentStructureAndFormat(
+            node,
             level,
+            outputFunction,
             parent,
             flatten
-          );
+          ).then((output) => ({
+            output,
+            index: e.index,
+            length: e[0].length,
+          }));
         })
-      : "";
+      );
+      const { text } = embeds.reduce(
+        (p, c) => ({
+          text: `${p.text.slice(0, c.index + p.offset)}${
+            c.output
+          }${p.text.slice(c.index + c.length + p.offset)}`,
+          offset: p.offset + c.output.length - c.length,
+        }),
+        { text: blockText, offset: 0 }
+      );
+      return outputFunction(
+        resolveRefs(text),
+        nodeCurrent,
+        level,
+        parent,
+        flatten
+      );
+    }
+  );
 
   const childrenText =
     typeof nodeCurrent.children != "undefined"
@@ -171,9 +167,8 @@ export const iterateThroughTree = async (
   formatterFunction: (s: string) => Promise<string>,
   flatten = false
 ) => {
-  const results = await getBlockInfoByUID(uid, true);
   return walkDocumentStructureAndFormat(
-    results[0][0],
+    getFullTreeByParentUid(uid),
     0,
     formatterFunction,
     null,
@@ -184,34 +179,31 @@ export const iterateThroughTree = async (
 export const formatter = {
   pureText_SpaceIndented: async (
     blockText: string,
-    nodeCurrent?: BlockInfo,
+    nodeCurrent?: TreeNode,
     level = 0
   ) => {
-    if (nodeCurrent?.title) return "";
+    if (getPageTitleByPageUid(nodeCurrent.uid)) return "";
     let leadingSpaces = level > 1 ? "  ".repeat(level - 1) : "";
     return leadingSpaces + roamMarkupScrubber(blockText, true) + "\n";
   },
   pureText_TabIndented: async (
     blockText: string,
-    nodeCurrent?: BlockInfo,
+    nodeCurrent?: TreeNode,
     level = 0
   ) => {
-    if (nodeCurrent?.title) return "";
+    if (getPageTitleByPageUid(nodeCurrent.uid)) return "";
     const leadingSpaces = level > 1 ? "\t".repeat(level - 1) : "";
     return leadingSpaces + roamMarkupScrubber(blockText, true) + "\n";
   },
-  pureText_NoIndentation: async (
-    blockText: string,
-    nodeCurrent?: BlockInfo
-  ) => {
-    if (nodeCurrent?.title) return "";
+  pureText_NoIndentation: async (blockText: string, nodeCurrent?: TreeNode) => {
+    if (getPageTitleByPageUid(nodeCurrent.uid)) return "";
     return roamMarkupScrubber(blockText, true) + "\n";
   },
   markdownGithub: async (
     blockText: string,
-    nodeCurrent?: BlockInfo,
+    nodeCurrent?: TreeNode,
     level?: number,
-    parent?: BlockInfo,
+    parent?: TreeNode,
     flatten?: boolean
   ) => {
     if (flatten == true) {
@@ -219,7 +211,7 @@ export const formatter = {
     } else {
       level = level - 1;
     }
-    if (nodeCurrent.title) {
+    if (getPageTitleByPageUid(nodeCurrent.uid)) {
       return "# " + blockText;
     }
 
@@ -249,7 +241,7 @@ export const formatter = {
     const hasPrefix = level > 0 && blockText.substring(0, 3) != "```";
     if (!hasPrefix) blockText = "\n" + blockText;
     const prefix = hasPrefix
-      ? parent["view-type"] == "numbered"
+      ? parent["viewType"] == "numbered"
         ? "    ".repeat(level - 1) + "1. "
         : "  ".repeat(level) + "- "
       : "";
@@ -355,10 +347,10 @@ type JSONNode = {
 };
 
 export const flatJson = async (uid: string, withIndents = false) => {
-  const results = await getBlockInfoByUID(uid, true);
+  const results = await getFullTreeByParentUid(uid);
   if (results == null) return "[]";
   const output = await walkDocumentStructureAndFormat(
-    results[0][0],
+    results,
     0,
     async (blockText, nodeCurrent, level, parent, flatten) => {
       let blockOutput = roamMarkupScrubber(blockText, true);
@@ -503,7 +495,12 @@ const FormatConverterUI = ({
                   document.body.appendChild(element);
                   element.click();
                   document.body.removeChild(element);
-                  displayMessage("File saved: " + filename, 3000);
+                  renderToast({
+                    content: "File saved: " + filename,
+                    intent: "warning",
+                    id: "workbench-warning",
+                    timeout: 3000,
+                  });
                 }}
               />
             </div>

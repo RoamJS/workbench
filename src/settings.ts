@@ -1,12 +1,11 @@
-import { getBlocksReferringToThisPage } from "./commonFunctions";
+import getBlockUidsAndTextsReferencingPage from "roamjs-components/queries/getBlockUidsAndTextsReferencingPage";
 
 export const get = (settingName: string) => {
-  let customTrigger = getBlocksReferringToThisPage("42Setting");
+  let customTrigger = getBlockUidsAndTextsReferencingPage("42Setting");
   var result = null;
   for (let s of customTrigger) {
-    if (s[0].string.toString().includes(settingName)) {
-      result = s[0].string
-        .toString()
+    if (s.text.includes(settingName)) {
+      result = s.text
         .replace("#42Setting ", "")
         .replace("#[[42Setting]] ", "")
         .replace(settingName, "")

@@ -3,16 +3,8 @@ import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageU
 import getPageTitleByBlockUid from "roamjs-components/queries/getPageTitleByBlockUid";
 import getPageUidByBlockUid from "roamjs-components/queries/getPageUidByBlockUid";
 import createPage from "roamjs-components/writes/createPage";
-import {
-  getBlocksReferringToThisPage,
-  BlockNode,
-  getUserInformation,
-  sortObjectByKey,
-  getBlockInfoByUID,
-  currentPageUID,
-  displayMessage,
-} from "../commonFunctions";
-import { parseTextForDates } from "../dateProcessing";
+import getBlockUidsAndTextsReferencingPage from "roamjs-components/queries/getBlockUidsAndTextsReferencingPage";
+import parseNlpDate from "roamjs-components/date/parseNlpDate";
 import { htmlview, show as showFormatConverter } from "./formatConverter";
 import openBlockInSidebar from "roamjs-components/writes/openBlockInSidebar";
 import resolveRefs from "roamjs-components/dom/resolveRefs";
@@ -22,7 +14,6 @@ import {
 } from "roamjs-components/components/FormDialog";
 import { render as renderToast } from "roamjs-components/components/Toast";
 import extractRef from "roamjs-components/util/extractRef";
-import extractTag from "roamjs-components/util/extractTag";
 import createBlock from "roamjs-components/writes/createBlock";
 import getChildrenLengthByParentUid from "roamjs-components/queries/getChildrenLengthByPageUid";
 import getOrderByBlockUid from "roamjs-components/queries/getOrderByBlockUid";
@@ -32,10 +23,13 @@ import { toggle as togglePrivacy } from "./privacyMode";
 import { get } from "../settings";
 import focusMainWindowBlock from "roamjs-components/util/focusMainWindowBlock";
 import React from "react";
-import { SidebarWindow } from "roamjs-components/types/native";
+import { RoamBasicNode, SidebarWindow } from "roamjs-components/types/native";
 import getShallowTreeByParentUid from "roamjs-components/queries/getShallowTreeByParentUid";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import { moveForwardToDate } from "./dailyNotesPopup";
+import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
+import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
+import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
 
 export let active = false;
 
@@ -65,26 +59,23 @@ const getBlocksByParent = (uid: string) =>
     )
     .map((a) => a[0]) as { string: string; uid: string }[];
 
-const runInboxCommand = async (children: BlockNode[]) => {
+const runInboxCommand = async (children: RoamBasicNode[]) => {
   let pageUID = null;
   let pageName = await userCommands.findBlockAmongstChildren(children, "page:");
   if (pageName == null) {
     //default to DNP
-    pageUID = getPageUidByPageTitle(
-      parseTextForDates("today", new Date())
-        .replace("[[", "")
-        .replace("]]", "")
-        .trim()
-    );
+    pageUID = window.roamAlphaAPI.util.dateToPageUid(parseNlpDate("today"));
     pageName = "Today's DNP";
   } else {
     //get page UID, if doesnt exist, exist
     pageUID = getPageUidByPageTitle(pageName);
     if (pageUID == "") {
-      displayMessage(
-        `This page "${pageName}" doesnt exist, action not performed.`,
-        5000
-      );
+      renderToast({
+        content: `This page "${pageName}" doesnt exist, action not performed.`,
+        intent: "warning",
+        id: "workbench-warning",
+        timeout: 5000,
+      });
       return;
     }
   }
@@ -107,10 +98,12 @@ const runInboxCommand = async (children: BlockNode[]) => {
       location: { "parent-uid": pageUID, order: 0 },
       block: { uid: textUID.uid, string: textName },
     });
-    displayMessage(
-      `This location "${pageName} > ${textName}" didnt exist, so a new block was created.`,
-      5000
-    );
+    renderToast({
+      content: `This location "${pageName} > ${textName}" didnt exist, so a new block was created.`,
+      intent: "warning",
+      id: "workbench-warning",
+      timeout: 5000,
+    });
   }
 
   //reset pageUID if there is a valid text block
@@ -136,17 +129,28 @@ const runInboxCommand = async (children: BlockNode[]) => {
   }
 
   textName = textName == null ? "" : " > " + textName;
-  displayMessage(`Block(s) moved to ${pageName}${textName}`, 3000);
+  renderToast({
+    content: `Block(s) moved to ${pageName}${textName}`,
+    intent: "warning",
+    id: "workbench-warning",
+    timeout: 3000,
+  });
+};
+
+const sortObjectByKey = <T extends { key: string }>(o: T[]) => {
+  return o.sort(function (a, b) {
+    return a.key.localeCompare(b.key);
+  });
 };
 
 export const userCommands = {
   findBlockAmongstChildren: async (
-    childrenBlocks: BlockNode[],
+    childrenBlocks: RoamBasicNode[],
     startsWith: string
   ) => {
     //loops through array and returns node where the text matches
     for (let c of childrenBlocks) {
-      let resolvedBlockString = resolveRefs(c.string);
+      let resolvedBlockString = resolveRefs(c.text);
       let searchString = resolvedBlockString.toString().toLowerCase();
       let comparisonString = startsWith.toLowerCase();
       if (searchString.startsWith(comparisonString))
@@ -156,20 +160,20 @@ export const userCommands = {
   },
   UserDefinedCommandList: async () => {
     let validCommandTypeList = ["inbox"]; //in future add new types here
-    let userCommandBlocks = await getBlocksReferringToThisPage("42workBench");
+    let userCommandBlocks = getBlockUidsAndTextsReferencingPage("42workBench");
     let results = [];
-    const userEmail = getUserInformation().email;
-    for (let item of userCommandBlocks) {
+    const userEmail = getCurrentUserEmail();
+    for (let inbox of userCommandBlocks) {
       try {
-        const inbox = item[0];
-        var sType = inbox.string
+        var sType = inbox.text
           .replace("#42workBench", "")
           .replace("#[[42workBench]]", "")
           .trim()
           .toLowerCase();
-        if (inbox.children && validCommandTypeList.includes(sType)) {
+        const inboxChildren = getBasicTreeByParentUid(inbox.uid);
+        if (inboxChildren && validCommandTypeList.includes(sType)) {
           let users = await userCommands.findBlockAmongstChildren(
-            inbox.children,
+            inboxChildren,
             "users:"
           );
           if (users != null && users.trim() != "users:") {
@@ -178,21 +182,21 @@ export const userCommands = {
           }
           //must contain a name
           let name = await userCommands.findBlockAmongstChildren(
-            inbox.children,
+            inboxChildren,
             "name:"
           );
           if (name == null) continue;
           results.push({
             key: name,
             type: sType,
-            details: item,
+            details: inboxChildren,
           });
         }
       } catch (e) {}
     }
     return sortObjectByKey(results);
   },
-  runComand: async (cmdInfo: { type: string; details: BlockNode[] }) => {
+  runComand: async (cmdInfo: { type: string; details: RoamBasicNode[] }) => {
     //this function is called by the workBench to peform an action
     switch (cmdInfo["type"]) {
       case "inbox":
@@ -200,7 +204,7 @@ export const userCommands = {
         break;
     }
   },
-  inboxUID: async (ibx: BlockNode) => {
+  inboxUID: async (ibx: RoamBasicNode) => {
     let pageUID = null;
     let pageName = await userCommands.findBlockAmongstChildren(
       ibx.children,
@@ -208,21 +212,18 @@ export const userCommands = {
     );
     if (pageName == null) {
       //default to DNP
-      pageUID = getPageUidByPageTitle(
-        parseTextForDates("today", new Date())
-          .replace("[[", "")
-          .replace("]]", "")
-          .trim()
-      );
+      pageUID = window.roamAlphaAPI.util.dateToPageUid(parseNlpDate("today"));
       pageName = "Today's DNP";
     } else {
       //get page UID, if doesnt exist, exist
       pageUID = await getPageUidByPageTitle(pageName);
       if (pageUID == "") {
-        displayMessage(
-          `This page "${pageName}" doesnt exist, action not performed.`,
-          5000
-        );
+        renderToast({
+          content: `This page "${pageName}" doesnt exist, action not performed.`,
+          intent: "warning",
+          id: "workbench-warning",
+          timeout: 5000,
+        });
         return null;
       }
     }
@@ -248,10 +249,12 @@ export const userCommands = {
         location: { "parent-uid": pageUID, order: 0 },
         block: { uid: textUID.uid, string: textName },
       });
-      displayMessage(
-        `This location "${pageName} > ${textName}" didnt exist, so a new block was created.`,
-        5000
-      );
+      renderToast({
+        content: `This location "${pageName} > ${textName}" didnt exist, so a new block was created.`,
+        intent: "warning",
+        id: "workbench-warning",
+        timeout: 5000,
+      });
     }
 
     //reset pageUID if there is a valid text block
@@ -481,7 +484,8 @@ const swapWithSideBar = async (index = 0) => {
     });
     return;
   }
-  const mainPageUID = await currentPageUID();
+  const mainPageUID =
+    await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
   const pane = panes[index];
   const paneToSwap =
     pane.type === "outline"
@@ -526,9 +530,16 @@ export const initialize = async () => {
       defaultAnswer: "Tomorrow",
     });
     if (!dateExpression) return;
-    const parsedDate = extractTag(parseTextForDates(dateExpression).trim());
+    const parsedDate = window.roamAlphaAPI.util.dateToPageTitle(
+      parseNlpDate("today")
+    );
     if (!parsedDate) {
-      displayMessage("Invalid date: " + dateExpression, 5000);
+      renderToast({
+        content: "Invalid date: " + dateExpression,
+        intent: "warning",
+        id: "workbench-warning",
+        timeout: 5000,
+      });
       return;
     }
     const makeBlockRef = await confirm("Leave Block Reference?");
@@ -630,7 +641,12 @@ export const initialize = async () => {
     async () => {
       const panes = await window.roamAlphaAPI.ui.rightSidebar.getWindows();
       if (panes.length == 0) {
-        displayMessage("No open side windows to swap with.", 5000);
+        renderToast({
+          content: "No open side windows to swap with.",
+          intent: "warning",
+          id: "workbench-warning",
+          timeout: 5000,
+        });
         return;
       }
       let outputString = "";
@@ -638,19 +654,16 @@ export const initialize = async () => {
       for (const pane of panes) {
         let paneUID = getWindowUid(pane);
         if (paneUID != undefined) {
-          let paneInfo = (await getBlockInfoByUID(paneUID, false, true))[0][0];
-          if (paneInfo.title)
-            outputString += (iCounter + ": " + paneInfo.title + "\n").substring(
-              0,
-              100
-            );
+          const title = getPageTitleByPageUid(paneUID);
+          if (title)
+            outputString += (iCounter + ": " + title + "\n").substring(0, 100);
           else
             outputString += (
               iCounter +
               ": " +
-              paneInfo.parents[0].title +
+              getPageTitleByBlockUid(paneUID) +
               " > " +
-              paneInfo.string +
+              getTextByBlockUid(paneUID) +
               "\n"
             ).substring(0, 100);
           iCounter += 1;
@@ -669,7 +682,13 @@ export const initialize = async () => {
           paneToSwapVal <= panes.length
         )
           await swapWithSideBar(paneToSwapVal - 1);
-        else displayMessage("Not  a valid number for a sidebar pane", 5000);
+        else
+          renderToast({
+            content: "Not  a valid number for a sidebar pane",
+            intent: "warning",
+            id: "workbench-warning",
+            timeout: 5000,
+          });
       }
     }
   );
@@ -762,7 +781,7 @@ export const initialize = async () => {
     );
   };
   addCommand("Delete current page (dcp)", async () => {
-    const uid = await currentPageUID();
+    const uid = await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
     if ((await get("workBenchDcpConfirm")) == "off") {
       return window.roamAlphaAPI.ui.mainWindow
         .openDailyNotes()
