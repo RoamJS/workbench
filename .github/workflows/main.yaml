@@ -25,3 +25,9 @@ jobs:
         run: npx roamjs-scripts build
       - name: publish
         run: npx roamjs-scripts publish --depot
+      - name: build developer mode
+        run: npx roamjs-scripts build --depot
+      - name: package
+        run: zip -q $ROAMJS_EXTENSION_ID.zip README.md extension.js package.json
+      - name: Deploy to RoamJS
+        run: aws s3 cp $ROAMJS_EXTENSION_ID.zip s3://roamjs.com/downloads/$ROAMJS_EXTENSION_ID.zip
