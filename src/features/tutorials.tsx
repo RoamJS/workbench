@@ -559,7 +559,7 @@ const QuickRefOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
     if (loaded && observerRef.current) {
       const observer = new IntersectionObserver(
         function (entries) {
-          if (entries[0].isIntersecting === true) {
+          if (entries[0].isIntersecting) {
             document
               .querySelectorAll(".rqrTopicActive")
               .forEach(function (oldE) {
@@ -588,32 +588,12 @@ const QuickRefOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
       canOutsideClickClose={false}
       style={{ width: 600 }}
     >
-      <style>{`.rqrcontrol {
-    font-family:        roboto,arial,sans-serif;
-    font-size:          13px;
-    position:           absolute;
-    left:               1px;
-    top:                1px;
-    width:              580px;
-    height:             400px;
-    background-color:   white;
-}
-
-.rqrContentArea {
-    padding:            5px;
-    top:                51px;   
-    left:               0px;
-    right:              0px;  
-    bottom:             9px;
-    margin:             3px;
-    position:           absolute;
+      <style>{`.rqrContentArea {
     display:            flex;
-    flex-direction:     row;
 }
 
 .rqrControlHeader { 
-    color:              black !important;
-    height:     38px;
+    color: black !important;
     padding:    10px; 
     border-bottom:1px solid darkgrey;
     display:flex
@@ -643,7 +623,7 @@ input[type=text]:focus{
 
 .rqrContentAreaTopics {
     width:              100%;
-    height:             310px;
+    height:             400px;
     margin-top:         24px;
     overflow:           scroll; 
     scrollbar-width:    10px; 
@@ -725,7 +705,7 @@ input[type=text]:focus{
     vertical-align: top;
 }`}</style>
       <div className={Classes.DRAWER_BODY} id={"workbench-quickref-drawer"}>
-        <div className="rqrcontrol" ref={observerRef}>
+        <div ref={observerRef}>
           <div className="rqrControlHeader">
             <input
               autoFocus
@@ -804,8 +784,6 @@ input[type=text]:focus{
                                 __html: topic.header?.c3,
                               }}
                             />
-                            <td>{topic.header.c2}</td>
-                            <td>{topic.header.c3}</td>
                           </tr>
                           {topic.items.map((item) => (
                             <tr className="rqrTableRow" key={item.c1}>
@@ -1056,9 +1034,9 @@ const StatsDrawer = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
           </p>
         ))}
         <p>
-          Firebase Links: ${window.roamAlphaAPI.q(queryFireBaseAttachements)}
+          Firebase Links: {window.roamAlphaAPI.q(queryFireBaseAttachements) || 0}
           <br />
-          External Links: ${window.roamAlphaAPI.q(queryExternalLinks)}
+          External Links: {window.roamAlphaAPI.q(queryExternalLinks) || 0}
         </p>
         <p>
           Display Name: {getCurrentUserDisplayName()}
@@ -1194,7 +1172,7 @@ const WorkbenchMenu = () => {
                   }}
                   text={
                     <>
-                      <Icon icon={mi.icon} />
+                      <Icon icon={mi.icon} className={"mr-2"} />
                       {mi.label}{" "}
                       <span style={{ fontSize: "7pt" }}>({mi.shortcut})</span>
                     </>
@@ -1217,21 +1195,6 @@ const WorkbenchMenu = () => {
             >
               WorkBench {version}
             </span>
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              bottom: -7,
-              right: -2,
-              zIndex: 1000,
-            }}
-          >
-            <img
-              width="40px"
-              src={
-                "https://raw.githubusercontent.com/dvargas92495/roamjs-workbench/master/img/logo/42logo-2hc.png"
-              }
-            />
           </div>
         </>
       }

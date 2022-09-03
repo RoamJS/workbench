@@ -13,7 +13,7 @@ jobs:
         uses: dvargas92495/roamjs-publish@0.4.3
         with:
           token: ${{ secrets.ROAMJS_DEVELOPER_TOKEN }}
-          source: .
+          source: legacy
           path: roam42
           release_token: ${{ secrets.ROAMJS_RELEASE_TOKEN }}
           email: dvargas92495@gmail.com
