@@ -1088,6 +1088,13 @@ const WorkbenchMenu = () => {
       shortcut: "Alt-Shift-,",
     },
     {
+      enabled: deepNavEnabled,
+      onClick: triggerDeepNav,
+      icon: "circle-arrow-right",
+      label: "Deep Nav",
+      shortcut: "OPT+g",
+    },
+    {
       enabled: typeAheadEnabled,
       onClick: typeAheadLookup,
       icon: "manual",
@@ -1095,25 +1102,25 @@ const WorkbenchMenu = () => {
       shortcut: "Alt-Shift-.",
     },
     {
-      enabled: privacyEnabled,
-      onClick: privacyToggle,
-      icon: "shield",
-      label: "Privacy Mode",
-      shortcut: "Alt-Shift-p",
-    },
-    {
       enabled: formatConverterEnabled,
       onClick: formatConverterShow,
       icon: "fork",
-      label: "Converter",
+      label: "Format Converter",
       shortcut: "Alt-m",
     },
     {
       enabled: formatConverterEnabled,
       onClick: htmlview,
       icon: "document-share",
-      label: "Web View",
+      label: "Format Web View",
       shortcut: "Alt-Shift-m",
+    },
+    {
+      enabled: privacyEnabled,
+      onClick: privacyToggle,
+      icon: "shield",
+      label: "Privacy Mode",
+      shortcut: "Alt-Shift-p",
     },
     {
       enabled: true,
@@ -1135,13 +1142,6 @@ const WorkbenchMenu = () => {
       icon: "database",
       label: "Graph DB Stats",
       shortcut: "Alt-Shift-b",
-    },
-    {
-      enabled: deepNavEnabled,
-      onClick: triggerDeepNav,
-      icon: "circle-arrow-right",
-      label: "Deep Jump Nav",
-      shortcut: "OPT+g",
     },
   ] as const;
 

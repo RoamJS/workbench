@@ -455,7 +455,6 @@ const listener = (ev: KeyboardEvent) => {
     return;
   }
 
-  const target = ev.target as HTMLElement;
   if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Comma") {
     ev.preventDefault();
     ev.stopPropagation();
@@ -615,6 +614,7 @@ export const component = {
 
 export let enabled = false;
 export const toggleFeature = (flag: boolean) => {
+  enabled = flag;
   if (flag) {
     component.initialize();
   } else {
