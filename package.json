@@ -3,7 +3,7 @@
   "description": "A delightfully fun collection of power user tools for Roam.",
   "scripts": {
     "prebuild:roam": "npm install",
-    "build:roam": "roamjs-scripts dev --depot",
+    "build:roam": "roamjs-scripts build --depot",
     "start": "roamjs-scripts dev --depot"
   },
   "dependencies": {
