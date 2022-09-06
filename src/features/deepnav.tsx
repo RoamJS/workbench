@@ -5,6 +5,8 @@ import ReactDOM from "react-dom";
 import getUids from "roamjs-components/dom/getUids";
 import { SidebarWindowInput } from "roamjs-components/types";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
+import createBlock from "roamjs-components/writes/createBlock";
+import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
 
 type Breadcrumbs = { hash: string; title: string; uid?: string }[];
 
@@ -14,7 +16,6 @@ type Item = {
   mustBeKeys?: string | null;
   text?: string;
   initials?: string;
-  keepGoing?: boolean;
   extraClasses?: string[];
 };
 
@@ -213,15 +214,30 @@ const addBlocks = (el: Element, lastBlock: HTMLDivElement, prefix: string) => {
       key += i == 0 || istr.length === maxDigits ? istr : istr + ENTER_SYMBOL;
     }
     // TODO VARGAS rm-title-display, rm-pages-title-text, #block-input-ghost
-    const { blockUid, windowId } = getUids(block);
     currentOptions[key] = {
       element: block,
       mustBeKeys: key,
-      keepGoing: !block.classList.contains("rm-block-text"),
-      navigate: () =>
-        window.roamAlphaAPI.ui.setBlockFocusAndSelection({
-          location: { "block-uid": blockUid, "window-id": windowId },
-        }),
+      navigate: () => {
+        if (block.id === "block-input-ghost") {
+          return window.roamAlphaAPI.ui.mainWindow
+            .getOpenPageOrBlockUid()
+            .then((parentUid) =>
+              createBlock({ parentUid, node: { text: "" } }).then((blockUid) =>
+                window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+                  location: {
+                    "block-uid": blockUid,
+                    "window-id": `${getCurrentUserUid()}-body-outline-${parentUid}`,
+                  },
+                })
+              )
+            );
+        } else {
+          const { blockUid, windowId } = getUids(block);
+          return window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+            location: { "block-uid": blockUid, "window-id": windowId },
+          });
+        }
+      },
     };
   }
 };
@@ -277,7 +293,6 @@ const addLinks = (linkItems: Item[], container: Element) => {
           text: preprocessItemText(text),
           initials: getItemInitials(text),
           extraClasses: [LINK_HINT_CLASS],
-          keepGoing: true,
           navigate,
         });
       if (link.tagName === "A") {
@@ -575,7 +590,6 @@ const setupNavigate = () => {
             const option = {
               element: logButton,
               mustBeKeys: "g",
-              keepGoing: true,
               navigate: () =>
                 window.roamAlphaAPI.ui.mainWindow.openDailyNotes(),
             };
@@ -584,7 +598,6 @@ const setupNavigate = () => {
             const option = {
               element: logButton,
               mustBeKeys: "o" + ENTER_SYMBOL,
-              keepGoing: true,
               navigate: async () => {
                 window.location.hash = `#/${
                   window.roamAlphaAPI.graph.type === "hosted"
@@ -598,7 +611,6 @@ const setupNavigate = () => {
             const option = {
               element: logButton,
               mustBeKeys: "ap",
-              keepGoing: true,
               navigate: async () => {
                 window.location.hash = `#/${
                   window.roamAlphaAPI.graph.type === "hosted"
@@ -612,7 +624,6 @@ const setupNavigate = () => {
             const option = {
               element: logButton,
               mustBeKeys: "rd",
-              keepGoing: true,
               navigate: async () => {
                 logButton.click();
               },
@@ -637,7 +648,6 @@ const setupNavigate = () => {
               mustBeKeys: null,
               text: preprocessItemText(text),
               initials: getItemInitials(text),
-              keepGoing: true,
               navigate: () =>
                 window.roamAlphaAPI.ui.mainWindow.openPage({
                   page: { title: text },
@@ -667,7 +677,6 @@ const setupNavigate = () => {
         navigateItems.push({
           element: button,
           mustBeKeys: LEFT_SIDEBAR_KEY,
-          keepGoing: true,
           extraClasses: [LEFT_SIDEBAR_TOGGLE_CLASS],
           navigate,
         });
@@ -699,7 +708,6 @@ const setupNavigate = () => {
         if (button) {
           currentOptions["sc"] = {
             element: button,
-            keepGoing: true,
             extraClasses: [RIGHT_SIDEBAR_CLOSE_CLASS],
             navigate: () => window.roamAlphaAPI.ui.rightSidebar.open(),
           };
@@ -713,7 +721,6 @@ const setupNavigate = () => {
               CLOSE_BUTTON_PREFIX + CLOSE_BUTTON_KEYS[closeButtonCounter];
             currentOptions[key] = {
               element: closeButton as HTMLButtonElement,
-              keepGoing: true,
               extraClasses: [SIDE_PAGE_CLOSE_CLASS],
               navigate: () =>
                 window.roamAlphaAPI.ui.rightSidebar.removeWindow({
@@ -789,41 +796,25 @@ const eventToKey = (ev: KeyboardEvent) => {
 };
 
 const handleNavigateKey = (ev: KeyboardEvent) => {
-  let keepGoing = false;
-  try {
-    if (["ArrowUp", "ArrowDown", " "].includes(ev.key)) {
-      keepGoing = true;
-    } else if (ev.key === "Backspace") {
-      navigateKeysPressed = navigateKeysPressed.slice(0, -1);
-      console.log("navigateKeysPressed after backspace:", navigateKeysPressed);
-      keepGoing = rerenderTips();
-    } else if (ev.key === "Escape") {
-      keepGoing = false;
-    } else {
-      const key = eventToKey(ev);
-      if (key) {
-        navigateKeysPressed += key;
-        const option = currentOptions[navigateKeysPressed];
-        if (option) {
-          const el = option.element;
-          keepGoing = option.keepGoing;
-          // Special case: should not keep going after clicking
-          // title to edit.
-          if (el.classList.contains("rm-title-display") && !ev.shiftKey) {
-            keepGoing = false;
-          }
-          option.navigate().then(() => {
-            navigateKeysPressed = "";
-            keepGoing = rerenderTips();
-          });
-        } else {
-          keepGoing = rerenderTips();
-        }
+  if (["ArrowUp", "ArrowDown", " "].includes(ev.key)) {
+    return;
+  } else if (ev.key === "Backspace") {
+    navigateKeysPressed = navigateKeysPressed.slice(0, -1);
+    console.log("navigateKeysPressed after backspace:", navigateKeysPressed);
+    rerenderTips();
+  } else if (ev.key === "Escape") {
+    endNavigate();
+  } else {
+    const key = eventToKey(ev);
+    if (key) {
+      navigateKeysPressed += key;
+      const option = currentOptions[navigateKeysPressed];
+      if (option) {
+        option.navigate().then(() => {
+          navigateKeysPressed = "";
+          endNavigate();
+        });
       }
-    }
-  } finally {
-    if (!keepGoing && isNavigating) {
-      endNavigate();
     }
   }
 };

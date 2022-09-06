@@ -125,12 +125,13 @@ const LivePreview = ({ tag, registerMouseEvents, timeout }: Props) => {
 };
 
 export let enabled = false;
+let livePreviewObserver: MutationObserver;
 const unmounts = new Set<() => void>();
 
 export const toggleFeature = (flag: boolean) => {
   enabled = flag;
   if (flag) {
-    createHTMLObserver({
+    livePreviewObserver = createHTMLObserver({
       useBody: true,
       tag: "SPAN",
       className: "rm-page-ref",
@@ -188,6 +189,7 @@ export const toggleFeature = (flag: boolean) => {
       "roamjs-workbench-livepreview-css"
     );
   } else {
+    livePreviewObserver?.disconnect();
     unmounts.forEach((u) => u());
     document
       .querySelectorAll(`span[${LIVE_PREVIEW_ATTRIBUTE}=true]`)

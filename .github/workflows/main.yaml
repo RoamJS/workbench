@@ -32,5 +32,3 @@ jobs:
           mv $ROAMJS_EXTENSION_ID.zip build/downloads
       - name: publish
         run: npx roamjs-scripts publish --depot
-      - name: Deploy to RoamJS
-        run: aws s3 cp $ROAMJS_EXTENSION_ID.zip s3://roamjs.com/downloads/$ROAMJS_EXTENSION_ID.zip
