@@ -11,6 +11,7 @@ import getFirstChildTextByBlockUid from "roamjs-components/queries/getFirstChild
 import { render as renderToast } from "roamjs-components/components/Toast";
 import type { TreeNode } from "roamjs-components/types/native";
 import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
+import { addCommand } from "./workBench";
 
 const OPTIONS: Record<string, string> = {
   puretext_Space: "Text with space indentation",
@@ -634,11 +635,16 @@ const keyDownListener = (ev: KeyboardEvent) => {
 };
 
 export let enabled = false;
+const workbenchCommands = new Set<() => void>();
 export const toggleFeature = (flag: boolean) => {
   enabled = flag;
   if (flag) {
+    workbenchCommands.add(addCommand("Format Converter (alt-m)", show));
+    workbenchCommands.add(addCommand("Web View (alt-shift-m)", htmlview));
     document.addEventListener("keydown", keyDownListener);
   } else {
+    workbenchCommands.forEach((r) => r());
+    workbenchCommands.clear();
     document.removeEventListener("keydown", keyDownListener);
   }
 };

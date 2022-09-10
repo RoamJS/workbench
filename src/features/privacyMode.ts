@@ -6,6 +6,7 @@ import type { RoamBasicNode } from "roamjs-components/types";
 import extractTag from "roamjs-components/util/extractTag";
 import addStyle from "roamjs-components/dom/addStyle";
 import createTagRegex from "roamjs-components/util/createTagRegex";
+import { addCommand } from "./workBench";
 
 export let active = false;
 const roamPageWithPrivacyList = "WorkBench Privacy Mode List";
@@ -18,12 +19,11 @@ const getPrivateBlockDetails = () => {
   if (blocksFromPrivacyModeList.length == 0) {
     return [];
   } else {
-    const blocksFromNestedPrivacyModeList =
-      blocksFromPrivacyModeList.flatMap(function flatten(
-        n
-      ): RoamBasicNode[] {
+    const blocksFromNestedPrivacyModeList = blocksFromPrivacyModeList.flatMap(
+      function flatten(n): RoamBasicNode[] {
         return [n].concat(n.children.flatMap(flatten));
-      });
+      }
+    );
     return blocksFromNestedPrivacyModeList.map((b) => {
       const block = b.text.trim();
       const pageTitleOnly = /^!/.test(block);
@@ -224,6 +224,17 @@ const scanBlocksForPageReferences = (
 
 let observer: MutationObserver = undefined;
 
+const toggleOff = () => {
+  document
+    .querySelectorAll(`.${privacyClassName}`)
+    .forEach((e) => e.classList.remove(privacyClassName));
+  document
+    .querySelectorAll("div[modifiedPrivacyMode]")
+    .forEach((e) => e.removeAttribute("modifiedPrivacyMode"));
+  observer?.disconnect();
+  observer = undefined;
+};
+
 export const toggle = async () => {
   active = !active;
   if (active) {
@@ -248,14 +259,7 @@ export const toggle = async () => {
       observer.observe(document, { childList: true, subtree: true });
     }
   } else {
-    document
-      .querySelectorAll(`.${privacyClassName}`)
-      .forEach((e) => e.classList.remove(privacyClassName));
-    document
-      .querySelectorAll("div[modifiedPrivacyMode]")
-      .forEach((e) => e.removeAttribute("modifiedPrivacyMode"));
-    observer?.disconnect();
-    observer = undefined;
+    toggleOff();
   }
 };
 
@@ -269,6 +273,7 @@ const keyDownListener = (ev: KeyboardEvent) => {
 };
 export let enabled = false;
 
+let wbCommand: () => void;
 export const toggleFeature = (flag: boolean) => {
   enabled = flag;
   if (flag) {
@@ -299,7 +304,10 @@ export const toggleFeature = (flag: boolean) => {
 }`,
       "workbench-privacy-css"
     );
+    wbCommand = addCommand("Privacy Mode (alt-shift-p)", toggle);
   } else {
+    toggleOff();
+    wbCommand?.();
     document.body.removeEventListener("keydown", keyDownListener);
     document.getElementById("workbench-privacy-css")?.remove();
   }

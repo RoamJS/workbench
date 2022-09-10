@@ -19,7 +19,6 @@ import getChildrenLengthByParentUid from "roamjs-components/queries/getChildrenL
 import getOrderByBlockUid from "roamjs-components/queries/getOrderByBlockUid";
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
 import { render as renderSimpleAlert } from "roamjs-components/components/SimpleAlert";
-import { toggle as togglePrivacy } from "./privacyMode";
 import { get } from "../settings";
 import focusMainWindowBlock from "roamjs-components/util/focusMainWindowBlock";
 import React from "react";
@@ -830,10 +829,6 @@ export const initialize = async () => {
   addCommand("Goto previous day", async () => {
     moveForwardToDate(false);
   });
-
-  addCommand("Privacy Mode (alt-shift-p)", async () => togglePrivacy());
-  addCommand("Format Converter (alt-m)", async () => showFormatConverter());
-  addCommand("Web View (alt-shift-m)", async () => htmlview());
 
   addCommand("Heading 1", async (uids) => {
     uids.map((uid) => updateBlock({ uid, heading: 1 }));

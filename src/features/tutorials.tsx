@@ -58,6 +58,10 @@ const TutorialOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
       hasBackdrop={false}
       canOutsideClickClose={false}
       style={{ width: 600 }}
+      portalClassName={"pointer-events-none"}
+      className={"pointer-events-auto"}
+      enforceFocus={false}
+      autoFocus={false}
     >
       <div className={Classes.DRAWER_BODY} id={"workbench-tutorial-drawer"}>
         <div>
@@ -71,9 +75,7 @@ const TutorialOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
             className="workbench-guide"
             style={{ borderBottom: 0, marginBottom: 0, paddingBottom: 5 }}
           >
-            <div className="sectionheaders">
-              SmartBlocks Tutorials
-            </div>
+            <div className="sectionheaders">SmartBlocks Tutorials</div>
             <div className="row">
               <div className="item" onClick={() => playYT("xfnr5F4Yz8Y")}>
                 <div className="itemheader">Roam Templates</div>
@@ -127,9 +129,7 @@ const TutorialOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
             </div>
           </div>
           <div className="workbench-guide">
-            <div className="sectionheaders">
-              WorkBench Features
-            </div>
+            <div className="sectionheaders">WorkBench Features</div>
             <div className="row">
               <div className="item" onClick={() => playYT("f1UR9dMR_k0")}>
                 <div className="itemheader">Privacy Mode</div>
@@ -586,6 +586,10 @@ const QuickRefOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
       hasBackdrop={false}
       canOutsideClickClose={false}
       style={{ width: 600 }}
+      portalClassName={"pointer-events-none"}
+      className={"pointer-events-auto"}
+      enforceFocus={false}
+      autoFocus={false}
     >
       <style>{`.rqrContentArea {
     display:            flex;
@@ -961,8 +965,23 @@ const StatsDrawer = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
       hasBackdrop={false}
       canOutsideClickClose={false}
       style={{ width: 400 }}
+      portalClassName={"pointer-events-none"}
+      className={"roamjs-workbench-stats-drawer pointer-events-auto"}
+      enforceFocus={false}
+      autoFocus={false}
     >
-      <div className={Classes.DRAWER_BODY}>
+      <div
+        className={`${Classes.DRAWER_BODY} p-5 text-white text-opacity-70`}
+        style={{ background: "#565c70" }}
+      >
+        <style>{`.roamjs-workbench-stats-drawer .bp3-drawer-header { 
+  background: #565c70;
+}
+
+.roamjs-workbench-stats-drawer .bp3-drawer-header .bp3-heading {
+  color: white; 
+  opacity: 0.7; 
+}`}</style>
         <p>
           Pages:{" "}
           {
@@ -1005,35 +1024,38 @@ const StatsDrawer = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
             "[:find (count ?r) . :with ?e :where [?e :block/refs ?r] ]]"
           )}
         </p>
-        {[
-          "TODO",
-          "DONE",
-          "query",
-          "embed",
-          "table",
-          "kanban",
-          "video",
-          "roam/js",
-        ].map((tag) => (
-          <p key={tag}>
-            <a
-              style={{ color: "lightgrey" }}
-              onClick={() =>
-                window.roamAlphaAPI.ui.mainWindow.openPage({
-                  page: { title: tag },
-                })
-              }
-            >
-              {tag}
-            </a>
-            :
-            {window.roamAlphaAPI.q(
-              `[:find (count ?be) . :where [?e :node/title "${tag}"][?be :block/refs ?e]]`
-            ) || 0}
-          </p>
-        ))}
+        <p className="flex flex-col">
+          {[
+            "TODO",
+            "DONE",
+            "query",
+            "embed",
+            "table",
+            "kanban",
+            "video",
+            "roam/js",
+          ].map((tag) => (
+            <span key={tag}>
+              <a
+                style={{ color: "lightgrey" }}
+                onClick={() =>
+                  window.roamAlphaAPI.ui.mainWindow.openPage({
+                    page: { title: tag },
+                  })
+                }
+              >
+                {tag}
+              </a>
+              :{" "}
+              {window.roamAlphaAPI.q(
+                `[:find (count ?be) . :where [?e :node/title "${tag}"][?be :block/refs ?e]]`
+              ) || 0}
+            </span>
+          ))}
+        </p>
         <p>
-          Firebase Links: {window.roamAlphaAPI.q(queryFireBaseAttachements) || 0}
+          Firebase Links:{" "}
+          {window.roamAlphaAPI.q(queryFireBaseAttachements) || 0}
           <br />
           External Links: {window.roamAlphaAPI.q(queryExternalLinks) || 0}
         </p>
@@ -1247,6 +1269,6 @@ export const toggleFeature = (flag: boolean) => {
     }
     workbenchCommands.forEach((r) => r());
     workbenchCommands.clear();
-    document.body.addEventListener("keydown", keyDownListener);
+    document.body.removeEventListener("keydown", keyDownListener);
   }
 };
