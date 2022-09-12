@@ -5,7 +5,6 @@ import getPageUidByBlockUid from "roamjs-components/queries/getPageUidByBlockUid
 import createPage from "roamjs-components/writes/createPage";
 import getBlockUidsAndTextsReferencingPage from "roamjs-components/queries/getBlockUidsAndTextsReferencingPage";
 import parseNlpDate from "roamjs-components/date/parseNlpDate";
-import { htmlview, show as showFormatConverter } from "./formatConverter";
 import openBlockInSidebar from "roamjs-components/writes/openBlockInSidebar";
 import resolveRefs from "roamjs-components/dom/resolveRefs";
 import {
