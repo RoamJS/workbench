@@ -58,7 +58,7 @@ const getBlocksByParent = (uid: string) =>
     )
     .map((a) => a[0]) as { string: string; uid: string }[];
 
-const runInboxCommand = async (children: RoamBasicNode[]) => {
+const runInboxCommand = async (uids: string[], children: RoamBasicNode[]) => {
   let pageUID = null;
   let pageName = await userCommands.findBlockAmongstChildren(children, "page:");
   if (pageName == null) {
@@ -91,7 +91,7 @@ const runInboxCommand = async (children: RoamBasicNode[]) => {
     //text location doesnt exist,
     textUID = {
       uid: window.roamAlphaAPI.util.generateUID(),
-      string: textUID.string,
+      string: textName,
     };
     await window.roamAlphaAPI.createBlock({
       location: { "parent-uid": pageUID, order: 0 },
@@ -127,13 +127,20 @@ const runInboxCommand = async (children: RoamBasicNode[]) => {
         : false;
   }
 
-  textName = textName == null ? "" : " > " + textName;
-  renderToast({
-    content: `Block(s) moved to ${pageName}${textName}`,
-    intent: "warning",
-    id: "workbench-warning",
-    timeout: 3000,
-  });
+  moveBlocks({
+    base: locationTopBotom === "top" ? 0 : 1000,
+    parentUid: pageUID,
+    uids,
+  }).then(() =>
+    renderToast({
+      content: `Block(s) moved to ${pageName}${
+        textName == null ? "" : " > " + textName
+      }`,
+      intent: "warning",
+      id: "workbench-warning",
+      timeout: 3000,
+    })
+  );
 };
 
 const sortObjectByKey = <T extends { key: string }>(o: T[]) => {
@@ -195,71 +202,16 @@ export const userCommands = {
     }
     return sortObjectByKey(results);
   },
-  runComand: async (cmdInfo: { type: string; details: RoamBasicNode[] }) => {
+  runComand: async (
+    uids: string[],
+    cmdInfo: { type: string; details: RoamBasicNode[] }
+  ) => {
     //this function is called by the workBench to peform an action
     switch (cmdInfo["type"]) {
       case "inbox":
-        await runInboxCommand(cmdInfo.details[0].children);
+        await runInboxCommand(uids, cmdInfo.details);
         break;
     }
-  },
-  inboxUID: async (ibx: RoamBasicNode) => {
-    let pageUID = null;
-    let pageName = await userCommands.findBlockAmongstChildren(
-      ibx.children,
-      "page:"
-    );
-    if (pageName == null) {
-      //default to DNP
-      pageUID = window.roamAlphaAPI.util.dateToPageUid(parseNlpDate("today"));
-      pageName = "Today's DNP";
-    } else {
-      //get page UID, if doesnt exist, exist
-      pageUID = await getPageUidByPageTitle(pageName);
-      if (pageUID == "") {
-        renderToast({
-          content: `This page "${pageName}" doesnt exist, action not performed.`,
-          intent: "warning",
-          id: "workbench-warning",
-          timeout: 5000,
-        });
-        return null;
-      }
-    }
-    let textName = await userCommands.findBlockAmongstChildren(
-      ibx.children,
-      "text:"
-    );
-    //if text defined, get the UID of the tag.
-    let textUID =
-      textName == null
-        ? null
-        : getBlocksByParent(pageUID).find((e) =>
-            e.string.toLowerCase().includes(textName.toLowerCase())
-          );
-
-    if (textName != null && textUID == null) {
-      //text location doesnt exist,
-      textUID = {
-        uid: window.roamAlphaAPI.util.generateUID(),
-        string: textUID.string,
-      };
-      await window.roamAlphaAPI.createBlock({
-        location: { "parent-uid": pageUID, order: 0 },
-        block: { uid: textUID.uid, string: textName },
-      });
-      renderToast({
-        content: `This location "${pageName} > ${textName}" didnt exist, so a new block was created.`,
-        intent: "warning",
-        id: "workbench-warning",
-        timeout: 5000,
-      });
-    }
-
-    //reset pageUID if there is a valid text block
-    pageUID = textUID ? textUID.uid : pageUID;
-
-    return pageUID;
   },
 };
 
@@ -841,7 +793,7 @@ export const initialize = async () => {
   });
 
   (await userCommands.UserDefinedCommandList()).forEach(({ key, ...item }) => {
-    addCommand(key, () => userCommands.runComand(item));
+    addCommand(key, (uids) => userCommands.runComand(uids, item));
   });
   addCommand("Refresh Inboxes", async () => {
     shutdown();

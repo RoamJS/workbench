@@ -22,13 +22,6 @@ jobs:
       - name: install
         run: npm install
       - name: build
-        run: npx roamjs-scripts build
-      - name: build developer mode
         run: npx roamjs-scripts build --depot
-      - name: package
-        run: |
-          zip -q $ROAMJS_EXTENSION_ID.zip README.md extension.js package.json
-          mkdir build/downloads
-          mv $ROAMJS_EXTENSION_ID.zip build/downloads
       - name: publish
         run: npx roamjs-scripts publish --depot
