@@ -340,9 +340,6 @@ const removeOldTips = () => {
 };
 
 const endNavigate = () => {
-  if (!isNavigating) {
-    throw new Error("Invariant violation: endNavigate while not navigating.");
-  }
   isNavigating = false;
   clearBreadcrumbs();
   currentOptions = {};
@@ -962,6 +959,7 @@ export const toggleFeature = (flag: boolean) => {
     document.addEventListener("keydown", keyDownListener, true);
     window.addEventListener("resize", handleScrollOrResize);
   } else {
+    endNavigate();
     document.getElementById(STYLE_ID)?.remove?.();
     document.removeEventListener("keydown", keyDownListener);
     window.removeEventListener("resize", handleScrollOrResize);

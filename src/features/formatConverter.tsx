@@ -12,6 +12,7 @@ import { render as renderToast } from "roamjs-components/components/Toast";
 import type { TreeNode } from "roamjs-components/types/native";
 import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
 import { addCommand } from "./workBench";
+import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
 
 const OPTIONS: Record<string, string> = {
   puretext_Space: "Text with space indentation",
@@ -362,7 +363,7 @@ export const flatJson = async (uid: string, withIndents = false) => {
         JSON.stringify({
           uid: nodeCurrent.uid,
           order: nodeCurrent.order,
-          parentUID: parent.uid,
+          parentUID: parent?.uid || getParentUidByBlockUid(uid),
           level: level,
           blockText: blockOutput,
         }) + ","
@@ -601,6 +602,8 @@ p a { color: #000 }</style>
         onClose={onClose}
         title={"Workbench Viewer"}
         className={"roamjs-workbench-html-view"}
+        enforceFocus={false}
+        autoFocus={false}
       >
         <style>{`.roamjs-workbench-html-view { width: unset; }`}</style>
         <div

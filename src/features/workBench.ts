@@ -582,6 +582,23 @@ export const initialize = async () => {
   addCommand("Copy Block Reference as alias", async (uids) => {
     window.navigator.clipboard.writeText(`[*](((${uids[0] || ""})))`);
   });
+  addCommand("Sort Child Blocks", async (uids) => {
+    Promise.all(
+      uids.map((u) => {
+        const children = getShallowTreeByParentUid(u);
+        const sorted = children.sort((a, b) => a.text.localeCompare(b.text));
+        return sorted
+          .map(
+            (c, order) => () =>
+              window.roamAlphaAPI.moveBlock({
+                location: { "parent-uid": u, order },
+                block: { uid: c.uid },
+              })
+          )
+          .reduce((p, c) => p.then(c), Promise.resolve());
+      })
+    );
+  });
 
   addCommand("Sidebars - swap with main window (swap)", async () => {
     swapWithSideBar();
