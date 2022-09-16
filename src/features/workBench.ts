@@ -130,6 +130,7 @@ const runInboxCommand = async (uids: string[], children: RoamBasicNode[]) => {
     base: locationTopBotom === "top" ? 0 : 1000,
     parentUid: pageUID,
     uids,
+    blockRef,
   }).then(() =>
     renderToast({
       content: `Block(s) moved to ${pageName}${
@@ -249,17 +250,36 @@ const moveBlocks = ({
   uids,
   base = 0,
   parentUid,
+  blockRef = false,
 }: {
   uids: string[];
   base?: number;
   parentUid: string;
+  blockRef?: string | boolean;
 }) =>
   Promise.all(
     uids.map((uid, order) =>
-      window.roamAlphaAPI.moveBlock({
-        location: { "parent-uid": parentUid, order: base + order },
-        block: { uid },
-      })
+      blockRef === "reverse"
+        ? createBlock({
+            parentUid,
+            order: base + order,
+            node: { text: `((${uid}))` },
+          })
+        : blockRef
+        ? createBlock({
+            parentUid: getParentUidByBlockUid(uid),
+            order: getOrderByBlockUid(uid),
+            node: { text: `((${uid}))` },
+          }).then(() =>
+            window.roamAlphaAPI.moveBlock({
+              location: { "parent-uid": parentUid, order: base + order },
+              block: { uid },
+            })
+          )
+        : window.roamAlphaAPI.moveBlock({
+            location: { "parent-uid": parentUid, order: base + order },
+            block: { uid },
+          })
     )
   );
 
