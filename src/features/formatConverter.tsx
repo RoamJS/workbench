@@ -439,6 +439,8 @@ const FormatConverterUI = ({
       position={"bottom"}
       hasBackdrop={false}
       canOutsideClickClose={false}
+      portalClassName={"pointer-events-none"}
+      className={"pointer-events-auto"}
     >
       <div
         className={Classes.DRAWER_BODY}
