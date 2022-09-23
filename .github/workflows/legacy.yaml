@@ -1,8 +1,11 @@
+name: Publish Extension
 on: 
+  workflow_dispatch:
   push:
     branches: main
     paths:
       - "legacy/**"
+      - ".github/workflows/legacy.yaml"
 
 jobs:
   deploy:
