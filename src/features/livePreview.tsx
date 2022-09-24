@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import getChildrenLengthByPageUid from "roamjs-components/queries/getChildrenLengthByParentUid";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
-import { Button, Tooltip } from "@blueprintjs/core";
+import { Tooltip } from "@blueprintjs/core";
 import addStyle from "roamjs-components/dom/addStyle";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
 import ReactDOM from "react-dom";

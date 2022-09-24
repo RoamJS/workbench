@@ -105,7 +105,7 @@ const walkDocumentStructureAndFormat = async (
   parent: TreeNode,
   flatten: boolean
 ): Promise<string> => {
-  const mainText = await Promise.resolve(nodeCurrent.text).then(
+  const mainText = await Promise.resolve(nodeCurrent.text || "").then(
     async (blockText) => {
       const embeds = await Promise.all(
         Array.from(
@@ -372,7 +372,11 @@ export const flatJson = async (uid: string, withIndents = false) => {
     null,
     false
   );
-  return JSON.stringify(JSON.parse(`[${output.slice(0, -1)}]`), null, 4);
+  return JSON.stringify(
+    JSON.parse(`[${(output || "").slice(0, -1)}]`),
+    null,
+    4
+  );
 };
 
 const FormatConverterUI = ({
