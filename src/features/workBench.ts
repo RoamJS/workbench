@@ -28,6 +28,7 @@ import { moveForwardToDate } from "./dailyNotesPopup";
 import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
 import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
+import getUidsFromId from "roamjs-components/dom/getUidsFromId";
 
 export let active = false;
 
@@ -225,7 +226,7 @@ export const addCommand = (
     const uids = uid
       ? [uid]
       : Array.from(document.querySelectorAll(`.block-highlight-blue`)).map(
-          (d) => extractRef(d.querySelector(".roam-block").id)
+          (d) => getUidsFromId(d.querySelector(".roam-block").id).blockUid
         );
     Promise.resolve(callback(uids)).then(() => {
       if (restoreFocus && uids.length === 1) {

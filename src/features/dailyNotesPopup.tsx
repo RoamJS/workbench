@@ -50,6 +50,7 @@ export const moveForwardToDate = (bForward: boolean) => {
 
 const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
   const [loaded, setLoaded] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const pageUid = useMemo(
     () => window.roamAlphaAPI.util.dateToPageUid(new Date()),
     []
@@ -103,9 +104,15 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
       });
     } else if (!loaded) {
       setLoaded(true);
+    } else if (minimized) {
+      setLoaded(false);
+      containerRef.current = undefined;
     }
   }, [containerRef.current, loaded, setLoaded, minimized]);
-  const onDragEnd = () => component.saveUIChanges({ width, top, left, height });
+  const onDragEnd = () => {
+    component.saveUIChanges({ width, top, left, height });
+    setIsDragging(false);
+  };
   const dragImage = useMemo(() => {
     const img = document.createElement("img");
     img.src =
@@ -151,7 +158,10 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
     <Overlay
       isOpen={true}
       onClose={onClose}
-      className={"roamjs-daily-notes-popup"}
+      className={`roamjs-daily-notes-popup ${
+        isDragging && "roamjs-daily-notes-dragging"
+      }`}
+      autoFocus={false}
       enforceFocus={false}
       hasBackdrop={false}
       canOutsideClickClose={false}
@@ -180,7 +190,8 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
   color: transparent;
 }
 
-.roamjs-daily-notes-popup .bp3-dialog-header:hover {
+.roamjs-daily-notes-popup .bp3-dialog-header:hover,
+.roamjs-daily-notes-popup.roamjs-daily-notes-dragging .bp3-dialog-header {
   background: #565c70;
   color: white;
 
@@ -189,7 +200,8 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
   }
 }
 
-.roamjs-daily-notes-popup .bp3-dialog-header:hover .bp3-icon {
+.roamjs-daily-notes-popup .bp3-dialog-header:hover .bp3-icon,
+.roamjs-daily-notes-popup.roamjs-daily-notes-dragging .bp3-dialog-header .bp3-icon {
   color: white;
 }
 
@@ -214,6 +226,7 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           className="bp3-dialog-header absolute left-0 bottom-full right-0"
           draggable
           onDragStart={(e) => {
+            setIsDragging(true);
             cancelDragImage(e);
             const rect = (e.target as HTMLDivElement).getBoundingClientRect();
             if (e.clientX && e.clientY) {
@@ -449,9 +462,40 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
 
 const listener = (ev: KeyboardEvent) => {
   if (ev.altKey && ev.shiftKey && (ev.key == "¯" || ev.code == "Comma")) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    component.toggleVisible();
+    if (ev.ctrlKey) {
+      const popup = (ev.target as HTMLElement).closest(
+        ".roamjs-daily-notes-popup"
+      );
+      if (!popup) {
+        const firstPopupBlock = document.querySelector<HTMLDivElement>(
+          ".roamjs-daily-notes-popup .rm-block-children .roam-block"
+        );
+        if (firstPopupBlock) {
+          const { blockUid, windowId } = getUids(firstPopupBlock);
+          window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+            location: { "block-uid": blockUid, "window-id": windowId },
+          });
+          ev.preventDefault();
+          ev.stopPropagation();
+        }
+      } else {
+        const firstMainBlock = document.querySelector<HTMLDivElement>(
+          ".roam-article .roam-block"
+        );
+        if (firstMainBlock) {
+          const { blockUid, windowId } = getUids(firstMainBlock);
+          window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+            location: { "block-uid": blockUid, "window-id": windowId },
+          });
+          ev.preventDefault();
+          ev.stopPropagation();
+        }
+      }
+    } else {
+      ev.preventDefault();
+      ev.stopPropagation();
+      component.toggleVisible();
+    }
     return;
   }
 
@@ -600,14 +644,15 @@ export const component = {
     if (closeDailyNotesPopup) {
       closeDailyNotesPopup();
     } else {
-      closeDailyNotesPopup = renderOverlay({
-        Overlay: DailyNotesPopup,
-        props: {
-          onClose: () => {
-            closeDailyNotesPopup = undefined;
+      closeDailyNotesPopup =
+        renderOverlay({
+          Overlay: DailyNotesPopup,
+          props: {
+            onClose: () => {
+              closeDailyNotesPopup = undefined;
+            },
           },
-        },
-      });
+        }) || undefined;
     }
   },
 };
