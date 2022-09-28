@@ -341,6 +341,7 @@ const removeOldTips = () => {
 
 const endNavigate = () => {
   isNavigating = false;
+  navigateKeysPressed = "";
   clearBreadcrumbs();
   currentOptions = {};
   removeOldTips();
@@ -365,16 +366,18 @@ const renderTip = (key: string, option: Item) => {
   if (prefix === navigateKeysPressed) {
     const { element: el, extraClasses = [] } = option;
     const Tip = () => (
-      <div className={`${HINT_CLASS} ${extraClasses.join(" ")}`}>
+      <>
         {prefix.length > 0 && (
           <span className={HINT_TYPED_CLASS}>{prefix}</span>
         )}
         {rest}
-      </div>
+      </>
     );
-    const render = (el: HTMLElement) => {
+    const render = (parent: HTMLElement, el?: HTMLElement) => {
       const root = document.createElement("div");
-      el.prepend(root);
+      root.className = `${HINT_CLASS} ${extraClasses.join(" ")}`;
+      if (el) parent.insertBefore(root, el); 
+      else parent.prepend(root);
       ReactDOM.render(<Tip />, root);
     };
     if (
@@ -396,7 +399,7 @@ const renderTip = (key: string, option: Item) => {
       // Typically if the parent doesn't exist, then a re-render is
       // scheduled to properly render the sidebar toggle.
       if (el.parentElement) {
-        render(el.parentElement);
+        render(el.parentElement, el);
       }
     } else {
       render(el);
@@ -797,7 +800,6 @@ const handleNavigateKey = (ev: KeyboardEvent) => {
     return;
   } else if (ev.key === "Backspace") {
     navigateKeysPressed = navigateKeysPressed.slice(0, -1);
-    console.log("navigateKeysPressed after backspace:", navigateKeysPressed);
     rerenderTips();
   } else if (ev.key === "Escape") {
     endNavigate();
@@ -807,10 +809,9 @@ const handleNavigateKey = (ev: KeyboardEvent) => {
       navigateKeysPressed += key;
       const option = currentOptions[navigateKeysPressed];
       if (option) {
-        option.navigate().then(() => {
-          navigateKeysPressed = "";
-          endNavigate();
-        });
+        option.navigate().then(endNavigate);
+      } else if (!rerenderTips()) {
+        endNavigate();
       }
     }
   }
@@ -961,7 +962,7 @@ export const toggleFeature = (flag: boolean) => {
   } else {
     endNavigate();
     document.getElementById(STYLE_ID)?.remove?.();
-    document.removeEventListener("keydown", keyDownListener);
+    document.removeEventListener("keydown", keyDownListener, true);
     window.removeEventListener("resize", handleScrollOrResize);
   }
 };
