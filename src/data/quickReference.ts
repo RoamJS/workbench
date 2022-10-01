@@ -661,10 +661,13 @@ const quickReference: {
         c1: "This tool is designed to be a Quick Reference to all the features of Roam Research via keyboard, functions and formatting.<br/><br/>",
       },
       {
-        c1: "Follow me on Twitter at <a href='https://twitter.com/roamhacker' target='_blank'>@RoamHacker</a><br/>DM me with bugs, suggestions and whatever<br/><br/>",
+        c1: "Follow me on Twitter at <a href='https://twitter.com/dvargas92495' target='_blank'>@dvargas92495</a><br/>DM me with bugs, suggestions and whatever<br/><br/>",
       },
       {
-        c1: "<b>Credits to:</b><br/> <a href='https://www.roamhacks.com/' target='_blank'>RoamHacks.com</a> for their tips <br/><a href='https://twitter.com/beauhaan' target='_blank'>Beau Haan</a> for the creative input, follow him on Twitter <br/><a href='https://twitter.com/billpetro' target='_blank'>Bill Petro</a> for experience and calmness.  ",
+        c1: "Follow RoamJS at <a href='https://twitter.com/roam_jd' target='_blank'>@roam_jd</a><br/>for all of the latest news and updates surrounding our extensions.<br/><br/>",
+      },
+      {
+        c1: "<b>Credits to:</b><br/> <a href='https://twitter.com/tfthacker' target='_blank'>@TfTHacker</a> for being the original author of this extension<br /><a href='https://www.roamhacks.com/' target='_blank'>RoamHacks.com</a> for their tips <br/><a href='https://twitter.com/beauhaan' target='_blank'>Beau Haan</a> for the creative input, follow him on Twitter <br/><a href='https://twitter.com/billpetro' target='_blank'>Bill Petro</a> for experience and calmness.  ",
       },
       { c1: "" },
       { c1: "<b>Roam resources</b>" },
