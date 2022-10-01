@@ -21,7 +21,7 @@ const TooltipContent = ({
   close,
 }: {
   tag: string;
-  open: () => void;
+  open: (e: MouseEvent, modifier?: string) => void;
   close: () => void;
 }) => {
   const uid = useMemo(() => getPageUidByPageTitle(tag), [tag]);
@@ -50,7 +50,7 @@ const TooltipContent = ({
   return (
     <div
       style={{ position: "relative" }}
-      onMouseOver={open}
+      onMouseOver={(e) => open(e.nativeEvent)}
       onMouseLeave={close}
     >
       <div
@@ -70,10 +70,13 @@ const TooltipContent = ({
   );
 };
 
-export type Props = {
+type Props = {
   tag: string;
   timeout: number;
-  registerMouseEvents: (a: { open: () => void; close: () => void }) => void;
+  registerMouseEvents: (a: {
+    open: (e: MouseEvent, modifier?: string) => void;
+    close: () => void;
+  }) => void;
 };
 
 const LivePreview = ({ tag, registerMouseEvents, timeout }: Props) => {
@@ -81,14 +84,26 @@ const LivePreview = ({ tag, registerMouseEvents, timeout }: Props) => {
   const [loaded, setLoaded] = useState(false);
   const openRef = useRef<boolean>(false);
   const timeoutRef = useRef(0);
-  const open = useCallback(() => {
-    clearTimeout(timeoutRef.current);
-    timeoutRef.current = window.setTimeout(() => {
-      setIsOpen(true);
-      openRef.current = true;
-      timeoutRef.current = null;
-    }, timeout);
-  }, [setIsOpen, timeoutRef, openRef]);
+  const open = useCallback(
+    (e: MouseEvent, modifier?: string) => {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = window.setTimeout(() => {
+        const state = /shift/i.test(modifier)
+          ? e.shiftKey
+          : /(meta|cmd|command)/i.test(modifier)
+          ? e.metaKey
+          : /(ctrl|control)/i.test(modifier)
+          ? e.ctrlKey
+          : /(opt|alt)/i.test(modifier)
+          ? e.altKey
+          : true;
+        setIsOpen(state);
+        openRef.current = state;
+        timeoutRef.current = null;
+      }, timeout);
+    },
+    [setIsOpen, timeoutRef, openRef]
+  );
   const close = useCallback(() => {
     clearTimeout(timeoutRef.current);
     if (openRef.current) {
@@ -141,6 +156,7 @@ export const toggleFeature = (flag: boolean) => {
           s.parentElement.getAttribute("data-link-title");
         if (!s.getAttribute(LIVE_PREVIEW_ATTRIBUTE)) {
           s.setAttribute(LIVE_PREVIEW_ATTRIBUTE, "true");
+          const modifier = get("LivePreviewModifier");
           const parent = document.createElement("span");
           const unmount = () => {
             ReactDOM.unmountComponentAtNode(parent);
@@ -153,7 +169,7 @@ export const toggleFeature = (flag: boolean) => {
               tag={tag}
               timeout={Number(get("LivePreviewDelay")) || 100}
               registerMouseEvents={({ open, close }) => {
-                s.addEventListener("mouseover", open);
+                s.addEventListener("mouseover", (e) => open(e, modifier));
                 s.addEventListener("mouseleave", close);
               }}
             />,
