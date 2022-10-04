@@ -502,7 +502,7 @@ export const initialize = async () => {
     });
     if (!dateExpression) return;
     const parsedDate = window.roamAlphaAPI.util.dateToPageTitle(
-      parseNlpDate("today")
+      parseNlpDate(dateExpression)
     );
     if (!parsedDate) {
       renderToast({
