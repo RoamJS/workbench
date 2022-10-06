@@ -11,6 +11,21 @@ import getChildrenLengthByParentUid from "roamjs-components/queries/getChildrenL
 import deleteBlock from "roamjs-components/writes/deleteBlock";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import { render as renderToast } from "roamjs-components/components/Toast";
+import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
+import { BLOCK_REF_REGEX } from "roamjs-components/dom/constants";
+import extractRef from "roamjs-components/util/extractRef";
+import type {
+  InputTextNode,
+  PullBlock,
+  RoamBasicNode,
+} from "roamjs-components/types/native";
+import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
+import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
+import renderOverlay, {
+  RoamOverlayProps,
+} from "roamjs-components/util/renderOverlay";
+import { Dialog, Spinner } from "@blueprintjs/core";
+import { useMemo, useState, useEffect } from "react";
 
 const jumpNavIgnore = get("jumpNavIgnore");
 const ignoreBindings = new Set(jumpNavIgnore ? jumpNavIgnore.split(",") : []);
@@ -19,6 +34,105 @@ let jumpModeTimeout = 0;
 const getCurrentPageUid = async () =>
   (await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid()) ||
   window.roamAlphaAPI.util.dateToPageUid(new Date());
+const toUidTree = (tree: RoamBasicNode[]): RoamBasicNode[] =>
+  tree.map((t) => ({
+    text: `((${t.uid}))`,
+    children: toUidTree(t.children),
+    uid: window.roamAlphaAPI.util.generateUID(),
+  }));
+const stripUid = (tree: RoamBasicNode[]): InputTextNode[] =>
+  tree.map(({ uid: _, children, ...t }) => ({
+    ...t,
+    children: stripUid(children),
+  }));
+const getMaxLevel = (n: RoamBasicNode[]): number => {
+  if (n.length)
+    return (
+      n
+        .map((n) => getMaxLevel(n.children))
+        .reduce((p, c) => (p > c ? p : c), 0) + 1
+    );
+  else return 1;
+};
+const ExpColDialog = ({
+  blockUid,
+  onClose,
+}: RoamOverlayProps<{ blockUid: string }>) => {
+  const tree = useMemo(() => getBasicTreeByParentUid(blockUid), [blockUid]);
+  const level = getMaxLevel(tree);
+
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const listener = (e: KeyboardEvent) => {
+      const digit = Number(e.key);
+      if (digit && digit <= level) {
+        document.removeEventListener("keydown", listener);
+        const getNodes = (
+          ns: RoamBasicNode[],
+          l: number
+        ): { uid: string; within: boolean }[] => {
+          return ns.flatMap((n) => [
+            { uid: n.uid, within: l < digit },
+            ...getNodes(n.children, l + 1),
+          ]);
+        };
+        const nodes = getNodes(tree, 2).concat({
+          uid: blockUid,
+          within: digit > 1,
+        });
+
+        setLoading(true);
+        Promise.all(
+          nodes.map((n) => updateBlock({ uid: n.uid, open: n.within }))
+        ).then(onClose);
+      }
+    };
+    document.addEventListener("keydown", listener);
+  }, []);
+  return (
+    <Dialog
+      title={"Expand/Collapse all blocks to level"}
+      isOpen={true}
+      onClose={onClose}
+      enforceFocus={false}
+      autoFocus={false}
+    >
+      <div tabIndex={-1} style={{ padding: 16, minHeight: 120 }}>
+        <input autoFocus style={{ visibility: "hidden" }} />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
+          {level &&
+            Array(level)
+              .fill(null)
+              .map((_, l) => (
+                <span
+                  key={l}
+                  style={{
+                    padding: 16,
+                    borderRadius: 8,
+                    background: "white",
+                    margin: "0px 16px",
+                  }}
+                >
+                  {l + 1}
+                </span>
+              ))}
+        </div>
+      </div>
+      {loading && <Spinner />}
+    </Dialog>
+  );
+};
+
+// Available Keys:
+// h
+// A, B, D, E, F, G, H, I, J, K, L, M, N, P, Q, R, T, U, W, Y, Z
+// 5, 6, 7, 8, 9, 0
 const hotkeys: Record<string, () => unknown> = {
   t: () =>
     getCurrentPageUid().then((uid) => {
@@ -293,24 +407,6 @@ const hotkeys: Record<string, () => unknown> = {
       updateBlock({ uid: active["block-uid"], textAlign: "justify" });
     }
   },
-  5: () => {
-    const active = window.roamAlphaAPI.ui.getFocusedBlock();
-    if (active) {
-      updateBlock({ uid: active["block-uid"], heading: 1 });
-    }
-  },
-  6: () => {
-    const active = window.roamAlphaAPI.ui.getFocusedBlock();
-    if (active) {
-      updateBlock({ uid: active["block-uid"], heading: 2 });
-    }
-  },
-  7: () => {
-    const active = window.roamAlphaAPI.ui.getFocusedBlock();
-    if (active) {
-      updateBlock({ uid: active["block-uid"], heading: 3 });
-    }
-  },
   y: () =>
     document
       .querySelectorAll<HTMLDivElement>(".rm-query-title .bp3-icon-caret-down")
@@ -326,6 +422,156 @@ const hotkeys: Record<string, () => unknown> = {
     if (document.querySelector("#roam-right-sidebar-content"))
       window.roamAlphaAPI.ui.rightSidebar.close();
     else window.roamAlphaAPI.ui.rightSidebar.open();
+  },
+  S: () => {
+    const previousElement = document.activeElement as HTMLElement;
+    const emptyShortcuts = document.getElementsByClassName(
+      "bp3-button bp3-icon-star-empty"
+    ) as HTMLCollectionOf<HTMLSpanElement>;
+    const shortcuts = document.getElementsByClassName(
+      "bp3-button bp3-icon-star"
+    ) as HTMLCollectionOf<HTMLSpanElement>;
+    if (emptyShortcuts.length) {
+      emptyShortcuts[0].click();
+      previousElement?.focus();
+    } else if (shortcuts.length) {
+      shortcuts[0]?.click();
+      previousElement?.focus();
+    }
+  },
+  V: () => {
+    const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+    if (uid) {
+      window.navigator.clipboard.readText().then((clip) => {
+        const srcUid = extractRef(clip);
+        const tree = getBasicTreeByParentUid(srcUid);
+        window.roamAlphaAPI.updateBlock({
+          block: { uid, string: `${getTextByBlockUid(uid)}((${srcUid}))` },
+        });
+        toUidTree(tree).forEach((t, order) =>
+          createBlock({ parentUid: uid, node: t, order })
+        );
+      });
+    }
+  },
+  q: () => {
+    const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+
+    if (uid) {
+      const viewType = (
+        window.roamAlphaAPI.data.fast.q(
+          `[:find (pull ?b [:children/view-type]) :where [?b :block/uid "${uid}"]]`
+        )[0]?.[0] as PullBlock
+      )?.[":children/view-type"];
+      const newViewType =
+        viewType === ":document"
+          ? "numbered"
+          : viewType === ":numbered"
+          ? "bullet"
+          : "document";
+      window.roamAlphaAPI.updateBlock({
+        block: { uid, "children-view-type": newViewType },
+      });
+    }
+  },
+  a: () => {
+    const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+    if (uid) {
+      const text = getTextByBlockUid(uid);
+      const allRefs = Array.from(
+        text.matchAll(new RegExp(BLOCK_REF_REGEX, "g"))
+      );
+      if (allRefs.length) {
+        const latestMatch = allRefs.findIndex(
+          (r) =>
+            r.index >
+            (document.activeElement as HTMLTextAreaElement).selectionStart
+        );
+        const refMatch =
+          latestMatch <= 0 ? allRefs[0] : allRefs[latestMatch - 1];
+        const refText = getTextByBlockUid(refMatch[1]);
+        const prefix = `${text.slice(0, refMatch.index)}${refText} [*](${
+          refMatch[0]
+        })`;
+        const location = window.roamAlphaAPI.ui.getFocusedBlock();
+        updateBlock({
+          text: `${prefix} ${text.slice(refMatch.index + refMatch[0].length)}`,
+          uid,
+        }).then(() =>
+          window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+            location,
+            selection: { start: prefix.length },
+          })
+        );
+      }
+    }
+  },
+  C: () => {
+    const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+    if (uid) {
+      const text = getTextByBlockUid(uid);
+      const allRefs = Array.from(
+        text.matchAll(new RegExp(BLOCK_REF_REGEX, "g"))
+      );
+      if (allRefs.length) {
+        const latestMatch = allRefs.findIndex(
+          (r) =>
+            r.index >
+            (document.activeElement as HTMLTextAreaElement).selectionStart
+        );
+        const refMatch =
+          latestMatch <= 0 ? allRefs[0] : allRefs[latestMatch - 1];
+        const tree = getBasicTreeByParentUid(refMatch[1]);
+        stripUid(tree).forEach((node, order) =>
+          createBlock({ parentUid: uid, order, node })
+        );
+      }
+    }
+  },
+  O: () => {
+    const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+    if (uid) {
+      const text = getTextByBlockUid(uid);
+      const allRefs = Array.from(
+        text.matchAll(new RegExp(BLOCK_REF_REGEX, "g"))
+      );
+      if (allRefs.length) {
+        const latestMatch = allRefs.findIndex(
+          (r) =>
+            r.index >
+            (document.activeElement as HTMLTextAreaElement).selectionStart
+        );
+        const refMatch =
+          latestMatch <= 0 ? allRefs[0] : allRefs[latestMatch - 1];
+        const refOrder = getOrderByBlockUid(refMatch[1]);
+        const refParent = getParentUidByBlockUid(refMatch[1]);
+        const sourceOrder = getOrderByBlockUid(uid);
+        const sourceParent = getParentUidByBlockUid(uid);
+        window.roamAlphaAPI.moveBlock({
+          location: { "parent-uid": refParent, order: refOrder },
+          block: { uid },
+        });
+        window.roamAlphaAPI.moveBlock({
+          location: {
+            "parent-uid": sourceParent,
+            order: sourceOrder,
+          },
+          block: { uid: refMatch[1] },
+        });
+      }
+    }
+  },
+  X: () => {
+    Promise.resolve(
+      window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"] ||
+        window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid()
+    ).then((blockUid) =>
+      renderOverlay({
+        id: "exp-col-dialog",
+        Overlay: ExpColDialog,
+        props: { blockUid },
+      })
+    );
   },
 };
 const keydownListener = (ev: KeyboardEvent) => {
@@ -343,21 +589,45 @@ const keydownListener = (ev: KeyboardEvent) => {
     ev.preventDefault();
     ev.stopPropagation();
     jumpMode = false;
-    const key = /[a-z0-9]/.test(ev.key)
+    const key = /[a-z0-9A-Z]/.test(ev.key)
       ? ev.key
-      : ev.code.replace(/^Key/, "").toLowerCase();
+      : ev.code
+          .replace(/^Key/, "")
+          .replace(/^Digit/, "")
+          [ev.shiftKey ? "toUpperCase" : "toLowerCase"]();
     if (!ignoreBindings.has(key)) hotkeys[key]?.();
+  } else if (ev.key === "Enter") {
+    const element = ev.target as HTMLElement;
+    if (element.className.indexOf("bp3-button") > -1) {
+      element.click();
+    }
+    jumpMode = false;
   } else {
     jumpMode = false;
   }
 };
 
+const unloads = new Set<() => void>();
 export let enabled = false;
 export const toggleFeature = (flag: boolean) => {
   enabled = flag;
   if (flag) {
     document.body.addEventListener("keydown", keydownListener);
+    const focusableObserver = createHTMLObserver({
+      callback: (b) => {
+        if (b.tabIndex < 0) {
+          b.tabIndex = 0;
+        }
+      },
+      tag: "SPAN",
+      className: "bp3-button",
+    });
+    unloads.add(() => focusableObserver.disconnect());
+    unloads.add(() =>
+      document.body.removeEventListener("keydown", keydownListener)
+    );
   } else {
-    document.body.removeEventListener("keydown", keydownListener);
+    unloads.forEach((u) => u());
+    unloads.clear();
   }
 };
