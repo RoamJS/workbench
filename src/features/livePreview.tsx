@@ -26,6 +26,14 @@ const TooltipContent = ({
 }) => {
   const uid = useMemo(() => getPageUidByPageTitle(tag), [tag]);
   const numChildren = useMemo(() => getChildrenLengthByPageUid(uid), [uid]);
+  const height = useMemo(() => {
+    const val = get("LivePreviewHeight");
+    return /\d+/.test(val) ? Number(val) : val;
+  }, []);
+  const width = useMemo(() => {
+    const val = get("LivePreviewWidth");
+    return /\d+/.test(val) ? Number(val) : val;
+  }, []);
   const [isEmpty, setIsEmpty] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -49,7 +57,7 @@ const TooltipContent = ({
   }, [uid, containerRef, numChildren, tag, setIsEmpty, open]);
   return (
     <div
-      style={{ position: "relative" }}
+      style={{ position: "relative", width, height }}
       onMouseOver={(e) => open(e.nativeEvent)}
       onMouseLeave={close}
     >

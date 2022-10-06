@@ -12,7 +12,7 @@ WorkBench is the ultimate swiss army knife of the Roam power user. WorkBench mak
 
 All of the features below are _enabled_ by default. To disable, simply open your Roam Depot settings for each feature and toggle the switch for the given feature. More information about each feature could be found within the links below.
 
-- [Alert](https://roamjs.com/extensions/workbench/alert) - Allows users to schedule alerts within their graphs
+- [Alert](https://roamjs.com/extensions/workbench/alert) - Allows users to schedule alerts within their graphs.
 - [Command Palette+](https://roamjs.com/extensions/workbench/command_palette_plus) - Adds an extensive set of user generated and prebuilt commands to help users push Roam to new places. Navigate and manipulate your Roam environment with a bunch of handy commands, all without losing context.
 - [Daily Note Popup](https://roamjs.com/extensions/workbench/daily_note_popup) - Daily note popup is a second window that you can toggle open and close quickly to get at your daily notes page. It can be referred to as the "Roam within your Roam."
 - [Deep Nav](https://roamjs.com/extensions/workbench/deep_nav) - Advanced keyboard navigation of Roam using the keyboard, used to jump to any block in a page or sidebar.
