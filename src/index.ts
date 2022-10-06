@@ -2,6 +2,7 @@ import runExtension from "roamjs-components/util/runExtension";
 import "roamjs-components/types";
 
 // features
+import * as alert from "./features/alert";
 import * as dailyNotesPopup from "./features/dailyNotesPopup";
 import * as dictionary from "./features/dictionary";
 import * as formatConverter from "./features/formatConverter";
@@ -14,6 +15,12 @@ import * as tutorials from "./features/tutorials";
 
 const extensionId = "workbench";
 const FEATURES = [
+  {
+    id: "alert",
+    name: "Alert",
+    description: "Schedule reminders that are triggered by Roam.",
+    module: alert,
+  },
   {
     id: "workBench",
     name: "Command Palette+",

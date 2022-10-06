@@ -12,7 +12,6 @@ import {
   render as renderFormDialog,
 } from "roamjs-components/components/FormDialog";
 import { render as renderToast } from "roamjs-components/components/Toast";
-import extractRef from "roamjs-components/util/extractRef";
 import createBlock from "roamjs-components/writes/createBlock";
 import getChildrenLengthByParentUid from "roamjs-components/queries/getChildrenLengthByPageUid";
 import getOrderByBlockUid from "roamjs-components/queries/getOrderByBlockUid";
