@@ -4,6 +4,7 @@ import "roamjs-components/types";
 // features
 import * as alert from "./features/alert";
 import * as dailyNotesPopup from "./features/dailyNotesPopup";
+import * as decorators from "./features/decorators";
 import * as dictionary from "./features/dictionary";
 import * as formatConverter from "./features/formatConverter";
 import * as livePreview from "./features/livePreview";
@@ -37,6 +38,13 @@ const FEATURES = [
     module: dailyNotesPopup,
     description: "A popup window with the current Daily Notes Page",
     defaultEnabled: true,
+  },
+  {
+    id: "decorators",
+    name: "Decorated Blocks",
+    module: decorators,
+    description: "Decorates blocks with various configurable features for quick actions.",
+    defaultEnabled: false,
   },
   {
     id: "roamNavigator",

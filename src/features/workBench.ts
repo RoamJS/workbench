@@ -28,6 +28,9 @@ import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
 import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
 import getUidsFromId from "roamjs-components/dom/getUidsFromId";
+import getBlockUidsReferencingPage from "roamjs-components/queries/getBlockUidsReferencingPage";
+import createTagRegex from "roamjs-components/util/createTagRegex";
+import registerSmartBlocksCommand from "roamjs-components/util/registerSmartBlocksCommand";
 
 export let active = false;
 
@@ -483,9 +486,40 @@ const getWindowUid = (pane: SidebarWindow) =>
     ? pane["page-uid"]
     : pane["block-uid"];
 
-export const initialize = async () => {
-  active = true;
+const REPLACE = "{ref}";
+const pullReferences = async (uids: string[], removeTags?: boolean) => {
+  const format = get("pullReferencesFormat") || REPLACE;
+  const pageTitleText = uids.length
+    ? getPageTitleByBlockUid(uids[0])
+    : await window.roamAlphaAPI.ui.mainWindow
+        .getOpenPageOrBlockUid()
+        .then((uid) => getPageTitleByPageUid(uid));
+  const linkedReferences = getBlockUidsAndTextsReferencingPage(pageTitleText);
+  if (linkedReferences.length === 0) {
+    return [`No linked references for ${pageTitleText}!`];
+  }
+  const bullets = linkedReferences.map((l) =>
+    format
+      .replace(/{ref}/gi, `((${l.uid}))`)
+      .replace(/{todo}/gi, "{{[[TODO]]}}")
+  );
 
+  if (removeTags) {
+    getBlockUidsReferencingPage(pageTitleText).forEach((blockUid) => {
+      const value = getTextByBlockUid(blockUid);
+      window.roamAlphaAPI.updateBlock({
+        block: {
+          string: value.replace(createTagRegex(pageTitleText), ""),
+          uid: blockUid,
+        },
+      });
+    });
+  }
+  return bullets;
+};
+
+const unloads = new Set<() => void>();
+export const initialize = async () => {
   // Commands are ordered in line with the docs at: https://roamjs.com/extensions/workbench/command_palette_plus
   addCommand("Move Block(s) - to top (mbt)", async (uids) => {
     promptMoveBlocks({ uids, getBase: () => 0 });
@@ -580,6 +614,44 @@ export const initialize = async () => {
   });
   addCommand("Pull child block and leave block ref (pcr)", async (uids) => {
     promptPullChildBlocks(uids, true);
+  });
+  addCommand("Pull references (prf)", async (uids) => {
+    pullReferences(uids).then(async (bts) => {
+      const [blockUid] = uids;
+      const parentUid = blockUid
+        ? getParentUidByBlockUid(blockUid)
+        : await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+      const order = blockUid
+        ? getOrderByBlockUid(blockUid)
+        : getChildrenLengthByParentUid(blockUid);
+      return Promise.all([
+        updateBlock({ text: bts[0], uid: blockUid }),
+        ...bts
+          .slice(1)
+          .map((text, o) =>
+            createBlock({ parentUid, order: o + order + 1, node: { text } })
+          ),
+      ]);
+    });
+  });
+  addCommand("Pull references and remove old refs (prr)", async (uids) => {
+    pullReferences(uids, true).then(async (bts) => {
+      const [blockUid] = uids;
+      const parentUid = blockUid
+        ? getParentUidByBlockUid(blockUid)
+        : await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+      const order = blockUid
+        ? getOrderByBlockUid(blockUid)
+        : getChildrenLengthByParentUid(blockUid);
+      return Promise.all([
+        updateBlock({ text: bts[0], uid: blockUid }),
+        ...bts
+          .slice(1)
+          .map((text, o) =>
+            createBlock({ parentUid, order: o + order + 1, node: { text } })
+          ),
+      ]);
+    });
   });
 
   addCommand("Jump to Block in page (jbp)", async () => {
@@ -835,17 +907,30 @@ export const initialize = async () => {
     shutdown();
     initialize();
   });
+
+  unloads.add(() => {
+    _commands.forEach((c) =>
+      window.roamAlphaAPI.ui.commandPalette.removeCommand({ label: c.display })
+    );
+    _commands.clear();
+  });
+
+  const unregisterSB = registerSmartBlocksCommand({
+    text: "PULLREFERENCES",
+    handler: (context: { targetUid: string }) => (args) =>
+      pullReferences([context.targetUid], !!args.length),
+  });
+
+  unloads.add(unregisterSB);
 };
 
 export const shutdown = () => {
-  _commands.forEach((c) =>
-    window.roamAlphaAPI.ui.commandPalette.removeCommand({ label: c.display })
-  );
-  _commands.clear();
-  active = false;
+  unloads.forEach((u) => u());
+  unloads.clear();
 };
 
 export const toggleFeature = (flag: boolean) => {
+  active = flag;
   if (flag) initialize();
   else shutdown();
 };

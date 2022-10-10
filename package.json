@@ -7,7 +7,7 @@
     "start": "roamjs-scripts dev --depot"
   },
   "dependencies": {
-    "roamjs-components": "^0.74.3"
+    "roamjs-components": "^0.74.8"
   },
   "devDependencies": {
     "roamjs-scripts": "^0.22.3"
