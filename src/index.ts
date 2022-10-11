@@ -9,7 +9,6 @@ import * as dictionary from "./features/dictionary";
 import * as formatConverter from "./features/formatConverter";
 import * as livePreview from "./features/livePreview";
 import * as jumpnav from "./features/jumpNav";
-import * as multiSelect from "./features/multiSelect";
 import * as privacyMode from "./features/privacyMode";
 import * as roamNavigator from "./features/deepnav";
 import * as workBench from "./features/workBench";
@@ -82,14 +81,6 @@ const FEATURES = [
     description:
       "See live and editable preview of pages upon hovering over tags and page links",
     defaultEnabled: true,
-  },
-  {
-    id: "multiSelect",
-    name: "Multi Select",
-    module: multiSelect,
-    description:
-      "Allow selecting multiple blocks for copy, cut, and move operations, regardless of whether they are consecutive!",
-    defaultEnabled: false,
   },
   {
     id: "privacyMode",

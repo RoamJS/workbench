@@ -26,7 +26,6 @@ All of the features below are _disbled_ by default, as they were merged in from 
 
 - [Alert](https://roamjs.com/extensions/workbench/alert) - Allows users to schedule alerts within their graphs. 
 - [Decorated Blocks](https://roamjs.com/extensions/workbench/decorated_blocks) - Decorates blocks with various configurable features for quick actions.
-- [Multi Select](https://roamjs.com/extensions/workbench/multi_select) - Allow selecting multiple blocks for copy, cut, and move operations, regardless of whether they are consecutive!
 
 ## Migration Guide
 
