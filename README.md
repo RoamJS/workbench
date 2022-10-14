@@ -26,6 +26,7 @@ All of the features below are _disbled_ by default, as they were merged in from 
 
 - [Alert](https://roamjs.com/extensions/workbench/alert) - Allows users to schedule alerts within their graphs. 
 - [Decorated Blocks](https://roamjs.com/extensions/workbench/decorated_blocks) - Decorates blocks with various configurable features for quick actions.
+- [Import Article](https://roamjs.com/extensions/workbench/import_article) - Add commands to import web articles directly into Roam.
 
 ## Migration Guide
 

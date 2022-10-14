@@ -1,8 +1,5 @@
 {
-  "extends": "./node_modules/roamjs-scripts/dist/default.tsconfig",
-  "include": [
-    "src",
-    "lambdas"
-  ],
+  "extends": "./node_modules/roamjs-scripts/default.tsconfig",
+  "include": ["src", "index.d.ts"],
   "exclude": ["node_modules"]
 }

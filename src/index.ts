@@ -3,6 +3,7 @@ import "roamjs-components/types";
 
 // features
 import * as alert from "./features/alert";
+import * as article from "./features/article";
 import * as dailyNotesPopup from "./features/dailyNotesPopup";
 import * as decorators from "./features/decorators";
 import * as dictionary from "./features/dictionary";
@@ -42,7 +43,8 @@ const FEATURES = [
     id: "decorators",
     name: "Decorated Blocks",
     module: decorators,
-    description: "Decorates blocks with various configurable features for quick actions.",
+    description:
+      "Decorates blocks with various configurable features for quick actions.",
     defaultEnabled: false,
   },
   {
@@ -73,6 +75,13 @@ const FEATURES = [
     description:
       "Keyboard shortcuts for interacting with the Roam user interface",
     defaultEnabled: true,
+  },
+  {
+    id: "article",
+    name: "Import Article",
+    description: "Add commands to import web articles directly into Roam",
+    module: article,
+    defaultEnabled: false,
   },
   {
     id: "livePreview",
