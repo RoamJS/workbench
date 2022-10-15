@@ -82,7 +82,9 @@ const AutocompleteInput = ({
             <MenuItem
               text={
                 <div>
-                  <p><b>{t.word}</b> - <i>({t.type})</i></p> 
+                  <p>
+                    <b>{t.word}</b> - <i>({t.type})</i>
+                  </p>
                   <p>{t.definition}</p>
                 </div>
               }

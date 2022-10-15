@@ -31,6 +31,8 @@ import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
 import apiPost from "roamjs-components/util/apiPost";
+import getNthChildUidByBlockUid from "roamjs-components/queries/getNthChildUidByBlockUid";
+import getChildrenLengthByPageUid from "roamjs-components/queries/getChildrenLengthByPageUid";
 
 export const ERROR_MESSAGE =
   "Error Importing Article. Email link to support@roamjs.com for help!";
@@ -96,17 +98,14 @@ export const importArticle = ({
   indent: boolean;
   onSuccess?: () => void;
 }): Promise<InputTextNode[]> =>
-  apiPost({
+  apiPost<{ encoded: string; headers: Record<string, string> }>({
     path: `article`,
     data: { url },
     anonymous: true,
     domain: "https://lambda.roamjs.com",
   }).then(async (r) => {
-    if (onSuccess) {
-      onSuccess();
-    }
     const enc = charset(r.headers) || "utf-8";
-    const buffer = iconv.encode(r.data, "base64");
+    const buffer = iconv.encode(r.encoded, "base64");
     const html = iconv.decode(buffer, enc);
     const headIndex = html.indexOf("<head>") + "<head>".length;
     const base = document.createElement("base");
@@ -148,30 +147,41 @@ export const importArticle = ({
         previousNodeTabbed = false;
       }
     }
-    if (blockUid) {
-      updateBlock({ ...inputTextNodes[0], uid: blockUid });
-      inputTextNodes[0].children.forEach((node, order) =>
-        createBlock({ node, order, parentUid: blockUid })
+    const uid =
+      blockUid ||
+      (await window.roamAlphaAPI.ui.mainWindow
+        .getOpenPageOrBlockUid()
+        .then((parentUid) =>
+          createBlock({
+            parentUid,
+            order: getChildrenLengthByPageUid(parentUid),
+            node: { text: "" },
+          })
+        ));
+    updateBlock({ ...inputTextNodes[0], uid });
+    inputTextNodes[0].children.forEach((node, order) =>
+      createBlock({ node, order, parentUid: uid })
+    );
+    const parentUid = getParentUidByBlockUid(uid);
+    const order = getOrderByBlockUid(uid);
+    inputTextNodes
+      .slice(1)
+      .forEach((node, o) =>
+        createBlock({ node, order: o + order + 1, parentUid })
       );
-      const parentUid = getParentUidByBlockUid(blockUid);
-      const order = getOrderByBlockUid(blockUid);
-      inputTextNodes
-        .slice(1)
-        .forEach((node, o) =>
-          createBlock({ node, order: o + order + 1, parentUid })
-        );
+    if (onSuccess) {
+      onSuccess();
     }
     return inputTextNodes;
   });
 
 const ImportArticle = ({
-  blockUid: inputUid,
+  blockUid,
   isOpen,
   onClose,
 }: RoamOverlayProps<{
   blockUid?: string;
 }>): JSX.Element => {
-  const blockUid = useMemo(() => inputUid, [inputUid]);
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
   const [indent, setIndent] = useState(false);
@@ -190,13 +200,13 @@ const ImportArticle = ({
     }
     setError("");
     setLoading(true);
-    importArticle({ url: value, blockUid, indent, onSuccess: close }).catch(
+    importArticle({ url: value, blockUid, indent, onSuccess: onClose }).catch(
       () => {
         setError(ERROR_MESSAGE);
         setLoading(false);
       }
     );
-  }, [blockUid, value, indent, setError, setLoading, close]);
+  }, [blockUid, value, indent, setError, setLoading, onClose]);
   const indentOnChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => setIndent(e.target.checked),
     [setIndent]
@@ -226,15 +236,10 @@ const ImportArticle = ({
             />
           </div>
           <div style={{ marginTop: 16 }}>
-            <Label>
-              Indent Under Header
-              <Checkbox checked={indent} onChange={indentOnChange} />
-            </Label>
-          </div>
-          <div style={{ marginTop: 16 }}>
-            <Button
-              text={loading ? <Spinner size={20} /> : "IMPORT"}
-              onClick={importArticleCallback}
+            <Checkbox
+              checked={indent}
+              onChange={indentOnChange}
+              label={"Indent Under Header"}
             />
           </div>
         </div>
@@ -288,19 +293,16 @@ const inlineImportArticle = async ({
     const indent = getIndentConfig();
     const url = match[0];
     if (parentUid) {
-      const loadingUid = createBlock({
+      const blockUid = await createBlock({
         node: { text: "Loading..." },
         parentUid,
       });
-      const blockUid = await new Promise<string>((resolve) =>
-        setTimeout(() => resolve(getFirstChildUidByBlockUid(parentUid)), 1)
-      );
       await importArticle({
         url,
         blockUid,
         indent,
       }).catch(async () => {
-        updateBlock({ uid: await loadingUid, text: ERROR_MESSAGE });
+        updateBlock({ uid: blockUid, text: ERROR_MESSAGE });
       });
       return `[Source](${url})`;
     } else {

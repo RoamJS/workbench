@@ -10,14 +10,14 @@
     "@mozilla/readability": "^0.3.0",
     "charset": "^1.0.1",
     "color": "^4.2.3",
-    "roamjs-components": "^0.74.8",
-    "turndown": "^5.0.0"
+    "roamjs-components": "^0.74.12",
+    "turndown": "^7.1.1"
   },
   "devDependencies": {
     "@types/charset": "^1.0.2",
     "@types/color": "^3.0.3",
     "@types/mozilla-readability": "^0.2.0",
-    "@types/turndown": "^5.0.0",
+    "@types/turndown": "^5.0.1",
     "roamjs-scripts": "^0.24.0"
   }
 }
