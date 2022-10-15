@@ -10,7 +10,7 @@
     "@mozilla/readability": "^0.3.0",
     "charset": "^1.0.1",
     "color": "^4.2.3",
-    "roamjs-components": "^0.74.12",
+    "roamjs-components": "^0.74.13",
     "turndown": "^7.1.1"
   },
   "devDependencies": {
