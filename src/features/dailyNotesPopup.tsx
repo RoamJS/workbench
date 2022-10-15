@@ -3,7 +3,7 @@ import { Button, Overlay } from "@blueprintjs/core";
 import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
-import { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { render as renderToast } from "roamjs-components/components/Toast";
 import getFirstChildUidByBlockUid from "roamjs-components/queries/getFirstChildUidByBlockUid";
 import createBlock from "roamjs-components/writes/createBlock";

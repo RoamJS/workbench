@@ -25,7 +25,7 @@ import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
 import { Dialog, Spinner } from "@blueprintjs/core";
-import { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 
 const jumpNavIgnore = get("jumpNavIgnore");
 const ignoreBindings = new Set(jumpNavIgnore ? jumpNavIgnore.split(",") : []);

@@ -1,14 +1,135 @@
-import AutocompleteInput from "roamjs-components/components/AutocompleteInput";
-import React from "react";
-import { Classes, Dialog } from "@blueprintjs/core";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
+import {
+  Classes,
+  Dialog,
+  InputGroup,
+  Menu,
+  MenuItem,
+  PopoverPosition,
+  Popover,
+  Button,
+  TextArea,
+} from "@blueprintjs/core";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
 import { render as renderToast } from "roamjs-components/components/Toast";
 import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
+import useArrowKeyDown from "roamjs-components/hooks/useArrowKeyDown";
+
+// copied + pasted Autocomplete Input from RoamJS components bc there were
+// a couple of minor differences that made it hard to use in this case
 
 type Entry = { word: string; definition: string; type: string };
+
+export type AutocompleteInputProps = {
+  value: string;
+  setValue: (q: string) => void;
+  onConfirm?: (e: Entry) => void;
+  options?: Entry[];
+  placeholder?: string;
+  autoFocus?: boolean;
+};
+
+const AutocompleteInput = ({
+  value,
+  setValue,
+  onConfirm,
+  options = [],
+  placeholder = "Enter value",
+  autoFocus,
+}: AutocompleteInputProps): React.ReactElement => {
+  const [isOpen, setIsOpen] = useState(false);
+  const open = useCallback(() => setIsOpen(true), [setIsOpen]);
+  const close = useCallback(() => setIsOpen(false), [setIsOpen]);
+  const [isTyping, setIsTyping] = useState(false);
+  const menuRef = useRef<HTMLUListElement>(null);
+  const inputRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
+  const { activeIndex, onKeyDown } = useArrowKeyDown<Entry>({
+    onEnter: onConfirm,
+    results: options,
+    menuRef,
+  });
+  useEffect(() => {
+    if (!options.length || !isTyping) close();
+    else open();
+  }, [options, close, open, isTyping]);
+  return (
+    <Popover
+      portalClassName={"roamjs-autocomplete-input"}
+      targetClassName={"roamjs-autocomplete-input-target"}
+      captureDismiss={true}
+      isOpen={isOpen}
+      onOpened={open}
+      minimal
+      autoFocus={false}
+      enforceFocus={false}
+      position={PopoverPosition.BOTTOM_LEFT}
+      modifiers={{
+        flip: { enabled: false },
+        preventOverflow: { enabled: false },
+      }}
+      content={
+        <Menu className={"max-h-64 overflow-auto max-w-md"} ulRef={menuRef}>
+          {options.map((t, i) => (
+            <MenuItem
+              text={
+                <div>
+                  <p><b>{t.word}</b> - <i>({t.type})</i></p> 
+                  <p>{t.definition}</p>
+                </div>
+              }
+              active={activeIndex === i}
+              key={i}
+              multiline
+              onClick={() => {
+                onConfirm(t);
+              }}
+            />
+          ))}
+        </Menu>
+      }
+      target={
+        <InputGroup
+          value={value || ""}
+          onChange={(e) => {
+            setIsTyping(true);
+            setValue(e.target.value);
+          }}
+          autoFocus={autoFocus}
+          placeholder={placeholder}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              e.stopPropagation();
+              close();
+            } else {
+              onKeyDown(e);
+            }
+          }}
+          onClick={() => setIsTyping(true)}
+          onBlur={(e) => {
+            if (
+              e.relatedTarget === null ||
+              !(e.relatedTarget as HTMLElement).closest?.(
+                ".roamjs-autocomplete-input"
+              )
+            ) {
+              setIsTyping(false);
+            }
+          }}
+          inputRef={inputRef}
+        />
+      }
+    />
+  );
+};
 
 export let enabled = false;
 const formatEntry = (d: Entry) => `**${d.word}** (${d.type})
@@ -38,7 +159,7 @@ const TypeAhead = ({
           fetch(`https://wordnet.glitch.me/query?search=${value}`)
             .then((res) => res.json())
             .then(setOptions),
-        1000
+        500
       );
     }
   }, [value]);
@@ -48,10 +169,9 @@ const TypeAhead = ({
         <AutocompleteInput
           value={value}
           setValue={setValue}
-          options={options.map((w) => w.word)}
+          options={options}
           placeholder={"search"}
-          onConfirm={() => {
-            const entry = options.find((o) => o.word === value);
+          onConfirm={(entry) => {
             if (!uid) {
               displayDataInToast(entry);
               onClose();
@@ -66,7 +186,6 @@ const TypeAhead = ({
             }
           }}
           autoFocus
-          // renderOption={typeaheadResult}
         />
       </div>
     </Dialog>

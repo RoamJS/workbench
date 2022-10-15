@@ -15,7 +15,7 @@ import {
   Popover,
   Tooltip,
 } from "@blueprintjs/core";
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import ReactDOM from "react-dom";
 import {
   component as dnpComponent,

@@ -3,7 +3,13 @@ import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
 import { addCommand } from "./workBench";
-import { useCallback, useState, ChangeEvent, useMemo, useEffect } from "react";
+import React, {
+  useCallback,
+  useState,
+  ChangeEvent,
+  useMemo,
+  useEffect,
+} from "react";
 import {
   Alert,
   Button,

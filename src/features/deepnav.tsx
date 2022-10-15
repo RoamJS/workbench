@@ -7,6 +7,7 @@ import { SidebarWindowInput } from "roamjs-components/types";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import createBlock from "roamjs-components/writes/createBlock";
 import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
+import React from "react";
 
 type Breadcrumbs = { hash: string; title: string; uid?: string }[];
 
@@ -376,7 +377,7 @@ const renderTip = (key: string, option: Item) => {
     const render = (parent: HTMLElement, el?: HTMLElement) => {
       const root = document.createElement("div");
       root.className = `${HINT_CLASS} ${extraClasses.join(" ")}`;
-      if (el) parent.insertBefore(root, el); 
+      if (el) parent.insertBefore(root, el);
       else parent.prepend(root);
       ReactDOM.render(<Tip />, root);
     };
