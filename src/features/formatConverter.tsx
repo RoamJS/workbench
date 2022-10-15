@@ -1,4 +1,10 @@
-import React, { useMemo, useState, useEffect, useCallback } from "react";
+import React, {
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { Button, Classes, Dialog, Drawer, Label } from "@blueprintjs/core";
 import renderOverlay, {
   RoamOverlayProps,
@@ -287,12 +293,13 @@ export const formatter = {
     marked.use({ tokenizer });
     md = marked(md);
 
-    return `<html>\n
-                <head>
-                </head>
-                <body>\n${md}\n
-                </body>\n
-              </html>`;
+    return `<html>
+  <head>
+  </head>
+  <body>
+    ${md}
+  </body>
+</html>`;
   },
   htmlMarkdownFlatten: async (uid: string) => {
     var md = await iterateThroughTree(uid, formatter.markdownGithub, true);
@@ -331,12 +338,13 @@ export const formatter = {
     marked.use({ tokenizer });
     md = marked(md);
 
-    return `<html>\n
-                <head>
-                </head>
-                <body>\n${md}\n
-                </body>\n
-              </html>`;
+    return `<html>
+  <head>
+  </head>
+  <body>
+    ${md}
+  </body>
+</html>`;
   },
 };
 
@@ -543,7 +551,9 @@ export const show = () => {
 };
 
 export const htmlview = async () => {
-  const uid = await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+  const uid = await window.roamAlphaAPI.ui.mainWindow
+    .getOpenPageOrBlockUid()
+    .then((uid) => uid || window.roamAlphaAPI.util.dateToPageUid(new Date()));
   const results = (await formatter.htmlSimple(uid)).replace(
     "<html>",
     "<!DOCTYPE html>"
@@ -559,10 +569,10 @@ export const htmlview = async () => {
           .replace("```", "")}</style>\n`
       : "";
   const output = results
-    .replace("</body", `${childCSS}</body>`)
+    .replace("</body>", `${childCSS}</body>`)
     .replace(
       "</body>",
-      "\n<script>setTimeout(()=>{renderMathInElement(document.body);},1000)</script>\n</body>"
+      "\n<script>setTimeout(()=>{typeof renderMathInElement !== 'undefined' && renderMathInElement(document.body);},1000)</script>\n</body>"
     )
     .replace(
       "</head>",
@@ -602,6 +612,7 @@ p a { color: #000 }</style>
     );
 
   const Overlay = ({ isOpen, onClose }: RoamOverlayProps<{}>) => {
+    const iframeRef = useRef<HTMLIFrameElement>(null);
     return (
       <Dialog
         isOpen={isOpen}
@@ -616,7 +627,21 @@ p a { color: #000 }</style>
           className={Classes.DIALOG_BODY}
           style={{ width: 1000, height: 600 }}
         >
-          <iframe width={1000} height={600} srcDoc={output} />
+          <iframe
+            ref={iframeRef}
+            width={1000}
+            height={600}
+            srcDoc={output}
+            id={"roamjs-web-view"}
+          />
+          <Button
+            text={"Print"}
+            intent={"primary"}
+            rightIcon={"print"}
+            onClick={() => {
+              iframeRef.current.contentWindow.print();
+            }}
+          />
         </div>
       </Dialog>
     );
