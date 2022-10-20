@@ -14,6 +14,7 @@ import * as privacyMode from "./features/privacyMode";
 import * as roamNavigator from "./features/deepnav";
 import * as workBench from "./features/workBench";
 import * as tutorials from "./features/tutorials";
+import * as weeklyNotes from "./features/weekly-notes";
 
 const extensionId = "workbench";
 const FEATURES = [
@@ -106,6 +107,13 @@ const FEATURES = [
       "Learn how to use WorkBench features and Roam basics right from within Roam",
     defaultEnabled: true,
   },
+  {
+    id: "weekly-notes",
+    name: "Weekly Notes",
+    module: weeklyNotes,
+    description: "Enabling workflows surrounding weekly note pages.",
+    defaultEnabled: false,
+  }
 ];
 
 export default runExtension({
