@@ -917,8 +917,10 @@ export const initialize = async () => {
 
   const unregisterSB = registerSmartBlocksCommand({
     text: "PULLREFERENCES",
-    handler: (context: { targetUid: string }) => (args) =>
-      pullReferences([context.targetUid], !!args.length),
+    handler:
+      (context: { targetUid: string }) =>
+      (...args) =>
+        pullReferences([context.targetUid], !!args.length),
   });
 
   unloads.add(unregisterSB);
