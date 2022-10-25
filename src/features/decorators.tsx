@@ -294,7 +294,7 @@ const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
           <Button
             text={"Save"}
             onClick={() => {
-              localStorageSet("decorators", JSON.stringify({}));
+              localStorageSet("decorators", JSON.stringify(opts));
               toggleFeature(false);
               toggleFeature(true);
               renderToast({
