@@ -301,6 +301,7 @@ const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
                 content: "Successfully saved new decorators!",
                 id: "decorators-saved",
               });
+              onClose();
             }}
           />
         </div>
