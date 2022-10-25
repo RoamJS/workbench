@@ -14,7 +14,8 @@ let observerHeadings: MutationObserver = undefined;
 let closeDailyNotesPopup: () => void;
 
 export const moveForwardToDate = (bForward: boolean) => {
-  window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid().then((uid) => {
+  window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid().then((_uid) => {
+    const uid = _uid || window.roamAlphaAPI.util.dateToPageUid(new Date());
     if (uid) {
       const title = getPageTitleByPageUid(uid);
       if (title) {
@@ -499,21 +500,21 @@ const listener = (ev: KeyboardEvent) => {
     return;
   }
 
-  if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Comma") {
+  if (ev.ctrlKey && ev.shiftKey && ev.code == "Comma") {
     ev.preventDefault();
     ev.stopPropagation();
     moveForwardToDate(false);
     return true;
   }
 
-  if (ev.ctrlKey == true && ev.shiftKey == true && ev.code == "Period") {
+  if (ev.ctrlKey && ev.shiftKey && ev.code == "Period") {
     ev.preventDefault();
     ev.stopPropagation();
     moveForwardToDate(true);
     return true;
   }
 
-  if (ev.altKey == true && ev.shiftKey == true && ev.code == "KeyJ") {
+  if (ev.altKey && ev.shiftKey && ev.code == "KeyJ") {
     ev.preventDefault();
     const roamNativeDate = document.querySelector<HTMLSpanElement>(
       "div.rm-topbar span.bp3-icon-calendar"

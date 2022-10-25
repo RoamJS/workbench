@@ -279,6 +279,7 @@ const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
           <Checkbox
             checked={opts[setting]}
             key={setting}
+            label={setting}
             onChange={(e) =>
               setOpts({
                 ...opts,
