@@ -155,7 +155,7 @@ export const toggleFeature = (flag: boolean) => {
       if (
         e.code === "KeyW" &&
         (e.altKey ||
-          (e.ctrlKey && e.shiftKey && window.roamAlphaAPI.platform.isIOS))
+          (e.ctrlKey && e.shiftKey && !window.roamAlphaAPI.platform.isIOS))
       ) {
         e.preventDefault();
         e.stopPropagation();
