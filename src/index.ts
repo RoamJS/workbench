@@ -12,6 +12,7 @@ import * as livePreview from "./features/livePreview";
 import * as jumpnav from "./features/jumpNav";
 import * as privacyMode from "./features/privacyMode";
 import * as roamNavigator from "./features/deepnav";
+import * as ocr from "./features/ocr";
 import * as workBench from "./features/workBench";
 import * as tutorials from "./features/tutorials";
 import * as weeklyNotes from "./features/weekly-notes";
@@ -78,6 +79,13 @@ const FEATURES = [
     defaultEnabled: true,
   },
   {
+    id: "ocr",
+    name: "Import OCR",
+    description: "Extract the text from an image and add it as child blocks!",
+    module: ocr,
+    defaultEnabled: false,
+  },
+  {
     id: "article",
     name: "Import Article",
     description: "Add commands to import web articles directly into Roam",
@@ -113,7 +121,7 @@ const FEATURES = [
     module: weeklyNotes,
     description: "Enabling workflows surrounding weekly note pages.",
     defaultEnabled: false,
-  }
+  },
 ];
 
 export default runExtension({

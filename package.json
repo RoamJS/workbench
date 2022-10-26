@@ -11,6 +11,7 @@
     "charset": "^1.0.1",
     "color": "^4.2.3",
     "roamjs-components": "^0.74.13",
+    "tesseract.js": "^2.1.4",
     "turndown": "^7.1.1"
   },
   "devDependencies": {
