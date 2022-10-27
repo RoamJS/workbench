@@ -28,6 +28,7 @@ All of the features below are _disbled_ by default, as they were merged in from 
 - [Decorated Blocks](https://roamjs.com/extensions/workbench/decorated_blocks) - Decorates blocks with various configurable features for quick actions.
 - [Image OCR](https://roamjs.com/extensions/workbench/image_ocr) - Extract the text from an image and add it as child blocks!
 - [Import Article](https://roamjs.com/extensions/workbench/import_article) - Add commands to import web articles directly into Roam.
+- [Mindmap](https://roamjs.com/extensions/workbench/mindmap) - Visualize pieces of your Roam graph as a mindmap!
 - [Weekly Notes](https://roamjs.com/extensions/workbench/weekly-notes) - Enabling workflows surrounding weekly note pages.
 
 ## Migration Guide

@@ -10,6 +10,7 @@ import * as dictionary from "./features/dictionary";
 import * as formatConverter from "./features/formatConverter";
 import * as livePreview from "./features/livePreview";
 import * as jumpnav from "./features/jumpNav";
+import * as mindmap from "./features/mindmap";
 import * as privacyMode from "./features/privacyMode";
 import * as roamNavigator from "./features/deepnav";
 import * as ocr from "./features/ocr";
@@ -99,6 +100,13 @@ const FEATURES = [
     description:
       "See live and editable preview of pages upon hovering over tags and page links",
     defaultEnabled: true,
+  },
+  {
+    id: "mindmap",
+    name: "Mind Map",
+    module: mindmap,
+    description: "Visualize pieces of your Roam graph as a mindmap!",
+    defaultEnabled: false,
   },
   {
     id: "privacyMode",
