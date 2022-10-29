@@ -24,11 +24,13 @@ All of the features below are _enabled_ by default. To disable, simply open your
 
 All of the features below are _disbled_ by default, as they were merged in from other RoamJS extensions. To enable, simply open your Roam Depot settings for each feature and toggle the switch for the given feature. More information about each feature could be found within the links below.
 
-- [Alert](https://roamjs.com/extensions/workbench/alert) - Allows users to schedule alerts within their graphs. 
+- [Alert](https://roamjs.com/extensions/workbench/alert) - Allows users to schedule alerts within their graphs.
 - [Decorated Blocks](https://roamjs.com/extensions/workbench/decorated_blocks) - Decorates blocks with various configurable features for quick actions.
 - [Image OCR](https://roamjs.com/extensions/workbench/image_ocr) - Extract the text from an image and add it as child blocks!
 - [Import Article](https://roamjs.com/extensions/workbench/import_article) - Add commands to import web articles directly into Roam.
 - [Mindmap](https://roamjs.com/extensions/workbench/mindmap) - Visualize pieces of your Roam graph as a mindmap!
+- [Tag Cycle](https://roamjs.com/extensions/workbench/tag_cycle) - Define custom tag cycles tied to a keyboard shortcut!
+- [Tally](https://roamjs.com/extensions/workbench/tally) - Introduces a tally button component to use directly in your Roam graph.
 - [Weekly Notes](https://roamjs.com/extensions/workbench/weekly-notes) - Enabling workflows surrounding weekly note pages.
 
 ## Migration Guide

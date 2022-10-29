@@ -15,6 +15,8 @@ import * as privacyMode from "./features/privacyMode";
 import * as roamNavigator from "./features/deepnav";
 import * as ocr from "./features/ocr";
 import * as workBench from "./features/workBench";
+import * as tagCycle from "./features/tagCycle";
+import * as tally from "./features/tally";
 import * as tutorials from "./features/tutorials";
 import * as weeklyNotes from "./features/weekly-notes";
 
@@ -114,6 +116,22 @@ const FEATURES = [
     description: "Redacts content from your Roam",
     module: privacyMode,
     defaultEnabled: true,
+  },
+  {
+    id: "tag-cycle",
+    name: "Tag Cycle",
+    module: tagCycle,
+    description:
+      "Define custom cycles tied to a keyboard shortcut!",
+    defaultEnabled: false,
+  },
+  {
+    id: "tally",
+    name: "Tally Button",
+    module: tally,
+    description:
+      "Introduce a tally button component to use directly in your Roam graph!",
+    defaultEnabled: false,
   },
   {
     id: "tutorials",
