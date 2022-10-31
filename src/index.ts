@@ -83,7 +83,7 @@ const FEATURES = [
   },
   {
     id: "ocr",
-    name: "Import OCR",
+    name: "Image OCR",
     description: "Extract the text from an image and add it as child blocks!",
     module: ocr,
     defaultEnabled: false,
