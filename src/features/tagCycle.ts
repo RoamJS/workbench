@@ -151,7 +151,8 @@ const watchBlock = ({
   const args = [
     "[:block/children :block/string]",
     `[:block/uid "${blockUid}"]`,
-    (before, after) => before && after && diffChildren(before, after, options),
+    (before: PullBlock, after: PullBlock) =>
+      before && after && diffChildren(before, after, options),
   ] as const;
   window.roamAlphaAPI.data.addPullWatch(...args);
   return () => window.roamAlphaAPI.data.removePullWatch(...args);
@@ -167,7 +168,7 @@ const watchPage = ({
   const args = [
     "[:block/children]",
     `[:node/title "${title}"]`,
-    (before, after) => {
+    (before: PullBlock, after: PullBlock) => {
       before &&
         after &&
         diffChildren(before, after, { addedCallback, removedCallback });

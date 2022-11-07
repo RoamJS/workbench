@@ -28,11 +28,11 @@ const TooltipContent = ({
   const numChildren = useMemo(() => getChildrenLengthByPageUid(uid), [uid]);
   const height = useMemo(() => {
     const val = get("LivePreviewHeight");
-    return /\d+/.test(val) ? Number(val) : val;
+    return /^\d+$/.test(val) ? Number(val) : val;
   }, []);
   const width = useMemo(() => {
     const val = get("LivePreviewWidth");
-    return /\d+/.test(val) ? Number(val) : val;
+    return /^\d+$/.test(val) ? Number(val) : val;
   }, []);
   const [isEmpty, setIsEmpty] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -57,9 +57,10 @@ const TooltipContent = ({
   }, [uid, containerRef, numChildren, tag, setIsEmpty, open]);
   return (
     <div
-      style={{ position: "relative", width, height }}
+      style={{ width, height }}
       onMouseOver={(e) => open(e.nativeEvent)}
       onMouseLeave={close}
+      className={"relative overflow-auto"}
     >
       <div
         ref={containerRef}
