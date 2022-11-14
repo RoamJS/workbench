@@ -56,7 +56,10 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
     () => window.roamAlphaAPI.util.dateToPageUid(new Date()),
     []
   );
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, _setMinimized] = useState(false);
+  const minimizedRef = useRef(false);
+  const setMinimized = (f: boolean) =>
+    _setMinimized((minimizedRef.current = f));
   const containerRef = useRef<HTMLDivElement>(null);
   var loc = useMemo(
     () =>
@@ -80,7 +83,7 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
   const [top, setTop] = useState(loc.top);
   const [left, setLeft] = useState(loc.left);
   useEffect(() => {
-    if (containerRef.current && !minimized) {
+    if (containerRef.current && !minimizedRef.current) {
       window.roamAlphaAPI.ui.components.renderBlock({
         el: containerRef.current,
         uid: pageUid,
@@ -105,11 +108,11 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
       });
     } else if (!loaded) {
       setLoaded(true);
-    } else if (minimized) {
+    } else if (minimizedRef.current) {
       setLoaded(false);
       containerRef.current = undefined;
     }
-  }, [containerRef.current, loaded, setLoaded, minimized]);
+  }, [containerRef.current, loaded, setLoaded, minimizedRef]);
   const onDragEnd = () => {
     component.saveUIChanges({ width, top, left, height });
     setIsDragging(false);
@@ -535,11 +538,6 @@ const listener = (ev: KeyboardEvent) => {
 
 export const component = {
   async initialize() {
-    // Features todo:
-    // - Use Dialog and renderBlock to render in view
-    // - Make title bar draggable for the full window. no backdrop, interactable
-    // - Make edges of window draggable - save in the extensionAPI.settings or localStorage
-
     const setting = get("dailySubtitles");
     if (setting != "off") {
       // TODO - Move This
