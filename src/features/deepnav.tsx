@@ -8,6 +8,7 @@ import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTit
 import createBlock from "roamjs-components/writes/createBlock";
 import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
 import React from "react";
+import getPageTitleValueByHtmlElement from "roamjs-components/dom/getPageTitleValueByHtmlElement";
 
 type Breadcrumbs = { hash: string; title: string; uid?: string }[];
 
@@ -220,18 +221,39 @@ const addBlocks = (el: Element, lastBlock: HTMLDivElement, prefix: string) => {
       mustBeKeys: key,
       navigate: () => {
         if (block.id === "block-input-ghost") {
-          return window.roamAlphaAPI.ui.mainWindow
-            .getOpenPageOrBlockUid()
-            .then((parentUid) =>
-              createBlock({ parentUid, node: { text: "" } }).then((blockUid) =>
-                window.roamAlphaAPI.ui.setBlockFocusAndSelection({
-                  location: {
-                    "block-uid": blockUid,
-                    "window-id": `${getCurrentUserUid()}-body-outline-${parentUid}`,
-                  },
+          return (
+            block.closest(".rm-sidebar-window")
+              ? Promise.resolve(
+                  Array.from(
+                    document.querySelectorAll(".rm-sidebar-window")
+                  ).indexOf(block.closest(".rm-sidebar-window"))
+                ).then((order) => {
+                  const win = window.roamAlphaAPI.ui.rightSidebar
+                    .getWindows()
+                    .find((w) => w.type === "outline" && w.order === order);
+                  return win && win.type === "outline"
+                    ? {
+                        parentUid: win?.["page-uid"],
+                        windowId: win["window-id"],
+                      }
+                    : undefined;
                 })
-              )
-            );
+              : window.roamAlphaAPI.ui.mainWindow
+                  .getOpenPageOrBlockUid()
+                  .then((parentUid) => ({
+                    parentUid,
+                    windowId: `${getCurrentUserUid()}-body-outline-${parentUid}`,
+                  }))
+          ).then((args) =>
+            args && createBlock({ parentUid: args.parentUid, node: { text: "" } }).then((blockUid) =>
+              window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+                location: {
+                  "block-uid": blockUid,
+                  "window-id": args.windowId,
+                },
+              })
+            )
+          );
         } else {
           const { blockUid, windowId } = getUids(block);
           return window.roamAlphaAPI.ui.setBlockFocusAndSelection({
