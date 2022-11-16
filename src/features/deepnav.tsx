@@ -219,7 +219,7 @@ const addBlocks = (el: Element, lastBlock: HTMLDivElement, prefix: string) => {
     currentOptions[key] = {
       element: block,
       mustBeKeys: key,
-      navigate: () => {
+      navigate: async () => {
         if (block.id === "block-input-ghost") {
           return (
             block.closest(".rm-sidebar-window")
@@ -244,15 +244,26 @@ const addBlocks = (el: Element, lastBlock: HTMLDivElement, prefix: string) => {
                     parentUid,
                     windowId: `${getCurrentUserUid()}-body-outline-${parentUid}`,
                   }))
-          ).then((args) =>
-            args && createBlock({ parentUid: args.parentUid, node: { text: "" } }).then((blockUid) =>
-              window.roamAlphaAPI.ui.setBlockFocusAndSelection({
-                location: {
-                  "block-uid": blockUid,
-                  "window-id": args.windowId,
-                },
-              })
-            )
+          ).then(
+            (args) =>
+              args &&
+              createBlock({
+                parentUid: args.parentUid,
+                node: { text: "" },
+              }).then((blockUid) =>
+                window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+                  location: {
+                    "block-uid": blockUid,
+                    "window-id": args.windowId,
+                  },
+                })
+              )
+          );
+        } else if (block.matches("h1.rm-title-display")) {
+          block.dispatchEvent(
+            new MouseEvent("mousedown", {
+              bubbles: true,
+            })
           );
         } else {
           const { blockUid, windowId } = getUids(block);
