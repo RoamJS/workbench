@@ -217,21 +217,29 @@ const hotkeys: Record<string, () => unknown> = {
     document
       .querySelectorAll<HTMLElement>(".rm-reference-item  .block-expand")
       .forEach((element) => {
-        element.click();
-        (
-          document.querySelector(".bp3-popover-content > div> ul").childNodes[3]
-            .childNodes[0] as HTMLElement
-        ).click();
+        element.dispatchEvent(
+          new MouseEvent("contextmenu", {
+            bubbles: true,
+          })
+        );
+        const li = Array.from(
+          document.querySelector(".bp3-popover-content > div> ul").children
+        ).find((e: HTMLLinkElement) => e.innerText === "Expand all");
+        (li?.childNodes[0] as HTMLElement).click();
       }),
   p: () =>
     document
       .querySelectorAll<HTMLElement>(".rm-reference-item  .block-expand")
       .forEach((element) => {
-        element.click();
-        (
-          document.querySelector(".bp3-popover-content > div> ul").childNodes[4]
-            .childNodes[0] as HTMLElement
-        ).click();
+        element.dispatchEvent(
+          new MouseEvent("contextmenu", {
+            bubbles: true,
+          })
+        );
+        const li = Array.from(
+          document.querySelector(".bp3-popover-content > div> ul").children
+        ).find((e: HTMLLinkElement) => e.innerText === "Collapse all");
+        (li?.childNodes[0] as HTMLElement).click();
       }),
   r: () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
