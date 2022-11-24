@@ -490,7 +490,7 @@ const REPLACE = "{ref}";
 const pullReferences = async (uids: string[], removeTags?: boolean) => {
   const format = get("pullReferencesFormat") || REPLACE;
   const pageTitleText = uids.length
-    ? getPageTitleByBlockUid(uids[0])
+    ? getPageTitleByBlockUid(uids[0]) || getPageTitleByPageUid(uids[0])
     : await window.roamAlphaAPI.ui.mainWindow
         .getOpenPageOrBlockUid()
         .then((uid) => getPageTitleByPageUid(uid));
