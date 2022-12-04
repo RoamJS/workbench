@@ -197,7 +197,7 @@ const MoveTodoMenu = ({
         >
           <DatePicker
             value={target}
-            onChange={(s) => setTarget(s)}
+            onChange={(s) => s && setTarget(s)}
             minDate={tomorrow}
             maxDate={maxDate}
           />
