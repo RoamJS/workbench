@@ -307,25 +307,35 @@ const hotkeys: Record<string, () => unknown> = {
     }
   },
   i: () => {
-    const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+    const location = window.roamAlphaAPI.ui.getFocusedBlock();
+    const uid = location?.["block-uid"];
     if (uid) {
       const order = getOrderByBlockUid(uid);
       createBlock({
         order,
         parentUid: getParentUidByBlockUid(uid),
         node: { text: "" },
-      });
+      }).then((newUid) =>
+        window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+          location: { "window-id": location["window-id"], "block-uid": newUid },
+        })
+      );
     }
   },
   u: () => {
-    const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+    const location = window.roamAlphaAPI.ui.getFocusedBlock();
+    const uid = location?.["block-uid"];
     if (uid) {
       const order = getOrderByBlockUid(uid) + 1;
       createBlock({
         order,
         parentUid: getParentUidByBlockUid(uid),
         node: { text: "" },
-      });
+      }).then((newUid) =>
+        window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+          location: { "window-id": location["window-id"], "block-uid": newUid },
+        })
+      );
     }
   },
   k: () => {
