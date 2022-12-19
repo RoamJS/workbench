@@ -338,7 +338,7 @@ export const toggleFeature = (flag: boolean) => {
             const title = getPageTitleByBlockUid(blockUid);
             if (DAILY_NOTE_PAGE_REGEX.test(title)) {
               const block = input.closest(".roam-block") as HTMLDivElement;
-              if (!block.hasAttribute("data-roamjs-move-ref")) {
+              if (block && !block.hasAttribute("data-roamjs-move-ref")) {
                 block.setAttribute("data-roamjs-move-ref", "true");
                 const p = document.createElement("span");
                 p.onmousedown = (e) => e.stopPropagation();
@@ -364,7 +364,7 @@ export const toggleFeature = (flag: boolean) => {
           const title = getPageTitleByBlockUid(blockUid);
           if (DAILY_NOTE_PAGE_REGEX.test(title)) {
             const block = s.closest(".roam-block") as HTMLDivElement;
-            if (!block.hasAttribute("data-roamjs-move-ref")) {
+            if (block && !block.hasAttribute("data-roamjs-move-ref")) {
               block.setAttribute("data-roamjs-move-ref", "true");
               const p = document.createElement("span");
               p.onmousedown = (e) => e.stopPropagation();
