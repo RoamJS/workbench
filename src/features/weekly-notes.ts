@@ -1,6 +1,6 @@
 import setDay from "date-fns/setDay";
-import dateFnsFormat from "date-fns/format";
-import parse from "date-fns/parse";
+import _dateFnsFormat from "date-fns/format";
+import _parse from "date-fns/parse";
 import addWeeks from "date-fns/addWeeks";
 import subWeeks from "date-fns/subWeeks";
 import { createConfigObserver } from "roamjs-components/components/ConfigPage";
@@ -41,6 +41,16 @@ const getFormat = (tree?: TreeNode[]) =>
     tree:
       tree || getFullTreeByParentUid(getPageUidByPageTitle(CONFIG)).children,
   }));
+
+const dateFnsFormat = (...args: Parameters<typeof _dateFnsFormat>) =>
+  _dateFnsFormat(args[0], args[1], {
+    useAdditionalWeekYearTokens: true,
+  });
+
+const parse = (...args: Parameters<typeof _parse>) =>
+  _parse(args[0], args[1], args[2], {
+    useAdditionalWeekYearTokens: true,
+  });
 
 const createWeeklyPage = (pageName: string) => {
   const weekUid = createPage({ title: pageName });
@@ -137,7 +147,7 @@ export const toggleFeature = (flag: boolean) => {
         ],
       },
     }).then((a) => unloads.add(() => a.observer.disconnect()));
-    
+
     const goToThisWeek = () => {
       const format = getFormat();
       const today = new Date();
