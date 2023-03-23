@@ -2,7 +2,7 @@ import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
-import { addCommand } from "./workBench";
+import { addCommand, newAddCommand } from "./workBench";
 import React, {
   useCallback,
   useState,
@@ -257,11 +257,27 @@ const openAlertDashboard = () =>
   renderOverlay({ id: "alert-dashboard", Overlay: AlertDashboard });
 
 let enabled = false;
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (flag: boolean, extensionAPI: any) => {
   enabled = flag;
   if (enabled) {
-    unloads.add(addCommand("Create New Alert", createNewAlert));
-    unloads.add(addCommand("View Current Alerts", openAlertDashboard));
+    unloads.add(
+      newAddCommand(
+        {
+          label: "Create New Alert",
+          callback: createNewAlert,
+        },
+        extensionAPI
+      )
+    );
+    unloads.add(
+      newAddCommand(
+        {
+          label: "View Current Alerts",
+          callback: openAlertDashboard,
+        },
+        extensionAPI
+      )
+    );
     const storage = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storage) {
       const { alerts } = JSON.parse(storage) as {

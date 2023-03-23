@@ -272,9 +272,7 @@ export const newAddCommand = (args: AddCommandOptions, extensionAPI: any) => {
 }
 
 export const removeCommand = (label: string, extensionAPI: any) => {
-  extensionAPI.ui.commandPalette.removeCommand({
-    label
-  });
+  extensionAPI.ui.commandPalette.removeCommand({label});
 }
 
 const moveBlocks = ({

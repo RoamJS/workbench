@@ -529,7 +529,7 @@ const TutorialOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
   );
 };
 
-export const showTutorials = () => {
+const showTutorials = () => {
   if (!document.getElementById("workbench-tutorial-drawer"))
     renderOverlay({
       Overlay: TutorialOverlay,
@@ -874,7 +874,7 @@ input[type=text]:focus{
   );
 };
 
-export const toggleQuickReference = () => {
+const toggleQuickReference = () => {
   if (!document.getElementById("workbench-quickref-drawer"))
     renderOverlay({
       Overlay: QuickRefOverlay,
@@ -1070,7 +1070,7 @@ const StatsDrawer = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
   );
 };
 
-export const displayGraphStats = async () => {
+const displayGraphStats = async () => {
   if (!document.getElementById("workbench-stats-drawer"))
     renderOverlay({
       Overlay: StatsDrawer,
@@ -1234,16 +1234,33 @@ export const toggleFeature = (flag: boolean, extensionAPI: any) => {
     topbarObserver = new MutationObserver(() => {
       // fix from sidebar moving
     });
-    workbenchCommands.add(newAddCommand({
-      label: "WorkBench Help",
-      callback: toggleQuickReference,
-    }, extensionAPI));
-    // workbenchCommands.add(newAddCommand({
-    //   label: "Tutorials",
-    //   callback: showTutorials}, { extensionAPI }));
-    // workbenchCommands.add(newAddCommand({
-    //   label: "Graph DB Stats",
-    //   callback: displayGraphStats}, { extensionAPI }));
+    workbenchCommands.add(
+      newAddCommand(
+        {
+          label: "WorkBench Help",
+          callback: toggleQuickReference,
+        },
+        extensionAPI
+      )
+    );
+    workbenchCommands.add(
+      newAddCommand(
+        {
+          label: "Tutorials",
+          callback: showTutorials,
+        },
+        extensionAPI
+      )
+    );
+    workbenchCommands.add(
+      newAddCommand(
+        {
+          label: "Graph DB Stats",
+          callback: displayGraphStats,
+        },
+        extensionAPI
+      )
+    );
   } else {
     const workbenchMenu = document.getElementById("workbench-menu");
     if (workbenchMenu) {
