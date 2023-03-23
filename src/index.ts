@@ -1,5 +1,6 @@
 import runExtension from "roamjs-components/util/runExtension";
 import "roamjs-components/types";
+import { showTutorials, toggleQuickReference, displayGraphStats } from "./features/tutorials";
 
 // features
 import * as alert from "./features/alert";
@@ -166,6 +167,19 @@ export default runExtension({
           onChange: (e) => f.module.toggleFeature(e.target.checked),
         },
       })),
+    });
+
+    extensionAPI.ui.commandPalette.addCommand({
+      label: "WorkBench Help",
+      callback: toggleQuickReference
+    });
+    extensionAPI.ui.commandPalette.addCommand({
+      label: "Tutorials",
+      callback: showTutorials
+    });
+    extensionAPI.ui.commandPalette.addCommand({
+      label: "Graph DB Stats",
+      callback: displayGraphStats
     });
 
     FEATURES.forEach(({ id, module, defaultEnabled }) => {

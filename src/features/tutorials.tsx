@@ -529,7 +529,7 @@ const TutorialOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
   );
 };
 
-const showTutorials = () => {
+export const showTutorials = () => {
   if (!document.getElementById("workbench-tutorial-drawer"))
     renderOverlay({
       Overlay: TutorialOverlay,
@@ -874,7 +874,7 @@ input[type=text]:focus{
   );
 };
 
-const toggleQuickReference = () => {
+export const toggleQuickReference = () => {
   if (!document.getElementById("workbench-quickref-drawer"))
     renderOverlay({
       Overlay: QuickRefOverlay,
@@ -1070,31 +1070,11 @@ const StatsDrawer = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
   );
 };
 
-const displayGraphStats = async () => {
+export const displayGraphStats = async () => {
   if (!document.getElementById("workbench-stats-drawer"))
     renderOverlay({
       Overlay: StatsDrawer,
     });
-};
-
-const keyDownListener = (ev: KeyboardEvent) => {
-  if (ev.shiftKey == true && ev.code == "KeyQ") {
-    if (ev.ctrlKey) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      toggleQuickReference();
-    }
-    if (ev.altKey) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      showTutorials();
-    }
-  }
-  if (ev.altKey && ev.shiftKey == true && ev.code == "KeyB") {
-    ev.preventDefault();
-    ev.stopPropagation();
-    displayGraphStats();
-  }
 };
 
 const WorkbenchMenu = () => {
@@ -1149,21 +1129,24 @@ const WorkbenchMenu = () => {
       onClick: toggleQuickReference,
       icon: "help",
       label: "Help",
-      shortcut: "Ctrl-Shift-q",
+      // TODO replace with set keyboard shortcut
+      shortcut: "",
     },
     {
       enabled: true,
       onClick: showTutorials,
       icon: "learning",
       label: "Tutorials",
-      shortcut: "Alt-Shift-q",
+      // TODO replace with set keyboard shortcut
+      shortcut: "",
     },
     {
       enabled: true,
       onClick: displayGraphStats,
       icon: "database",
       label: "Graph DB Stats",
-      shortcut: "Alt-Shift-b",
+      // TODO replace with set keyboard shortcut
+      shortcut: "",
     },
   ] as const;
 
@@ -1246,7 +1229,6 @@ export const setVersion = (v: string) => {
   version = v;
 };
 
-const workbenchCommands = new Set<() => void>();
 let topbarObserver: MutationObserver;
 export let enabled = false;
 export const toggleFeature = (flag: boolean) => {
@@ -1256,10 +1238,6 @@ export const toggleFeature = (flag: boolean) => {
     topbarObserver = new MutationObserver(() => {
       // fix from sidebar moving
     });
-    workbenchCommands.add(addCommand("WorkBench Help", toggleQuickReference));
-    workbenchCommands.add(addCommand("Tutorials", showTutorials));
-    workbenchCommands.add(addCommand("Graph DB Stats", displayGraphStats));
-    document.body.addEventListener("keydown", keyDownListener);
   } else {
     const workbenchMenu = document.getElementById("workbench-menu");
     if (workbenchMenu) {
@@ -1267,8 +1245,5 @@ export const toggleFeature = (flag: boolean) => {
       ReactDOM.unmountComponentAtNode(workbenchMenu);
       topbarObserver.disconnect();
     }
-    workbenchCommands.forEach((r) => r());
-    workbenchCommands.clear();
-    document.body.removeEventListener("keydown", keyDownListener);
   }
 };
