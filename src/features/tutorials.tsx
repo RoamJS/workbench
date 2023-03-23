@@ -1226,8 +1226,9 @@ export const setVersion = (v: string) => {
 const workbenchCommands = new Set<() => void>();
 let topbarObserver: MutationObserver;
 export let enabled = false;
-export const toggleFeature = (flag: boolean, extensionAPI?: any) => {
+export const toggleFeature = (flag: boolean, extensionAPI: any) => {
   enabled = flag;
+
   if (flag) {
     displayMenu();
     topbarObserver = new MutationObserver(() => {
@@ -1237,7 +1238,7 @@ export const toggleFeature = (flag: boolean, extensionAPI?: any) => {
     workbenchCommands.add(newAddCommand({
       label: "WorkBench Help",
       callback: toggleQuickReference,
-    }, { extensionAPI }));
+    }, extensionAPI));
     // workbenchCommands.add(newAddCommand({
     //   label: "Tutorials",
     //   callback: showTutorials}, { extensionAPI }));
@@ -1251,8 +1252,8 @@ export const toggleFeature = (flag: boolean, extensionAPI?: any) => {
       ReactDOM.unmountComponentAtNode(workbenchMenu);
       topbarObserver.disconnect();
     }
-    // error
-    workbenchCommands.forEach((r) => removeCommand(r, { extensionAPI }));
+    // todo: error
+    workbenchCommands.forEach((r) => removeCommand(r, extensionAPI));
     workbenchCommands.clear();
   }
 };
