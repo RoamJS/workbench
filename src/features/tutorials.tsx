@@ -22,7 +22,7 @@ import {
   enabled as dnpEnabled,
 } from "./dailyNotesPopup";
 import { enabled as typeAheadEnabled, typeAheadLookup } from "./dictionary";
-import { addCommand } from "./workBench";
+import { addCommand, newAddCommand, removeCommand } from "./workBench";
 import {
   enabled as privacyEnabled,
   active as privacyActive,
@@ -1129,24 +1129,18 @@ const WorkbenchMenu = () => {
       onClick: toggleQuickReference,
       icon: "help",
       label: "Help",
-      // TODO replace with set keyboard shortcut
-      shortcut: "",
     },
     {
       enabled: true,
       onClick: showTutorials,
       icon: "learning",
       label: "Tutorials",
-      // TODO replace with set keyboard shortcut
-      shortcut: "",
     },
     {
       enabled: true,
       onClick: displayGraphStats,
       icon: "database",
       label: "Graph DB Stats",
-      // TODO replace with set keyboard shortcut
-      shortcut: "",
     },
   ] as const;
 
@@ -1178,7 +1172,6 @@ const WorkbenchMenu = () => {
                     <>
                       <Icon icon={mi.icon} className={"mr-2"} />
                       {mi.label}{" "}
-                      <span style={{ fontSize: "7pt" }}>({mi.shortcut})</span>
                     </>
                   }
                 />
@@ -1229,15 +1222,28 @@ export const setVersion = (v: string) => {
   version = v;
 };
 
+
+const workbenchCommands = new Set<() => void>();
 let topbarObserver: MutationObserver;
 export let enabled = false;
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (flag: boolean, extensionAPI?: any) => {
   enabled = flag;
   if (flag) {
     displayMenu();
     topbarObserver = new MutationObserver(() => {
       // fix from sidebar moving
     });
+    // doesn't work
+    workbenchCommands.add(newAddCommand({
+      label: "WorkBench Help",
+      callback: toggleQuickReference,
+    }, { extensionAPI }));
+    // workbenchCommands.add(newAddCommand({
+    //   label: "Tutorials",
+    //   callback: showTutorials}, { extensionAPI }));
+    // workbenchCommands.add(newAddCommand({
+    //   label: "Graph DB Stats",
+    //   callback: displayGraphStats}, { extensionAPI }));
   } else {
     const workbenchMenu = document.getElementById("workbench-menu");
     if (workbenchMenu) {
@@ -1245,5 +1251,8 @@ export const toggleFeature = (flag: boolean) => {
       ReactDOM.unmountComponentAtNode(workbenchMenu);
       topbarObserver.disconnect();
     }
+    // error
+    workbenchCommands.forEach((r) => removeCommand(r, { extensionAPI }));
+    workbenchCommands.clear();
   }
 };

@@ -20,7 +20,7 @@ import { render as renderSimpleAlert } from "roamjs-components/components/Simple
 import { get } from "../settings";
 import focusMainWindowBlock from "roamjs-components/util/focusMainWindowBlock";
 import React from "react";
-import { RoamBasicNode, SidebarWindow } from "roamjs-components/types/native";
+import { AddCommandOptions, RoamBasicNode, SidebarWindow } from "roamjs-components/types/native";
 import getShallowTreeByParentUid from "roamjs-components/queries/getShallowTreeByParentUid";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import { moveForwardToDate } from "./dailyNotesPopup";
@@ -248,6 +248,30 @@ export const addCommand = (
   _commands.add(command);
   return () => _commands.delete(command);
 };
+
+export const newAddCommand = (args: AddCommandOptions, extensionAPI: any) => {
+  const display = "(WB) " + args.label;
+  const options = { 
+    label: display,
+    callback: args.callback,
+    disableHotkey: args.disableHotkey,
+    defaultHotkey: args.defaultHotkey
+  };
+  extensionAPI.ui.commandPalette.addCommand(options);
+  const command = {
+    display,
+    cmd: args.callback,
+  };
+  _commands.add(command);
+  return () => _commands.delete(command);
+}
+
+export const removeCommand = (label: string, extensionAPI: any) => {
+  const display = "(WB) " + label;
+  extensionAPI.ui.commandPalette.removeCommand({
+    label: display,
+  });
+}
 
 const moveBlocks = ({
   uids,
