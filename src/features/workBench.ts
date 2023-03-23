@@ -249,6 +249,7 @@ export const addCommand = (
   return () => _commands.delete(command);
 };
 
+// testing
 export const newAddCommand = (args: AddCommandOptions, extensionAPI: any) => {
   const display = "(WB) " + args.label;
   const options = { 
@@ -263,13 +264,16 @@ export const newAddCommand = (args: AddCommandOptions, extensionAPI: any) => {
     cmd: args.callback,
   };
   _commands.add(command);
-  return () => _commands.delete(command);
+  return () => 
+  {
+    removeCommand(display, extensionAPI);
+    _commands.delete(command);
+  }
 }
 
 export const removeCommand = (label: string, extensionAPI: any) => {
-  const display = "(WB) " + label;
   extensionAPI.ui.commandPalette.removeCommand({
-    label: display,
+    label
   });
 }
 

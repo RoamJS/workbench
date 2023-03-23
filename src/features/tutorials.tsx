@@ -22,7 +22,7 @@ import {
   enabled as dnpEnabled,
 } from "./dailyNotesPopup";
 import { enabled as typeAheadEnabled, typeAheadLookup } from "./dictionary";
-import { addCommand, newAddCommand, removeCommand } from "./workBench";
+import { addCommand, newAddCommand } from "./workBench";
 import {
   enabled as privacyEnabled,
   active as privacyActive,
@@ -1234,7 +1234,6 @@ export const toggleFeature = (flag: boolean, extensionAPI: any) => {
     topbarObserver = new MutationObserver(() => {
       // fix from sidebar moving
     });
-    // doesn't work
     workbenchCommands.add(newAddCommand({
       label: "WorkBench Help",
       callback: toggleQuickReference,
@@ -1252,8 +1251,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: any) => {
       ReactDOM.unmountComponentAtNode(workbenchMenu);
       topbarObserver.disconnect();
     }
-    // todo: error
-    workbenchCommands.forEach((r) => removeCommand(r, extensionAPI));
+    workbenchCommands.forEach((r) => r());
     workbenchCommands.clear();
   }
 };
