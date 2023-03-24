@@ -220,49 +220,34 @@ export const userCommands = {
 };
 
 export const addCommand = (
-  textToDisplay: string,
-  callback: (uids: string[]) => unknown | Promise<unknown>,
+  args: AddCommandOptions, 
+  extensionAPI: OnloadArgs["extensionAPI"],
   restoreFocus?: true
-) => {
-  const callbackFunction = async () => {
+  ) => {
+    const callbackFunction = async () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
     const uids = uid
       ? [uid]
       : Array.from(document.querySelectorAll(`.block-highlight-blue`)).map(
           (d) => getUidsFromId(d.querySelector(".roam-block").id).blockUid
         );
-    Promise.resolve(callback(uids)).then(() => {
+    Promise.resolve(args.callback(uids)).then(() => {
       if (restoreFocus && uids.length === 1) {
         focusMainWindowBlock(uids[0]);
       }
     });
   };
-  const display = "(WB) " + textToDisplay;
-  window.roamAlphaAPI.ui.commandPalette.addCommand({
-    label: display,
-    callback: callbackFunction,
-  });
-  const command = {
-    display,
-    cmd: callbackFunction,
-  };
-  _commands.add(command);
-  return () => _commands.delete(command);
-};
-
-// testing
-export const newAddCommand = (args: AddCommandOptions, extensionAPI: OnloadArgs["extensionAPI"]) => {
   const display = "(WB) " + args.label;
   const options = { 
     label: display,
-    callback: args.callback,
+    callback: callbackFunction,
     disableHotkey: args.disableHotkey,
     defaultHotkey: args.defaultHotkey
   };
   extensionAPI.ui.commandPalette.addCommand(options);
   const command = {
     display,
-    cmd: args.callback,
+    cmd: callbackFunction,
   };
   _commands.add(command);
   return () => 
@@ -548,13 +533,19 @@ const pullReferences = async (uids: string[], removeTags?: boolean) => {
 const unloads = new Set<() => void>();
 export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
   // Commands are ordered in line with the docs at: https://roamjs.com/extensions/workbench/command_palette_plus
-  addCommand("Move Block(s) - to top (mbt)", async (uids) => {
-    promptMoveBlocks({ uids, getBase: () => 0 });
-  });
-  addCommand("Move Block(s) - to bottom (mbb)", async (uids) => {
+  addCommand({
+    label: "Move Block(s) - to top (mbt)", 
+    callback: async (uids: any) => { // TODO: Fix type
+    promptMoveBlocks({ uids, getBase: () => 0 })
+  }}, extensionAPI);
+  addCommand({
+    label: "Move Block(s) - to bottom (mbb)", 
+    callback: async (uids: any) => {
     promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid });
-  });
-  addCommand("Move Block(s) - DNP (mbdnp)", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Move Block(s) - DNP (mbdnp)", 
+    callback: async (uids: any) => {
     const dateExpression = await prompt({
       title: "WorkBench",
       question: "Move this block to the top of what date?",
@@ -583,19 +574,22 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
       (await createPage({ title: parsedDate }));
     const base = getChildrenLengthByParentUid(destinationPage);
     return moveBlocks({ base, uids, parentUid: destinationPage });
-  });
-  addCommand("Move Block(s) - to top with block Ref (mbtr)", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Move Block(s) - to top with block Ref (mbtr)",
+    callback: async (uids: any) => {
     await leaveBlockReferences({ uids });
     promptMoveBlocks({ uids, getBase: () => 0 });
-  });
-  addCommand(
-    "Move Block(s) - to bottom with block ref (mbbr)",
-    async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Move Block(s) - to bottom with block ref (mbbr)",
+    callback: async (uids: any) => {
       await leaveBlockReferences({ uids });
       promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid });
-    }
-  );
-  addCommand("Move Block(s) - to top & zoom (mbtz)", async (uids) => {
+    }}, extensionAPI);
+  addCommand({
+    label: "Move Block(s) - to top & zoom (mbtz)",
+    callback: async (uids: any) => {
     promptMoveBlocks({ uids, getBase: () => 0 }).then(
       (success) =>
         success &&
@@ -603,8 +597,10 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
           block: { uid: getParentUidByBlockUid(uids[0]) },
         })
     );
-  });
-  addCommand("Move Block(s) - to bottom & zoom (mbbz)", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Move Block(s) - to bottom & zoom (mbbz)",
+    callback: async (uids: any) => {
     promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
       (success) =>
         success &&
@@ -612,37 +608,55 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
           block: { uid: getParentUidByBlockUid(uids[0]) },
         })
     );
-  });
-  addCommand("Move Block(s) - to top & sidebar (mbts)", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Move Block(s) - to top & sidebar (mbts)",
+    callback: async (uids: any) => {
     promptMoveBlocks({ uids, getBase: () => 0 }).then(
       (success) => success && openBlockInSidebar(uids[0])
     );
-  });
-  addCommand("Move Block(s) - to bottom & sidebar (mbbs)", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Move Block(s) - to bottom & sidebar (mbbs)",
+    callback: async (uids: any) => {
     promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
       (success) => success && openBlockInSidebar(uids[0])
     );
-  });
-  addCommand("Send block ref - to top (sbrt)", async (uids) => {
-    promptMoveRefs({ uids, getBase: () => 0 });
-  });
-  addCommand("Send block refs - to bottom (sbrb)", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Send block ref - to top (sbrt)",
+    callback: async (uids: any) => {
+      promptMoveRefs({ uids, getBase: () => 0 });
+  }}, extensionAPI);
+  addCommand({
+    label: "Send block refs - to bottom (sbrb)",
+    callback: async (uids: any) => {
     promptMoveRefs({ uids, getBase: getChildrenLengthByParentUid });
-  });
+  }}, extensionAPI);
 
-  addCommand("Pull block (pbb)", async (uids) => {
+  addCommand({
+    label: "Pull block (pbb)",
+    callback: async (uids: any) => {
     promptPullBlock(uids);
-  });
-  addCommand("Pull block and leave block ref (pbr)", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Pull block and leave block ref (pbr)",
+    callback: async (uids: any) => {
     promptPullBlock(uids, true);
-  });
-  addCommand("Pull child blocks  (pcb)", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Pull child blocks  (pcb)",
+    callback: async (uids: any) => {
     promptPullChildBlocks(uids);
-  });
-  addCommand("Pull child block and leave block ref (pcr)", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Pull child block and leave block ref (pcr)",
+    callback: async (uids: any) => {
     promptPullChildBlocks(uids, true);
-  });
-  addCommand("Pull references (prf)", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Pull references (prf)",
+    callback: async (uids: any) => {
     pullReferences(uids).then(async (bts) => {
       const [blockUid] = uids;
       const parentUid = blockUid
@@ -660,8 +674,10 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
           ),
       ]);
     });
-  });
-  addCommand("Pull references and remove old refs (prr)", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Pull references and remove old refs (prr)",
+    callback: async (uids: any) => {
     pullReferences(uids, true).then(async (bts) => {
       const [blockUid] = uids;
       const parentUid = blockUid
@@ -679,9 +695,11 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
           ),
       ]);
     });
-  });
+  }} , extensionAPI);
 
-  addCommand("Jump to Block in page (jbp)", async () => {
+  addCommand({
+    label: "Jump to Block in page (jbp)", 
+    callback: async () => {
     promptPathAndCallback({
       valid: true,
       callback: (inputUid) => {
@@ -694,16 +712,22 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
           });
       },
     });
-  });
-  addCommand("Copy Block Reference", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Copy Block Reference",
+    callback: async (uids: any) => {
     window.navigator.clipboard.writeText(`((${uids[0] || ""}))`);
-  });
-  addCommand("Copy Block Reference as alias", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Copy Block Reference as alias",
+    callback: async (uids: any) => {
     window.navigator.clipboard.writeText(`[*](((${uids[0] || ""})))`);
-  });
-  addCommand("Sort Child Blocks", async (uids) => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Sort Child Blocks",
+    callback: async (uids: any) => {
     Promise.all(
-      uids.map((u) => {
+      uids.map((u: any) => {
         const children = getShallowTreeByParentUid(u);
         const sorted = children.sort((a, b) => a.text.localeCompare(b.text));
         return sorted
@@ -717,14 +741,16 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
           .reduce((p, c) => p.then(c), Promise.resolve());
       })
     );
-  });
+  }}, extensionAPI);
 
-  addCommand("Sidebars - swap with main window (swap)", async () => {
+  addCommand({
+    label: "Sidebars - swap with main window (swap)",
+    callback: async () => {
     swapWithSideBar();
-  });
-  addCommand(
-    "Sidebars - swap with main window & choose window (swc)",
-    async () => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Sidebars - swap with main window & choose window (swc)",
+    callback: async () => {
       const panes = await window.roamAlphaAPI.ui.rightSidebar.getWindows();
       if (panes.length == 0) {
         renderToast({
@@ -776,11 +802,10 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
             timeout: 5000,
           });
       }
-    }
-  );
-  addCommand(
-    "Right Sidebar - close window panes (rscwp)",
-    async () => {
+    }}, extensionAPI);
+  addCommand({
+    label: "Right Sidebar - close window panes (rscwp)",
+    callback: async () => {
       await Promise.all(
         window.roamAlphaAPI.ui.rightSidebar
           .getWindows()
@@ -791,30 +816,32 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
           )
           .concat(window.roamAlphaAPI.ui.rightSidebar.close())
       );
-    },
-    true
-  );
-  addCommand(
-    "Sidebars - open both (sob)",
-    async () => {
+    }}, extensionAPI, true);
+  addCommand({
+    label: "Sidebars - open both (sob)",
+    callback: async () => {
       await Promise.all([
         window.roamAlphaAPI.ui.rightSidebar.open(),
         window.roamAlphaAPI.ui.leftSidebar.open(),
       ]);
-    },
+    }},
+    extensionAPI,
     true
   );
-  addCommand(
-    "Sidebars - close both (scb)",
-    async () => {
+  addCommand({
+    label: "Sidebars - close both (scb)",
+    callback: async () => {
       await Promise.all([
         window.roamAlphaAPI.ui.rightSidebar.close(),
         window.roamAlphaAPI.ui.leftSidebar.close(),
       ]);
-    },
+    }},
+    extensionAPI,
     true
   );
-  addCommand("Open Page (opp)", async () => {
+  addCommand({
+    label: "Open Page (opp)",
+    callback: async () => {
     promptPathAndCallback({
       valid: true,
       supportPages: true,
@@ -823,16 +850,20 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
           block: { uid: inputUid },
         }),
     });
-  });
-  addCommand("Open Page in Sidebar (ops)", async () => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Open Page in Sidebar (ops)",
+    callback: async () => {
     promptPathAndCallback({
       valid: true,
       supportPages: true,
       callback: (inputUid) => openBlockInSidebar(inputUid),
     });
-  });
+  }}, extensionAPI);
 
-  addCommand("Create a page (cap)", async () => {
+  addCommand({
+    label: "Create a page (cap)", 
+    callback: async () => {
     prompt({
       title: "Create Page",
       question: "Enter page title",
@@ -852,7 +883,7 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
         );
       }
     });
-  });
+  }}, extensionAPI);
   const confirmDeletePage = (pageUID: string, pageTitle: string) => {
     return confirm(
       `Are you sure you want to **DELETE** the page?\n\n**${pageTitle}**`
@@ -866,7 +897,9 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
           )
     );
   };
-  addCommand("Delete current page (dcp)", async () => {
+  addCommand({
+      label: "Delete current page (dcp)", 
+      callback: async () => {
     const uid = await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
     if ((await get("workBenchDcpConfirm")) == "off") {
       return window.roamAlphaAPI.ui.mainWindow
@@ -876,8 +909,10 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
       const currentPageTitle = getPageTitleByPageUid(uid);
       confirmDeletePage(uid, currentPageTitle);
     }
-  });
-  addCommand("Delete a page using Path Navigator (dap)", async () => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Delete a page using Path Navigator (dap)",
+    callback: async () => {
     promptPathAndCallback({
       valid: true,
       supportPages: true,
@@ -887,57 +922,78 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
         return confirmDeletePage(getPageUidByPageTitle(title), title);
       },
     });
-  });
+  }}, extensionAPI);
 
-  addCommand("Daily Notes (dn)", async () => {
+  addCommand({
+    label: "Daily Notes (dn)", 
+    callback: async () => {
     if (keystate.shiftKey) {
       openBlockInSidebar(window.roamAlphaAPI.util.dateToPageUid(new Date()));
     } else {
       window.roamAlphaAPI.ui.mainWindow.openDailyNotes();
     }
-  });
+  }}, extensionAPI);
   const graphTypes = {
     hosted: "app",
     offline: "offline",
   };
-  addCommand("All Pages", async () => {
+  addCommand({
+    label: "All Pages", 
+    callback: async () => {
     document.location.hash = `#/${graphTypes[window.roamAlphaAPI.graph.type]}/${
       window.roamAlphaAPI.graph.name
     }/search`;
-  });
-  addCommand("Graph Overview", async () => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Graph Overview",
+    callback: async () => {
     document.location.hash = `#/${graphTypes[window.roamAlphaAPI.graph.type]}/${
       window.roamAlphaAPI.graph.name
     }/graph`;
-  });
-  addCommand("Goto next day", async () => {
+  }}, extensionAPI);
+  addCommand({
+    label: "Goto next day", 
+    callback: async () => {
     moveForwardToDate(true);
-  });
-  addCommand("Goto previous day", async () => {
-    moveForwardToDate(false);
-  });
+  }}, extensionAPI);
+  addCommand({
+    label: "Goto previous day", 
+    callback: async () => {
+        moveForwardToDate(false);
+  }}, extensionAPI);
 
-  addCommand("Heading 1", async (uids) => {
-    uids.map((uid) => updateBlock({ uid, heading: 1 }));
-  });
-  addCommand("Heading 2", async (uids) => {
-    uids.map((uid) => updateBlock({ uid, heading: 2 }));
-  });
-  addCommand("Heading 3", async (uids) => {
-    uids.map((uid) => updateBlock({ uid, heading: 3 }));
-  });
+  addCommand({
+    label: "Heading 1",
+    callback: async (uids: any) => {
+    uids.map((uid: any) => updateBlock({ uid, heading: 1 }));
+  }}, extensionAPI);
+  addCommand({
+    label: "Heading 2",
+    callback: async (uids: any) => {
+        uids.map((uid: any) => updateBlock({ uid, heading: 2 }));
+  }}, extensionAPI);
+  addCommand({
+    label: "Heading 3",
+    callback: async (uids: any) => {
+    uids.map((uid: any ) => updateBlock({ uid, heading: 3 }));
+  }}, extensionAPI);
 
   (await userCommands.UserDefinedCommandList()).forEach(({ key, ...item }) => {
-    addCommand(key, (uids) => userCommands.runComand(uids, item));
-  });
-  addCommand("Refresh Inboxes", async () => {
+      addCommand({
+        label: key,
+        callback: (uids: any) => userCommands.runComand(uids, item)
+      }, extensionAPI);
+    });
+  addCommand({
+    label: "Refresh Inboxes", 
+    callback: async () => {
     shutdown();
     initialize(extensionAPI);
-  });
+  }}, extensionAPI);
 
   unloads.add(() => {
     _commands.forEach((c) =>
-      window.roamAlphaAPI.ui.commandPalette.removeCommand({ label: c.display })
+      extensionAPI.ui.commandPalette.removeCommand({ label: c.display })
     );
     _commands.clear();
   });

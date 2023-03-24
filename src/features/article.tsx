@@ -1,6 +1,6 @@
 import registerSmartBlocksCommand from "roamjs-components/util/registerSmartBlocksCommand";
 import getFirstChildUidByBlockUid from "roamjs-components/queries/getFirstChildUidByBlockUid";
-import { addCommand, newAddCommand } from "./workBench";
+import { addCommand } from "./workBench";
 import ReactDOM from "react-dom";
 import React, { ChangeEvent, useCallback, useState, useMemo } from "react";
 import {
@@ -317,7 +317,7 @@ const unloads = new Set<() => void>();
 export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   if (flag) {
     unloads.add(
-      newAddCommand(
+      addCommand(
         {
           label: "Import Article Into Roam",
           callback: () =>
@@ -328,19 +328,6 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
         extensionAPI
       )
     );
-
-    const keydownListener = async (e: KeyboardEvent) => {
-      if (e.altKey && e.shiftKey && (e.key === "I" || e.code === "KeyI")) {
-        const target = e.target as HTMLElement;
-        if (target.tagName === "TEXTAREA") {
-          const value = (target as HTMLTextAreaElement).value;
-          const { blockUid } = getUidsFromId(target.id);
-          await inlineImportArticle({ value, parentUid: blockUid });
-        }
-      }
-    };
-    document.addEventListener("keydown", keydownListener);
-    unloads.add(() => document.removeEventListener("keydown", keydownListener));
 
     unloads.add(
       registerSmartBlocksCommand({

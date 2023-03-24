@@ -22,7 +22,7 @@ import {
   enabled as dnpEnabled,
 } from "./dailyNotesPopup";
 import { enabled as typeAheadEnabled, typeAheadLookup } from "./dictionary";
-import { addCommand, newAddCommand } from "./workBench";
+import { addCommand } from "./workBench";
 import {
   enabled as privacyEnabled,
   active as privacyActive,
@@ -1236,7 +1236,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
       // fix from sidebar moving
     });
     workbenchCommands.add(
-      newAddCommand(
+      addCommand(
         {
           label: "WorkBench Help",
           callback: toggleQuickReference,
@@ -1245,7 +1245,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
       )
     );
     workbenchCommands.add(
-      newAddCommand(
+      addCommand(
         {
           label: "Tutorials",
           callback: showTutorials,
@@ -1254,7 +1254,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
       )
     );
     workbenchCommands.add(
-      newAddCommand(
+      addCommand(
         {
           label: "Graph DB Stats",
           callback: displayGraphStats,

@@ -2,7 +2,7 @@ import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
-import { addCommand, newAddCommand } from "./workBench";
+import { addCommand } from "./workBench";
 import React, {
   useCallback,
   useState,
@@ -262,7 +262,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
   enabled = flag;
   if (enabled) {
     unloads.add(
-      newAddCommand(
+      addCommand(
         {
           label: "Create New Alert",
           callback: createNewAlert,
@@ -271,7 +271,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
       )
     );
     unloads.add(
-      newAddCommand(
+      addCommand(
         {
           label: "View Current Alerts",
           callback: openAlertDashboard,
