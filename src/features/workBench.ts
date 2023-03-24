@@ -31,6 +31,7 @@ import getUidsFromId from "roamjs-components/dom/getUidsFromId";
 import getBlockUidsReferencingPage from "roamjs-components/queries/getBlockUidsReferencingPage";
 import createTagRegex from "roamjs-components/util/createTagRegex";
 import registerSmartBlocksCommand from "roamjs-components/util/registerSmartBlocksCommand";
+import type { OnloadArgs } from "roamjs-components/types/native";
 
 export let active = false;
 
@@ -250,7 +251,7 @@ export const addCommand = (
 };
 
 // testing
-export const newAddCommand = (args: AddCommandOptions, extensionAPI: any) => {
+export const newAddCommand = (args: AddCommandOptions, extensionAPI: OnloadArgs["extensionAPI"]) => {
   const display = "(WB) " + args.label;
   const options = { 
     label: display,
@@ -271,7 +272,7 @@ export const newAddCommand = (args: AddCommandOptions, extensionAPI: any) => {
   }
 }
 
-export const removeCommand = (label: string, extensionAPI: any) => {
+export const removeCommand = (label: string, extensionAPI: OnloadArgs["extensionAPI"]) => {
   extensionAPI.ui.commandPalette.removeCommand({label});
 }
 
@@ -545,7 +546,7 @@ const pullReferences = async (uids: string[], removeTags?: boolean) => {
 };
 
 const unloads = new Set<() => void>();
-export const initialize = async () => {
+export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
   // Commands are ordered in line with the docs at: https://roamjs.com/extensions/workbench/command_palette_plus
   addCommand("Move Block(s) - to top (mbt)", async (uids) => {
     promptMoveBlocks({ uids, getBase: () => 0 });
@@ -931,7 +932,7 @@ export const initialize = async () => {
   });
   addCommand("Refresh Inboxes", async () => {
     shutdown();
-    initialize();
+    initialize(extensionAPI);
   });
 
   unloads.add(() => {
@@ -957,8 +958,8 @@ export const shutdown = () => {
   unloads.clear();
 };
 
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   active = flag;
-  if (flag) initialize();
+  if (flag) initialize(extensionAPI);
   else shutdown();
 };

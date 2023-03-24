@@ -38,6 +38,7 @@ import {
   navigate as triggerDeepNav,
 } from "./deepnav";
 import quickReference from "../data/quickReference";
+import type { OnloadArgs } from "roamjs-components/types";
 
 const TutorialOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
   const [bigPictureLink, setBigPictureLink] = useState("");
@@ -1226,7 +1227,7 @@ export const setVersion = (v: string) => {
 const workbenchCommands = new Set<() => void>();
 let topbarObserver: MutationObserver;
 export let enabled = false;
-export const toggleFeature = (flag: boolean, extensionAPI: any) => {
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   enabled = flag;
 
   if (flag) {

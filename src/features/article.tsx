@@ -1,6 +1,6 @@
 import registerSmartBlocksCommand from "roamjs-components/util/registerSmartBlocksCommand";
 import getFirstChildUidByBlockUid from "roamjs-components/queries/getFirstChildUidByBlockUid";
-import { addCommand } from "./workBench";
+import { addCommand, newAddCommand } from "./workBench";
 import ReactDOM from "react-dom";
 import React, { ChangeEvent, useCallback, useState, useMemo } from "react";
 import {
@@ -19,7 +19,7 @@ import { Readability } from "@mozilla/readability";
 import TurndownService from "turndown";
 import iconv from "iconv-lite";
 import charset from "charset";
-import { InputTextNode } from "roamjs-components/types/native";
+import { InputTextNode, OnloadArgs } from "roamjs-components/types/native";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import createBlock from "roamjs-components/writes/createBlock";
 import getUidsFromId from "roamjs-components/dom/getUidsFromId";
@@ -314,13 +314,18 @@ const inlineImportArticle = async ({
 };
 
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   if (flag) {
     unloads.add(
-      addCommand("Import Article Into Roam", () =>
-        renderImportArticle(
-          window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"]
-        )
+      newAddCommand(
+        {
+          label: "Import Article Into Roam",
+          callback: () =>
+            renderImportArticle(
+              window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"]
+            ),
+        },
+        extensionAPI
       )
     );
 

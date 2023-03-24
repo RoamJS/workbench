@@ -23,6 +23,7 @@ import {
 } from "@blueprintjs/core";
 import parseNlpDate from "roamjs-components/date/parseNlpDate";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
+import type { OnloadArgs } from "roamjs-components/types";
 
 type AlertContent = {
   when: string;
@@ -257,7 +258,7 @@ const openAlertDashboard = () =>
   renderOverlay({ id: "alert-dashboard", Overlay: AlertDashboard });
 
 let enabled = false;
-export const toggleFeature = (flag: boolean, extensionAPI: any) => {
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   enabled = flag;
   if (enabled) {
     unloads.add(
