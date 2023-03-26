@@ -314,13 +314,13 @@ const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
 export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"] ) => {
   if (flag) {
     extensionAPI.ui.commandPalette.addCommand({
-      label: "Toggle Block Decorators",
+      label: "(WB) Toggle Block Decorators",
       callback: () => renderOverlay({ Overlay: DecoratorSettings}),
     });
     toggleDecorations(true);
   } else {
     extensionAPI.ui.commandPalette.removeCommand({
-      label: "Toggle Block Decorators",
+      label: "(WB) Toggle Block Decorators",
     });
     unloads.forEach((u) => u());
     unloads.clear();
