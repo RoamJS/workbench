@@ -1229,7 +1229,6 @@ let topbarObserver: MutationObserver;
 export let enabled = false;
 export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   enabled = flag;
-
   if (flag) {
     displayMenu();
     topbarObserver = new MutationObserver(() => {
