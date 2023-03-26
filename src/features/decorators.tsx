@@ -48,6 +48,7 @@ import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBloc
 import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
 import createBlockObserver from "roamjs-components/dom/createBlockObserver";
 import getReferenceBlockUid from "roamjs-components/dom/getReferenceBlockUid";
+import type { OnloadArgs } from "roamjs-components/types";
 
 const TODO_REGEX = /{{(\[\[)?TODO(\]\])?}}\s*/;
 
@@ -263,7 +264,7 @@ const settings = [
   "Context Enabled",
   "Hex Color Preview Enabled",
 ] as const;
-const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
+const DecoratorSettings = ({ isOpen, onClose, extensionAPI }: RoamOverlayProps) => {
   const [opts, setOpts] = useState(() =>
     JSON.parse(localStorageGet("decorators") || "{}")
   );
@@ -295,8 +296,8 @@ const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
             text={"Save"}
             onClick={() => {
               localStorageSet("decorators", JSON.stringify(opts));
-              toggleFeature(false);
-              toggleFeature(true);
+              toggleFeature(false, extensionAPI);
+              toggleFeature(true, extensionAPI);
               renderToast({
                 content: "Successfully saved new decorators!",
                 id: "decorators-saved",
@@ -311,15 +312,15 @@ const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
 };
 
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"] ) => {
   if (flag) {
     const archivedDefault = !!get("decoratorsMoveArchives"); // Improve the UX for this if feature is re-requested
-    window.roamAlphaAPI.ui.commandPalette.addCommand({
+    extensionAPI.ui.commandPalette.addCommand({
       label: "Toggle Block Decorators",
-      callback: () => renderOverlay({ Overlay: DecoratorSettings }),
+      callback: () => renderOverlay({ Overlay: DecoratorSettings, props: { extensionAPI } }),
     });
     unloads.add(() =>
-      window.roamAlphaAPI.ui.commandPalette.removeCommand({
+    extensionAPI.ui.commandPalette.removeCommand({
         label: "Toggle Block Decorators",
       })
     );
