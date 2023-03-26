@@ -1,0 +1,210 @@
+# Query: f
+
+src\features\alert.tsx:
+  // 263:     unloads.add(addCommand("Create New Alert", createNewAlert));
+  // 264:     unloads.add(addCommand("View Current Alerts", openAlertDashboard));
+
+src\features\article.tsx:
+  // 320:       addCommand("Import Article Into Roam", () =>
+
+src\features\decorators.tsx:
+  316      const archivedDefault = !!get("decoratorsMoveArchives"); // Improve the UX for this if feature is re-requested
+  317:     window.roamAlphaAPI.ui.commandPalette.addCommand({
+  318        label: "Toggle Block Decorators",
+
+src\features\formatConverter.tsx:
+   19  import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
+   20: import { addCommand } from "./workBench";
+   21  import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
+
+  675    if (flag) {
+  676:     workbenchCommands.add(addCommand("Format Converter (alt-m)", show));
+  677:     workbenchCommands.add(addCommand("Web View (alt-shift-m)", htmlview));
+  678      document.addEventListener("keydown", keyDownListener);
+
+src\features\mindmap.tsx:
+    5  import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
+    6: import { addCommand } from "./workBench";
+    7  import renderOverlay, {
+
+  442      unloads.add(
+  443:       addCommand("Open Mindmap", () => {
+  444          renderOverlay({
+
+src\features\privacyMode.ts:
+    8  import createTagRegex from "roamjs-components/util/createTagRegex";
+    9: import { addCommand } from "./workBench";
+   10  
+
+  306      );
+  307:     wbCommand = addCommand("Privacy Mode (alt-shift-p)", toggle);
+  308    } else {
+
+src\features\tutorials.tsx:
+    24  import { enabled as typeAheadEnabled, typeAheadLookup } from "./dictionary";
+    25: import { addCommand } from "./workBench";
+    26  import {
+
+  1258      });
+  // 1259:     workbenchCommands.add(addCommand("WorkBench Help", toggleQuickReference));
+  // 1260:     workbenchCommands.add(addCommand("Tutorials", showTutorials));
+  // 1261:     workbenchCommands.add(addCommand("Graph DB Stats", displayGraphStats));
+  // 1262      document.body.addEventListener("keydown", keyDownListener);
+
+src\features\workBench.ts:
+  220  
+  221: export const addCommand = (
+  222    textToDisplay: string,
+
+  239    const display = "(WB) " + textToDisplay;
+  240:   window.roamAlphaAPI.ui.commandPalette.addCommand({
+  241      label: display,
+
+  523    // Commands are ordered in line with the docs at: https://roamjs.com/extensions/workbench/command_palette_plus
+  524:   addCommand("Move Block(s) - to top (mbt)", async (uids) => {
+  525      promptMoveBlocks({ uids, getBase: () => 0 });
+  526    });
+  527:   addCommand("Move Block(s) - to bottom (mbb)", async (uids) => {
+  528      promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid });
+  529    });
+  530:   addCommand("Move Block(s) - DNP (mbdnp)", async (uids) => {
+  531      const dateExpression = await prompt({
+
+  559    });
+  560:   addCommand("Move Block(s) - to top with block Ref (mbtr)", async (uids) => {
+  561      await leaveBlockReferences({ uids });
+
+  563    });
+  564:   addCommand(
+  565      "Move Block(s) - to bottom with block ref (mbbr)",
+
+  570    );
+  571:   addCommand("Move Block(s) - to top & zoom (mbtz)", async (uids) => {
+  572      promptMoveBlocks({ uids, getBase: () => 0 }).then(
+
+  579    });
+  580:   addCommand("Move Block(s) - to bottom & zoom (mbbz)", async (uids) => {
+  581      promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
+
+  588    });
+  589:   addCommand("Move Block(s) - to top & sidebar (mbts)", async (uids) => {
+  590      promptMoveBlocks({ uids, getBase: () => 0 }).then(
+
+  593    });
+  594:   addCommand("Move Block(s) - to bottom & sidebar (mbbs)", async (uids) => {
+  595      promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
+
+  598    });
+  599:   addCommand("Send block ref - to top (sbrt)", async (uids) => {
+  600      promptMoveRefs({ uids, getBase: () => 0 });
+  601    });
+  602:   addCommand("Send block refs - to bottom (sbrb)", async (uids) => {
+  603      promptMoveRefs({ uids, getBase: getChildrenLengthByParentUid });
+
+  605  
+  606:   addCommand("Pull block (pbb)", async (uids) => {
+  607      promptPullBlock(uids);
+  608    });
+  609:   addCommand("Pull block and leave block ref (pbr)", async (uids) => {
+  610      promptPullBlock(uids, true);
+  611    });
+  612:   addCommand("Pull child blocks  (pcb)", async (uids) => {
+  613      promptPullChildBlocks(uids);
+  614    });
+  615:   addCommand("Pull child block and leave block ref (pcr)", async (uids) => {
+  616      promptPullChildBlocks(uids, true);
+  617    });
+  618:   addCommand("Pull references (prf)", async (uids) => {
+  619      pullReferences(uids).then(async (bts) => {
+
+  636    });
+  637:   addCommand("Pull references and remove old refs (prr)", async (uids) => {
+  638      pullReferences(uids, true).then(async (bts) => {
+
+  656  
+  657:   addCommand("Jump to Block in page (jbp)", async () => {
+  658      promptPathAndCallback({
+
+  670    });
+  671:   addCommand("Copy Block Reference", async (uids) => {
+  672      window.navigator.clipboard.writeText(`((${uids[0] || ""}))`);
+  673    });
+  674:   addCommand("Copy Block Reference as alias", async (uids) => {
+  675      window.navigator.clipboard.writeText(`[*](((${uids[0] || ""})))`);
+  676    });
+  677:   addCommand("Sort Child Blocks", async (uids) => {
+  678      Promise.all(
+
+  694  
+  695:   addCommand("Sidebars - swap with main window (swap)", async () => {
+  696      swapWithSideBar();
+  697    });
+  698:   addCommand(
+  699      "Sidebars - swap with main window & choose window (swc)",
+
+  753    );
+  754:   addCommand(
+  755      "Right Sidebar - close window panes (rscwp)",
+
+  769    );
+  770:   addCommand(
+  771      "Sidebars - open both (sob)",
+
+  779    );
+  780:   addCommand(
+  781      "Sidebars - close both (scb)",
+
+  789    );
+  790:   addCommand("Open Page (opp)", async () => {
+  791      promptPathAndCallback({
+
+  799    });
+  800:   addCommand("Open Page in Sidebar (ops)", async () => {
+  801      promptPathAndCallback({
+
+  807  
+  808:   addCommand("Create a page (cap)", async () => {
+  809      prompt({
+
+  841    };
+  842:   addCommand("Delete current page (dcp)", async () => {
+  843      const uid = await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+
+  852    });
+  853:   addCommand("Delete a page using Path Navigator (dap)", async () => {
+  854      promptPathAndCallback({
+
+  864  
+  865:   addCommand("Daily Notes (dn)", async () => {
+  866      if (keystate.shiftKey) {
+
+  875    };
+  876:   addCommand("All Pages", async () => {
+  877      document.location.hash = `#/${graphTypes[window.roamAlphaAPI.graph.type]}/${
+
+  880    });
+  881:   addCommand("Graph Overview", async () => {
+  882      document.location.hash = `#/${graphTypes[window.roamAlphaAPI.graph.type]}/${
+
+  885    });
+  886:   addCommand("Goto next day", async () => {
+  887      moveForwardToDate(true);
+  888    });
+  889:   addCommand("Goto previous day", async () => {
+  890      moveForwardToDate(false);
+
+  892  
+  893:   addCommand("Heading 1", async (uids) => {
+  894      uids.map((uid) => updateBlock({ uid, heading: 1 }));
+  895    });
+  896:   addCommand("Heading 2", async (uids) => {
+  897      uids.map((uid) => updateBlock({ uid, heading: 2 }));
+  898    });
+  899:   addCommand("Heading 3", async (uids) => {
+  900      uids.map((uid) => updateBlock({ uid, heading: 3 }));
+
+  903    (await userCommands.UserDefinedCommandList()).forEach(({ key, ...item }) => {
+  904:     addCommand(key, (uids) => userCommands.runComand(uids, item));
+  905    });
+  906:   addCommand("Refresh Inboxes", async () => {
+  907      shutdown();

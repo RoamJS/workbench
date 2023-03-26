@@ -264,7 +264,7 @@ const settings = [
   "Context Enabled",
   "Hex Color Preview Enabled",
 ] as const;
-const DecoratorSettings = ({ isOpen, onClose, extensionAPI }: RoamOverlayProps) => {
+const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
   const [opts, setOpts] = useState(() =>
     JSON.parse(localStorageGet("decorators") || "{}")
   );
@@ -296,8 +296,8 @@ const DecoratorSettings = ({ isOpen, onClose, extensionAPI }: RoamOverlayProps) 
             text={"Save"}
             onClick={() => {
               localStorageSet("decorators", JSON.stringify(opts));
-              toggleFeature(false, extensionAPI);
-              toggleFeature(true, extensionAPI);
+              toggleDecorations(false);
+              toggleDecorations(true);
               renderToast({
                 content: "Successfully saved new decorators!",
                 id: "decorators-saved",
@@ -311,19 +311,27 @@ const DecoratorSettings = ({ isOpen, onClose, extensionAPI }: RoamOverlayProps) 
   );
 };
 
-const unloads = new Set<() => void>();
 export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"] ) => {
   if (flag) {
-    const archivedDefault = !!get("decoratorsMoveArchives"); // Improve the UX for this if feature is re-requested
     extensionAPI.ui.commandPalette.addCommand({
       label: "Toggle Block Decorators",
-      callback: () => renderOverlay({ Overlay: DecoratorSettings, props: { extensionAPI } }),
+      callback: () => renderOverlay({ Overlay: DecoratorSettings}),
     });
-    unloads.add(() =>
+    toggleDecorations(true);
+  } else {
     extensionAPI.ui.commandPalette.removeCommand({
-        label: "Toggle Block Decorators",
-      })
-    );
+      label: "Toggle Block Decorators",
+    });
+    unloads.forEach((u) => u());
+    unloads.clear();
+  }
+};
+
+const unloads = new Set<() => void>();
+export const toggleDecorations = (flag: boolean) => {
+  if (flag) {
+    const archivedDefault = !!get("decoratorsMoveArchives"); // Improve the UX for this if feature is re-requested
+    
     const opts = JSON.parse(localStorageGet("decorators") || "{}") as Record<
       typeof settings[number],
       boolean
