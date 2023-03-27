@@ -453,9 +453,12 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
 
 
 const toggleFocus = () => {
-  const popup = (window.getSelection().getRangeAt(0).commonAncestorContainer as Element).closest(
-    ".roamjs-daily-notes-popup"
-  );
+    const popup = (window.getSelection().getRangeAt(0).commonAncestorContainer as Element)
+      instanceof Element
+      ? (window.getSelection().getRangeAt(0).commonAncestorContainer as Element).closest(
+          ".roamjs-daily-notes-popup"
+        )
+      : null;
   if (!popup) {
     const firstPopupBlock = document.querySelector<HTMLDivElement>(
       ".roamjs-daily-notes-popup .rm-block-children .roam-block"
