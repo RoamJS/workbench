@@ -9,6 +9,8 @@ import getFirstChildUidByBlockUid from "roamjs-components/queries/getFirstChildU
 import createBlock from "roamjs-components/writes/createBlock";
 import getUids from "roamjs-components/dom/getUids";
 import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
+import type { OnloadArgs } from "roamjs-components/types";
+import { addCommand } from "./workBench";
 
 let observerHeadings: MutationObserver = undefined;
 let closeDailyNotesPopup: () => void;
@@ -84,7 +86,7 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
   const [left, setLeft] = useState(loc.left);
   useEffect(() => {
     if (containerRef.current && !minimizedRef.current) {
-      window.roamAlphaAPI.ui.components.renderBlock({
+      window.roamAlphaAPI.ui.components.renderPage({
         el: containerRef.current,
         uid: pageUid,
       });
@@ -175,55 +177,43 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
       <div style={{ top, left }}>
         <style>
           {`.roamjs-daily-notes-popup {
-  background: transparent;
-  width: auto;
-}
+            background: transparent;
+            width: auto;
+          }
 
-.roamjs-daily-notes-popup .bp3-dialog-header {
-  cursor: move;
-  padding: 8px 16px;
-  background: transparent;
-  color: transparent;
-  
-  .bp3-icon {
-    color: transparent;
-  }
-}
+          .roamjs-daily-notes-popup .bp3-dialog-header {
+            cursor: move;
+            padding: 8px 16px;
+            background: transparent;
+            color: transparent;
+            
+            .bp3-icon {
+              color: transparent;
+            }
+          }
 
-.roamjs-daily-notes-popup .bp3-dialog-header .bp3-icon {
-  color: transparent;
-}
+          .roamjs-daily-notes-popup .bp3-dialog-header .bp3-icon {
+            color: transparent;
+          }
 
-.roamjs-daily-notes-popup .bp3-dialog-header:hover,
-.roamjs-daily-notes-popup.roamjs-daily-notes-dragging .bp3-dialog-header {
-  background: #565c70;
-  color: white;
+          .roamjs-daily-notes-popup .bp3-dialog-header:hover,
+          .roamjs-daily-notes-popup.roamjs-daily-notes-dragging .bp3-dialog-header {
+            background: #565c70;
+            color: white;
 
-  .bp3-icon {
-    color: white;
-  }
-}
+            .bp3-icon {
+              color: white;
+            }
+          }
 
-.roamjs-daily-notes-popup .bp3-dialog-header:hover .bp3-icon,
-.roamjs-daily-notes-popup.roamjs-daily-notes-dragging .bp3-dialog-header .bp3-icon {
-  color: white;
-}
+          .roamjs-daily-notes-popup .bp3-dialog-header:hover .bp3-icon,
+          .roamjs-daily-notes-popup.roamjs-daily-notes-dragging .bp3-dialog-header .bp3-icon {
+            color: white;
+          }
 
-.roamjs-dialog-body > .rm-block > .rm-block-main {
-  display: none;
-}
-
-.roamjs-dialog-body > .rm-block > .rm-block-children > .rm-multibar {
-  display: none;
-}
-
-.roamjs-dialog-body > .rm-block > .rm-block-children {
-  margin-left: 0;
-}
-
-.roamjs-daily-notes-popup .bp3-overlay-content {
-  box-shadow: 0 19px 38px rgb(0 0 0 / 30%), 0 15px 12px rgb(0 0 0 / 22%);
-}`}
+          .roamjs-daily-notes-popup .bp3-overlay-content {
+            box-shadow: 0 19px 38px rgb(0 0 0 / 30%), 0 15px 12px rgb(0 0 0 / 22%);
+          }`}
         </style>
         <div
           tabIndex={-1}
@@ -454,87 +444,67 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           className={`bg-white overflow-auto dnp-content`}
           style={{ width, height }}
         >
-          <h1 className={"text-bold text-4xl mb-8 mt-0 pt-6 pl-6"}>
-            {window.roamAlphaAPI.util.dateToPageTitle(new Date())}
-          </h1>
-          <div className={`roamjs-dialog-body`} ref={containerRef} />
+          <div className={`roamjs-dialog-body pr-6 pl-6`} ref={containerRef} />
         </div>
       </div>
     </Overlay>
   );
 };
 
-const listener = (ev: KeyboardEvent) => {
-  if (ev.altKey && ev.shiftKey && (ev.key == "¯" || ev.code == "Comma")) {
-    if (ev.ctrlKey) {
-      const popup = (ev.target as HTMLElement).closest(
-        ".roamjs-daily-notes-popup"
-      );
-      if (!popup) {
-        const firstPopupBlock = document.querySelector<HTMLDivElement>(
-          ".roamjs-daily-notes-popup .rm-block-children .roam-block"
-        );
-        if (firstPopupBlock) {
-          const { blockUid, windowId } = getUids(firstPopupBlock);
-          window.roamAlphaAPI.ui.setBlockFocusAndSelection({
-            location: { "block-uid": blockUid, "window-id": windowId },
-          });
-          ev.preventDefault();
-          ev.stopPropagation();
-        }
-      } else {
-        const firstMainBlock = document.querySelector<HTMLDivElement>(
-          ".roam-article .roam-block"
-        );
-        if (firstMainBlock) {
-          const { blockUid, windowId } = getUids(firstMainBlock);
-          window.roamAlphaAPI.ui.setBlockFocusAndSelection({
-            location: { "block-uid": blockUid, "window-id": windowId },
-          });
-          ev.preventDefault();
-          ev.stopPropagation();
-        }
-      }
-    } else {
-      ev.preventDefault();
-      ev.stopPropagation();
-      component.toggleVisible();
-    }
-    return;
-  }
 
-  if (ev.ctrlKey && ev.shiftKey && ev.code == "Comma") {
-    ev.preventDefault();
-    ev.stopPropagation();
-    moveForwardToDate(false);
-    return true;
-  }
-
-  if (ev.ctrlKey && ev.shiftKey && ev.code == "Period") {
-    ev.preventDefault();
-    ev.stopPropagation();
-    moveForwardToDate(true);
-    return true;
-  }
-
-  if (ev.altKey && ev.shiftKey && ev.code == "KeyJ") {
-    ev.preventDefault();
-    const roamNativeDate = document.querySelector<HTMLSpanElement>(
-      "div.rm-topbar span.bp3-icon-calendar"
+const toggleFocus = () => {
+  const popup = (window.getSelection().getRangeAt(0).commonAncestorContainer as Element).closest(
+    ".roamjs-daily-notes-popup"
+  );
+  if (!popup) {
+    const firstPopupBlock = document.querySelector<HTMLDivElement>(
+      ".roamjs-daily-notes-popup .rm-block-children .roam-block"
     );
-    if (roamNativeDate) {
-      roamNativeDate.click();
-      setTimeout(() => {
-        const day = new Date().getDate();
-        const dayEl = Array.from(
-          document.querySelectorAll<HTMLSpanElement>(".DayPicker-Day")
-        ).find((d) => d.innerText === `${day}`);
-        dayEl?.focus?.();
-      }, 1);
+    if (firstPopupBlock) {
+      const { blockUid, windowId } = getUids(firstPopupBlock);
+      window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+        location: { "block-uid": blockUid, "window-id": windowId },
+      });
     }
-    return true;
+  } else {
+    const firstMainBlock = document.querySelector<HTMLDivElement>(
+      ".roam-article .roam-block"
+    );
+    if (firstMainBlock) {
+      const { blockUid, windowId } = getUids(firstMainBlock);
+      window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+        location: { "block-uid": blockUid, "window-id": windowId },
+      });
+    }
   }
 };
+const toggleDNPPopup = () => {
+    component.toggleVisible();
+};
+const jumpDateForward = () => {
+    moveForwardToDate(false);
+    return true;
+};
+const jumpDateBack = () => {
+    moveForwardToDate(true);
+    return true;
+};
+const jumpDateIcon = () => {
+  const roamNativeDate = document.querySelector<HTMLSpanElement>(
+    "div.rm-topbar span.bp3-icon-calendar"
+  );
+  if (roamNativeDate) {
+    roamNativeDate.click();
+    setTimeout(() => {
+      const day = new Date().getDate();
+      const dayEl = Array.from(
+        document.querySelectorAll<HTMLSpanElement>(".DayPicker-Day")
+      ).find((d) => d.innerText === `${day}`);
+      dayEl?.focus?.();
+    }, 1);
+  }
+  return true;
+}
 
 export const component = {
   async initialize() {
@@ -626,8 +596,6 @@ export const component = {
         subtree: true,
       });
     }
-
-    document.body.addEventListener("keydown", listener);
   },
 
   saveUIChanges(UIValues: {
@@ -656,13 +624,60 @@ export const component = {
   },
 };
 
+let unloads = new Set<() => void>();
 export let enabled = false;
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   enabled = flag;
   if (flag) {
+    unloads.add(
+      addCommand(
+        {
+          label: `Daily Notes Popup`,
+          callback: toggleDNPPopup,
+        },
+        extensionAPI
+      )
+    );
+    unloads.add(
+      addCommand(
+        {
+          label: `Daily Notes Popup - Toggle Focus`,
+          callback: toggleFocus,
+        },
+        extensionAPI
+      )
+    );
+    unloads.add(
+      addCommand(
+        {
+          label: `DNP Jump Date Forward`,
+          callback: jumpDateForward,
+        },
+        extensionAPI
+      )
+    );
+    unloads.add(
+      addCommand(
+        {
+          label: `DNP Jump Date Backward`,
+          callback: jumpDateBack,
+        },
+        extensionAPI
+      )
+    );
+    unloads.add(
+      addCommand(
+        {
+          label: `DNP Jump To Date`,
+          callback: jumpDateIcon,
+        },
+        extensionAPI
+      )
+    );
     component.initialize();
   } else {
-    document.body.removeEventListener("keydown", listener);
     observerHeadings?.disconnect();
+    unloads.forEach((u) => u());
+    unloads.clear();
   }
 };
