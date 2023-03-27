@@ -792,7 +792,7 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
       if (paneToSwap != null && paneToSwap != "") {
         const paneToSwapVal = Number(paneToSwap);
         if (
-          paneToSwapVal != NaN &&
+          !Number.isNaN(paneToSwapVal) &&
           paneToSwapVal > 0 &&
           paneToSwapVal <= panes.length
         )

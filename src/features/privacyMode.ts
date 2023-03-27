@@ -263,14 +263,6 @@ export const toggle = async () => {
   }
 };
 
-const keyDownListener = (ev: KeyboardEvent) => {
-  if (ev.shiftKey && ev.altKey && ev.code == "KeyP") {
-    ev.stopPropagation();
-    ev.preventDefault();
-    toggle();
-    return true;
-  }
-};
 export let enabled = false;
 
 let wbCommand: () => void;
@@ -285,23 +277,22 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
     ) {
       createPage({ title: roamPageWithPrivacyList });
     }
-    document.body.addEventListener("keydown", keyDownListener);
     addStyle(
-      `.${privacyClassName}, .${privacyClassName} * {
-  color: transparent !important;
-  background: transparent !important;
-  border-left: black !important;
-}
+        `.${privacyClassName}, .${privacyClassName} * {
+        color: transparent !important;
+        background: transparent !important;
+        border-left: black !important;
+      }
 
-.${privacyClassName}, .${privacyClassName} *::before {
-  content: none !important;
-  color: transparent !important;
-  background: black !important;
-}
+      .${privacyClassName}, .${privacyClassName} *::before {
+        content: none !important;
+        color: transparent !important;
+        background: black !important;
+      }
 
-.${privacyClassName} img {
-  display:none;
-}`,
+      .${privacyClassName} img {
+        display:none;
+      }`,
       "workbench-privacy-css"
     );
     wbCommand = addCommand({
@@ -310,7 +301,6 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
   } else {
     toggleOff();
     wbCommand?.();
-    document.body.removeEventListener("keydown", keyDownListener);
     document.getElementById("workbench-privacy-css")?.remove();
   }
 };
