@@ -23,6 +23,8 @@ import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
 import useArrowKeyDown from "roamjs-components/hooks/useArrowKeyDown";
+import type { OnloadArgs } from "roamjs-components/types";
+import { addCommand } from "./workBench";
 
 // copied + pasted Autocomplete Input from RoamJS components bc there were
 // a couple of minor differences that made it hard to use in this case
@@ -199,21 +201,23 @@ export const typeAheadLookup = () => {
   renderOverlay({ Overlay: TypeAhead, props: { uid } });
 };
 
-const keydownListener = (ev: KeyboardEvent) => {
-  if (ev.altKey && ev.shiftKey && (ev.code == "Period" || ev.key == "˘")) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    typeAheadLookup();
-  }
-};
-
-export const toggleFeature = (flag: boolean) => {
+const unloads = new Set<() => void>();
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   enabled = flag;
   if (flag) {
-    document.addEventListener("keydown", keydownListener);
+    unloads.add(
+      addCommand(
+        {
+          label: "Dictionary Lookup",
+          callback: () => typeAheadLookup(),
+        },
+        extensionAPI
+      )
+    );
   } else {
     document.getElementById("rmSearch")?.remove?.();
-    document.removeEventListener("keydown", keydownListener);
+    unloads.forEach((u) => u());
+    unloads.clear();
   }
 };
 

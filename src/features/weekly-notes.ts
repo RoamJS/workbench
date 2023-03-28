@@ -8,7 +8,7 @@ import TextPanel from "roamjs-components/components/ConfigPanels/TextPanel";
 import FlagPanel from "roamjs-components/components/ConfigPanels/FlagPanel";
 import getSettingValueFromTree from "roamjs-components/util/getSettingValueFromTree";
 import { render } from "roamjs-components/components/Toast";
-import type { TreeNode } from "roamjs-components/types/native";
+import type { OnloadArgs, TreeNode } from "roamjs-components/types/native";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
 import getPageTitleValueByHtmlElement from "roamjs-components/dom/getPageTitleValueByHtmlElement";
 import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
@@ -17,6 +17,7 @@ import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTit
 import toFlexRegex from "roamjs-components/util/toFlexRegex";
 import createBlock from "roamjs-components/writes/createBlock";
 import createPage from "roamjs-components/writes/createPage";
+import { addCommand } from "./workBench";
 
 const ID = "weekly-notes";
 const DAYS = [
@@ -107,7 +108,7 @@ const navigateToPage = (pageName: string) => {
 };
 
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   if (flag) {
     createConfigObserver({
       title: CONFIG,
@@ -161,19 +162,15 @@ export const toggleFeature = (flag: boolean) => {
       navigateToPage(pageName);
     };
 
-    const keydownListener = (e: KeyboardEvent) => {
-      if (
-        e.code === "KeyW" &&
-        (e.altKey ||
-          (e.ctrlKey && e.shiftKey && !window.roamAlphaAPI.platform.isIOS))
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        goToThisWeek();
-      }
-    };
-    document.addEventListener("keydown", keydownListener);
-    unloads.add(() => document.removeEventListener("keydown", keydownListener));
+    unloads.add(
+      addCommand(
+        {
+          label: "Go To Weekly Note",
+          callback: () => goToThisWeek()
+        },
+        extensionAPI
+      )
+    );
 
     const getFormatDateData = (title: string) => {
       const format = getFormat();
