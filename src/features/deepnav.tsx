@@ -842,13 +842,21 @@ const handleNavigateKey = (ev: KeyboardEvent) => {
   }
 };
 
-const callback = (
-  // e: Event
+const getHTMLElementFromUid = (uid: string) => {
+  const element = document.querySelector(`[id*="${uid}"]`) as HTMLElement;
+  if (!element) {
+    throw new Error(`No element found for uid ${uid}`);
+  }
+  return element;
+};
+
+const activeDeepNav = (
+  e: any // fixme
   ) => {
-  // const inputTarget = getInputTarget(e);
-  // if (inputTarget) {
-    // inputTarget.blur();
-  // } 
+  const element = e[0] ? getHTMLElementFromUid(e[0]) : null;
+  if (element) {
+    element.blur();
+  } 
   window.addEventListener("keydown", keyDownListener);
   navigate();
 }
@@ -882,7 +890,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
       addCommand(
         {
           label: "Deep Nav",
-          callback: callback
+          callback: activeDeepNav
         },
         extensionAPI
       )
