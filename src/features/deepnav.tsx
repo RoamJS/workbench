@@ -4,11 +4,9 @@ import addStyle from "roamjs-components/dom/addStyle";
 import ReactDOM from "react-dom";
 import getUids from "roamjs-components/dom/getUids";
 import { OnloadArgs, SidebarWindowInput } from "roamjs-components/types";
-import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import createBlock from "roamjs-components/writes/createBlock";
 import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
 import React from "react";
-import getPageTitleValueByHtmlElement from "roamjs-components/dom/getPageTitleValueByHtmlElement";
 import { addCommand } from "./workBench";
 
 type Breadcrumbs = { hash: string; title: string; uid?: string }[];
@@ -51,8 +49,8 @@ const breadcrumbs: Breadcrumbs = [];
 
 let isNavigating = false;
 
-const getInputTarget = (ev: Event) => {
-  const element = ev.target as HTMLElement;
+const checkActiveElement = () => {
+  const element = document.activeElement as HTMLElement;
   if (
     element.tagName == "INPUT" ||
     element.tagName == "SELECT" ||
@@ -842,28 +840,18 @@ const handleNavigateKey = (ev: KeyboardEvent) => {
   }
 };
 
-const getHTMLElementFromUid = (uid: string) => {
-  const element = document.querySelector(`[id*="${uid}"]`) as HTMLElement;
-  if (!element) {
-    throw new Error(`No element found for uid ${uid}`);
+const activeDeepNav = () => {
+  const inputTarget = checkActiveElement();
+  if (inputTarget) {
+    inputTarget.blur();
   }
-  return element;
-};
-
-const activeDeepNav = (
-  e: any // fixme
-  ) => {
-  const element = e[0] ? getHTMLElementFromUid(e[0]) : null;
-  if (element) {
-    element.blur();
-  } 
   window.addEventListener("keydown", keyDownListener);
   navigate();
-}
+};
 
 const keyDownListener = (ev: KeyboardEvent) => {
   if (isNavigating) {
-    if (getInputTarget(ev)) {
+    if (checkActiveElement()) {
       endNavigate();
     } else {
       handleNavigateKey(ev);
