@@ -583,6 +583,40 @@ const expandCollapseBlockTree = () => {
   );
 };
 
+const commands = [
+  {label: "Jump to the top of the page", callback: jumpToTheTopOfThePage},
+  {label: "Jump to the bottom of page", callback: jumpToTheBottomOfPage},
+  {label: "Expand all blocks on page", callback: expandAllBlocksOnPage},
+  {label: "Collapse all blocks on page", callback: collapseAllBlocksOnPage},
+  {label: "Open this page in sidebar", callback: openPageInSidebar},
+  {label: "Add shortcut to page to left sidebar", callback: addShortcutToLeftSidebar},
+  {label: "Toggle Linked Refs", callback: toggleLinkedRefs},
+  {label: "Toggle Unlinked Refs", callback: toggleUnlinkedRefs},
+  {label: "Toggle References to page level", callback: toggleReferenceParents},
+  {label: "Expand Reference children", callback: expandReferenceChildren},
+  {label: "Collapse Reference children", callback: collapseReferenceChildren},
+  {label: "Copy block ref", callback: copyBlockRef},
+  {label: "Copy block ref as alias", callback: copyBlockRefAsAlias},
+  {label: "Expand current block tree", callback: expandCurrentBlockTree},
+  {label: "Collapse current block tree", callback: collapseCurrentBlockTree},
+  {label: "Insert block above", callback: insertBlockAbove},
+  {label: "Insert block below", callback: insertBlockBelow},
+  {label: "Go up a block", callback: goUpBlock},
+  {label: "Go down a block", callback: goDownBlock},
+  {label: "Go to parent block", callback: goToParentBlock},
+  {label: "Delete block", callback: delBlock},
+  {label: "Toggle Block View type", callback: toggleBlockViewType},
+  {label: "Replace last reference before cursor with text and alias", callback: replaceLastReferenceWithTextAndAlias},
+  {label: "Apply Children of last reference before cursor as text", callback: applyChildrenOfLastReferenceAsText},
+  {label: "Replace last reference before cursor with original + bring nested items along", callback: replaceLastReferenceWithOriginal},
+  {label: "Paste block with children as references", callback: pasteBlockWithChildrenAsReferences},
+  {label: "Expand/Collapse block tree to a certain level, specified by the following numeric key press", callback: expandCollapseBlockTree},
+  {label: "Align left", callback: alignLeft},
+  {label: "Center", callback: center},
+  {label: "Align right", callback: alignRight},
+  {label: "Justify", callback: justify},
+  {label: "Toggle Queries", callback: toggleQueries},
+];
 const unloads = new Set<() => void>();
 export let enabled = false;
 export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
@@ -598,38 +632,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
       className: "bp3-button",
     });
     unloads.add(() => focusableObserver.disconnect());
-    unloads.add(addCommand({label: "Jump to the top of the page",callback: jumpToTheTopOfThePage,},extensionAPI));
-    unloads.add(addCommand({label: "Jump to the bottom of page",callback: jumpToTheBottomOfPage,},extensionAPI));
-    unloads.add(addCommand({label: "Expand all blocks on page",callback: expandAllBlocksOnPage,},extensionAPI));
-    unloads.add(addCommand({label: "Collapse all blocks on page",callback: collapseAllBlocksOnPage,},extensionAPI));
-    unloads.add(addCommand({label: "Open this page in sidebar",callback: openPageInSidebar,},extensionAPI));
-    unloads.add(addCommand({label: "Add shortcut to page to left sidebar",callback: addShortcutToLeftSidebar,},extensionAPI));
-    unloads.add(addCommand({label: "Toggle Linked Refs",callback: toggleLinkedRefs,},extensionAPI));
-    unloads.add(addCommand({label: "Toggle Unlinked Refs",callback: toggleUnlinkedRefs,},extensionAPI));
-    unloads.add(addCommand({label: "Toggle References to page level",callback: toggleReferenceParents,},extensionAPI));
-    unloads.add(addCommand({label: "Expand Reference children",callback: expandReferenceChildren,},extensionAPI));
-    unloads.add(addCommand({label: "Collapse Reference children",callback: collapseReferenceChildren,},extensionAPI));
-    unloads.add(addCommand({label: "Copy block ref",callback: copyBlockRef,},extensionAPI));
-    unloads.add(addCommand({label: "Copy block ref as alias",callback: copyBlockRefAsAlias,},extensionAPI));
-    unloads.add(addCommand({label: "Expand current block tree",callback: expandCurrentBlockTree,},extensionAPI));
-    unloads.add(addCommand({label: "Collapse current block tree",callback: collapseCurrentBlockTree,},extensionAPI));
-    unloads.add(addCommand({label: "Insert block above",callback: insertBlockAbove,},extensionAPI));
-    unloads.add(addCommand({label: "Insert block below",callback: insertBlockBelow,},extensionAPI));
-    unloads.add(addCommand({label: "Go up a block",callback: goUpBlock,},extensionAPI));
-    unloads.add(addCommand({label: "Go down a block",callback: goDownBlock,},extensionAPI));
-    unloads.add(addCommand({label: "Go to parent block",callback: goToParentBlock,},extensionAPI));
-    unloads.add(addCommand({label: "Delete block",callback: delBlock,},extensionAPI));
-    unloads.add(addCommand({label: "Toggle Block View type",callback: toggleBlockViewType,},extensionAPI));
-    unloads.add(addCommand({label: "Replace last reference before cursor with text and alias",callback: replaceLastReferenceWithTextAndAlias,},extensionAPI));
-    unloads.add(addCommand({label: "Apply Children of last reference before cursor as text",callback: applyChildrenOfLastReferenceAsText,},extensionAPI));
-    unloads.add(addCommand({label: "Replace last reference before cursor with original + bring nested items along",callback: replaceLastReferenceWithOriginal,},extensionAPI));
-    unloads.add(addCommand({label: "Paste block with children as references",callback: pasteBlockWithChildrenAsReferences,},extensionAPI));
-    unloads.add(addCommand({label: "Expand/Collapse block tree to a certain level, specified by the following numeric key press",callback: expandCollapseBlockTree,},extensionAPI));
-    unloads.add(addCommand({label: "Align left",callback: alignLeft,},extensionAPI));
-    unloads.add(addCommand({label: "Center",callback: center,},extensionAPI));
-    unloads.add(addCommand({label: "Align right",callback: alignRight,},extensionAPI));
-    unloads.add(addCommand({label: "Justify",callback: justify,},extensionAPI));
-    unloads.add(addCommand({label: "Toggle Queries",callback: toggleQueries,},extensionAPI));
+    commands.forEach((cmd) => unloads.add(addCommand(cmd, extensionAPI)));
   } else {
     unloads.forEach((u) => u());
     unloads.clear();
