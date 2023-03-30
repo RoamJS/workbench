@@ -16,6 +16,7 @@ import { BLOCK_REF_REGEX } from "roamjs-components/dom/constants";
 import extractRef from "roamjs-components/util/extractRef";
 import type {
   InputTextNode,
+  OnloadArgs,
   PullBlock,
   RoamBasicNode,
 } from "roamjs-components/types/native";
@@ -26,11 +27,8 @@ import renderOverlay, {
 } from "roamjs-components/util/renderOverlay";
 import { Dialog, Spinner } from "@blueprintjs/core";
 import React, { useMemo, useState, useEffect } from "react";
+import { addCommand } from "./workBench";
 
-const jumpNavIgnore = get("jumpNavIgnore");
-const ignoreBindings = new Set(jumpNavIgnore ? jumpNavIgnore.split(",") : []);
-let jumpMode = false;
-let jumpModeTimeout = 0;
 const getCurrentPageUid = async () =>
   (await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid()) ||
   window.roamAlphaAPI.util.dateToPageUid(new Date());
@@ -129,12 +127,7 @@ const ExpColDialog = ({
   );
 };
 
-// Available Keys:
-// h
-// A, B, D, E, F, G, H, I, J, K, L, M, N, P, Q, R, T, U, W, Y, Z
-// 5, 6, 7, 8, 9, 0
-const hotkeys: Record<string, () => unknown> = {
-  t: () =>
+ const jumpToTheTopOfThePage = () =>
     getCurrentPageUid().then((uid) => {
       const blockUid = getFirstChildUidByBlockUid(uid);
       window.roamAlphaAPI.ui.setBlockFocusAndSelection({
@@ -143,8 +136,8 @@ const hotkeys: Record<string, () => unknown> = {
           "window-id": `${getCurrentUserUid()}-body-outline-${uid}`,
         },
       });
-    }),
-  b: () =>
+    });
+const jumpToTheBottomOfPage = () =>
     getCurrentPageUid().then((uid) => {
       const blocks = getShallowTreeByParentUid(uid);
       const blockUid = blocks[blocks.length - 1]?.uid;
@@ -155,8 +148,8 @@ const hotkeys: Record<string, () => unknown> = {
             "window-id": `${getCurrentUserUid()}-body-outline-${uid}`,
           },
         });
-    }),
-  e: async () => {
+    });
+const expandAllBlocksOnPage = async () => {
     const uid = await getCurrentPageUid();
     window.roamAlphaAPI.updateBlock({ block: { uid, open: true } });
     (
@@ -168,8 +161,8 @@ const hotkeys: Record<string, () => unknown> = {
       .forEach((u) =>
         window.roamAlphaAPI.updateBlock({ block: { uid: u, open: true } })
       );
-  },
-  c: async () => {
+  };
+const collapseAllBlocksOnPage = async () => {
     const uid = await getCurrentPageUid();
     window.roamAlphaAPI.updateBlock({ block: { uid, open: false } });
     (
@@ -183,17 +176,17 @@ const hotkeys: Record<string, () => unknown> = {
           block: { uid: u, open: false },
         })
       );
-  },
-  o: () => getCurrentPageUid().then(openBlockInSidebar),
-  w: () => {
+  };
+const openPageInSidebar = () => getCurrentPageUid().then(openBlockInSidebar);
+const toggleLinkedRefs = () => {
     (
       document.querySelector(".rm-reference-container .rm-caret") as HTMLElement
     ).click();
     document
       .querySelector(".rm-reference-container .rm-caret")
       .scrollIntoView();
-  },
-  z: () => {
+  };
+const toggleUnlinkedRefs = () => {
     (
       document.querySelector(
         ".rm-reference-main > div > div:nth-child(2) > div > span > span"
@@ -204,16 +197,16 @@ const hotkeys: Record<string, () => unknown> = {
         ".rm-reference-main > div > div:nth-child(2) > div > span > span"
       )
       .scrollIntoView();
-  },
-  f: () =>
+  };
+const toggleReferenceParents = () =>
     document
       .querySelectorAll<HTMLElement>(
         ".rm-title-arrow-wrapper .bp3-icon-caret-down"
       )
       .forEach((element) => {
         element.click();
-      }),
-  v: () =>
+      });
+const expandReferenceChildren = () =>
     document
       .querySelectorAll<HTMLElement>(".rm-reference-item  .block-expand")
       .forEach((element) => {
@@ -226,8 +219,8 @@ const hotkeys: Record<string, () => unknown> = {
           document.querySelector(".bp3-popover-content > div> ul").children
         ).find((e: HTMLLinkElement) => e.innerText === "Expand all");
         (li?.childNodes[0] as HTMLElement).click();
-      }),
-  p: () =>
+      });
+const collapseReferenceChildren = () =>
     document
       .querySelectorAll<HTMLElement>(".rm-reference-item  .block-expand")
       .forEach((element) => {
@@ -240,8 +233,8 @@ const hotkeys: Record<string, () => unknown> = {
           document.querySelector(".bp3-popover-content > div> ul").children
         ).find((e: HTMLLinkElement) => e.innerText === "Collapse all");
         (li?.childNodes[0] as HTMLElement).click();
-      }),
-  r: () => {
+      });
+const copyBlockRef = () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
     if (uid) {
       navigator.clipboard.writeText(`((${uid}))`);
@@ -252,8 +245,8 @@ const hotkeys: Record<string, () => unknown> = {
         timeout: 2000,
       });
     }
-  },
-  s: () => {
+  };
+const copyBlockRefAsAlias = () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
     const selectedText = window.getSelection().toString();
     const formatToUse = get("CopyRefAsAliasFormat");
@@ -273,8 +266,8 @@ const hotkeys: Record<string, () => unknown> = {
       id: "workbench-warning",
       timeout: 2000,
     });
-  },
-  x: () => {
+  };
+const expandCurrentBlockTree = () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
     if (uid) {
       window.roamAlphaAPI.updateBlock({ block: { uid, open: true } });
@@ -288,8 +281,8 @@ const hotkeys: Record<string, () => unknown> = {
           window.roamAlphaAPI.updateBlock({ block: { uid: u, open: true } })
         );
     }
-  },
-  l: () => {
+  };
+const collapseCurrentBlockTree = () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
     if (uid) {
       window.roamAlphaAPI.updateBlock({ block: { uid, open: false } });
@@ -305,8 +298,8 @@ const hotkeys: Record<string, () => unknown> = {
           })
         );
     }
-  },
-  i: () => {
+  };
+const insertBlockAbove = () => {
     const location = window.roamAlphaAPI.ui.getFocusedBlock();
     const uid = location?.["block-uid"];
     if (uid) {
@@ -321,8 +314,8 @@ const hotkeys: Record<string, () => unknown> = {
         })
       );
     }
-  },
-  u: () => {
+  };
+const insertBlockBelow = () => {
     const location = window.roamAlphaAPI.ui.getFocusedBlock();
     const uid = location?.["block-uid"];
     if (uid) {
@@ -337,8 +330,8 @@ const hotkeys: Record<string, () => unknown> = {
         })
       );
     }
-  },
-  k: () => {
+  };
+const goUpBlock = () => {
     const active = window.roamAlphaAPI.ui.getFocusedBlock();
     if (active) {
       const order = getOrderByBlockUid(active["block-uid"]);
@@ -356,8 +349,8 @@ const hotkeys: Record<string, () => unknown> = {
         });
       }
     }
-  },
-  j: () => {
+  };
+const goDownBlock = () => {
     const active = window.roamAlphaAPI.ui.getFocusedBlock();
     if (active) {
       const order = getOrderByBlockUid(active["block-uid"]);
@@ -376,8 +369,8 @@ const hotkeys: Record<string, () => unknown> = {
         });
       }
     }
-  },
-  g: () => {
+  };
+const goToParentBlock = () => {
     const active = window.roamAlphaAPI.ui.getFocusedBlock();
     if (active) {
       const parentUid = getParentUidByBlockUid(active["block-uid"]);
@@ -394,54 +387,44 @@ const hotkeys: Record<string, () => unknown> = {
         });
       }
     }
-  },
-  d: () => {
+  };
+const delBlock = () => {
     const active = window.roamAlphaAPI.ui.getFocusedBlock();
     if (active) {
       deleteBlock(active["block-uid"]);
     }
-  },
-  1: () => {
+  };
+const alignLeft = () => {
     const active = window.roamAlphaAPI.ui.getFocusedBlock();
     if (active) {
       updateBlock({ uid: active["block-uid"], textAlign: "left" });
     }
-  },
-  2: () => {
+  };
+const center = () => {
     const active = window.roamAlphaAPI.ui.getFocusedBlock();
     if (active) {
       updateBlock({ uid: active["block-uid"], textAlign: "center" });
     }
-  },
-  3: () => {
+  };
+const alignRight = () => {
     const active = window.roamAlphaAPI.ui.getFocusedBlock();
     if (active) {
       updateBlock({ uid: active["block-uid"], textAlign: "right" });
     }
-  },
-  4: () => {
+  };
+const justify = () => {
     const active = window.roamAlphaAPI.ui.getFocusedBlock();
     if (active) {
       updateBlock({ uid: active["block-uid"], textAlign: "justify" });
     }
-  },
-  y: () =>
+  };
+const toggleQueries = () =>
     document
       .querySelectorAll<HTMLDivElement>(".rm-query-title .bp3-icon-caret-down")
       .forEach((element) => {
         element.click();
-      }),
-  n: () => {
-    if (document.querySelector(".rm-open-left-sidebar-btn"))
-      window.roamAlphaAPI.ui.leftSidebar.open();
-    else window.roamAlphaAPI.ui.leftSidebar.close();
-  },
-  m: () => {
-    if (document.querySelector("#roam-right-sidebar-content"))
-      window.roamAlphaAPI.ui.rightSidebar.close();
-    else window.roamAlphaAPI.ui.rightSidebar.open();
-  },
-  S: () => {
+      });
+const addShortcutToLeftSidebar = () => {
     const previousElement = document.activeElement as HTMLElement;
     const emptyShortcuts = document.getElementsByClassName(
       "bp3-button bp3-icon-star-empty"
@@ -456,8 +439,8 @@ const hotkeys: Record<string, () => unknown> = {
       shortcuts[0]?.click();
       previousElement?.focus();
     }
-  },
-  V: () => {
+  };
+const pasteBlockWithChildrenAsReferences = () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
     if (uid) {
       window.navigator.clipboard.readText().then((clip) => {
@@ -471,8 +454,8 @@ const hotkeys: Record<string, () => unknown> = {
         );
       });
     }
-  },
-  q: () => {
+  };
+const toggleBlockViewType = () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
 
     if (uid) {
@@ -491,8 +474,8 @@ const hotkeys: Record<string, () => unknown> = {
         block: { uid, "children-view-type": newViewType },
       });
     }
-  },
-  a: () => {
+  };
+const replaceLastReferenceWithTextAndAlias = () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
     if (uid) {
       const text = getTextByBlockUid(uid);
@@ -523,8 +506,8 @@ const hotkeys: Record<string, () => unknown> = {
         );
       }
     }
-  },
-  C: () => {
+  };
+const applyChildrenOfLastReferenceAsText = () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
     if (uid) {
       const text = getTextByBlockUid(uid);
@@ -545,8 +528,8 @@ const hotkeys: Record<string, () => unknown> = {
         );
       }
     }
-  },
-  O: () => {
+  };
+const replaceLastReferenceWithOriginal = () => {
     const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
     if (uid) {
       const text = getTextByBlockUid(uid);
@@ -578,8 +561,8 @@ const hotkeys: Record<string, () => unknown> = {
         });
       }
     }
-  },
-  X: () => {
+  };
+const expandCollapseBlockTree = () => {
     Promise.resolve(
       window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"] ||
         window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid()
@@ -590,47 +573,13 @@ const hotkeys: Record<string, () => unknown> = {
         props: { blockUid },
       })
     );
-  },
-};
-const keydownListener = (ev: KeyboardEvent) => {
-  window.clearTimeout(jumpModeTimeout);
-  if (
-    (ev.metaKey || ev.altKey || ev.ctrlKey) &&
-    (ev.key === "j" || ev.code === `KeyJ`) &&
-    !jumpMode
-  ) {
-    jumpMode = true;
-    jumpModeTimeout = window.setTimeout(() => (jumpMode = false), 3000);
-    ev.preventDefault();
-    ev.stopPropagation();
-  } else if (jumpMode) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    jumpMode = false;
-    const key = /[a-z0-9A-Z]/.test(ev.key)
-      ? ev.key
-      : ev.code
-          .replace(/^Key/, "")
-          .replace(/^Digit/, "")
-          [ev.shiftKey ? "toUpperCase" : "toLowerCase"]();
-    if (!ignoreBindings.has(key)) hotkeys[key]?.();
-  } else if (ev.key === "Enter") {
-    const element = ev.target as HTMLElement;
-    if (element.className.indexOf("bp3-button") > -1) {
-      element.click();
-    }
-    jumpMode = false;
-  } else {
-    jumpMode = false;
-  }
-};
+  };
 
 const unloads = new Set<() => void>();
 export let enabled = false;
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   enabled = flag;
   if (flag) {
-    document.body.addEventListener("keydown", keydownListener);
     const focusableObserver = createHTMLObserver({
       callback: (b) => {
         if (b.tabIndex < 0) {
@@ -641,9 +590,38 @@ export const toggleFeature = (flag: boolean) => {
       className: "bp3-button",
     });
     unloads.add(() => focusableObserver.disconnect());
-    unloads.add(() =>
-      document.body.removeEventListener("keydown", keydownListener)
-    );
+    unloads.add(addCommand({label: "Jump to the top of the page",callback: jumpToTheTopOfThePage,},extensionAPI));
+    unloads.add(addCommand({label: "Jump to the bottom of page",callback: jumpToTheBottomOfPage,},extensionAPI));
+    unloads.add(addCommand({label: "Expand all blocks on page",callback: expandAllBlocksOnPage,},extensionAPI));
+    unloads.add(addCommand({label: "Collapse all blocks on page",callback: collapseAllBlocksOnPage,},extensionAPI));
+    unloads.add(addCommand({label: "Open this page in sidebar",callback: openPageInSidebar,},extensionAPI));
+    unloads.add(addCommand({label: "Add shortcut to page to left sidebar",callback: addShortcutToLeftSidebar,},extensionAPI));
+    unloads.add(addCommand({label: "Toggle Linked Refs",callback: toggleLinkedRefs,},extensionAPI));
+    unloads.add(addCommand({label: "Toggle Unlinked Refs",callback: toggleUnlinkedRefs,},extensionAPI));
+    unloads.add(addCommand({label: "Toggle References to page level",callback: toggleReferenceParents,},extensionAPI));
+    unloads.add(addCommand({label: "Expand Reference children",callback: expandReferenceChildren,},extensionAPI));
+    unloads.add(addCommand({label: "Collapse Reference children",callback: collapseReferenceChildren,},extensionAPI));
+    unloads.add(addCommand({label: "Copy block ref",callback: copyBlockRef,},extensionAPI));
+    unloads.add(addCommand({label: "Copy block ref as alias",callback: copyBlockRefAsAlias,},extensionAPI));
+    unloads.add(addCommand({label: "Expand current block tree",callback: expandCurrentBlockTree,},extensionAPI));
+    unloads.add(addCommand({label: "Collapse current block tree",callback: collapseCurrentBlockTree,},extensionAPI));
+    unloads.add(addCommand({label: "Insert block above",callback: insertBlockAbove,},extensionAPI));
+    unloads.add(addCommand({label: "Insert block below",callback: insertBlockBelow,},extensionAPI));
+    unloads.add(addCommand({label: "Go up a block",callback: goUpBlock,},extensionAPI));
+    unloads.add(addCommand({label: "Go down a block",callback: goDownBlock,},extensionAPI));
+    unloads.add(addCommand({label: "Go to parent block",callback: goToParentBlock,},extensionAPI));
+    unloads.add(addCommand({label: "Delete block",callback: delBlock,},extensionAPI));
+    unloads.add(addCommand({label: "Toggle Block View type",callback: toggleBlockViewType,},extensionAPI));
+    unloads.add(addCommand({label: "Replace last reference before cursor with text and alias",callback: replaceLastReferenceWithTextAndAlias,},extensionAPI));
+    unloads.add(addCommand({label: "Apply Children of last reference before cursor as text",callback: applyChildrenOfLastReferenceAsText,},extensionAPI));
+    unloads.add(addCommand({label: "Replace last reference before cursor with original + bring nested items along",callback: replaceLastReferenceWithOriginal,},extensionAPI));
+    unloads.add(addCommand({label: "Paste block with children as references",callback: pasteBlockWithChildrenAsReferences,},extensionAPI));
+    unloads.add(addCommand({label: "Expand/Collapse block tree to a certain level, specified by the following numeric key press",callback: expandCollapseBlockTree,},extensionAPI));
+    unloads.add(addCommand({label: "Align left",callback: alignLeft,},extensionAPI));
+    unloads.add(addCommand({label: "Center",callback: center,},extensionAPI));
+    unloads.add(addCommand({label: "Align right",callback: alignRight,},extensionAPI));
+    unloads.add(addCommand({label: "Justify",callback: justify,},extensionAPI));
+    unloads.add(addCommand({label: "Toggle Queries",callback: toggleQueries,},extensionAPI));
   } else {
     unloads.forEach((u) => u());
     unloads.clear();
