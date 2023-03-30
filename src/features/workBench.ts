@@ -535,17 +535,17 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
   // Commands are ordered in line with the docs at: https://roamjs.com/extensions/workbench/command_palette_plus
   addCommand({
     label: "Move Block(s) - to top (mbt)", 
-    callback: async (uids: any) => { // TODO: Fix type
+    callback: async (uids: string[]) => {
     promptMoveBlocks({ uids, getBase: () => 0 })
   }}, extensionAPI);
   addCommand({
     label: "Move Block(s) - to bottom (mbb)", 
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid });
   }}, extensionAPI);
   addCommand({
     label: "Move Block(s) - DNP (mbdnp)", 
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     const dateExpression = await prompt({
       title: "WorkBench",
       question: "Move this block to the top of what date?",
@@ -577,19 +577,19 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
   }}, extensionAPI);
   addCommand({
     label: "Move Block(s) - to top with block Ref (mbtr)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     await leaveBlockReferences({ uids });
     promptMoveBlocks({ uids, getBase: () => 0 });
   }}, extensionAPI);
   addCommand({
     label: "Move Block(s) - to bottom with block ref (mbbr)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
       await leaveBlockReferences({ uids });
       promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid });
     }}, extensionAPI);
   addCommand({
     label: "Move Block(s) - to top & zoom (mbtz)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     promptMoveBlocks({ uids, getBase: () => 0 }).then(
       (success) =>
         success &&
@@ -600,7 +600,7 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
   }}, extensionAPI);
   addCommand({
     label: "Move Block(s) - to bottom & zoom (mbbz)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
       (success) =>
         success &&
@@ -611,52 +611,52 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
   }}, extensionAPI);
   addCommand({
     label: "Move Block(s) - to top & sidebar (mbts)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     promptMoveBlocks({ uids, getBase: () => 0 }).then(
       (success) => success && openBlockInSidebar(uids[0])
     );
   }}, extensionAPI);
   addCommand({
     label: "Move Block(s) - to bottom & sidebar (mbbs)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
       (success) => success && openBlockInSidebar(uids[0])
     );
   }}, extensionAPI);
   addCommand({
     label: "Send block ref - to top (sbrt)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
       promptMoveRefs({ uids, getBase: () => 0 });
   }}, extensionAPI);
   addCommand({
     label: "Send block refs - to bottom (sbrb)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     promptMoveRefs({ uids, getBase: getChildrenLengthByParentUid });
   }}, extensionAPI);
 
   addCommand({
     label: "Pull block (pbb)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     promptPullBlock(uids);
   }}, extensionAPI);
   addCommand({
     label: "Pull block and leave block ref (pbr)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     promptPullBlock(uids, true);
   }}, extensionAPI);
   addCommand({
     label: "Pull child blocks  (pcb)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     promptPullChildBlocks(uids);
   }}, extensionAPI);
   addCommand({
     label: "Pull child block and leave block ref (pcr)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     promptPullChildBlocks(uids, true);
   }}, extensionAPI);
   addCommand({
     label: "Pull references (prf)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     pullReferences(uids).then(async (bts) => {
       const [blockUid] = uids;
       const parentUid = blockUid
@@ -677,7 +677,7 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
   }}, extensionAPI);
   addCommand({
     label: "Pull references and remove old refs (prr)",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     pullReferences(uids, true).then(async (bts) => {
       const [blockUid] = uids;
       const parentUid = blockUid
@@ -715,19 +715,19 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
   }}, extensionAPI);
   addCommand({
     label: "Copy Block Reference",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     window.navigator.clipboard.writeText(`((${uids[0] || ""}))`);
   }}, extensionAPI);
   addCommand({
     label: "Copy Block Reference as alias",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     window.navigator.clipboard.writeText(`[*](((${uids[0] || ""})))`);
   }}, extensionAPI);
   addCommand({
     label: "Sort Child Blocks",
-    callback: async (uids: any) => {
+    callback: async (uids: string[]) => {
     Promise.all(
-      uids.map((u: any) => {
+      uids.map((u) => {
         const children = getShallowTreeByParentUid(u);
         const sorted = children.sort((a, b) => a.text.localeCompare(b.text));
         return sorted
@@ -964,24 +964,24 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
 
   addCommand({
     label: "Heading 1",
-    callback: async (uids: any) => {
-    uids.map((uid: any) => updateBlock({ uid, heading: 1 }));
+    callback: async (uids: string[]) => {
+    uids.map((uid) => updateBlock({ uid, heading: 1 }));
   }}, extensionAPI);
   addCommand({
     label: "Heading 2",
-    callback: async (uids: any) => {
-        uids.map((uid: any) => updateBlock({ uid, heading: 2 }));
+    callback: async (uids: string[]) => {
+        uids.map((uid) => updateBlock({ uid, heading: 2 }));
   }}, extensionAPI);
   addCommand({
     label: "Heading 3",
-    callback: async (uids: any) => {
-    uids.map((uid: any ) => updateBlock({ uid, heading: 3 }));
+    callback: async (uids: string[]) => {
+    uids.map((uid) => updateBlock({ uid, heading: 3 }));
   }}, extensionAPI);
 
   (await userCommands.UserDefinedCommandList()).forEach(({ key, ...item }) => {
       addCommand({
         label: key,
-        callback: (uids: any) => userCommands.runComand(uids, item)
+        callback: (uids: string[]) => userCommands.runComand(uids, item)
       }, extensionAPI);
     });
   addCommand({
