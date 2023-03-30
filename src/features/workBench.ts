@@ -533,9 +533,6 @@ const pullReferences = async (uids: string[], removeTags?: boolean) => {
 const unloads = new Set<() => void>();
 export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
   // Commands are ordered in line with the docs at: https://roamjs.com/extensions/workbench/command_palette_plus
-  //
-  // TODO make sure you check docs
-  //
   addCommand({
     label: "Move Block(s) - to top (mbt)", 
     callback: async (uids: any) => { // TODO: Fix type

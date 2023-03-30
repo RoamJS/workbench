@@ -877,7 +877,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
     unloads.add(
       addCommand(
         {
-          label: "Deep Nav",
+          label: "Activate Deep Nav",
           callback: activeDeepNav
         },
         extensionAPI

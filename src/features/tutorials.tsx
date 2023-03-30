@@ -1090,12 +1090,6 @@ const WorkbenchMenu = () => {
       label: "Daily Notes",
     },
     {
-      enabled: deepNavEnabled,
-      onClick: triggerDeepNav,
-      icon: "circle-arrow-right",
-      label: "Deep Nav",
-    },
-    {
       enabled: typeAheadEnabled,
       onClick: typeAheadLookup,
       icon: "manual",
