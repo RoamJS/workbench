@@ -137,7 +137,7 @@ const ExpColDialog = ({
            "window-id": `${getCurrentUserUid()}-body-outline-${uid}`,
          },
        });
-     }, 200);
+     }, 300);
    });
 const jumpToTheBottomOfPage = () =>
   getCurrentPageUid().then((uid) => {
@@ -151,7 +151,7 @@ const jumpToTheBottomOfPage = () =>
             "window-id": `${getCurrentUserUid()}-body-outline-${uid}`,
           },
         });
-      }, 200);
+      }, 300);
   });
 const expandAllBlocksOnPage = async () => {
   const uid = await getCurrentPageUid();
@@ -318,7 +318,7 @@ const insertBlockAbove = () => {
             "block-uid": newUid,
           },
         });
-      }, 200);
+      }, 300);
     });
   }
 };
@@ -336,7 +336,7 @@ const insertBlockBelow = () => {
         window.roamAlphaAPI.ui.setBlockFocusAndSelection({
           location: { "window-id": location["window-id"], "block-uid": newUid },
         });
-      }, 200);
+      }, 300);
     });
   }
 };
@@ -357,7 +357,7 @@ const goUpBlock = () => {
             "block-uid": newBlockUid,
           },
         });
-      }, 200);
+      }, 300);
     }
   }
 };
@@ -379,7 +379,7 @@ const goDownBlock = () => {
             "block-uid": newBlockUid,
           },
         });
-      }, 200);
+      }, 300);
     }
   }
 };
@@ -399,7 +399,7 @@ const goToParentBlock = () => {
             "block-uid": parentUid,
           },
         });
-      }, 200);
+      }, 300);
     }
   }
 };
