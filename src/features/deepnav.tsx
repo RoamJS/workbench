@@ -370,7 +370,6 @@ const endNavigate = () => {
   if (document.body.classList.contains(NAVIGATE_CLASS)) {
     document.body.classList.remove(NAVIGATE_CLASS);
   }
-  window.removeEventListener("keydown", keyDownListener);
 };
 
 const rerenderTips = () => {
@@ -845,7 +844,6 @@ const activeDeepNav = () => {
   if (inputTarget) {
     inputTarget.blur();
   }
-  window.addEventListener("keydown", keyDownListener);
   navigate();
 };
 
@@ -981,13 +979,14 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
 }`,
       STYLE_ID
     );
+    document.addEventListener("keydown", keyDownListener);
     window.addEventListener("resize", handleScrollOrResize);
   } else {
     unloads.forEach((u) => u());
     unloads.clear();
     endNavigate();
     document.getElementById(STYLE_ID)?.remove?.();
-    window.removeEventListener("keydown", keyDownListener);
+    document.removeEventListener("keydown", keyDownListener);
     window.removeEventListener("resize", handleScrollOrResize);
   }
 };
