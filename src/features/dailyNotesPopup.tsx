@@ -660,7 +660,6 @@ export const toggleFeature = (
         {
           label: `DNP Jump Date Forward`,
           callback: jumpDateForward,
-          defaultHotkey: "ctrl-shift-,",
         },
         extensionAPI
       )
@@ -670,7 +669,6 @@ export const toggleFeature = (
         {
           label: `DNP Jump Date Backward`,
           callback: jumpDateBack,
-          defaultHotkey: "ctrl-shift-.",
         },
         extensionAPI
       )
