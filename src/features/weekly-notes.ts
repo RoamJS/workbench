@@ -108,7 +108,10 @@ const navigateToPage = (pageName: string) => {
 };
 
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   if (flag) {
     createConfigObserver({
       title: CONFIG,
@@ -161,12 +164,15 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
       });
       navigateToPage(pageName);
     };
-
+    const defaultHotkey = window.roamAlphaAPI.platform.isPC
+      ? "alt-w"
+      : "ctrl-shift-w";
     unloads.add(
       addCommand(
         {
           label: "Go To Weekly Note",
-          callback: () => goToThisWeek()
+          callback: () => goToThisWeek(),
+          defaultHotkey: defaultHotkey,
         },
         extensionAPI
       )

@@ -656,18 +656,25 @@ p a { color: #000 }</style>
 
 export let enabled = false;
 const workbenchCommands = new Set<() => void>();
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
     workbenchCommands.add(
       addCommand(
-        { label: "Format Converter", callback: show },
+        { label: "Format Converter", callback: show, defaultHotkey: "alt-m" },
         extensionAPI
       )
     );
     workbenchCommands.add(
       addCommand(
-        { label: "Format Converter: Web View", callback: htmlview },
+        {
+          label: "Format Converter: Web View",
+          callback: htmlview,
+          defaultHotkey: "alt-shift-m",
+        },
         extensionAPI
       )
     );

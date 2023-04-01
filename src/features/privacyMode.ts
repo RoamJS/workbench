@@ -266,7 +266,10 @@ export const toggle = async () => {
 export let enabled = false;
 
 let wbCommand: () => void;
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
     if (
@@ -278,7 +281,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
       createPage({ title: roamPageWithPrivacyList });
     }
     addStyle(
-        `.${privacyClassName}, .${privacyClassName} * {
+      `.${privacyClassName}, .${privacyClassName} * {
         color: transparent !important;
         background: transparent !important;
         border-left: black !important;
@@ -295,9 +298,14 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
       }`,
       "workbench-privacy-css"
     );
-    wbCommand = addCommand({
-      label: "Toggle Privacy Mode",
-      callback: toggle}, extensionAPI);
+    wbCommand = addCommand(
+      {
+        label: "Toggle Privacy Mode",
+        callback: toggle,
+        defaultHotkey: "alt-shift-p",
+      },
+      extensionAPI
+    );
   } else {
     toggleOff();
     wbCommand?.();

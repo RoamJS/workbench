@@ -15,7 +15,13 @@ import {
   Popover,
   Tooltip,
 } from "@blueprintjs/core";
-import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import ReactDOM from "react-dom";
 import {
   component as dnpComponent,
@@ -1211,11 +1217,13 @@ export const setVersion = (v: string) => {
   version = v;
 };
 
-
 const workbenchCommands = new Set<() => void>();
 let topbarObserver: MutationObserver;
 export let enabled = false;
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
     displayMenu();
@@ -1227,6 +1235,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
         {
           label: "WorkBench Help",
           callback: toggleQuickReference,
+          defaultHotkey: "ctrl-shift-q",
         },
         extensionAPI
       )
@@ -1236,6 +1245,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
         {
           label: "Tutorials",
           callback: showTutorials,
+          defaultHotkey: "alt-shift-q",
         },
         extensionAPI
       )
@@ -1245,6 +1255,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
         {
           label: "Graph DB Stats",
           callback: displayGraphStats,
+          defaultHotkey: "alt-shift-b",
         },
         extensionAPI
       )

@@ -314,7 +314,10 @@ const inlineImportArticle = async ({
 };
 
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   if (flag) {
     unloads.add(
       addCommand(
@@ -324,6 +327,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
             renderImportArticle(
               window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"]
             ),
+          defaultHotkey: "alt-shift-i",
         },
         extensionAPI
       )

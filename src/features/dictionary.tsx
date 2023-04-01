@@ -202,7 +202,10 @@ export const typeAheadLookup = () => {
 };
 
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
     unloads.add(
@@ -210,6 +213,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
         {
           label: "Dictionary Lookup",
           callback: () => typeAheadLookup(),
+          defaultHotkey: "alt-shift-.",
         },
         extensionAPI
       )

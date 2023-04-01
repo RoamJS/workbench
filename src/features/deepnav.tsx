@@ -869,14 +869,18 @@ const handleScrollOrResize = () => {
 
 const unloads = new Set<() => void>();
 export let enabled = false;
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
     unloads.add(
       addCommand(
         {
           label: "Activate Deep Nav",
-          callback: activeDeepNav
+          callback: activeDeepNav,
+          defaultHotkey: "alt-g",
         },
         extensionAPI
       )

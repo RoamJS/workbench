@@ -451,13 +451,13 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
   );
 };
 
-
 const toggleFocus = () => {
-    const popup = (window.getSelection().getRangeAt(0).commonAncestorContainer as Element)
-      instanceof Element
-      ? (window.getSelection().getRangeAt(0).commonAncestorContainer as Element).closest(
-          ".roamjs-daily-notes-popup"
-        )
+  const popup =
+    (window.getSelection().getRangeAt(0)
+      .commonAncestorContainer as Element) instanceof Element
+      ? (
+          window.getSelection().getRangeAt(0).commonAncestorContainer as Element
+        ).closest(".roamjs-daily-notes-popup")
       : null;
   if (!popup) {
     const firstPopupBlock = document.querySelector<HTMLDivElement>(
@@ -482,15 +482,15 @@ const toggleFocus = () => {
   }
 };
 const toggleDNPPopup = () => {
-    component.toggleVisible();
+  component.toggleVisible();
 };
 const jumpDateForward = () => {
-    moveForwardToDate(false);
-    return true;
+  moveForwardToDate(false);
+  return true;
 };
 const jumpDateBack = () => {
-    moveForwardToDate(true);
-    return true;
+  moveForwardToDate(true);
+  return true;
 };
 const jumpDateIcon = () => {
   const roamNativeDate = document.querySelector<HTMLSpanElement>(
@@ -507,7 +507,7 @@ const jumpDateIcon = () => {
     }, 1);
   }
   return true;
-}
+};
 
 export const component = {
   async initialize() {
@@ -629,7 +629,10 @@ export const component = {
 
 let unloads = new Set<() => void>();
 export let enabled = false;
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
     unloads.add(
@@ -637,6 +640,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
         {
           label: `Daily Notes Popup`,
           callback: toggleDNPPopup,
+          defaultHotkey: "alt-shift-,",
         },
         extensionAPI
       )
@@ -646,6 +650,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
         {
           label: `Daily Notes Popup - Toggle Focus`,
           callback: toggleFocus,
+          defaultHotkey: "alt-ctrl-shift-.",
         },
         extensionAPI
       )
@@ -655,6 +660,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
         {
           label: `DNP Jump Date Forward`,
           callback: jumpDateForward,
+          defaultHotkey: "ctrl-shift-,",
         },
         extensionAPI
       )
@@ -664,6 +670,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
         {
           label: `DNP Jump Date Backward`,
           callback: jumpDateBack,
+          defaultHotkey: "ctrl-shift-.",
         },
         extensionAPI
       )
@@ -673,6 +680,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
         {
           label: `DNP Jump To Date`,
           callback: jumpDateIcon,
+          defaultHotkey: "alt-shift-j",
         },
         extensionAPI
       )
