@@ -48,6 +48,7 @@ import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBloc
 import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
 import createBlockObserver from "roamjs-components/dom/createBlockObserver";
 import getReferenceBlockUid from "roamjs-components/dom/getReferenceBlockUid";
+import type { OnloadArgs } from "roamjs-components/types";
 
 const TODO_REGEX = /{{(\[\[)?TODO(\]\])?}}\s*/;
 
@@ -295,8 +296,8 @@ const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
             text={"Save"}
             onClick={() => {
               localStorageSet("decorators", JSON.stringify(opts));
-              toggleFeature(false);
-              toggleFeature(true);
+              toggleDecorations(false);
+              toggleDecorations(true);
               renderToast({
                 content: "Successfully saved new decorators!",
                 id: "decorators-saved",
@@ -310,19 +311,27 @@ const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
   );
 };
 
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"] ) => {
+  if (flag) {
+    extensionAPI.ui.commandPalette.addCommand({
+      label: "(WB) Toggle Block Decorators",
+      callback: () => renderOverlay({ Overlay: DecoratorSettings}),
+    });
+    toggleDecorations(true);
+  } else {
+    extensionAPI.ui.commandPalette.removeCommand({
+      label: "(WB) Toggle Block Decorators",
+    });
+    unloads.forEach((u) => u());
+    unloads.clear();
+  }
+};
+
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean) => {
+export const toggleDecorations = (flag: boolean) => {
   if (flag) {
     const archivedDefault = !!get("decoratorsMoveArchives"); // Improve the UX for this if feature is re-requested
-    window.roamAlphaAPI.ui.commandPalette.addCommand({
-      label: "Toggle Block Decorators",
-      callback: () => renderOverlay({ Overlay: DecoratorSettings }),
-    });
-    unloads.add(() =>
-      window.roamAlphaAPI.ui.commandPalette.removeCommand({
-        label: "Toggle Block Decorators",
-      })
-    );
+    
     const opts = JSON.parse(localStorageGet("decorators") || "{}") as Record<
       typeof settings[number],
       boolean

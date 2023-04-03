@@ -2,7 +2,7 @@ import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTit
 import createPage from "roamjs-components/writes/createPage";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
 import { render as renderToast } from "roamjs-components/components/Toast";
-import type { RoamBasicNode } from "roamjs-components/types";
+import type { OnloadArgs, RoamBasicNode } from "roamjs-components/types";
 import extractTag from "roamjs-components/util/extractTag";
 import addStyle from "roamjs-components/dom/addStyle";
 import createTagRegex from "roamjs-components/util/createTagRegex";
@@ -245,9 +245,9 @@ export const toggle = async () => {
       });
       active = false;
       renderToast({
-        content: `WorkBench Privacy Mode List page is not defined.
+        content: `[[${roamPageWithPrivacyList}]] page is not defined.
         Please create a block with the [[page name]] or #tag you want
-        included in privacy mode. For more information, please visit the [docs](https://roamjs.com/extensions/workbench/privacy_mode).`,
+        included in privacy mode in [[${roamPageWithPrivacyList}]]. For more information, please visit the [docs](https://roamjs.com/extensions/workbench/privacy_mode).`,
         intent: "warning",
         id: "workbench-warning",
       });
@@ -263,18 +263,13 @@ export const toggle = async () => {
   }
 };
 
-const keyDownListener = (ev: KeyboardEvent) => {
-  if (ev.shiftKey && ev.altKey && ev.code == "KeyP") {
-    ev.stopPropagation();
-    ev.preventDefault();
-    toggle();
-    return true;
-  }
-};
 export let enabled = false;
 
 let wbCommand: () => void;
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
     if (
@@ -285,30 +280,35 @@ export const toggleFeature = (flag: boolean) => {
     ) {
       createPage({ title: roamPageWithPrivacyList });
     }
-    document.body.addEventListener("keydown", keyDownListener);
     addStyle(
       `.${privacyClassName}, .${privacyClassName} * {
-  color: transparent !important;
-  background: transparent !important;
-  border-left: black !important;
-}
+        color: transparent !important;
+        background: transparent !important;
+        border-left: black !important;
+      }
 
-.${privacyClassName}, .${privacyClassName} *::before {
-  content: none !important;
-  color: transparent !important;
-  background: black !important;
-}
+      .${privacyClassName}, .${privacyClassName} *::before {
+        content: none !important;
+        color: transparent !important;
+        background: black !important;
+      }
 
-.${privacyClassName} img {
-  display:none;
-}`,
+      .${privacyClassName} img {
+        display:none;
+      }`,
       "workbench-privacy-css"
     );
-    wbCommand = addCommand("Privacy Mode (alt-shift-p)", toggle);
+    wbCommand = addCommand(
+      {
+        label: "Toggle Privacy Mode",
+        callback: toggle,
+        defaultHotkey: "alt-shift-p",
+      },
+      extensionAPI
+    );
   } else {
     toggleOff();
     wbCommand?.();
-    document.body.removeEventListener("keydown", keyDownListener);
     document.getElementById("workbench-privacy-css")?.remove();
   }
 };

@@ -15,7 +15,13 @@ import {
   Popover,
   Tooltip,
 } from "@blueprintjs/core";
-import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import ReactDOM from "react-dom";
 import {
   component as dnpComponent,
@@ -38,6 +44,7 @@ import {
   navigate as triggerDeepNav,
 } from "./deepnav";
 import quickReference from "../data/quickReference";
+import type { OnloadArgs } from "roamjs-components/types";
 
 const TutorialOverlay = ({ onClose, isOpen }: RoamOverlayProps<{}>) => {
   const [bigPictureLink, setBigPictureLink] = useState("");
@@ -1077,26 +1084,6 @@ const displayGraphStats = async () => {
     });
 };
 
-const keyDownListener = (ev: KeyboardEvent) => {
-  if (ev.shiftKey == true && ev.code == "KeyQ") {
-    if (ev.ctrlKey) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      toggleQuickReference();
-    }
-    if (ev.altKey) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      showTutorials();
-    }
-  }
-  if (ev.altKey && ev.shiftKey == true && ev.code == "KeyB") {
-    ev.preventDefault();
-    ev.stopPropagation();
-    displayGraphStats();
-  }
-};
-
 const WorkbenchMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const closeMenu = useCallback(() => setIsOpen(false), [setIsOpen]);
@@ -1107,63 +1094,48 @@ const WorkbenchMenu = () => {
       onClick: dnpComponent.toggleVisible,
       icon: "timeline-events",
       label: "Daily Notes",
-      shortcut: "Alt-Shift-,",
-    },
-    {
-      enabled: deepNavEnabled,
-      onClick: triggerDeepNav,
-      icon: "circle-arrow-right",
-      label: "Deep Nav",
-      shortcut: "OPT+g",
     },
     {
       enabled: typeAheadEnabled,
       onClick: typeAheadLookup,
       icon: "manual",
       label: "Dictionary",
-      shortcut: "Alt-Shift-.",
     },
     {
       enabled: formatConverterEnabled,
       onClick: formatConverterShow,
       icon: "fork",
       label: "Format Converter",
-      shortcut: "Alt-m",
     },
     {
       enabled: formatConverterEnabled,
       onClick: htmlview,
       icon: "document-share",
       label: "Format Web View",
-      shortcut: "Alt-Shift-m",
     },
     {
       enabled: privacyEnabled,
       onClick: privacyToggle,
       icon: "shield",
       label: "Privacy Mode",
-      shortcut: "Alt-Shift-p",
     },
     {
       enabled: true,
       onClick: toggleQuickReference,
       icon: "help",
       label: "Help",
-      shortcut: "Ctrl-Shift-q",
     },
     {
       enabled: true,
       onClick: showTutorials,
       icon: "learning",
       label: "Tutorials",
-      shortcut: "Alt-Shift-q",
     },
     {
       enabled: true,
       onClick: displayGraphStats,
       icon: "database",
       label: "Graph DB Stats",
-      shortcut: "Alt-Shift-b",
     },
   ] as const;
 
@@ -1195,7 +1167,6 @@ const WorkbenchMenu = () => {
                     <>
                       <Icon icon={mi.icon} className={"mr-2"} />
                       {mi.label}{" "}
-                      <span style={{ fontSize: "7pt" }}>({mi.shortcut})</span>
                     </>
                   }
                 />
@@ -1249,17 +1220,46 @@ export const setVersion = (v: string) => {
 const workbenchCommands = new Set<() => void>();
 let topbarObserver: MutationObserver;
 export let enabled = false;
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
     displayMenu();
     topbarObserver = new MutationObserver(() => {
       // fix from sidebar moving
     });
-    workbenchCommands.add(addCommand("WorkBench Help", toggleQuickReference));
-    workbenchCommands.add(addCommand("Tutorials", showTutorials));
-    workbenchCommands.add(addCommand("Graph DB Stats", displayGraphStats));
-    document.body.addEventListener("keydown", keyDownListener);
+    workbenchCommands.add(
+      addCommand(
+        {
+          label: "WorkBench Help",
+          callback: toggleQuickReference,
+          defaultHotkey: "ctrl-shift-q",
+        },
+        extensionAPI
+      )
+    );
+    workbenchCommands.add(
+      addCommand(
+        {
+          label: "Tutorials",
+          callback: showTutorials,
+          defaultHotkey: "alt-shift-q",
+        },
+        extensionAPI
+      )
+    );
+    workbenchCommands.add(
+      addCommand(
+        {
+          label: "Graph DB Stats",
+          callback: displayGraphStats,
+          defaultHotkey: "alt-shift-b",
+        },
+        extensionAPI
+      )
+    );
   } else {
     const workbenchMenu = document.getElementById("workbench-menu");
     if (workbenchMenu) {
@@ -1269,6 +1269,5 @@ export const toggleFeature = (flag: boolean) => {
     }
     workbenchCommands.forEach((r) => r());
     workbenchCommands.clear();
-    document.body.removeEventListener("keydown", keyDownListener);
   }
 };

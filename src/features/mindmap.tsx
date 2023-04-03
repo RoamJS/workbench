@@ -1,5 +1,5 @@
 import addStyle from "roamjs-components/dom/addStyle";
-import { TreeNode } from "roamjs-components/types/native";
+import { OnloadArgs, TreeNode } from "roamjs-components/types/native";
 import resolveRefs from "roamjs-components/dom/resolveRefs";
 import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
@@ -423,7 +423,7 @@ const getMarkdown = (): string => {
 };
 
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   if (flag) {
     const style = addStyle(`span.${NODE_CLASSNAME} {
     width: 300px;
@@ -440,14 +440,20 @@ export const toggleFeature = (flag: boolean) => {
     style.remove();
 
     unloads.add(
-      addCommand("Open Mindmap", () => {
-        renderOverlay({
-          Overlay: MarkmapPanel,
-          props: {
-            getMarkdown,
+      addCommand(
+        {
+          label: "Open Mindmap",
+          callback: () => {
+            renderOverlay({
+              Overlay: MarkmapPanel,
+              props: {
+                getMarkdown,
+              },
+            });
           },
-        });
-      })
+        },
+        extensionAPI
+      )
     );
 
     const imagePreviewObserver = createHTMLObserver({

@@ -23,6 +23,7 @@ import {
 } from "@blueprintjs/core";
 import parseNlpDate from "roamjs-components/date/parseNlpDate";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
+import type { OnloadArgs } from "roamjs-components/types";
 
 type AlertContent = {
   when: string;
@@ -257,11 +258,27 @@ const openAlertDashboard = () =>
   renderOverlay({ id: "alert-dashboard", Overlay: AlertDashboard });
 
 let enabled = false;
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
   enabled = flag;
   if (enabled) {
-    unloads.add(addCommand("Create New Alert", createNewAlert));
-    unloads.add(addCommand("View Current Alerts", openAlertDashboard));
+    unloads.add(
+      addCommand(
+        {
+          label: "Create New Alert",
+          callback: createNewAlert,
+        },
+        extensionAPI
+      )
+    );
+    unloads.add(
+      addCommand(
+        {
+          label: "View Current Alerts",
+          callback: openAlertDashboard,
+        },
+        extensionAPI
+      )
+    );
     const storage = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storage) {
       const { alerts } = JSON.parse(storage) as {

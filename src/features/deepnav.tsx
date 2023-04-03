@@ -3,12 +3,11 @@ import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
 import addStyle from "roamjs-components/dom/addStyle";
 import ReactDOM from "react-dom";
 import getUids from "roamjs-components/dom/getUids";
-import { SidebarWindowInput } from "roamjs-components/types";
-import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
+import { OnloadArgs, SidebarWindowInput } from "roamjs-components/types";
 import createBlock from "roamjs-components/writes/createBlock";
 import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
 import React from "react";
-import getPageTitleValueByHtmlElement from "roamjs-components/dom/getPageTitleValueByHtmlElement";
+import { addCommand } from "./workBench";
 
 type Breadcrumbs = { hash: string; title: string; uid?: string }[];
 
@@ -48,19 +47,10 @@ const JUMP_KEYS = "asdfghjklqwertyuiopzxcvbnm";
 const CLOSE_BUTTON_KEYS = "0123456789" + JUMP_KEYS;
 const breadcrumbs: Breadcrumbs = [];
 
-const keyIsModifier = (ev: KeyboardEvent) => {
-  return (
-    ev.key === "Shift" ||
-    ev.key === "Meta" ||
-    ev.key === "Control" ||
-    ev.key === "Alt"
-  );
-};
-
 let isNavigating = false;
 
-const getInputTarget = (ev: Event) => {
-  const element = ev.target as HTMLElement;
+const checkActiveElement = () => {
+  const element = document.activeElement as HTMLElement;
   if (
     element.tagName == "INPUT" ||
     element.tagName == "SELECT" ||
@@ -72,8 +62,6 @@ const getInputTarget = (ev: Event) => {
     return null;
   }
 };
-
-const isHotKey = (ev: KeyboardEvent) => ev.code === "KeyG" || ev.key === "g";
 
 const clearBreadcrumbs = () => {
   document.querySelectorAll("." + BREADCRUMBS_CLASS).forEach((container) => {
@@ -851,30 +839,20 @@ const handleNavigateKey = (ev: KeyboardEvent) => {
   }
 };
 
-const keyDownListener = (ev: KeyboardEvent) => {
-  if (
-    keyIsModifier(ev) ||
-    ev.ctrlKey ||
-    (ev.altKey && (isNavigating || !isHotKey(ev)))
-  ) {
-    return;
+const activeDeepNav = () => {
+  const inputTarget = checkActiveElement();
+  if (inputTarget) {
+    inputTarget.blur();
   }
+  navigate();
+};
+
+const keyDownListener = (ev: KeyboardEvent) => {
   if (isNavigating) {
-    if (getInputTarget(ev)) {
+    if (checkActiveElement()) {
       endNavigate();
     } else {
       handleNavigateKey(ev);
-    }
-  } else if (isHotKey(ev)) {
-    const inputTarget = getInputTarget(ev);
-    if (ev.altKey || !inputTarget) {
-      ev.stopImmediatePropagation();
-      ev.preventDefault();
-      // Deslect input before navigating
-      if (inputTarget) {
-        inputTarget.blur();
-      }
-      navigate();
     }
   }
 };
@@ -889,10 +867,24 @@ const handleScrollOrResize = () => {
   }, 100);
 };
 
+const unloads = new Set<() => void>();
 export let enabled = false;
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
+    unloads.add(
+      addCommand(
+        {
+          label: "Activate Deep Nav",
+          callback: activeDeepNav,
+          defaultHotkey: "alt-g",
+        },
+        extensionAPI
+      )
+    );
     addStyle(
       `.${HINT_CLASS} {
   position: absolute;
@@ -991,12 +983,14 @@ export const toggleFeature = (flag: boolean) => {
 }`,
       STYLE_ID
     );
-    document.addEventListener("keydown", keyDownListener, true);
+    document.addEventListener("keydown", keyDownListener);
     window.addEventListener("resize", handleScrollOrResize);
   } else {
+    unloads.forEach((u) => u());
+    unloads.clear();
     endNavigate();
     document.getElementById(STYLE_ID)?.remove?.();
-    document.removeEventListener("keydown", keyDownListener, true);
+    document.removeEventListener("keydown", keyDownListener);
     window.removeEventListener("resize", handleScrollOrResize);
   }
 };

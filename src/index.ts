@@ -163,7 +163,7 @@ export default runExtension({
         name: f.name,
         action: {
           type: "switch",
-          onChange: (e) => f.module.toggleFeature(e.target.checked),
+          onChange: (e) => f.module.toggleFeature(e.target.checked, extensionAPI),
         },
       })),
     });
@@ -172,11 +172,11 @@ export default runExtension({
       const flag = extensionAPI.settings.get(id);
       const unset = typeof flag === "undefined" || flag === null;
       if (unset) extensionAPI.settings.set(id, defaultEnabled);
-      module.toggleFeature(unset ? defaultEnabled : (flag as boolean));
+      module.toggleFeature(unset ? defaultEnabled : (flag as boolean), extensionAPI);
     });
 
     return () => {
-      FEATURES.forEach(({ module }) => module.toggleFeature(false));
+      FEATURES.forEach(({ module }) => module.toggleFeature(false, extensionAPI));
     };
   },
 });

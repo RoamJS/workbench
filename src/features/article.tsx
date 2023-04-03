@@ -19,7 +19,7 @@ import { Readability } from "@mozilla/readability";
 import TurndownService from "turndown";
 import iconv from "iconv-lite";
 import charset from "charset";
-import { InputTextNode } from "roamjs-components/types/native";
+import { InputTextNode, OnloadArgs } from "roamjs-components/types/native";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import createBlock from "roamjs-components/writes/createBlock";
 import getUidsFromId from "roamjs-components/dom/getUidsFromId";
@@ -314,28 +314,24 @@ const inlineImportArticle = async ({
 };
 
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   if (flag) {
     unloads.add(
-      addCommand("Import Article Into Roam", () =>
-        renderImportArticle(
-          window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"]
-        )
+      addCommand(
+        {
+          label: "Import Article Into Roam",
+          callback: () =>
+            renderImportArticle(
+              window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"]
+            ),
+          defaultHotkey: "alt-shift-i",
+        },
+        extensionAPI
       )
     );
-
-    const keydownListener = async (e: KeyboardEvent) => {
-      if (e.altKey && e.shiftKey && (e.key === "I" || e.code === "KeyI")) {
-        const target = e.target as HTMLElement;
-        if (target.tagName === "TEXTAREA") {
-          const value = (target as HTMLTextAreaElement).value;
-          const { blockUid } = getUidsFromId(target.id);
-          await inlineImportArticle({ value, parentUid: blockUid });
-        }
-      }
-    };
-    document.addEventListener("keydown", keydownListener);
-    unloads.add(() => document.removeEventListener("keydown", keydownListener));
 
     unloads.add(
       registerSmartBlocksCommand({

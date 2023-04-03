@@ -15,7 +15,7 @@ import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageU
 import getBlockUidsAndTextsReferencingPage from "roamjs-components/queries/getBlockUidsAndTextsReferencingPage";
 import getFirstChildTextByBlockUid from "roamjs-components/queries/getFirstChildTextByBlockUid";
 import { render as renderToast } from "roamjs-components/components/Toast";
-import type { TreeNode } from "roamjs-components/types/native";
+import type { OnloadArgs, TreeNode } from "roamjs-components/types/native";
 import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
 import { addCommand } from "./workBench";
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
@@ -654,33 +654,32 @@ p a { color: #000 }</style>
   });
 };
 
-const keyDownListener = (ev: KeyboardEvent) => {
-  if (ev.altKey && ev.shiftKey == false && ev.code == "KeyM") {
-    ev.preventDefault();
-    ev.stopPropagation();
-    show();
-    return;
-  }
-
-  if (ev.altKey && ev.shiftKey == true && ev.code == "KeyM") {
-    ev.preventDefault();
-    ev.stopPropagation();
-    htmlview();
-    return;
-  }
-};
-
 export let enabled = false;
 const workbenchCommands = new Set<() => void>();
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
-    workbenchCommands.add(addCommand("Format Converter (alt-m)", show));
-    workbenchCommands.add(addCommand("Web View (alt-shift-m)", htmlview));
-    document.addEventListener("keydown", keyDownListener);
+    workbenchCommands.add(
+      addCommand(
+        { label: "Format Converter", callback: show, defaultHotkey: "alt-m" },
+        extensionAPI
+      )
+    );
+    workbenchCommands.add(
+      addCommand(
+        {
+          label: "Format Converter: Web View",
+          callback: htmlview,
+          defaultHotkey: "alt-shift-m",
+        },
+        extensionAPI
+      )
+    );
   } else {
     workbenchCommands.forEach((r) => r());
     workbenchCommands.clear();
-    document.removeEventListener("keydown", keyDownListener);
   }
 };
