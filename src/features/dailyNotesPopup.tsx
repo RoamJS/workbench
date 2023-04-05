@@ -213,6 +213,10 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
 
           .roamjs-daily-notes-popup .bp3-overlay-content {
             box-shadow: 0 19px 38px rgb(0 0 0 / 30%), 0 15px 12px rgb(0 0 0 / 22%);
+          }
+          
+          .rm-autocomplete__results {
+            z-index: 1020;
           }`}
         </style>
         <div
