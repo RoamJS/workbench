@@ -12,7 +12,7 @@
     "color": "^4.2.3",
     "markmap-lib": "^0.11.1",
     "markmap-view": "^0.2.1",
-    "roamjs-components": "^0.74.13",
+    "roamjs-components": "^0.76.0",
     "tesseract.js": "^2.1.4",
     "turndown": "^7.1.1"
   },
