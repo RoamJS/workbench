@@ -38,7 +38,12 @@ import registerSmartBlocksCommand from "roamjs-components/util/registerSmartBloc
 import type { OnloadArgs } from "roamjs-components/types/native";
 
 export let active = false;
-
+type ExtendAddCommandOptions = Omit<AddCommandOptions, "callback"> & {
+  callback:
+    | (() => void)
+    | ((uids: string[]) => Promise<void>)
+    | ((uids: string[]) => void);
+};
 let keystate = {
   shiftKey: false,
 };
@@ -224,7 +229,7 @@ export const userCommands = {
 };
 
 export const addCommand = (
-  args: AddCommandOptions,
+  args: ExtendAddCommandOptions,
   extensionAPI: OnloadArgs["extensionAPI"],
   restoreFocus?: true
 ) => {
