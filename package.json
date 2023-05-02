@@ -2,7 +2,7 @@
   "name": "workbench",
   "description": "A delightfully fun collection of power user tools for Roam.",
   "scripts": {
-    "prebuild:roam": "npm install",    
+    "prebuild:roam": "npm install",
     "build:roam": "samepage build --dry",
     "start": "roamjs-scripts dev --depot"
   },
@@ -22,7 +22,7 @@
     "@types/mozilla-readability": "^0.2.0",
     "@types/turndown": "^5.0.1"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "samepage": {
     "extends": "node_modules/roamjs-components/package.json"
   }
