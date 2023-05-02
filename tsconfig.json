@@ -1,5 +1,5 @@
 {
-  "extends": "./node_modules/roamjs-scripts/default.tsconfig",
+  "extends": "./node_modules/@samepage/scripts/tsconfig",
   "include": ["src", "index.d.ts"],
   "exclude": ["node_modules"]
 }
