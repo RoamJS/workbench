@@ -100,7 +100,6 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
         const { windowId } = getUids(
           containerRef.current.querySelector(".roam-block")
         );
-        console.log(uid, windowId);
         window.roamAlphaAPI.ui.setBlockFocusAndSelection({
           location: {
             "block-uid": uid,
