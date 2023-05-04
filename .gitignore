@@ -4,3 +4,4 @@ extension.js.LICENSE.txt
 build
 main.js
 .env
+dist

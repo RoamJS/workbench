@@ -1,7 +1,5 @@
 import registerSmartBlocksCommand from "roamjs-components/util/registerSmartBlocksCommand";
-import getFirstChildUidByBlockUid from "roamjs-components/queries/getFirstChildUidByBlockUid";
 import { addCommand } from "./workBench";
-import ReactDOM from "react-dom";
 import React, { ChangeEvent, useCallback, useState, useMemo } from "react";
 import {
   Button,
@@ -33,6 +31,7 @@ import renderOverlay, {
 import apiPost from "roamjs-components/util/apiPost";
 import getNthChildUidByBlockUid from "roamjs-components/queries/getNthChildUidByBlockUid";
 import getChildrenLengthByPageUid from "roamjs-components/queries/getChildrenLengthByPageUid";
+import { Buffer } from "buffer";
 
 export const ERROR_MESSAGE =
   "Error Importing Article. Email link to support@roamjs.com for help!";
@@ -115,10 +114,11 @@ export const importArticle = ({
       base.outerHTML
     }${html.substring(headIndex)}`;
     const doc = new DOMParser().parseFromString(htmlWithBase, "text/html");
-    const { content } = new Readability(doc).parse();
+    const parsedDoc = new Readability(doc).parse();
+    if (!parsedDoc) return [];
     const stack: InputTextNode[] = [];
     const inputTextNodes: InputTextNode[] = [];
-    const markdown = td.turndown(content);
+    const markdown = td.turndown(parsedDoc.content);
     const nodes = markdown.split("\n").filter((c) => !!c.trim());
     let previousNodeTabbed = false;
     for (const node of nodes) {
@@ -152,14 +152,17 @@ export const importArticle = ({
       (await window.roamAlphaAPI.ui.mainWindow
         .getOpenPageOrBlockUid()
         .then((parentUid) =>
-          createBlock({
-            parentUid,
-            order: getChildrenLengthByPageUid(parentUid),
-            node: { text: "" },
-          })
-        ));
+          parentUid
+            ? createBlock({
+                parentUid,
+                order: getChildrenLengthByPageUid(parentUid),
+                node: { text: "" },
+              })
+            : ""
+        )) ||
+      "";
     updateBlock({ ...inputTextNodes[0], uid });
-    inputTextNodes[0].children.forEach((node, order) =>
+    (inputTextNodes[0].children || []).forEach((node, order) =>
       createBlock({ node, order, parentUid: uid })
     );
     const parentUid = getParentUidByBlockUid(uid);
@@ -319,6 +322,11 @@ export const toggleFeature = (
   extensionAPI: OnloadArgs["extensionAPI"]
 ) => {
   if (flag) {
+    const oldBuffer = window.Buffer;
+    window.Buffer = Buffer;
+    unloads.add(() => {
+      window.Buffer = oldBuffer;
+    })
     unloads.add(
       addCommand(
         {
