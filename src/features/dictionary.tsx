@@ -1,5 +1,5 @@
 import React from "react";
-import { Classes, Dialog } from "@blueprintjs/core";
+import { Classes, Dialog, MenuItem } from "@blueprintjs/core";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
 import { render as renderToast } from "roamjs-components/components/Toast";
@@ -9,6 +9,9 @@ import renderOverlay, {
 import type { OnloadArgs } from "roamjs-components/types";
 import { addCommand } from "./workBench";
 import AutocompleteInput from "roamjs-components/components/AutocompleteInput";
+import { get } from "../settings";
+import extractRef from "roamjs-components/util/extractRef";
+import isLiveBlock from "roamjs-components/queries/isLiveBlock";
 
 type Entry = { word: string; definition: string; type: string };
 
@@ -16,13 +19,21 @@ export let enabled = false;
 
 const dictionaries: Record<string, (s: string) => Promise<Entry[]>> = {
   default: (s: string) =>
-    fetch(`https://api.datamuse.com/sug?s=${s}&md=dp`)
+    fetch(`https://api.datamuse.com/words?sp=${s}*&md=dp`)
       .then((res) => res.json())
-      .then((e) => e as Entry[]),
-  wordnet: (s: string) =>
-    fetch(`https://wordnet.glitch.me/query?search=${s}`)
-      .then((res) => res.json())
-      .then((e) => e as Entry[]),
+      .then((e) =>
+        (e as { word: string; tags?: string[]; defs?: string[] }[]).map((i) => {
+          const type = i.tags?.[0] || "Unknown";
+          return {
+            word: i.word,
+            type,
+            definition: (i.defs?.[0] || "No definition found.").replace(
+              new RegExp(`^${type}\\s`),
+              ""
+            ),
+          };
+        })
+      ),
 };
 
 const onNewItem = (s: string) => ({ word: s, definition: "", type: "" });
@@ -36,54 +47,98 @@ const TypeAhead = ({
   const [value, setValue] = React.useState<Entry>();
   const [options, setOptions] = React.useState<Entry[]>([]);
   const timeoutRef = React.useRef(0);
-  const formatEntry = React.useCallback(
-    (e?: Entry) =>
-      e
-        ? format
-            .replace(/{word}/g, e.word)
-            .replace(/{type}/g, e.type)
-            .replace(/{definition}/g, e.definition)
-        : "",
-    [format]
-  );
+  const itemToQuery = React.useCallback((e?: Entry) => e?.word || "", []);
+  const filterOptions = React.useCallback((opts: Entry[], q: string) => {
+    window.clearTimeout(timeoutRef.current);
+    timeoutRef.current = window.setTimeout(
+      () =>
+        dictionaries.default(q).then((newOpts) => {
+          if (
+            opts.length !== newOpts.length ||
+            !opts.every(
+              (o, i) =>
+                o.word === newOpts[i].word &&
+                o.type === newOpts[i].type &&
+                o.definition === newOpts[i].definition
+            )
+          ) {
+            setOptions(newOpts);
+          }
+        }),
+      500
+    );
+    return opts;
+  }, []);
   return (
     <Dialog isOpen={isOpen} onClose={onClose} title={"Workbench Dictionary"}>
       <div className={Classes.DIALOG_BODY}>
         <AutocompleteInput
           value={value}
           setValue={setValue}
-          filterOptions={(opts, q) => {
-            window.clearTimeout(timeoutRef.current);
-            if (value) {
-              timeoutRef.current = window.setTimeout(
-                () => dictionaries.default(q).then(setOptions),
-                500
-              );
-            }
-            return opts;
-          }}
+          filterOptions={filterOptions}
           options={options}
           placeholder={"search"}
-          itemToString={formatEntry}
+          itemToQuery={itemToQuery}
           onNewItem={onNewItem}
-          onConfirm={() => {
+          onConfirm={async () => {
             if (!value) return;
-            if (!uid) {
-              renderToast({
-                content: formatEntry(value),
-                id: "roamjs-workbench-dict",
-                position: "bottom-right",
-              });
-              onClose();
+            const formatUid = extractRef(format);
+            const handleLegacy = (format: string) => {
+              const content = format
+                .replace(/{word}/g, value.word)
+                .replace(/{type}/g, value.type)
+                .replace(/{definition}/g, value.definition);
+              if (!uid) {
+                renderToast({
+                  content,
+                  id: "roamjs-workbench-dict",
+                  position: "bottom-right",
+                });
+                onClose();
+              } else {
+                const existing = getTextByBlockUid(uid);
+                updateBlock({
+                  text: `${existing}${content}`,
+                  uid,
+                }).then(onClose);
+              }
+            };
+            if (isLiveBlock(formatUid)) {
+              if (window.roamjs.extension.smartblocks) {
+                window.roamjs.extension.smartblocks
+                  .triggerSmartblock({
+                    srcUid: formatUid,
+                    targetUid:
+                      uid ||
+                      (await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid()) ||
+                      window.roamAlphaAPI.util.dateToPageUid(new Date()),
+                    variables: value,
+                  })
+                  .then(onClose);
+              } else {
+                handleLegacy(getTextByBlockUid(formatUid));
+              }
             } else {
-              const existing = getTextByBlockUid(uid);
-              updateBlock({
-                text: `${existing}\n${formatEntry(value)}`,
-                uid,
-              }).then(onClose);
+              handleLegacy(format);
             }
           }}
           autoFocus
+          renderItem={({ item, onClick, active }) => {
+            return (
+              <MenuItem
+                onClick={onClick}
+                active={active}
+                text={
+                  <div>
+                    <b className="block">{item?.word}</b>
+                    <span>
+                      <i>{item?.type}</i> {item?.definition}
+                    </span>
+                  </div>
+                }
+              />
+            );
+          }}
         />
       </div>
     </Dialog>
@@ -92,7 +147,8 @@ const TypeAhead = ({
 
 export const typeAheadLookup = () => {
   const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
-  renderOverlay({ Overlay: TypeAhead, props: { uid } });
+  const format = get("Dictionary format") || undefined;
+  renderOverlay({ Overlay: TypeAhead, props: { uid, format } });
 };
 
 const unloads = new Set<() => void>();
