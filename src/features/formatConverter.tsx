@@ -73,11 +73,7 @@ const roamMarkupScrubber = (blockText: string, removeMarkdown = true) => {
   blockText = blockText.replaceAll(
     /\{\{calc: (.+?)\}\}/g,
     function (all, match) {
-      try {
-        return eval(match);
-      } catch (e) {
-        return "";
-      }
+      return formatter.evaluate(match).toString();
     }
   );
   // calc functions  {{calc: 4+4}}
@@ -105,10 +101,10 @@ const walkDocumentStructureAndFormat = async (
     t: string,
     n: TreeNode,
     l: number,
-    p: TreeNode,
+    p: TreeNode | null,
     f: boolean
   ) => Promise<string>,
-  parent: TreeNode,
+  parent: TreeNode | null,
   flatten: boolean
 ): Promise<string> => {
   const mainText = await Promise.resolve(nodeCurrent.text || "").then(
@@ -129,7 +125,7 @@ const walkDocumentStructureAndFormat = async (
             flatten
           ).then((output) => ({
             output,
-            index: e.index,
+            index: e.index || 0,
             length: e[0].length,
           }));
         })
@@ -190,7 +186,7 @@ export const formatter = {
     nodeCurrent?: TreeNode,
     level = 0
   ) => {
-    if (getPageTitleByPageUid(nodeCurrent.uid)) return "";
+    if (getPageTitleByPageUid(nodeCurrent?.uid || "")) return "";
     let leadingSpaces = level > 1 ? "  ".repeat(level - 1) : "";
     return leadingSpaces + roamMarkupScrubber(blockText, true) + "\n";
   },
@@ -199,19 +195,19 @@ export const formatter = {
     nodeCurrent?: TreeNode,
     level = 0
   ) => {
-    if (getPageTitleByPageUid(nodeCurrent.uid)) return "";
+    if (getPageTitleByPageUid(nodeCurrent?.uid || "")) return "";
     const leadingSpaces = level > 1 ? "\t".repeat(level - 1) : "";
     return leadingSpaces + roamMarkupScrubber(blockText, true) + "\n";
   },
   pureText_NoIndentation: async (blockText: string, nodeCurrent?: TreeNode) => {
-    if (getPageTitleByPageUid(nodeCurrent.uid)) return "";
+    if (getPageTitleByPageUid(nodeCurrent?.uid || "")) return "";
     return roamMarkupScrubber(blockText, true) + "\n";
   },
   markdownGithub: async (
     blockText: string,
-    nodeCurrent?: TreeNode,
-    level?: number,
-    parent?: TreeNode,
+    nodeCurrent: TreeNode,
+    level: number,
+    parent: TreeNode,
     flatten?: boolean
   ) => {
     if (flatten == true) {
@@ -257,7 +253,9 @@ export const formatter = {
     return prefix + blockText + "  \n";
   },
   htmlSimple: async (uid: string) => {
+    // @ts-ignore
     var md = await iterateThroughTree(uid, formatter.markdownGithub);
+    // @ts-ignore
     const { marked } = await window.RoamLazy.Marked();
     marked.setOptions({
       gfm: true,
@@ -302,7 +300,9 @@ export const formatter = {
 </html>`;
   },
   htmlMarkdownFlatten: async (uid: string) => {
+    // @ts-ignore
     var md = await iterateThroughTree(uid, formatter.markdownGithub, true);
+    // @ts-ignore
     const { marked } = await window.RoamLazy.Marked();
     marked.setOptions({
       gfm: true,
@@ -346,6 +346,7 @@ export const formatter = {
   </body>
 </html>`;
   },
+  evaluate: (_: string): string => "0",
 };
 
 type JSONNode = {
@@ -418,11 +419,13 @@ const FormatConverterUI = ({
         break;
       case "markdown_Github":
         setDisplayValue(
+          // @ts-ignore
           await iterateThroughTree(uid, formatter.markdownGithub)
         );
         break;
       case "markdown_Github_flatten":
         setDisplayValue(
+          // @ts-ignore
           await iterateThroughTree(uid, formatter.markdownGithub, true)
         );
         break;
@@ -641,7 +644,7 @@ p a { color: #000 }</style>
             intent={"primary"}
             rightIcon={"print"}
             onClick={() => {
-              iframeRef.current.contentWindow.print();
+              iframeRef.current?.contentWindow?.print();
             }}
           />
         </div>
@@ -678,6 +681,10 @@ export const toggleFeature = (
         extensionAPI
       )
     );
+    window.RoamLazy?.Insect().then((insect) => {
+      formatter.evaluate = (s: string) =>
+        insect.repl(insect.fmtPlain)(insect.initialEnvironment)(s).msg;
+    });
   } else {
     workbenchCommands.forEach((r) => r());
     workbenchCommands.clear();

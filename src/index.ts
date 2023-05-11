@@ -1,5 +1,4 @@
 import runExtension from "roamjs-components/util/runExtension";
-import "roamjs-components/types";
 
 // features
 import * as alert from "./features/alert";
