@@ -9,6 +9,9 @@ on:
       - ".github/workflows/main.yaml"
 
 env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_REGION: us-east-1
   API_URL: https://lambda.roamjs.com
   ROAMJS_EMAIL: support@roamjs.com
   ROAMJS_EXTENSION_ID: workbench
