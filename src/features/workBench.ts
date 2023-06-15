@@ -233,18 +233,30 @@ export const addCommand = (
   extensionAPI: OnloadArgs["extensionAPI"],
   restoreFocus?: true
 ) => {
-  const callbackFunction = async () => {
-    const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
-    const uids = uid
-      ? [uid]
-      : Array.from(document.querySelectorAll(`.block-highlight-blue`)).map(
-          (d) => getUidsFromId(d.querySelector(".roam-block").id).blockUid
-        );
-    Promise.resolve(args.callback(uids)).then(() => {
-      if (restoreFocus && uids.length === 1) {
-        focusMainWindowBlock(uids[0]);
-      }
+  const throwErrorToast = (e: any) => {
+    renderToast({
+      content: e.message ? e.message : `Looks like there was an error.`,
+      intent: "danger",
+      id: "workbench-error",
     });
+    console.error(e);
+  };
+  const callbackFunction = async () => {
+    try {
+      const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+      const uids = uid
+        ? [uid]
+        : Array.from(document.querySelectorAll(`.block-highlight-blue`)).map(
+            (d) => getUidsFromId(d.querySelector(".roam-block").id).blockUid
+          );
+      await Promise.resolve(args.callback(uids)).then(() => {
+        if (restoreFocus && uids.length === 1) {
+          focusMainWindowBlock(uids[0]);
+        }
+      });
+    } catch (e) {
+      throwErrorToast(e);
+    }
   };
   const display = "(WB) " + args.label;
   const options = {

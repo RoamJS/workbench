@@ -28,16 +28,8 @@ import renderOverlay, {
 import { Dialog, Spinner } from "@blueprintjs/core";
 import React, { useMemo, useState, useEffect } from "react";
 import { addCommand } from "./workBench";
+import getParentUidsOfBlockUid from "roamjs-components/queries/getParentUidsOfBlockUid";
 
-const throwErrorToast = (e: any) => {
-  renderToast({
-    content: `Looks like there was an error. Check the console for more info.`,
-    intent: "danger",
-    id: "workbench-error",
-    timeout: 2000,
-  });
-  console.log(e);
-};
 const getCurrentPageUid = async () =>
   (await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid()) ||
   window.roamAlphaAPI.util.dateToPageUid(new Date());
@@ -197,15 +189,40 @@ const toggleLinkedRefs = () => {
   ).click();
   document.querySelector(".rm-reference-container .rm-caret").scrollIntoView();
 };
-const toggleUnlinkedRefs = () => {
-  try {
-    const unlinkedRefsCaret = document.querySelector(
-      ".rm-reference-main > div > div:nth-child(2) > div > span"
-    ) as HTMLElement;
+const toggleUnlinkedRefs = async () => {
+  const rmReferenceDiv = document.querySelector(
+    ".rm-reference-main"
+  ) as HTMLElement;
+  const textEl = Array.from(
+    rmReferenceDiv.querySelectorAll(":scope *:not(:empty):not(:has(*))")
+  ).find((element) => element.textContent?.includes("Unlinked References"));
+  const unlinkedRefsCaret = textEl
+    ?.closest("div")
+    ?.querySelector("span") as HTMLElement;
+
+  if (!unlinkedRefsCaret) {
+    const url = window.location.href;
+    const dnpTest = /^https?:\/\/roamresearch\.com\/#\/app\/[^\/]+\/?$/;
+    const uid = url.match(/\/([^\/]+)$/)?.[1];
+
+    if (dnpTest.test(url)) {
+      renderToast({
+        id: "dnp-refs-toast",
+        content: "No Unlinked References on Daily Notes Page",
+        intent: "warning",
+      });
+    } else if (uid && getParentUidsOfBlockUid(uid).length > 0) {
+      renderToast({
+        id: "block-refs-toast",
+        content: "No Unlinked References on a block",
+        intent: "warning",
+      });
+    } else {
+      throw new Error();
+    }
+  } else {
     unlinkedRefsCaret.click();
     unlinkedRefsCaret.scrollIntoView();
-  } catch (e) {
-    throwErrorToast(e);
   }
 };
 const toggleReferenceParents = () =>
@@ -488,9 +505,9 @@ const toggleBlockViewType = () => {
       )[0]?.[0] as PullBlock
     )?.[":children/view-type"];
     const newViewType =
-      viewType === "document"
+      viewType !== undefined && /^:?document$/.test(viewType)
         ? "numbered"
-        : viewType === "numbered"
+        : viewType !== undefined && /^:?numbered$/.test(viewType)
         ? "bullet"
         : "document";
     window.roamAlphaAPI.updateBlock({
