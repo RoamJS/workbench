@@ -127,18 +127,18 @@ const ExpColDialog = ({
   );
 };
 
- const jumpToTheTopOfThePage = () =>
-   getCurrentPageUid().then((uid) => {
-     const blockUid = getFirstChildUidByBlockUid(uid);
-     setTimeout(() => {
-       window.roamAlphaAPI.ui.setBlockFocusAndSelection({
-         location: {
-           "block-uid": blockUid,
-           "window-id": `${getCurrentUserUid()}-body-outline-${uid}`,
-         },
-       });
-     }, 300);
-   });
+const jumpToTheTopOfThePage = () =>
+  getCurrentPageUid().then((uid) => {
+    const blockUid = getFirstChildUidByBlockUid(uid);
+    setTimeout(() => {
+      window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+        location: {
+          "block-uid": blockUid,
+          "window-id": `${getCurrentUserUid()}-body-outline-${uid}`,
+        },
+      });
+    }, 300);
+  });
 const jumpToTheBottomOfPage = () =>
   getCurrentPageUid().then((uid) => {
     const blocks = getShallowTreeByParentUid(uid);
@@ -236,39 +236,7 @@ const collapseReferenceChildren = () =>
       ).find((e: HTMLLinkElement) => e.innerText === "Collapse all");
       (li?.childNodes[0] as HTMLElement).click();
     });
-const copyBlockRef = () => {
-  const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
-  if (uid) {
-    navigator.clipboard.writeText(`((${uid}))`);
-    renderToast({
-      content: `Copied: ((${uid}))`,
-      intent: "warning",
-      id: "workbench-warning",
-      timeout: 2000,
-    });
-  }
-};
-const copyBlockRefAsAlias = () => {
-  const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
-  const selectedText = window.getSelection().toString();
-  const formatToUse = get("CopyRefAsAliasFormat");
-  const outputText =
-    selectedText != "" && formatToUse
-      ? formatToUse
-          .replace("UID", `((${uid}))`)
-          .replace("SELECTEDTEXT", selectedText)
-          .trim()
-      : selectedText != ""
-      ? `"${selectedText}" [*](((${uid})))`
-      : `[*](((${uid})))`;
-  navigator.clipboard.writeText(outputText);
-  renderToast({
-    content: `Copied: ${outputText}`,
-    intent: "warning",
-    id: "workbench-warning",
-    timeout: 2000,
-  });
-};
+
 const expandCurrentBlockTree = () => {
   const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
   if (uid) {
@@ -584,42 +552,66 @@ const expandCollapseBlockTree = () => {
 };
 
 const commands = [
-  {label: "Jump to the top of the page", callback: jumpToTheTopOfThePage},
-  {label: "Jump to the bottom of page", callback: jumpToTheBottomOfPage},
-  {label: "Expand all blocks on page", callback: expandAllBlocksOnPage},
-  {label: "Collapse all blocks on page", callback: collapseAllBlocksOnPage},
-  {label: "Open this page in sidebar", callback: openPageInSidebar},
-  {label: "Add shortcut to page to left sidebar", callback: addShortcutToLeftSidebar},
-  {label: "Toggle Linked Refs", callback: toggleLinkedRefs},
-  {label: "Toggle Unlinked Refs", callback: toggleUnlinkedRefs},
-  {label: "Toggle References to page level", callback: toggleReferenceParents},
-  {label: "Expand Reference children", callback: expandReferenceChildren},
-  {label: "Collapse Reference children", callback: collapseReferenceChildren},
-  {label: "Copy block ref", callback: copyBlockRef},
-  {label: "Copy block ref as alias", callback: copyBlockRefAsAlias},
-  {label: "Expand current block tree", callback: expandCurrentBlockTree},
-  {label: "Collapse current block tree", callback: collapseCurrentBlockTree},
-  {label: "Insert block above", callback: insertBlockAbove},
-  {label: "Insert block below", callback: insertBlockBelow},
-  {label: "Go up a block", callback: goUpBlock},
-  {label: "Go down a block", callback: goDownBlock},
-  {label: "Go to parent block", callback: goToParentBlock},
-  {label: "Delete block", callback: delBlock},
-  {label: "Toggle Block View type", callback: toggleBlockViewType},
-  {label: "Replace last reference before cursor with text and alias", callback: replaceLastReferenceWithTextAndAlias},
-  {label: "Apply Children of last reference before cursor as text", callback: applyChildrenOfLastReferenceAsText},
-  {label: "Replace last reference before cursor with original + bring nested items along", callback: replaceLastReferenceWithOriginal},
-  {label: "Paste block with children as references", callback: pasteBlockWithChildrenAsReferences},
-  {label: "Expand/Collapse block tree to a certain level, specified by the following numeric key press", callback: expandCollapseBlockTree},
-  {label: "Align left", callback: alignLeft},
-  {label: "Center", callback: center},
-  {label: "Align right", callback: alignRight},
-  {label: "Justify", callback: justify},
-  {label: "Toggle Queries", callback: toggleQueries},
+  { label: "Jump to the top of the page", callback: jumpToTheTopOfThePage },
+  { label: "Jump to the bottom of page", callback: jumpToTheBottomOfPage },
+  { label: "Expand all blocks on page", callback: expandAllBlocksOnPage },
+  { label: "Collapse all blocks on page", callback: collapseAllBlocksOnPage },
+  { label: "Open this page in sidebar", callback: openPageInSidebar },
+  {
+    label: "Add shortcut to page to left sidebar",
+    callback: addShortcutToLeftSidebar,
+  },
+  { label: "Toggle Linked Refs", callback: toggleLinkedRefs },
+  { label: "Toggle Unlinked Refs", callback: toggleUnlinkedRefs },
+  {
+    label: "Toggle References to page level",
+    callback: toggleReferenceParents,
+  },
+  { label: "Expand Reference children", callback: expandReferenceChildren },
+  { label: "Collapse Reference children", callback: collapseReferenceChildren },
+  { label: "Expand current block tree", callback: expandCurrentBlockTree },
+  { label: "Collapse current block tree", callback: collapseCurrentBlockTree },
+  { label: "Insert block above", callback: insertBlockAbove },
+  { label: "Insert block below", callback: insertBlockBelow },
+  { label: "Go up a block", callback: goUpBlock },
+  { label: "Go down a block", callback: goDownBlock },
+  { label: "Go to parent block", callback: goToParentBlock },
+  { label: "Delete block", callback: delBlock },
+  { label: "Toggle Block View type", callback: toggleBlockViewType },
+  {
+    label: "Replace last reference before cursor with text and alias",
+    callback: replaceLastReferenceWithTextAndAlias,
+  },
+  {
+    label: "Apply Children of last reference before cursor as text",
+    callback: applyChildrenOfLastReferenceAsText,
+  },
+  {
+    label:
+      "Replace last reference before cursor with original + bring nested items along",
+    callback: replaceLastReferenceWithOriginal,
+  },
+  {
+    label: "Paste block with children as references",
+    callback: pasteBlockWithChildrenAsReferences,
+  },
+  {
+    label:
+      "Expand/Collapse block tree to a certain level, specified by the following numeric key press",
+    callback: expandCollapseBlockTree,
+  },
+  { label: "Align left", callback: alignLeft },
+  { label: "Center", callback: center },
+  { label: "Align right", callback: alignRight },
+  { label: "Justify", callback: justify },
+  { label: "Toggle Queries", callback: toggleQueries },
 ];
 const unloads = new Set<() => void>();
 export let enabled = false;
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
     const focusableObserver = createHTMLObserver({
