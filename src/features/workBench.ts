@@ -36,6 +36,7 @@ import getBlockUidsReferencingPage from "roamjs-components/queries/getBlockUidsR
 import createTagRegex from "roamjs-components/util/createTagRegex";
 import registerSmartBlocksCommand from "roamjs-components/util/registerSmartBlocksCommand";
 import type { OnloadArgs } from "roamjs-components/types/native";
+import { apiPost } from "samepage/internal/apiClient";
 
 export let active = false;
 type ExtendAddCommandOptions = Omit<AddCommandOptions, "callback"> & {
@@ -236,14 +237,6 @@ export const addCommand = (
   extensionAPI: OnloadArgs["extensionAPI"],
   restoreFocus?: true
 ) => {
-  const throwErrorToast = (e: any) => {
-    renderToast({
-      content: e.message ? e.message : `Looks like there was an error.`,
-      intent: "danger",
-      id: "workbench-error",
-    });
-    console.error(e);
-  };
   const callbackFunction = async () => {
     try {
       const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
@@ -257,8 +250,22 @@ export const addCommand = (
           focusMainWindowBlock(uids[0]);
         }
       });
-    } catch (e) {
-      throwErrorToast(e);
+    } catch (e: any) {
+      renderToast({
+        content: `Looks like there was an error.  The team has been notified.`,
+        intent: "danger",
+        id: "workbench-error",
+      });
+      apiPost({
+        path: "errors",
+        data: {
+          method: "extension-error",
+          type: "WorkBench Command Error",
+          message: e.message,
+          stack: e.stack,
+          version: process.env.VERSION,
+        },
+      });
     }
   };
   const display = "(WB) " + args.label;
