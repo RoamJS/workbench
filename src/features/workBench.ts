@@ -36,7 +36,7 @@ import getBlockUidsReferencingPage from "roamjs-components/queries/getBlockUidsR
 import createTagRegex from "roamjs-components/util/createTagRegex";
 import registerSmartBlocksCommand from "roamjs-components/util/registerSmartBlocksCommand";
 import type { OnloadArgs } from "roamjs-components/types/native";
-import { apiPost } from "samepage/internal/apiClient";
+import apiPost from "roamjs-components/util/apiPost";
 
 export let active = false;
 type ExtendAddCommandOptions = Omit<AddCommandOptions, "callback"> & {
@@ -250,7 +250,8 @@ export const addCommand = (
           focusMainWindowBlock(uids[0]);
         }
       });
-    } catch (e: any) {
+    } catch (e) {
+      const error = e as Error;
       renderToast({
         content: "Looks like there was an error.  The team has been notified.",
         intent: "danger",
@@ -261,10 +262,10 @@ export const addCommand = (
         data: {
           method: "extension-error",
           type: "WorkBench Command Error",
-          message: e.message,
-          stack: e.stack,
+          message: error.message,
+          stack: error.stack,
         },
-      });
+      }).catch(() => {});
     }
   };
   const display = "(WB) " + args.label;
