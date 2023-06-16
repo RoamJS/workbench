@@ -14,6 +14,7 @@
     "markmap-lib": "^0.11.1",
     "markmap-view": "^0.2.1",
     "roamjs-components": "^0.78.6",
+    "samepage": "^0.72.1",
     "tesseract.js": "^2.1.4",
     "turndown": "^7.1.1"
   },

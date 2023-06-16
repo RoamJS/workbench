@@ -198,14 +198,11 @@ const toggleUnlinkedRefs = async () => {
   ).find((element) => element.textContent?.includes("Unlinked References"));
   const unlinkedRefsCaret = textEl
     ?.closest("div")
-    ?.querySelector("span") as HTMLElement;
+    ?.querySelector("span.rm-caret") as HTMLElement;
 
   if (!unlinkedRefsCaret) {
-    const url = window.location.href;
-    const dnpTest = /^https?:\/\/roamresearch\.com\/#\/app\/[^\/]+\/?$/;
-    const uid = url.match(/\/([^\/]+)$/)?.[1];
-
-    if (dnpTest.test(url)) {
+    const uid = await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+    if (!uid) {
       renderToast({
         id: "dnp-refs-toast",
         content: "No Unlinked References on Daily Notes Page",
