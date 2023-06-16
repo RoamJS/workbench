@@ -258,39 +258,7 @@ const collapseReferenceChildren = () =>
       ).find((e: HTMLLinkElement) => e.innerText === "Collapse all");
       (li?.childNodes[0] as HTMLElement).click();
     });
-const copyBlockRef = () => {
-  const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
-  if (uid) {
-    navigator.clipboard.writeText(`((${uid}))`);
-    renderToast({
-      content: `Copied: ((${uid}))`,
-      intent: "warning",
-      id: "workbench-warning",
-      timeout: 2000,
-    });
-  }
-};
-const copyBlockRefAsAlias = () => {
-  const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
-  const selectedText = window.getSelection().toString();
-  const formatToUse = get("CopyRefAsAliasFormat");
-  const outputText =
-    selectedText != "" && formatToUse
-      ? formatToUse
-          .replace("UID", `((${uid}))`)
-          .replace("SELECTEDTEXT", selectedText)
-          .trim()
-      : selectedText != ""
-      ? `"${selectedText}" [*](((${uid})))`
-      : `[*](((${uid})))`;
-  navigator.clipboard.writeText(outputText);
-  renderToast({
-    content: `Copied: ${outputText}`,
-    intent: "warning",
-    id: "workbench-warning",
-    timeout: 2000,
-  });
-};
+
 const expandCurrentBlockTree = () => {
   const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
   if (uid) {

@@ -91,7 +91,10 @@ const runInboxCommand = async (uids: string[], children: RoamBasicNode[]) => {
       return;
     }
   }
-  let textName = await userCommands.findBlockAmongstChildren(children, "text:");
+  const textName = await userCommands.findBlockAmongstChildren(
+    children,
+    "text:"
+  );
   //if text defined, get the UID of the tag.
   let textUID =
     textName == null
@@ -515,7 +518,11 @@ const swapWithSideBar = async (index = 0) => {
       window: { "block-uid": paneToSwap, type: pane.type },
     });
     window.roamAlphaAPI.ui.rightSidebar.addWindow({
-      window: { "block-uid": mainPageUID, type: "outline" },
+      window: {
+        "block-uid":
+          mainPageUID || window.roamAlphaAPI.util.dateToPageUid(new Date()),
+        type: "outline",
+      },
     });
   }
 };
@@ -534,7 +541,11 @@ const pullReferences = async (uids: string[], removeTags?: boolean) => {
     ? getPageTitleByBlockUid(uids[0]) || getPageTitleByPageUid(uids[0])
     : await window.roamAlphaAPI.ui.mainWindow
         .getOpenPageOrBlockUid()
-        .then((uid) => getPageTitleByPageUid(uid));
+        .then((uid) =>
+          uid
+            ? getPageTitleByBlockUid(uid) || getPageTitleByPageUid(uid)
+            : window.roamAlphaAPI.util.dateToPageTitle(new Date())
+        );
   const linkedReferences = getBlockUidsAndTextsReferencingPage(pageTitleText);
   if (linkedReferences.length === 0) {
     return [`No linked references for ${pageTitleText}!`];
@@ -810,24 +821,6 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
               });
           },
         });
-      },
-    },
-    extensionAPI
-  );
-  addCommand(
-    {
-      label: "Copy Block Reference",
-      callback: async (uids: string[]) => {
-        window.navigator.clipboard.writeText(`((${uids[0] || ""}))`);
-      },
-    },
-    extensionAPI
-  );
-  addCommand(
-    {
-      label: "Copy Block Reference as alias",
-      callback: async (uids: string[]) => {
-        window.navigator.clipboard.writeText(`[*](((${uids[0] || ""})))`);
       },
     },
     extensionAPI
