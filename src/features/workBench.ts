@@ -804,7 +804,24 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
     },
     extensionAPI
   );
-
+  addCommand(
+    {
+      label: "Copy Block Reference",
+      callback: async (uids: string[]) => {
+        window.navigator.clipboard.writeText(`((${uids[0] || ""}))`);
+      },
+    },
+    extensionAPI
+  );
+  addCommand(
+    {
+      label: "Copy Block Reference as alias",
+      callback: async (uids: string[]) => {
+        window.navigator.clipboard.writeText(`[*](((${uids[0] || ""})))`);
+      },
+    },
+    extensionAPI
+  );
   addCommand(
     {
       label: "Jump to Block in page (jbp)",
