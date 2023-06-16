@@ -252,7 +252,7 @@ export const addCommand = (
       });
     } catch (e: any) {
       renderToast({
-        content: `Looks like there was an error.  The team has been notified.`,
+        content: "Looks like there was an error.  The team has been notified.",
         intent: "danger",
         id: "workbench-error",
       });
@@ -263,7 +263,6 @@ export const addCommand = (
           type: "WorkBench Command Error",
           message: e.message,
           stack: e.stack,
-          version: process.env.VERSION,
         },
       });
     }
