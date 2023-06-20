@@ -269,7 +269,6 @@ export const addCommand = (
       }).catch(() => {});
     }
   };
-
   const display = "(WB) " + args.label;
   const options = {
     label: display,
