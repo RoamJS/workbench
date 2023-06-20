@@ -28,6 +28,7 @@ import renderOverlay, {
 import { Dialog, Spinner } from "@blueprintjs/core";
 import React, { useMemo, useState, useEffect } from "react";
 import { addCommand } from "./workBench";
+import getParentUidsOfBlockUid from "roamjs-components/queries/getParentUidsOfBlockUid";
 
 const getCurrentPageUid = async () =>
   (await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid()) ||
@@ -127,18 +128,18 @@ const ExpColDialog = ({
   );
 };
 
- const jumpToTheTopOfThePage = () =>
-   getCurrentPageUid().then((uid) => {
-     const blockUid = getFirstChildUidByBlockUid(uid);
-     setTimeout(() => {
-       window.roamAlphaAPI.ui.setBlockFocusAndSelection({
-         location: {
-           "block-uid": blockUid,
-           "window-id": `${getCurrentUserUid()}-body-outline-${uid}`,
-         },
-       });
-     }, 300);
-   });
+const jumpToTheTopOfThePage = () =>
+  getCurrentPageUid().then((uid) => {
+    const blockUid = getFirstChildUidByBlockUid(uid);
+    setTimeout(() => {
+      window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+        location: {
+          "block-uid": blockUid,
+          "window-id": `${getCurrentUserUid()}-body-outline-${uid}`,
+        },
+      });
+    }, 300);
+  });
 const jumpToTheBottomOfPage = () =>
   getCurrentPageUid().then((uid) => {
     const blocks = getShallowTreeByParentUid(uid);
@@ -188,17 +189,38 @@ const toggleLinkedRefs = () => {
   ).click();
   document.querySelector(".rm-reference-container .rm-caret").scrollIntoView();
 };
-const toggleUnlinkedRefs = () => {
-  (
-    document.querySelector(
-      ".rm-reference-main > div > div:nth-child(2) > div > span > span"
-    ) as HTMLElement
-  ).click();
-  document
-    .querySelector(
-      ".rm-reference-main > div > div:nth-child(2) > div > span > span"
-    )
-    .scrollIntoView();
+const toggleUnlinkedRefs = async () => {
+  const rmReferenceDiv = document.querySelector(
+    ".rm-reference-main"
+  ) as HTMLElement;
+  const textEl = Array.from(
+    rmReferenceDiv.querySelectorAll(":scope *:not(:empty):not(:has(*))")
+  ).find((element) => element.textContent?.includes("Unlinked References"));
+  const unlinkedRefsCaret = textEl
+    ?.closest("div")
+    ?.querySelector("span.rm-caret") as HTMLElement;
+
+  if (!unlinkedRefsCaret) {
+    const uid = await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+    if (!uid) {
+      renderToast({
+        id: "dnp-refs-toast",
+        content: "No Unlinked References on Daily Notes Page",
+        intent: "warning",
+      });
+    } else if (uid && getParentUidsOfBlockUid(uid).length > 0) {
+      renderToast({
+        id: "block-refs-toast",
+        content: "No Unlinked References on a block",
+        intent: "warning",
+      });
+    } else {
+      throw new Error();
+    }
+  } else {
+    unlinkedRefsCaret.click();
+    unlinkedRefsCaret.scrollIntoView();
+  }
 };
 const toggleReferenceParents = () =>
   document
@@ -480,9 +502,9 @@ const toggleBlockViewType = () => {
       )[0]?.[0] as PullBlock
     )?.[":children/view-type"];
     const newViewType =
-      viewType === ":document"
+      viewType !== undefined && /^:?document$/.test(viewType)
         ? "numbered"
-        : viewType === ":numbered"
+        : viewType !== undefined && /^:?numbered$/.test(viewType)
         ? "bullet"
         : "document";
     window.roamAlphaAPI.updateBlock({
@@ -584,42 +606,68 @@ const expandCollapseBlockTree = () => {
 };
 
 const commands = [
-  {label: "Jump to the top of the page", callback: jumpToTheTopOfThePage},
-  {label: "Jump to the bottom of page", callback: jumpToTheBottomOfPage},
-  {label: "Expand all blocks on page", callback: expandAllBlocksOnPage},
-  {label: "Collapse all blocks on page", callback: collapseAllBlocksOnPage},
-  {label: "Open this page in sidebar", callback: openPageInSidebar},
-  {label: "Add shortcut to page to left sidebar", callback: addShortcutToLeftSidebar},
-  {label: "Toggle Linked Refs", callback: toggleLinkedRefs},
-  {label: "Toggle Unlinked Refs", callback: toggleUnlinkedRefs},
-  {label: "Toggle References to page level", callback: toggleReferenceParents},
-  {label: "Expand Reference children", callback: expandReferenceChildren},
-  {label: "Collapse Reference children", callback: collapseReferenceChildren},
-  {label: "Copy block ref", callback: copyBlockRef},
-  {label: "Copy block ref as alias", callback: copyBlockRefAsAlias},
-  {label: "Expand current block tree", callback: expandCurrentBlockTree},
-  {label: "Collapse current block tree", callback: collapseCurrentBlockTree},
-  {label: "Insert block above", callback: insertBlockAbove},
-  {label: "Insert block below", callback: insertBlockBelow},
-  {label: "Go up a block", callback: goUpBlock},
-  {label: "Go down a block", callback: goDownBlock},
-  {label: "Go to parent block", callback: goToParentBlock},
-  {label: "Delete block", callback: delBlock},
-  {label: "Toggle Block View type", callback: toggleBlockViewType},
-  {label: "Replace last reference before cursor with text and alias", callback: replaceLastReferenceWithTextAndAlias},
-  {label: "Apply Children of last reference before cursor as text", callback: applyChildrenOfLastReferenceAsText},
-  {label: "Replace last reference before cursor with original + bring nested items along", callback: replaceLastReferenceWithOriginal},
-  {label: "Paste block with children as references", callback: pasteBlockWithChildrenAsReferences},
-  {label: "Expand/Collapse block tree to a certain level, specified by the following numeric key press", callback: expandCollapseBlockTree},
-  {label: "Align left", callback: alignLeft},
-  {label: "Center", callback: center},
-  {label: "Align right", callback: alignRight},
-  {label: "Justify", callback: justify},
-  {label: "Toggle Queries", callback: toggleQueries},
+  { label: "Jump to the top of the page", callback: jumpToTheTopOfThePage },
+  { label: "Jump to the bottom of page", callback: jumpToTheBottomOfPage },
+  { label: "Expand all blocks on page", callback: expandAllBlocksOnPage },
+  { label: "Collapse all blocks on page", callback: collapseAllBlocksOnPage },
+  { label: "Open this page in sidebar", callback: openPageInSidebar },
+  {
+    label: "Add shortcut to page to left sidebar",
+    callback: addShortcutToLeftSidebar,
+  },
+  { label: "Toggle Linked Refs", callback: toggleLinkedRefs },
+  { label: "Toggle Unlinked Refs", callback: toggleUnlinkedRefs },
+  {
+    label: "Toggle References to page level",
+    callback: toggleReferenceParents,
+  },
+  { label: "Expand Reference children", callback: expandReferenceChildren },
+  { label: "Collapse Reference children", callback: collapseReferenceChildren },
+  { label: "Copy block ref", callback: copyBlockRef },
+  { label: "Copy block ref as alias", callback: copyBlockRefAsAlias },
+  { label: "Expand current block tree", callback: expandCurrentBlockTree },
+  { label: "Collapse current block tree", callback: collapseCurrentBlockTree },
+  { label: "Insert block above", callback: insertBlockAbove },
+  { label: "Insert block below", callback: insertBlockBelow },
+  { label: "Go up a block", callback: goUpBlock },
+  { label: "Go down a block", callback: goDownBlock },
+  { label: "Go to parent block", callback: goToParentBlock },
+  { label: "Delete block", callback: delBlock },
+  { label: "Toggle Block View type", callback: toggleBlockViewType },
+  {
+    label: "Replace last reference before cursor with text and alias",
+    callback: replaceLastReferenceWithTextAndAlias,
+  },
+  {
+    label: "Apply Children of last reference before cursor as text",
+    callback: applyChildrenOfLastReferenceAsText,
+  },
+  {
+    label:
+      "Replace last reference before cursor with original + bring nested items along",
+    callback: replaceLastReferenceWithOriginal,
+  },
+  {
+    label: "Paste block with children as references",
+    callback: pasteBlockWithChildrenAsReferences,
+  },
+  {
+    label:
+      "Expand/Collapse block tree to a certain level, specified by the following numeric key press",
+    callback: expandCollapseBlockTree,
+  },
+  { label: "Align left", callback: alignLeft },
+  { label: "Center", callback: center },
+  { label: "Align right", callback: alignRight },
+  { label: "Justify", callback: justify },
+  { label: "Toggle Queries", callback: toggleQueries },
 ];
 const unloads = new Set<() => void>();
 export let enabled = false;
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (flag) {
     const focusableObserver = createHTMLObserver({
