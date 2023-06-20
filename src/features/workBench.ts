@@ -36,6 +36,7 @@ import getBlockUidsReferencingPage from "roamjs-components/queries/getBlockUidsR
 import createTagRegex from "roamjs-components/util/createTagRegex";
 import registerSmartBlocksCommand from "roamjs-components/util/registerSmartBlocksCommand";
 import type { OnloadArgs } from "roamjs-components/types/native";
+import apiPost from "roamjs-components/util/apiPost";
 
 export let active = false;
 type ExtendAddCommandOptions = Omit<AddCommandOptions, "callback"> & {
@@ -237,17 +238,36 @@ export const addCommand = (
   restoreFocus?: true
 ) => {
   const callbackFunction = async () => {
-    const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
-    const uids = uid
-      ? [uid]
-      : Array.from(document.querySelectorAll(`.block-highlight-blue`)).map(
-          (d) => getUidsFromId(d.querySelector(".roam-block").id).blockUid
-        );
-    Promise.resolve(args.callback(uids)).then(() => {
-      if (restoreFocus && uids.length === 1) {
-        focusMainWindowBlock(uids[0]);
-      }
-    });
+    try {
+      const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+      const uids = uid
+        ? [uid]
+        : Array.from(document.querySelectorAll(`.block-highlight-blue`)).map(
+            (d) => getUidsFromId(d.querySelector(".roam-block").id).blockUid
+          );
+      Promise.resolve(args.callback(uids)).then(() => {
+        if (restoreFocus && uids.length === 1) {
+          focusMainWindowBlock(uids[0]);
+        }
+      });
+    } catch (e) {
+      const error = e as Error;
+      renderToast({
+        content: "Looks like there was an error.  The team has been notified.",
+        intent: "danger",
+        id: "workbench-error",
+      });
+      apiPost({
+        domain: "https://api.samepage.network",
+        path: "errors",
+        data: {
+          method: "extension-error",
+          type: "WorkBench Command Error",
+          message: error.message,
+          stack: error.stack,
+        },
+      }).catch(() => {});
+    }
   };
   const display = "(WB) " + args.label;
   const options = {
