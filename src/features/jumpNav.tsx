@@ -240,9 +240,11 @@ const expandReferenceChildren = () =>
         })
       );
       const li = Array.from(
-        document.querySelector(".bp3-popover-content > div> ul").children
-      ).find((e: HTMLLinkElement) => e.innerText === "Expand all");
-      (li?.childNodes[0] as HTMLElement).click();
+        document.querySelector(
+          '.bp3-transition-container:not([style*="display: none;"]) .bp3-popover-content > div > ul'
+        )?.children || []
+      ).find((e: Element) => (e as HTMLLinkElement).innerText === "Expand all");
+      (li?.childNodes[0] as HTMLElement)?.click();
     });
 const collapseReferenceChildren = () =>
   document
@@ -254,8 +256,12 @@ const collapseReferenceChildren = () =>
         })
       );
       const li = Array.from(
-        document.querySelector(".bp3-popover-content > div> ul").children
-      ).find((e: HTMLLinkElement) => e.innerText === "Collapse all");
+        document.querySelector(
+          '.bp3-transition-container:not([style*="display: none;"]) .bp3-popover-content > div > ul'
+        )?.children || []
+      ).find(
+        (e: Element) => (e as HTMLLinkElement).innerText === "Collapse all"
+      );
       (li?.childNodes[0] as HTMLElement).click();
     });
 const copyBlockRef = () => {
