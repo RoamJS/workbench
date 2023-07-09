@@ -2,11 +2,11 @@
 
 Define custom Tag cycles tied to a keyboard shortcut!
 
-# Usage
+# How to Use
 
 Toggle the Tag Cycle module on inside WorkBench.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2FxZciac9bXv.png?alt=media&token=a4cce612-1818-46e0-b8ce-2e3daa5824a1)
+![](media/toggle-tag-cycle.png)
 
 This extension is configurable via the `roam/js/tag-cycle` page.
 
@@ -26,41 +26,41 @@ Additionally, could use `SHIFT`, but it should added after the modifier. The Key
 This is what it would look like for Roam's native TODO/DONE cycle:
 
 - CTRL+Enter
-  -
+  - `{leave blank}`
   - TODO
   - DONE
 
 Here is what I use for my project tracking:
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2Fp49pagGUfi.png?alt=media&token=b14a4d63-1aaa-4c26-8e96-4c4ff89daee9)
+![](media/tag-cycle-project-tracking.png)
 
 Note that this means entering an empty block will clear the previous element, and append the next element when no other element is found. Blank bullets only append a text to the block when it is a part of only \***\*one\*\*** keystroke.
 
 By default, empty blocks will cycle to a `[[]]` tag. To use a `#[[]]` tag instead, add 'HASH' to the end of the keyboard shortcut like this:
 
 - CTRL+Enter HASH
-  -
+  - `{leave blank}`
   - TODO
   - DONE
 
 If instead of tags, you would like to cycle through raw text, add RAW to the end of the shortcut. Like this:
 
 - CTRL+Enter RAW
-  -
+  - `{leave blank}`
   - TODO
   - DONE
 
 By default, empty blocks will cycle the next entry to the end of the block. To prepend to the block instead, add FRONT to the end of the shortcut. Like this:
 
 - CTRL+Enter FRONT
-  -
+  - `{leave blank}`
   - TODO
   - DONE
 
 Front could combine with some of the other modifiers above. So to fully reproduce Roam's native tag cycle, it would look like this:
 
 - CTRL+Enter FRONT RAW
-  -
+  - `{leave blank}`
   - TODO
   - DONE
 
@@ -68,4 +68,4 @@ If you change the blocks on the configuration page, the changes will take effect
 
 # Demo
 
-[Video](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2FTW-wl1cIFC.mp4?alt=media&token=e0662427-66dd-47e6-8ffc-ccd712b4d500)
+![Tag Cycle Demo](media/tag-cycle-demo.gif)

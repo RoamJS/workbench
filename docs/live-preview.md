@@ -4,6 +4,10 @@ Live Preview allows you to hover over a page or block reference and preview edit
 
 # How to Use
 
+Toggle the Live Preview module on inside WorkBench.
+
+![](media/toggle-live-preview.png)
+
 Once the Live Preview feature is enabled, you could hover over any page reference and the live preview should appear near the reference.
 
 You can edit the delay time for when the Live Preview appears. To do so, add the following block text to any block in your graph:

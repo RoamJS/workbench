@@ -2,11 +2,11 @@
 
 Visualize pieces of your Roam graph as a mindmap!
 
-# Usage
+# How to Use
 
 Toggle the Mind Map module on inside WorkBench.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2FKP0Zz9oji4.png?alt=media&token=7bb9b7ea-d77b-48db-9bce-320c01d459f5)
+![](media/toggle-mind-map.png)
 
 Once enabled, there will be a Command Palette command: `(WB) Open Mindmap`
 
@@ -22,4 +22,4 @@ For more information on markmap, the tool used to create a mindmap of your Roam 
 
 # Demo
 
-[Video](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2FEhPgRCp6WY.mp4?alt=media&token=6a67d0fa-7951-4277-8efb-c4a0fd2d474c)
+![Mind Map Demo](media/mind-map-demo.gif)

@@ -2,11 +2,11 @@
 
 Add commands to import web articles directly into Roam
 
-# Usage
+# How to Use
 
 Toggle the Import Article module on inside WorkBench.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2FCpXosFoRIJ.png?alt=media&token=79c38ca8-d2d4-48fa-ba8b-881bbb6949bb)
+![](media/toggle-import-article.png)
 
 In the Roam Command Palette, enter `Import Article into Roam`.
 
@@ -18,6 +18,6 @@ If there is already an article link in a block, you could use the `ALT+SHIFT+I` 
 
 The overlay supports an "Indent Under Header" option. When checked, this will paste contents as children of each header in the article.
 
-This extension is also integrated with [Smart Blocks](https://github.com/RoamJS/smartblocks)!
+This extension is also integrated with [SmartBlocks](https://github.com/RoamJS/smartblocks)!
 
 If you have both this extension and SmartBlocks installed, there will be a `<%ARTICLE:[link]%>` command available. Replace `[link]` with the desired url that you'd like to import. The command will automatically run the article import logic and paste the contents in the blocks before continuing with the rest of the workflow.

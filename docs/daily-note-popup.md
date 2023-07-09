@@ -6,7 +6,7 @@ Daily Note Popup is a second window that you can quickly toggle open and closed 
 
 Toggle the Daily Notes Popup module on inside WorkBench.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2FhZVBcYwHPg.png?alt=media&token=ffc46679-99a1-43a0-98f6-5e49f8610138)
+![](media/toggle-daily-note-popup.png)
 
 To toggle your daily note page popup, hit `ALT` + `SHIFT` + `,`. The popup that appears is editable, without needing to leave your current location.
 
@@ -36,7 +36,7 @@ If you hit the keyboard shortcut `ALT`+`SHIFT`+`J`, you will will jump to the na
 
 The Daily Note Popup module will insert subtitles to each of the daily note pages showing what day of the week it is:
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2F9KFCTji9c4.png?alt=media&token=dd1d16d6-51f3-4f5d-8117-1e7cd6e86e1d)
+![](media/daily-note-subtitles.png)
 
 To toggle this feature off, create a block somewhere in your graph with the text: `#42Setting dailySubtitles off` and refresh Roam.
 

@@ -4,9 +4,9 @@ Workbench's decorated blocks displays various configurable features around block
 
 # How to Use
 
-Toggle the MODULE module on inside WorkBench.
+Toggle the Decorated Blocks module on inside WorkBench.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2F_uo5RBWE_U.png?alt=media&token=3960c61a-8211-4ce3-9cba-ed51688fd100)
+![](media/toggle-decorated-blocks.png)
 
 Once enabled, a command will become enabled, `Toggle Block Decorators`. This will open a dialog allowing the user to specify which type of block decorations they would like to their graph. The following are supported:
 

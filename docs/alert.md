@@ -6,7 +6,7 @@ Workbench Alerts allows users to schedule alerts within their graphs
 
 Toggle the Alert module on inside WorkBench.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2FbVpZ5M2iXk.png?alt=media&token=617e1eea-1fad-4836-8e2f-ce9bdde5bce6)
+![](media/toggle-alert.png)
 
 Create an alert by opening the Roam Command Palette and entering `Create New Alert`.
 

@@ -6,7 +6,7 @@ A rich dictionary at your fingertips right inside of Roam, based on the rich ope
 
 Toggle the Dictionary module on inside WorkBench.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2F1ddI0eIXgG.png?alt=media&token=5dc38ff9-7640-4348-9ea6-7afb4c31ee20)
+![](media/toggle-dictionary.png)
 
 To trigger the dictionary, hit `Alt + Shift + .`. This will open a dialog with a typeahead input where you could start searching for the desired word. If you are focused on a block already, the word's definition will be entered into the block! If not, it will appear on a toast on the bottom right corner of the screen.
 

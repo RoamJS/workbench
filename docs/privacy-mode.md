@@ -6,7 +6,7 @@ Privacy Mode redacts confidential information when showing your Roam database to
 
 Toggle the Privacy Mode module on inside WorkBench.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2FuYyRt79MIf.png?alt=media&token=b335e097-5bcc-45de-becb-d5c13cab63f2)
+![](media/toggle-privacy-mode.png)
 
 To toggle on Privacy Mode, use the keyboard shortcut `Opt + Shift + p` on Mac or `Alt + Shift + p` on Windows.
 

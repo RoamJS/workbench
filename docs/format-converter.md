@@ -6,7 +6,7 @@ The format converter allows users to export their Roam pages into various suppor
 
 Toggle the Format Converter module on inside WorkBench.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2Fn8PBVrHOAd.png?alt=media&token=35df5cb8-95f1-4bd5-8b58-9856099da339)
+![](media/toggle-format-converter.png)
 
 To open the format converter, use the keyboard shortcut `Alt + m`. This will open a drawer towards the bottom of the page with several options for different output formats for the current Roam page. For each format, you can copy the output to your clipboard, or export it to a `.txt` file.
 

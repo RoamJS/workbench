@@ -6,13 +6,13 @@ Hot Keys (previously known as Jump Navigation) provides a set of keyboard shortc
 
 Toggle the Hot Keys module on inside WorkBench.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2FmcNVI3C5U_.png?alt=media&token=369636dc-5d0a-477e-9640-4241a0bb7978)
+![](media/toggle-hot-keys.png)
 
 All the hot keys in this module are not set by default.
 
 To set a hotkey, go to `Settings` > `Hotkeys` or click on the WorkBench Extension Settings tab and scroll down.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2FG_NffwloDB.png?alt=media&token=7b81c88a-52c2-4348-bc03-a913af59c6b1)
+![](media/hot-keys-hotkeys.png)
 
 ## Available Hotkeys
 

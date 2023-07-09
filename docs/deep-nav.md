@@ -6,7 +6,7 @@ Advanced navigation of Roam using the keyboard to jump to any block on the page 
 
 Toggle the Deep Nav module on inside WorkBench.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2F2yiaDMrDbq.png?alt=media&token=8000b805-c4be-4b18-9156-bfbb3a83132a)
+![](media/toggle-deep-nav.png)
 
 To trigger the extension, hit the keyboard shortcut `OPT + g` (`ALT + g` on Windows).
 

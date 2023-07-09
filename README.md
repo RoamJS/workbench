@@ -8,7 +8,7 @@ WorkBench makes it easy and fast to navigate and manipulate Roam.
 
 Click on the name of the feature for more details and information about it.
 
-All of the features below are **enable** by default.
+All of the features below are **enabled** by default.
 
 - [Command Palette+](https://github.com/RoamJs/workbench/blob/main/docs/command-palette-plus) - Adds an extensive set of user generated and prebuilt commands to help users push Roam to new places. Navigate and manipulate your Roam environment with a bunch of handy commands, all without losing context.
 - [Daily Note Popup](https://github.com/RoamJs/workbench/blob/main/docs/daily-note-popup) - Daily note popup is a second window that you can toggle open and close quickly to get at your daily notes page. It can be referred to as the "Roam within your Roam."
@@ -33,7 +33,7 @@ All of the features below are **disabled** by default (_as they were merged in f
 
 To disable or enable a module, simply open your Roam Depot settings for each feature and toggle the switch for the given feature.
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Froamjs%2FhZVBcYwHPg.png?alt=media&token=ffc46679-99a1-43a0-98f6-5e49f8610138)
+![](docs/media/workbench-enable-feature.gif)
 
 ## Migration Guide
 
@@ -45,4 +45,4 @@ For Roam42 users, use the [migration guide](https://github.com/RoamJs/workbench/
 
 ## Demo
 
-[Video](https://www.loom.com/share/0ced5bfcfae04ae38813563b4470dfec)
+[![WorkBench Demo](docs/media/workbench-demo-thumbnail.png)](https://www.loom.com/share/0ced5bfcfae04ae38813563b4470dfec)

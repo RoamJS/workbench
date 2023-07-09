@@ -4,6 +4,10 @@ This feature adds an extensive set of user generated and prebuilt commands to he
 
 # **How to Use**
 
+Toggle the Command Palette Plus module on inside WorkBench.
+
+![](media/toggle-command-palette-plus.png)
+
 To trigger the native Roam Command Palette, simply trigger either `CMD+p` (Mac) or `CTRL+p` (Windows). An input dialog should appear on your screen, allowing you to start typing to search for the command you would like to perform.
 
 Command Palette+ adds all of its commands to this palette with the prefix `(WB)`. They often will also have a shortcut at the end of the command label, for quicker access to specific commands. These commands are context aware: they are aware of where you triggered the command and how many blocks were previously selected. The list of commands that are added are detailed below:
