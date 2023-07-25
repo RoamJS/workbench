@@ -33,7 +33,7 @@ All of the features below are **disabled** by default (_as they were merged in f
 
 To disable or enable a module, simply open your Roam Depot settings for each feature and toggle the switch for the given feature.
 
-![](docs/media/workbench-enable-feature.gif)
+![](https://raw.githubusercontent.com/RoamJS/workbench/main/docs/media/workbench-enable-feature.gif)
 
 ## Migration Guide
 
@@ -45,4 +45,4 @@ For Roam42 users, use the [migration guide](https://github.com/RoamJs/workbench/
 
 ## Demo
 
-[![WorkBench Demo](docs/media/workbench-demo-thumbnail.png)](https://www.loom.com/share/0ced5bfcfae04ae38813563b4470dfec)
+[![WorkBench Demo](https://raw.githubusercontent.com/RoamJS/workbench/main/docs/media/workbench-demo-thumbnail.png)](https://www.loom.com/share/0ced5bfcfae04ae38813563b4470dfec)
