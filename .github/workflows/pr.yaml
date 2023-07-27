@@ -1,20 +1,10 @@
 name: Publish Extension
-on:
-  workflow_dispatch:
-  push:
-    branches: main
-    paths:
-      - "src/**"
-      - "README.md"
-      - "package.json"
-      - ".github/workflows/main.yaml"
+on: pull_request
 
 env:
-  GITHUB_TOKEN: ${{ secrets.ROAMJS_RELEASE_TOKEN }}
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_REGION: ${{ vars.AWS_REGION }}
-  ROAMJS_PROXY: ${{ vars.ROAMJS_PROXY }}
 
 jobs:
   deploy:

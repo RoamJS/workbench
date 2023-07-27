@@ -19,7 +19,6 @@ import * as tally from "./features/tally";
 import * as tutorials from "./features/tutorials";
 import * as weeklyNotes from "./features/weekly-notes";
 
-const extensionId = "workbench";
 const FEATURES = [
   {
     id: "alert",
@@ -120,8 +119,7 @@ const FEATURES = [
     id: "tag-cycle",
     name: "Tag Cycle",
     module: tagCycle,
-    description:
-      "Define custom cycles tied to a keyboard shortcut!",
+    description: "Define custom cycles tied to a keyboard shortcut!",
     defaultEnabled: false,
   },
   {
@@ -149,33 +147,33 @@ const FEATURES = [
   },
 ];
 
-export default runExtension({
-  extensionId,
-  run: ({ extensionAPI, extension }) => {
-    tutorials.setVersion(extension.version);
+export default runExtension(async ({ extensionAPI, extension }) => {
+  tutorials.setVersion(extension.version);
 
-    extensionAPI.settings.panel.create({
-      tabTitle: "WorkBench",
-      settings: FEATURES.map((f) => ({
-        id: f.id,
-        description: f.description,
-        name: f.name,
-        action: {
-          type: "switch",
-          onChange: (e) => f.module.toggleFeature(e.target.checked, extensionAPI),
-        },
-      })),
-    });
+  extensionAPI.settings.panel.create({
+    tabTitle: "WorkBench",
+    settings: FEATURES.map((f) => ({
+      id: f.id,
+      description: f.description,
+      name: f.name,
+      action: {
+        type: "switch",
+        onChange: (e) => f.module.toggleFeature(e.target.checked, extensionAPI),
+      },
+    })),
+  });
 
-    FEATURES.forEach(({ id, module, defaultEnabled }) => {
-      const flag = extensionAPI.settings.get(id);
-      const unset = typeof flag === "undefined" || flag === null;
-      if (unset) extensionAPI.settings.set(id, defaultEnabled);
-      module.toggleFeature(unset ? defaultEnabled : (flag as boolean), extensionAPI);
-    });
+  FEATURES.forEach(({ id, module, defaultEnabled }) => {
+    const flag = extensionAPI.settings.get(id);
+    const unset = typeof flag === "undefined" || flag === null;
+    if (unset) extensionAPI.settings.set(id, defaultEnabled);
+    module.toggleFeature(
+      unset ? defaultEnabled : (flag as boolean),
+      extensionAPI
+    );
+  });
 
-    return () => {
-      FEATURES.forEach(({ module }) => module.toggleFeature(false, extensionAPI));
-    };
-  },
+  return () => {
+    FEATURES.forEach(({ module }) => module.toggleFeature(false, extensionAPI));
+  };
 });
