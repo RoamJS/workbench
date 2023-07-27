@@ -450,7 +450,7 @@ const FormatConverterUI = ({
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title={"Workbench Format Converter"}
+      title={"WorkBench Format Converter"}
       position={"bottom"}
       hasBackdrop={false}
       canOutsideClickClose={false}
@@ -622,7 +622,7 @@ p a { color: #000 }</style>
       <Dialog
         isOpen={isOpen}
         onClose={onClose}
-        title={"Workbench Viewer"}
+        title={"WorkBench Viewer"}
         className={"roamjs-workbench-html-view"}
         enforceFocus={false}
         autoFocus={false}

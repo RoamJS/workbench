@@ -223,7 +223,7 @@ export const userCommands = {
     uids: string[],
     cmdInfo: { type: string; details: RoamBasicNode[] }
   ) => {
-    //this function is called by the workBench to peform an action
+    //this function is called by the WorkBench to peform an action
     switch (cmdInfo["type"]) {
       case "inbox":
         await runInboxCommand(uids, cmdInfo.details);

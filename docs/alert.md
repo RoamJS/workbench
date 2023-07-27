@@ -1,6 +1,6 @@
 # Overview
 
-Workbench Alerts allows users to schedule alerts within their graphs
+WorkBench Alerts allows users to schedule alerts within their graphs
 
 # How to Use
 

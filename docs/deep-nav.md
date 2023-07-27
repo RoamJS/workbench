@@ -10,7 +10,7 @@ Toggle the Deep Nav module on inside WorkBench.
 
 To trigger the extension, hit the keyboard shortcut `OPT + g` (`ALT + g` on Windows).
 
-It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workbench Extension Settings.
+It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the WorkBench Extension Settings.
 
 After you press the hotkey, several shortcut hints will appear on you screen, indicating places where you could navigate to next. The following locations will be navigable:
 

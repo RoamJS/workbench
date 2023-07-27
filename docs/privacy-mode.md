@@ -10,7 +10,7 @@ Toggle the Privacy Mode module on inside WorkBench.
 
 To toggle on Privacy Mode, use the keyboard shortcut `Opt + Shift + p` on Mac or `Alt + Shift + p` on Windows.
 
-It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workbench Extension Settings.
+It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the WorkBench Extension Settings.
 
 Create a page called `[[WorkBench Privacy Mode List]]`. This is where you can define the tags that you want to redact while privacy mode is toggled on.
 

@@ -14,7 +14,7 @@ You can drag the window by clicking on the top bar. Resize the window by clickin
 
 To toggle focus between the main window and the Daily Note Popup window, simply hit `ALT` + `SHIFT` + `CTRL` + `,`.
 
-It's possible to assign a unique hotkey to individual commands, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workbench Extension Settings.
+It's possible to assign a unique hotkey to individual commands, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workench Extension Settings.
 
 # Other DNP Utilities
 

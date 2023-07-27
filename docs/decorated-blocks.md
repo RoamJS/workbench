@@ -1,6 +1,6 @@
 # Overview
 
-Workbench's decorated blocks displays various configurable features around blocks for quick actions.
+WorkBench's decorated blocks displays various configurable features around blocks for quick actions.
 
 # How to Use
 
@@ -18,4 +18,4 @@ Context Enabled - Replace the `parent` tag with a rendering of the parent block 
 
 Hex Color Preview Enabled - Tags that are 6 alpha numeric characters will display the color the tag represents.
 
-It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workbench Extension Settings.
+It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the WorkBench Extension Settings.

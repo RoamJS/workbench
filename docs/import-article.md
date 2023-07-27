@@ -14,7 +14,7 @@ There will be a dialog with a text input where you paste in the article's URL. T
 
 The extension is making it's best guess on what content from the link is considered the article and what isn't. To help improve the extension over time, send article links that did not quite format correctly to support@roamjs.com.
 
-If there is already an article link in a block, you could use the `ALT+SHIFT+I` or the `OPT+SHIFT+I` keyboard shortcut to automatically import the article from the link. It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workbench Extension Settings.
+If there is already an article link in a block, you could use the `ALT+SHIFT+I` or the `OPT+SHIFT+I` keyboard shortcut to automatically import the article from the link. It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the WorkBench Extension Settings.
 
 The overlay supports an "Indent Under Header" option. When checked, this will paste contents as children of each header in the article.
 
