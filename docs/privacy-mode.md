@@ -1,6 +1,6 @@
 # Overview
 
-Privacy Mode redacts confidential information when showing your Roam database to others. Note: this is not a security feature. It **does not** encrypt or delete data. It is only a visual redaction that you could turn on and off.
+Privacy Mode redacts confidential information when showing your Roam database to others. Note: this is not a security feature. It **does not** encrypt or delete data. It is only a visual redaction that you could turn on and off while working in an area with "prying eyes".
 
 # How to Use
 

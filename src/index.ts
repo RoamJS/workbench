@@ -1,4 +1,5 @@
 import runExtension from "roamjs-components/util/runExtension";
+import { render as renderToast } from "roamjs-components/components/Toast";
 
 // features
 import * as alert from "./features/alert";
@@ -25,7 +26,6 @@ const FEATURES = [
     name: "Alert",
     description: "Schedule reminders that are triggered by Roam.",
     module: alert,
-    defaultEnabled: false,
   },
   {
     id: "workBench",
@@ -33,14 +33,12 @@ const FEATURES = [
     description:
       "Whether or not to include the core set of workBench commands in the Roam Command Palette",
     module: workBench,
-    defaultEnabled: true,
   },
   {
     id: "dailyNotesPopup",
     name: "Daily Notes Popup",
     module: dailyNotesPopup,
     description: "A popup window with the current Daily Notes Page",
-    defaultEnabled: true,
   },
   {
     id: "decorators",
@@ -48,28 +46,24 @@ const FEATURES = [
     module: decorators,
     description:
       "Decorates blocks with various configurable features for quick actions.",
-    defaultEnabled: false,
   },
   {
     id: "roamNavigator",
     name: "Deep Nav",
     module: roamNavigator,
     description: "Quick navigation through Roam's UI using the keyboard",
-    defaultEnabled: true,
   },
   {
     id: "dictionary",
     name: "Dictionary",
     module: dictionary,
     description: "Look up terms in the dictionary",
-    defaultEnabled: true,
   },
   {
     id: "formatConverter",
     name: "Format Converter",
     module: formatConverter,
     description: "Outputs the current page to various formats",
-    defaultEnabled: true,
   },
   {
     id: "jumpNav",
@@ -77,21 +71,18 @@ const FEATURES = [
     module: jumpnav,
     description:
       "Keyboard shortcuts for interacting with the Roam user interface",
-    defaultEnabled: true,
   },
   {
     id: "ocr",
     name: "Image OCR",
     description: "Extract the text from an image and add it as child blocks!",
     module: ocr,
-    defaultEnabled: false,
   },
   {
     id: "article",
     name: "Import Article",
     description: "Add commands to import web articles directly into Roam",
     module: article,
-    defaultEnabled: false,
   },
   {
     id: "livePreview",
@@ -99,28 +90,24 @@ const FEATURES = [
     module: livePreview,
     description:
       "See live and editable preview of pages upon hovering over tags and page links",
-    defaultEnabled: true,
   },
   {
     id: "mindmap",
     name: "Mind Map",
     module: mindmap,
     description: "Visualize pieces of your Roam graph as a mindmap!",
-    defaultEnabled: false,
   },
   {
     id: "privacyMode",
     name: "Privacy Mode",
     description: "Redacts content from your Roam",
     module: privacyMode,
-    defaultEnabled: true,
   },
   {
     id: "tag-cycle",
     name: "Tag Cycle",
     module: tagCycle,
     description: "Define custom cycles tied to a keyboard shortcut!",
-    defaultEnabled: false,
   },
   {
     id: "tally",
@@ -128,7 +115,6 @@ const FEATURES = [
     module: tally,
     description:
       "Introduce a tally button component to use directly in your Roam graph!",
-    defaultEnabled: false,
   },
   {
     id: "tutorials",
@@ -136,14 +122,12 @@ const FEATURES = [
     module: tutorials,
     description:
       "Learn how to use WorkBench features and Roam basics right from within Roam",
-    defaultEnabled: true,
   },
   {
     id: "weekly-notes",
     name: "Weekly Notes",
     module: weeklyNotes,
     description: "Enabling workflows surrounding weekly note pages.",
-    defaultEnabled: false,
   },
 ];
 
@@ -163,17 +147,30 @@ export default runExtension(async ({ extensionAPI, extension }) => {
     })),
   });
 
-  FEATURES.forEach(({ id, module, defaultEnabled }) => {
+  const flags: boolean[] = [];
+
+  FEATURES.forEach(({ id, module }) => {
     const flag = extensionAPI.settings.get(id);
     const unset = typeof flag === "undefined" || flag === null;
-    if (unset) extensionAPI.settings.set(id, defaultEnabled);
-    module.toggleFeature(
-      unset ? defaultEnabled : (flag as boolean),
-      extensionAPI
-    );
+    if (unset) extensionAPI.settings.set(id, false);
+    flags.push(unset || flag === false ? false : (flag as boolean));
+    module.toggleFeature(unset ? false : (flag as boolean), extensionAPI);
   });
 
+  if (!flags.some((flag) => flag)) {
+    renderToast({
+      id: "roamjs-workbench-features-disabled",
+      // code format below intentional to preserve newlines
+      content: `WorkBench features are **disabled** by default.
+
+Enable them in the WorkBench settings tab!
+      `,
+    });
+  }
+
   return () => {
-    FEATURES.forEach(({ module }) => module.toggleFeature(false, extensionAPI));
+    FEATURES.forEach(({ module }) => {
+      module.toggleFeature(false, extensionAPI);
+    });
   };
 });
