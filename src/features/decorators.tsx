@@ -411,32 +411,36 @@ export const toggleDecorations = (flag: boolean) => {
         getParseInline().then(
           (parseInline) => (text: string) => parseInline(text, context)
         );
-      let parseRoamMarked: Awaited<ReturnType<typeof getParseRoamMarked>>;
-      getParseRoamMarked().then((f) => (parseRoamMarked = f));
-      const parentTagObserver = createHashtagObserver({
-        attribute: "data-roamjs-context-parent",
-        callback: (s) => {
-          if (s.getAttribute("data-tag") === "parent") {
-            const uid = getBlockUidFromTarget(s);
-            const parentUid = getParentUidByBlockUid(uid);
-            const parentText = getTextByBlockUid(parentUid);
-            s.className = "rm-block-ref dont-focus-block";
-            s.style.userSelect = "none";
-            s.innerHTML = parseRoamMarked(parentText);
-            s.onmousedown = (e) => e.stopPropagation();
-            s.onclick = (e) => {
-              if (e.shiftKey) {
-                openBlockInSidebar(parentUid);
-              } else {
-                window.roamAlphaAPI.ui.mainWindow.openBlock({
-                  block: { uid: parentUid },
-                });
-              }
-            };
-          }
-        },
-      });
-      unloads.add(() => parentTagObserver.disconnect());
+      async function init() {
+        let parseRoamMarked: Awaited<ReturnType<typeof getParseRoamMarked>>;
+        parseRoamMarked = await getParseRoamMarked();
+        getParseRoamMarked().then((f) => (parseRoamMarked = f));
+        const parentTagObserver = createHashtagObserver({
+          attribute: "data-roamjs-context-parent",
+          callback: (s) => {
+            if (s.getAttribute("data-tag") === "parent") {
+              const uid = getBlockUidFromTarget(s);
+              const parentUid = getParentUidByBlockUid(uid);
+              const parentText = getTextByBlockUid(parentUid);
+              s.className = "rm-block-ref dont-focus-block";
+              s.style.userSelect = "none";
+              s.innerHTML = parseRoamMarked(parentText);
+              s.onmousedown = (e) => e.stopPropagation();
+              s.onclick = (e) => {
+                if (e.shiftKey) {
+                  openBlockInSidebar(parentUid);
+                } else {
+                  window.roamAlphaAPI.ui.mainWindow.openBlock({
+                    block: { uid: parentUid },
+                  });
+                }
+              };
+            }
+          },
+        });
+        unloads.add(() => parentTagObserver.disconnect());
+      }
+      init();
 
       const pageTagObserver = createHashtagObserver({
         attribute: "data-roamjs-context-page",
