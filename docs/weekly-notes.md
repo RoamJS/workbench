@@ -34,7 +34,7 @@ When a new weekly page is created, the weekly page will embed all of the related
 
 Roam's Daily Note Page log is reachable with the `ALT+d` keyboard shortcut. To jump to this week's page, hit `Alt+w` or `Ctrl+Shift+W` (Mac Only).
 
-It's possible to assign a unique hotkey to individual commands, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workbench Extension Settings.
+It's possible to assign a unique hotkey to individual commands, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the WorkBench Extension Settings.
 
 # Next/Previous Week
 

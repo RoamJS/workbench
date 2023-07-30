@@ -12,7 +12,7 @@ To trigger the native Roam Command Palette, simply trigger either `CMD+p` (Mac) 
 
 Command Palette+ adds all of its commands to this palette with the prefix `(WB)`. They often will also have a shortcut at the end of the command label, for quicker access to specific commands. These commands are context aware: they are aware of where you triggered the command and how many blocks were previously selected. The list of commands that are added are detailed below:
 
-It's possible to assign a unique hotkey to individual commands, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workbench Extension Settings.
+It's possible to assign a unique hotkey to individual commands, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the WorkBench Extension Settings.
 
 ## Working with Blocks
 

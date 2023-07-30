@@ -10,7 +10,7 @@ Toggle the Dictionary module on inside WorkBench.
 
 To trigger the dictionary, hit `Alt + Shift + .`. This will open a dialog with a typeahead input where you could start searching for the desired word. If you are focused on a block already, the word's definition will be entered into the block! If not, it will appear on a toast on the bottom right corner of the screen.
 
-It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workbench Extension Settings.
+It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the WorkBench Extension Settings.
 
 # SmartBlock Format
 

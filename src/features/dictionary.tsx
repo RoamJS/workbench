@@ -70,7 +70,7 @@ const TypeAhead = ({
     return opts;
   }, []);
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title={"Workbench Dictionary"}>
+    <Dialog isOpen={isOpen} onClose={onClose} title={"WorkBench Dictionary"}>
       <div className={Classes.DIALOG_BODY}>
         <AutocompleteInput
           value={value}

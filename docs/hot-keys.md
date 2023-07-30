@@ -1,6 +1,8 @@
 # Overview
 
-Hot Keys (previously known as Jump Navigation) provides a set of keyboard shortcuts for interacting with the Roam user interface.
+Hot Keys provides a set of keyboard shortcuts for interacting with the Roam user interface.
+
+For example: copying the block reference for the current block, expanding and collapsing the page outline and many many more.
 
 # How to Use
 

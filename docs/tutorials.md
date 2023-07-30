@@ -1,6 +1,6 @@
 # Overview
 
-The tutorials feature of workbench adds a menu icon to your graph where you could access resources and tutorials on how to use both extensions and Roam in general.
+The tutorials feature of WorkBench adds a menu icon to your graph where you could access resources and tutorials on how to use both extensions and Roam in general.
 
 # How to Use
 
@@ -26,4 +26,4 @@ Can be invoked from the command palette or by hitting `OPT+Shift+b`, will open a
 
 ## Hotkeys
 
-It's possible to assign a unique hotkey to individual commands, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workbench Extension Settings.
+It's possible to assign a unique hotkey to individual commands, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the WorkBench Extension Settings.

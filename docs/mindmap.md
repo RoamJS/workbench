@@ -10,7 +10,7 @@ Toggle the Mind Map module on inside WorkBench.
 
 Once enabled, there will be a Command Palette command: `(WB) Open Mindmap`
 
-It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workbench Extension Settings.
+It's possible to assign a unique hotkey to this command, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the WorkBench Extension Settings.
 
 Entering the command will open a panel on the bottom of the page rendering your page data as a map diagram.
 
