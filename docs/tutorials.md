@@ -24,6 +24,6 @@ Can be invoked from the command palette or by hitting `CTRL+Shift-q`, will open 
 
 Can be invoked from the command palette or by hitting `OPT+Shift+b`, will open a drawer on the right hand size with a bunch of various statistics about your Roam graph. This helps you track how your graph grows over time by presenting detailed statistics about your database, including total pages, text blocks, code blocks, and interconnections!
 
-## Hotkeys
+# Hotkeys
 
 It's possible to assign a unique hotkey to individual commands, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the WorkBench Extension Settings.

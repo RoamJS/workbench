@@ -2,6 +2,8 @@
 
 WorkBench's decorated blocks displays various configurable features around blocks for quick actions.
 
+![](media/short-demo-decoratered-blocks.gif)
+
 # How to Use
 
 Toggle the Decorated Blocks module on inside WorkBench.

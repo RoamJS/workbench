@@ -2,6 +2,8 @@
 
 Define custom Tag cycles tied to a keyboard shortcut!
 
+![](media/short-demo-tag-cycle.gif)
+
 # How to Use
 
 Toggle the Tag Cycle module on inside WorkBench.

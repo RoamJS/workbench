@@ -4,6 +4,8 @@ Hot Keys provides a set of keyboard shortcuts for interacting with the Roam user
 
 For example: copying the block reference for the current block, expanding and collapsing the page outline and many many more.
 
+![](media/short-demo-hot-keys.gif)
+
 # How to Use
 
 Toggle the Hot Keys module on inside WorkBench.
