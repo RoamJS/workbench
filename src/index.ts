@@ -152,7 +152,6 @@ export default runExtension(async ({ extensionAPI, extension }) => {
   FEATURES.forEach(({ id, module }) => {
     const flag = extensionAPI.settings.get(id);
     const unset = typeof flag === "undefined" || flag === null;
-    if (unset) extensionAPI.settings.set(id, false);
     flags.push(unset || flag === false ? false : (flag as boolean));
     module.toggleFeature(unset ? false : (flag as boolean), extensionAPI);
   });
