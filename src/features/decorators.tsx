@@ -311,11 +311,14 @@ const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
   );
 };
 
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"] ) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   if (flag) {
     extensionAPI.ui.commandPalette.addCommand({
       label: "(WB) Toggle Block Decorators",
-      callback: () => renderOverlay({ Overlay: DecoratorSettings}),
+      callback: () => renderOverlay({ Overlay: DecoratorSettings }),
     });
     toggleDecorations(true);
   } else {
@@ -331,9 +334,9 @@ const unloads = new Set<() => void>();
 export const toggleDecorations = (flag: boolean) => {
   if (flag) {
     const archivedDefault = !!get("decoratorsMoveArchives"); // Improve the UX for this if feature is re-requested
-    
+
     const opts = JSON.parse(localStorageGet("decorators") || "{}") as Record<
-      typeof settings[number],
+      (typeof settings)[number],
       boolean
     >;
     if (opts["Move Todos Enabled"]) {
@@ -411,32 +414,34 @@ export const toggleDecorations = (flag: boolean) => {
         getParseInline().then(
           (parseInline) => (text: string) => parseInline(text, context)
         );
-      let parseRoamMarked: Awaited<ReturnType<typeof getParseRoamMarked>>;
-      getParseRoamMarked().then((f) => (parseRoamMarked = f));
-      const parentTagObserver = createHashtagObserver({
-        attribute: "data-roamjs-context-parent",
-        callback: (s) => {
-          if (s.getAttribute("data-tag") === "parent") {
-            const uid = getBlockUidFromTarget(s);
-            const parentUid = getParentUidByBlockUid(uid);
-            const parentText = getTextByBlockUid(parentUid);
-            s.className = "rm-block-ref dont-focus-block";
-            s.style.userSelect = "none";
-            s.innerHTML = parseRoamMarked(parentText);
-            s.onmousedown = (e) => e.stopPropagation();
-            s.onclick = (e) => {
-              if (e.shiftKey) {
-                openBlockInSidebar(parentUid);
-              } else {
-                window.roamAlphaAPI.ui.mainWindow.openBlock({
-                  block: { uid: parentUid },
-                });
-              }
-            };
-          }
-        },
-      });
-      unloads.add(() => parentTagObserver.disconnect());
+      const init = async () => {
+        const parseRoamMarked = await getParseRoamMarked();
+        const parentTagObserver = createHashtagObserver({
+          attribute: "data-roamjs-context-parent",
+          callback: (s) => {
+            if (s.getAttribute("data-tag") === "parent") {
+              const uid = getBlockUidFromTarget(s);
+              const parentUid = getParentUidByBlockUid(uid);
+              const parentText = getTextByBlockUid(parentUid);
+              s.className = "rm-block-ref dont-focus-block";
+              s.style.userSelect = "none";
+              s.innerHTML = parseRoamMarked(parentText);
+              s.onmousedown = (e) => e.stopPropagation();
+              s.onclick = (e) => {
+                if (e.shiftKey) {
+                  openBlockInSidebar(parentUid);
+                } else {
+                  window.roamAlphaAPI.ui.mainWindow.openBlock({
+                    block: { uid: parentUid },
+                  });
+                }
+              };
+            }
+          },
+        });
+        unloads.add(() => parentTagObserver.disconnect());
+      };
+      init();
 
       const pageTagObserver = createHashtagObserver({
         attribute: "data-roamjs-context-page",

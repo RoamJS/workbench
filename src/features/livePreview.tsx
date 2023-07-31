@@ -66,7 +66,7 @@ const TooltipContent = ({
         ref={containerRef}
         className={"roamjs-workbench-live-preview"}
         style={{
-          paddingTop: !isEmpty ? 16 : 0,
+          padding: "0 24px",
         }}
       >
         {isEmpty && (
@@ -189,17 +189,7 @@ export const toggleFeature = (flag: boolean) => {
       },
     });
     addStyle(
-      `.roamjs-workbench-live-preview>div>div>.rm-block-main,
-.roamjs-workbench-live-preview>div>div>.rm-inline-references,
-.roamjs-workbench-live-preview>div>div>.rm-block-children>.rm-multibar {
-  display: none;
-}
-
-.roamjs-workbench-live-preview>div>div>.rm-block-children {
-  margin-left: -4px;
-}
-
-.roamjs-workbench-live-preview {
+      `.roamjs-workbench-live-preview {
   overflow-y: scroll;
 }
 
