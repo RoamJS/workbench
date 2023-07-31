@@ -311,11 +311,14 @@ const DecoratorSettings = ({ isOpen, onClose }: RoamOverlayProps) => {
   );
 };
 
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"] ) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   if (flag) {
     extensionAPI.ui.commandPalette.addCommand({
       label: "(WB) Toggle Block Decorators",
-      callback: () => renderOverlay({ Overlay: DecoratorSettings}),
+      callback: () => renderOverlay({ Overlay: DecoratorSettings }),
     });
     toggleDecorations(true);
   } else {
@@ -331,9 +334,9 @@ const unloads = new Set<() => void>();
 export const toggleDecorations = (flag: boolean) => {
   if (flag) {
     const archivedDefault = !!get("decoratorsMoveArchives"); // Improve the UX for this if feature is re-requested
-    
+
     const opts = JSON.parse(localStorageGet("decorators") || "{}") as Record<
-      typeof settings[number],
+      (typeof settings)[number],
       boolean
     >;
     if (opts["Move Todos Enabled"]) {
@@ -411,10 +414,8 @@ export const toggleDecorations = (flag: boolean) => {
         getParseInline().then(
           (parseInline) => (text: string) => parseInline(text, context)
         );
-      async function init() {
-        let parseRoamMarked: Awaited<ReturnType<typeof getParseRoamMarked>>;
-        parseRoamMarked = await getParseRoamMarked();
-        getParseRoamMarked().then((f) => (parseRoamMarked = f));
+      const init = async () => {
+        const parseRoamMarked = await getParseRoamMarked();
         const parentTagObserver = createHashtagObserver({
           attribute: "data-roamjs-context-parent",
           callback: (s) => {
@@ -439,7 +440,7 @@ export const toggleDecorations = (flag: boolean) => {
           },
         });
         unloads.add(() => parentTagObserver.disconnect());
-      }
+      };
       init();
 
       const pageTagObserver = createHashtagObserver({
