@@ -4,6 +4,8 @@ Live Preview allows you to hover over a page or block reference and preview edit
 
 This allows you to stay in the context of your work without having to navigate to another page to see its content.
 
+![](media/short-demo-live-preview.gif)
+
 # How to Use
 
 Toggle the Live Preview module on inside WorkBench.

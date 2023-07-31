@@ -2,6 +2,8 @@
 
 The format converter allows users to export their Roam pages into various supported formats.
 
+![](media/short-demo-format-converter.gif)
+
 # How to Use
 
 Toggle the Format Converter module on inside WorkBench.

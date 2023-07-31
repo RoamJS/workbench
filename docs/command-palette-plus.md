@@ -1,6 +1,8 @@
-## **Overview of Command Palette Plus**
+# **Overview of Command Palette Plus**
 
 This feature adds an extensive set of user generated and prebuilt commands to help users push Roam to new places. Navigate and manipulate your Roam environment with a bunch of handy commands, all without losing context.
+
+![](media/short-demo-commandpaletteplus.gif)
 
 # **How to Use**
 

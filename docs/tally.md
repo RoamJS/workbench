@@ -2,6 +2,8 @@
 
 Introduce a tally button component to use directly in your Roam database.
 
+![](media/short-demo-tally.gif)
+
 # How to Use
 
 Toggle the Tally Button module on inside WorkBench.

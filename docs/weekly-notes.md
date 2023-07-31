@@ -1,5 +1,7 @@
 Roam natively supports daily note pages with several utilities that supplement those pages. This extension adds several features to supplement workflows surrounding weekly note pages.
 
+![](media/short-demo-weekly-note.gif)
+
 # How to Use
 
 Toggle the Weekly Notes module on inside WorkBench.

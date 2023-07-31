@@ -2,6 +2,8 @@
 
 Advanced navigation of Roam using the keyboard to jump to any block on the page or sidebar.
 
+![](media/short-demo-deep-nav.gif)
+
 # How to Use
 
 Toggle the Deep Nav module on inside WorkBench.
