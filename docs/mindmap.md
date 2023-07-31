@@ -2,6 +2,8 @@
 
 Visualize pieces of your Roam graph as a mindmap!
 
+![](media/short-demo-mind-map.gif)
+
 # How to Use
 
 Toggle the Mind Map module on inside WorkBench.

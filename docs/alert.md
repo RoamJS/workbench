@@ -2,6 +2,8 @@
 
 WorkBench Alerts allows users to schedule alerts within their graphs
 
+![](media/short-demo-alert.gif)
+
 # How to Use
 
 Toggle the Alert module on inside WorkBench.

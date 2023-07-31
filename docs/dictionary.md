@@ -2,6 +2,8 @@
 
 A rich dictionary at your fingertips right inside of Roam, based on the rich open-source WordNet dictionary.
 
+![](media/short-demo-dictionary.gif)
+
 # How to Use
 
 Toggle the Dictionary module on inside WorkBench.

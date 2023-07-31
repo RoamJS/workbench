@@ -2,6 +2,8 @@
 
 Add commands to import web articles directly into Roam
 
+![](media/short-demo-import-article.gif)
+
 # How to Use
 
 Toggle the Import Article module on inside WorkBench.

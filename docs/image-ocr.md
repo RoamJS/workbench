@@ -2,6 +2,8 @@
 
 This feature extracts the text from an image and add it as child blocks!
 
+![](media/short-demo-image-ocr.gif)
+
 # How to Use
 
 Toggle the Image OCR module on inside WorkBench.
