@@ -1,6 +1,6 @@
 import runExtension from "roamjs-components/util/runExtension";
 import { render as renderToast } from "roamjs-components/components/Toast";
-
+import React from "react";
 // features
 import * as alert from "./features/alert";
 import * as article from "./features/article";
@@ -134,17 +134,65 @@ const FEATURES = [
 export default runExtension(async ({ extensionAPI, extension }) => {
   tutorials.setVersion(extension.version);
 
+  const el = React.createElement;
+
+  const CustomTable = () => {
+    return el(
+      "div",
+      {},
+      el(
+        "table",
+        {},
+        el(
+          "thead",
+          {},
+          el(
+            "tr",
+            {},
+            ["Feature", "Description", "Enabled"].map((header) =>
+              el("th", { key: header }, header)
+            )
+          )
+        ),
+        el(
+          "tbody",
+          {},
+          FEATURES.map(({ id, name, description }) =>
+            el(
+              "tr",
+              { key: id },
+              el("td", {}, name),
+              el("td", {}, description),
+              el(
+                "td",
+                {},
+                el("input", {
+                  type: "checkbox",
+                  checked: extensionAPI.settings.get(id) as boolean,
+                  onChange: (e) =>
+                    extensionAPI.settings.set(id, e.target.checked),
+                })
+              )
+            )
+          )
+        )
+      )
+    );
+  };
+
   extensionAPI.settings.panel.create({
     tabTitle: "WorkBench",
-    settings: FEATURES.map((f) => ({
-      id: f.id,
-      description: f.description,
-      name: f.name,
-      action: {
-        type: "switch",
-        onChange: (e) => f.module.toggleFeature(e.target.checked, extensionAPI),
+    settings: [
+      {
+        id: "id",
+        description: "",
+        name: "Features",
+        action: {
+          type: "reactComponent",
+          component: CustomTable,
+        },
       },
-    })),
+    ],
   });
 
   const flags: boolean[] = [];
