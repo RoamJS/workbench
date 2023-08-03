@@ -46,4 +46,4 @@ At any time, you could open the Roam Command Palette and entering `View Current 
 
 # Demo
 
-https://github.com/RoamJS/workbench/blob/main/docs/media/demo-alert.mp4
+https://github.com/RoamJS/workbench/assets/3792666/f92ed07f-2830-4d04-ba1d-e8158b3d4311
