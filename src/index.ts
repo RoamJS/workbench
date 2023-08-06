@@ -175,6 +175,9 @@ export default runExtension(async ({ extensionAPI, extension }) => {
     maxWidth: "25px",
     minWidth: "initial",
     textAlign: "center",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   };
   const featureStyle = {
     textAlign: "left",
