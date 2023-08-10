@@ -62,7 +62,7 @@ const shiftClickListener = (e: MouseEvent) => {
 };
 
 const EXPORT_FORMATS = ["PNG", "OPML"] as const;
-type ExportFormat = typeof EXPORT_FORMATS[number];
+type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 const ImagePreview = ({ src }: { src: string }): React.ReactElement => {
   const [isOpen, setIsOpen] = useState(false);
@@ -276,7 +276,7 @@ ${toOpml(tree)}
   return (
     <Drawer
       onClose={close}
-      title="Mindmap Panel"
+      title="Mind map Panel"
       isOpen={isOpen}
       position={Position.BOTTOM}
       hasBackdrop={false}
@@ -298,7 +298,7 @@ ${toOpml(tree)}
         <Dialog
           isOpen={isExportOpen}
           onClose={closeExport}
-          title={"Export Mindmap"}
+          title={"Export Mind map"}
           portalClassName={"roamjs-mindmap-exporter"}
         >
           <div className={Classes.DIALOG_BODY}>
@@ -423,7 +423,10 @@ const getMarkdown = (): string => {
 };
 
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   if (flag) {
     const style = addStyle(`span.${NODE_CLASSNAME} {
     width: 300px;
@@ -442,7 +445,7 @@ export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extension
     unloads.add(
       addCommand(
         {
-          label: "Open Mindmap",
+          label: "Open Mind map",
           callback: () => {
             renderOverlay({
               Overlay: MarkmapPanel,
