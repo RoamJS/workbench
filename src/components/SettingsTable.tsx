@@ -41,19 +41,19 @@ const SettingsTable =
       borderLeft: "none",
       borderBottom: "1px solid gray",
     };
-    const cellsBorder: React.CSSProperties = {
+    const noBorder: React.CSSProperties = {
       border: "none",
     };
     const table = () => {
       return (
-        <HTMLTable bordered={false}>
+        <HTMLTable bordered={false} style={{ ...noBorder }}>
           <thead>
             <tr style={{ ...thBorder }}>
-              <th style={{ ...settingsStyle }}>Info</th>
-              <th style={{ ...featureStyle }}>Feature</th>
-              <th style={{ ...settingsStyle }}>Documentation</th>
+              <th style={{ ...settingsStyle, ...noBorder }}>Info</th>
+              <th style={{ ...featureStyle, ...noBorder }}>Feature</th>
+              <th style={{ ...settingsStyle, ...noBorder }}>Documentation</th>
               {/* <th style={{ ...settingsStyle }}>Settings</th> */}
-              <th style={{ ...settingsStyle }}>Enabled</th>
+              <th style={{ ...settingsStyle, ...noBorder }}>Enabled</th>
             </tr>
           </thead>
           <tbody>
@@ -63,15 +63,16 @@ const SettingsTable =
                 style={{
                   borderBottom:
                     i === FEATURES.length - 1 ? "none" : "solid 1px #293742",
+                  ...noBorder,
                 }}
               >
-                <td style={{ ...settingsStyle, ...cellsBorder }}>
+                <td style={{ ...settingsStyle, ...noBorder }}>
                   <Popover
                     content={
                       <div style={{ width: "540px", height: "380px" }}>
                         <p
                           style={{
-                            padding: "6px",
+                            padding: "10px",
                             margin: 0,
                             textAlign: "center",
                           }}
@@ -90,10 +91,10 @@ const SettingsTable =
                     <Button icon="info-sign" />
                   </Popover>
                 </td>
-                <td style={{ ...featureStyle, ...cellsBorder }}>
+                <td style={{ ...featureStyle, ...noBorder }}>
                   <span>{name}</span>
                 </td>
-                <td style={{ ...settingsStyle, ...cellsBorder }}>
+                <td style={{ ...settingsStyle, ...noBorder }}>
                   <AnchorButton
                     intent="primary"
                     icon="document-open"
@@ -111,7 +112,7 @@ const SettingsTable =
                     />
                   ) : null}
                 </td> */}
-                <td style={{ ...settingsStyle, ...cellsBorder }}>
+                <td style={{ ...settingsStyle, ...noBorder }}>
                   <Switch
                     checked={featureToggleSettings[id]}
                     onChange={(e) => {

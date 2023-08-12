@@ -47,7 +47,7 @@ const FEATURES = [
     module: workBench,
     // settings: commandPalettePlusSettings,
     docs: "command-palette-plus.md",
-    gif: "short-demo-alert",
+    gif: "short-demo-commandpaletteplus",
   },
   {
     id: "dailyNotesPopup",
