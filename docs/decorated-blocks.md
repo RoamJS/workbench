@@ -2,7 +2,7 @@
 
 WorkBench's decorated blocks displays various configurable features around blocks for quick actions.
 
-![](media/short-demo-decoratered-blocks.gif)
+![](media/short-demo-decorated-blocks.gif)
 
 # How to Use
 
