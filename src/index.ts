@@ -188,12 +188,10 @@ export default runExtension(async ({ extensionAPI, extension }) => {
 
   const getInitialSettings = () => {
     const settings: { [key: string]: boolean } = {};
-    FEATURES.forEach(({ id, module }) => {
+    FEATURES.forEach(({ id }) => {
       const flag = extensionAPI.settings.get(id);
       const unset = typeof flag === "undefined" || flag === null;
-      if (unset) extensionAPI.settings.set(id, false);
-      settings[id] = !unset && flag !== false;
-      module.toggleFeature(unset ? false : (flag as boolean), extensionAPI);
+      settings[id] = unset ? false : (flag as boolean);
     });
     return settings;
   };
