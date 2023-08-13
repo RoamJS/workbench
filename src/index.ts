@@ -132,7 +132,7 @@ const FEATURES = [
     id: "mindmap",
     name: "Mind Map",
     module: mindmap,
-    description: "Visualize pieces of your Roam graph as a mindmap!",
+    description: "Visualize pieces of your Roam graph as a mind map!",
     docs: "mindmap.md",
     gif: "short-demo-mind-map",
   },

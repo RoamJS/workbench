@@ -36,6 +36,7 @@ import { Buffer } from "buffer";
 export const ERROR_MESSAGE =
   "Error Importing Article. Email link to support@roamjs.com for help!";
 
+// turndown - Convert HTML into Markdown with JavaScript.
 const td = new TurndownService({
   hr: "---",
   headingStyle: "atx",
@@ -178,7 +179,7 @@ export const importArticle = ({
     return inputTextNodes;
   });
 
-const ImportArticle = ({
+const ImportArticleDialog = ({
   blockUid,
   isOpen,
   onClose,
@@ -198,7 +199,7 @@ const ImportArticle = ({
   );
   const importArticleCallback = useCallback(() => {
     if (!value.startsWith("https://") && !value.startsWith("http://")) {
-      setError("Link must start with https:// protocol!");
+      setError("Link must start with https://");
       return;
     }
     setError("");
@@ -242,7 +243,7 @@ const ImportArticle = ({
             <Checkbox
               checked={indent}
               onChange={indentOnChange}
-              label={"Indent Under Header"}
+              label={"Indent Blocks Under Headers"}
             />
           </div>
         </div>
@@ -251,7 +252,8 @@ const ImportArticle = ({
         <div className={Classes.DIALOG_FOOTER_ACTIONS}>
           <Text>{error}</Text>
           <Button
-            text="IMPORT ARTICLE"
+            intent={"primary"}
+            text="Import Article"
             onClick={importArticleCallback}
             disabled={loading}
             icon={loading ? <Spinner size={20} /> : undefined}
@@ -272,7 +274,7 @@ export const getIndentConfig = (): boolean => {
 };
 
 export const renderImportArticle = (blockUid?: string) =>
-  renderOverlay({ Overlay: ImportArticle, props: { blockUid } });
+  renderOverlay({ Overlay: ImportArticleDialog, props: { blockUid } });
 
 // https://github.com/spamscanner/url-regex-safe/blob/master/src/index.js
 const protocol = `(?:https?://)`;
@@ -326,7 +328,7 @@ export const toggleFeature = (
     window.Buffer = Buffer;
     unloads.add(() => {
       window.Buffer = oldBuffer;
-    })
+    });
     unloads.add(
       addCommand(
         {
