@@ -18,7 +18,6 @@ const SettingsTable =
   () => {
     const [featureToggleSettings, setFeatureToggleSettings] =
       useState(initialSettings);
-    const [isLoaded, setIsLoaded] = useState(false);
 
     const settingsStyle: React.CSSProperties = {
       maxWidth: "25px",
@@ -44,12 +43,25 @@ const SettingsTable =
     const noBorder: React.CSSProperties = {
       border: "none",
     };
+    const isMaxWidth = window.matchMedia("(max-width: 1279px)").matches;
     const table = () => {
       return (
-        <HTMLTable bordered={false} style={{ ...noBorder }}>
+        <HTMLTable
+          bordered={false}
+          style={{ ...noBorder }}
+          className="workbench-settings"
+        >
           <thead>
             <tr style={{ ...thBorder }}>
-              <th style={{ ...settingsStyle, ...noBorder }}>Info</th>
+              <th
+                style={{
+                  ...settingsStyle,
+                  ...noBorder,
+                  display: isMaxWidth ? "none" : "",
+                }}
+              >
+                Info
+              </th>
               <th style={{ ...featureStyle, ...noBorder }}>Feature</th>
               <th style={{ ...settingsStyle, ...noBorder }}>Documentation</th>
               {/* <th style={{ ...settingsStyle }}>Settings</th> */}
@@ -63,18 +75,26 @@ const SettingsTable =
                 style={{
                   borderBottom:
                     i === FEATURES.length - 1 ? "none" : "solid 1px #293742",
-                  ...noBorder,
+                  borderRight: "none",
+                  borderLeft: "none",
                 }}
               >
-                <td style={{ ...settingsStyle, ...noBorder }}>
+                <td
+                  style={{
+                    ...settingsStyle,
+                    ...noBorder,
+                    display: isMaxWidth ? "none" : "",
+                  }}
+                >
                   <Popover
                     content={
-                      <div style={{ width: "540px", height: "380px" }}>
+                      <div style={{ width: "540px", height: "420px" }}>
                         <p
                           style={{
                             padding: "10px",
                             margin: 0,
                             textAlign: "center",
+                            borderBottom: "1px solid lightgray",
                           }}
                         >
                           {description}
@@ -82,6 +102,7 @@ const SettingsTable =
                         <img
                           style={{
                             width: "100%",
+                            marginTop: "10px",
                           }}
                           src={`https://github.com/RoamJS/workbench/blob/main/docs/media/${gif}.gif?raw=true`}
                         />
@@ -101,6 +122,8 @@ const SettingsTable =
                     href={`https://github.com/RoamJs/workbench/blob/main/docs/${docs}`}
                   />
                 </td>
+                {/* placeholder for when settings migrated to API */}
+                {/* https://github.com/RoamJS/workbench/issues/402 */}
                 {/* <td style={{ ...settingsStyle, ...cellsBorder }}>
                   {settings ? (
                     <Button
