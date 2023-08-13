@@ -35,13 +35,16 @@ type AlertContent = {
 const LOCAL_STORAGE_KEY = "roamjsAlerts";
 
 const removeAlertById = (alertId: number) => {
-  const { alerts } = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-  localStorage.setItem(
-    LOCAL_STORAGE_KEY,
-    JSON.stringify({
-      alerts: alerts.filter((a: AlertContent) => a.id !== alertId),
-    })
-  );
+  const storage = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (storage) {
+    const { alerts } = JSON.parse(storage);
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      JSON.stringify({
+        alerts: alerts.filter((a: AlertContent) => a.id !== alertId),
+      })
+    );
+  }
 };
 
 const AlertDashboard = ({ isOpen, onClose }: RoamOverlayProps) => {
@@ -62,7 +65,7 @@ const AlertDashboard = ({ isOpen, onClose }: RoamOverlayProps) => {
       enforceFocus={false}
       autoFocus={false}
     >
-      <ul>
+      <ul style={{ margin: 4, paddingTop: 20 }}>
         {alerts.map((a) => (
           <li key={a.id}>
             {new Date(a.when).toLocaleString()} - {a.message}
@@ -72,6 +75,7 @@ const AlertDashboard = ({ isOpen, onClose }: RoamOverlayProps) => {
                 removeAlertById(a.id);
                 setAlerts(alerts.filter((aa) => aa.id !== a.id));
               }}
+              style={{ marginLeft: 8 }}
             >
               <Icon icon={"trash"} />
             </Button>
@@ -258,7 +262,10 @@ const openAlertDashboard = () =>
   renderOverlay({ id: "alert-dashboard", Overlay: AlertDashboard });
 
 let enabled = false;
-export const toggleFeature = (flag: boolean, extensionAPI: OnloadArgs["extensionAPI"]) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   enabled = flag;
   if (enabled) {
     unloads.add(

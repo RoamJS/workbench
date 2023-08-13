@@ -21,7 +21,7 @@ Click on the name of the feature for more details and information about it.
 | [Image OCR](https://github.com/RoamJs/workbench/blob/main/docs/image-ocr.md)                   | Extract the text from an image and add it as child blocks!                                               |
 | [Import Article](https://github.com/RoamJs/workbench/blob/main/docs/import-article.md)         | Add commands to import web articles directly into Roam.                                                  |
 | [Live Preview](https://github.com/RoamJs/workbench/blob/main/docs/live-preview.md)             | See live and editable previews of page links underneath your mouse cursor.                               |
-| [Mindmap](https://github.com/RoamJs/workbench/blob/main/docs/mindmap.md)                       | Visualize pieces of your Roam graph as a mindmap!                                                        |
+| [Mind Map](https://github.com/RoamJs/workbench/blob/main/docs/mindmap.md)                      | Visualize pieces of your Roam graph as a mind map!                                                       |
 | [Privacy Mode](https://github.com/RoamJs/workbench/blob/main/docs/privacy-mode.md)             | This feature redacts confidential information when showing your Roam database to others.                 |
 | [Tag Cycle](https://github.com/RoamJs/workbench/blob/main/docs/tag-cycle.md)                   | Define custom tag cycles tied to a keyboard shortcut!                                                    |
 | [Tally](https://github.com/RoamJs/workbench/blob/main/docs/tally.md)                           | Introduces a tally button component to use directly in your Roam graph.                                  |

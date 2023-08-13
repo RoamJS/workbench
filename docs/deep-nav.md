@@ -25,4 +25,4 @@ Hitting the corresponding shortcut given by the hint will either navigate you to
 
 # Demo
 
-[Video](https://www.youtube.com/watch?v=tb_6HdAhZwo)
+https://github.com/RoamJS/workbench/assets/3792666/23f9d582-7c08-4821-9775-97b1cedaca9c

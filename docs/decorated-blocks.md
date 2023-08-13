@@ -2,7 +2,7 @@
 
 WorkBench's decorated blocks displays various configurable features around blocks for quick actions.
 
-![](media/short-demo-decoratered-blocks.gif)
+![](media/short-demo-decorated-blocks.gif)
 
 # How to Use
 
@@ -46,3 +46,7 @@ Enabling this will
 ![](media/decorated-blocks-hex-color.png)
 
 Tags that are 6 alpha numeric characters will display the color the tag represents. (eg. `#880808`)
+
+# Demo
+
+https://github.com/RoamJS/workbench/assets/3792666/c33fa761-d11a-4a54-8136-13016e1e3afa

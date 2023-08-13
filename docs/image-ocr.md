@@ -17,7 +17,3 @@ On hover, a magnifying glass icon with a `T` will appear near the Roam native bl
 Once the extension finishes, it will replace the `Loading...` text with all the new text it parsed from the image. If the text begins with a bullet or dash on a line, the bullet will be stripped, leaving the rest of the text content.
 
 This extension is currently only supported in online mode.
-
-# Demo
-
-![Image OCR Demo](media/image-ocr-demo.gif)
