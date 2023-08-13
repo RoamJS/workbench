@@ -788,7 +788,7 @@ const setupNavigate = () => {
 
 export const navigate = () => {
   if (isNavigating) {
-    throw new Error("Invariant violation: navigate while already navigating");
+    return;
   }
 
   currentOptions = {};
