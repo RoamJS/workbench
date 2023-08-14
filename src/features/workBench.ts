@@ -224,10 +224,35 @@ export const userCommands = {
     cmdInfo: { type: string; details: RoamBasicNode[] }
   ) => {
     //this function is called by the WorkBench to peform an action
-    switch (cmdInfo["type"]) {
-      case "inbox":
-        await runInboxCommand(uids, cmdInfo.details);
-        break;
+    try {
+      switch (cmdInfo["type"]) {
+        case "inbox":
+          await runInboxCommand(uids, cmdInfo.details);
+          break;
+      }
+    } catch (e) {
+      const error = e as Error;
+      renderToast({
+        content: "Looks like there was an error.  The team has been notified.",
+        intent: "danger",
+        id: "workbench-error",
+      });
+      apiPost({
+        domain: "https://api.samepage.network",
+        path: "errors",
+        data: {
+          method: "extension-error",
+          type: "WorkBench User Defined Command Error",
+          message: error.message,
+          stack: error.stack,
+          version: process.env.VERSION,
+          notebookUuid: JSON.stringify({
+            owner: "RoamJS",
+            app: "workbench",
+            workspace: window.roamAlphaAPI.graph.name,
+          }),
+        },
+      }).catch(() => {});
     }
   },
 };
@@ -1231,6 +1256,7 @@ export const toggleFeature = (
   extensionAPI: OnloadArgs["extensionAPI"]
 ) => {
   active = flag;
+  console.log(process.env.PACKAGE_NAME);
   if (flag) initialize(extensionAPI);
   else shutdown();
 };
