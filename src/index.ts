@@ -186,21 +186,11 @@ const FEATURES = [
 export default runExtension(async ({ extensionAPI, extension }) => {
   tutorials.setVersion(extension.version);
 
-  const getInitialSettings = () => {
-    const settings: { [key: string]: boolean } = {};
-    FEATURES.forEach(({ id }) => {
-      const flag = extensionAPI.settings.get(id);
-      const unset = typeof flag === "undefined" || flag === null;
-      settings[id] = unset ? false : (flag as boolean);
-    });
-    return settings;
-  };
-
-  const initialSettings = getInitialSettings();
-
+  const initialSettings: { [key: string]: boolean } = {};
   FEATURES.forEach(({ id, module }) => {
-    const flag = initialSettings[id];
-    module.toggleFeature(flag, extensionAPI);
+    const flag = extensionAPI.settings.get(id);
+    initialSettings[id] = !!flag;
+    module.toggleFeature(flag as boolean, extensionAPI);
   });
 
   extensionAPI.settings.panel.create({
@@ -220,14 +210,10 @@ export default runExtension(async ({ extensionAPI, extension }) => {
 
   // Hide panel "name"
 
-  const devPanelId =
-    "bp3-tab-panel_rm-settings-tabs_rm-ext-uuidcc70729e-a568-4e95-83f0-22ac43526eab-tab";
   const style = addStyle(`
   [id*="dvargas92495"][id*="workbench"] section.rm-settings-panel__section.flex-h-box.rm-settings-panel__section--top > div > h4 { 
     display: none; }
-  #${devPanelId} section.rm-settings-panel__section.flex-h-box.rm-settings-panel__section--top > div > h4 { 
-    display: none; }
-  }`);
+  `);
 
   if (!Object.values(initialSettings).some((flag) => flag)) {
     renderToast({
