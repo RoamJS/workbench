@@ -1256,7 +1256,6 @@ export const toggleFeature = (
   extensionAPI: OnloadArgs["extensionAPI"]
 ) => {
   active = flag;
-  console.log(process.env.PACKAGE_NAME);
   if (flag) initialize(extensionAPI);
   else shutdown();
 };
