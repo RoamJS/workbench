@@ -12,8 +12,8 @@ import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageU
 import type { OnloadArgs } from "roamjs-components/types";
 import { addCommand } from "./workBench";
 
-let observerHeadings: MutationObserver = undefined;
-let closeDailyNotesPopup: () => void;
+let observerHeadings: MutationObserver | undefined = undefined;
+let closeDailyNotesPopup: (() => void) | undefined;
 
 export const moveForwardToDate = (bForward: boolean) => {
   window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid().then((_uid) => {
@@ -63,23 +63,22 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
   const setMinimized = (f: boolean) =>
     _setMinimized((minimizedRef.current = f));
   const containerRef = useRef<HTMLDivElement>(null);
-  var loc = useMemo(
-    () =>
-      localStorage.getItem("DNP_Parameters_Dimensions")
-        ? (JSON.parse(localStorage.getItem("DNP_Parameters_Dimensions")) as {
-            height: number;
-            width: number;
-            left: number;
-            top: number;
-          })
-        : {
-            height: 300,
-            width: 500,
-            left: window.innerWidth / 2 - 300,
-            top: window.innerHeight / 2 - 150,
-          },
-    []
-  );
+  var loc = useMemo(() => {
+    const item = localStorage.getItem("DNP_Parameters_Dimensions");
+    return item
+      ? (JSON.parse(item) as {
+          height: number;
+          width: number;
+          left: number;
+          top: number;
+        })
+      : {
+          height: 300,
+          width: 500,
+          left: window.innerWidth / 2 - 300,
+          top: window.innerHeight / 2 - 150,
+        };
+  }, []);
   const [height, setHeight] = useState(loc.height);
   const [width, setWidth] = useState(loc.width);
   const [top, setTop] = useState(loc.top);
@@ -97,21 +96,23 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
             parentUid: pageUid,
           })
       ).then((uid) => {
-        const { windowId } = getUids(
-          containerRef.current.querySelector(".roam-block")
-        );
-        window.roamAlphaAPI.ui.setBlockFocusAndSelection({
-          location: {
-            "block-uid": uid,
-            "window-id": windowId,
-          },
-        });
+        const blockElement = containerRef.current?.querySelector(
+          ".roam-block"
+        ) as HTMLDivElement;
+        if (blockElement) {
+          const { windowId } = getUids(blockElement);
+          window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+            location: {
+              "block-uid": uid,
+              "window-id": windowId,
+            },
+          });
+        }
       });
     } else if (!loaded) {
       setLoaded(true);
     } else if (minimizedRef.current) {
       setLoaded(false);
-      containerRef.current = undefined;
     }
   }, [containerRef.current, loaded, setLoaded, minimizedRef]);
   const onDragEnd = () => {
@@ -219,6 +220,7 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           }`}
         </style>
         <div
+          aria-label="Daily Notes Popup Header"
           tabIndex={-1}
           className="bp3-dialog-header absolute left-0 bottom-full right-0"
           draggable
@@ -268,15 +270,17 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           </div>
         </div>
         <div
+          aria-label="Bottom Resize Handle"
           className="absolute h-3 left-2 -bottom-1"
           style={{ width: "calc(100% - 16px)", cursor: "s-resize" }}
           draggable
           onDragStart={(e) => {
             cancelDragImage(e);
-            const rect = (e.target as HTMLDivElement).parentElement
-              .querySelector(".dnp-content")
-              .getBoundingClientRect();
-            dragRef.current.top = rect.top;
+            const targetElement = (
+              e.target as HTMLDivElement
+            ).parentElement?.querySelector(".dnp-content");
+            const rect = targetElement?.getBoundingClientRect();
+            if (rect) dragRef.current.top = rect.top;
           }}
           onDrag={(e) => {
             if (e.clientY) {
@@ -286,17 +290,21 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           onDragEnd={onDragEnd}
         />
         <div
+          aria-label="Bottom Left Corner Resize Handle"
           className="absolute h-3 -left-1 w-3 -bottom-1"
           style={{ cursor: "sw-resize" }}
           draggable
           onDragStart={(e) => {
             cancelDragImage(e);
-            const rect = (e.target as HTMLDivElement).parentElement
-              .querySelector(".dnp-content")
-              .getBoundingClientRect();
-            dragRef.current.top = rect.top;
-            dragRef.current.width = rect.width;
-            dragRef.current.left = rect.left;
+            const targetElement = (
+              e.target as HTMLDivElement
+            ).parentElement?.querySelector(".dnp-content");
+            const rect = targetElement?.getBoundingClientRect();
+            if (rect) {
+              dragRef.current.top = rect.top;
+              dragRef.current.width = rect.width;
+              dragRef.current.left = rect.left;
+            }
           }}
           onDrag={(e) => {
             if (e.clientY) {
@@ -310,16 +318,20 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           onDragEnd={onDragEnd}
         />
         <div
+          aria-label="Left Resize Handle"
           className="absolute w-3 bottom-2 -left-1"
           style={{ height: "calc(100% - 16px)", cursor: "w-resize" }}
           draggable
           onDragStart={(e) => {
             cancelDragImage(e);
-            const rect = (e.target as HTMLDivElement).parentElement
-              .querySelector(".dnp-content")
-              .getBoundingClientRect();
-            dragRef.current.left = rect.left;
-            dragRef.current.width = rect.width;
+            const targetElement = (
+              e.target as HTMLDivElement
+            ).parentElement?.querySelector(".dnp-content");
+            const rect = targetElement?.getBoundingClientRect();
+            if (rect) {
+              dragRef.current.left = rect.left;
+              dragRef.current.width = rect.width;
+            }
           }}
           onDrag={(e) => {
             if (e.clientY) {
@@ -332,18 +344,22 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           onDragEnd={onDragEnd}
         />
         <div
+          aria-label="Top Left Corner Resize Handle"
           className="absolute h-3 -left-1 w-3 -top-1"
           style={{ cursor: "nw-resize" }}
           draggable
           onDragStart={(e) => {
             cancelDragImage(e);
-            const rect = (e.target as HTMLDivElement).parentElement
-              .querySelector(".dnp-content")
-              .getBoundingClientRect();
-            dragRef.current.top = rect.top;
-            dragRef.current.height = rect.height;
-            dragRef.current.left = rect.left;
-            dragRef.current.width = rect.width;
+            const targetElement = (
+              e.target as HTMLDivElement
+            ).parentElement?.querySelector(".dnp-content");
+            const rect = targetElement?.getBoundingClientRect();
+            if (rect) {
+              dragRef.current.top = rect.top;
+              dragRef.current.height = rect.height;
+              dragRef.current.left = rect.left;
+              dragRef.current.width = rect.width;
+            }
           }}
           onDrag={(e) => {
             if (e.clientY) {
@@ -360,16 +376,20 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           onDragEnd={onDragEnd}
         />
         <div
+          aria-label="Top Resize Handle"
           className="absolute h-3 left-2 -top-1"
           style={{ width: "calc(100% - 16px)", cursor: "n-resize" }}
           draggable
           onDragStart={(e) => {
             cancelDragImage(e);
-            const rect = (e.target as HTMLDivElement).parentElement
-              .querySelector(".dnp-content")
-              .getBoundingClientRect();
-            dragRef.current.top = rect.top;
-            dragRef.current.height = rect.height;
+            const targetElement = (
+              e.target as HTMLDivElement
+            ).parentElement?.querySelector(".dnp-content");
+            const rect = targetElement?.getBoundingClientRect();
+            if (rect) {
+              dragRef.current.top = rect.top;
+              dragRef.current.height = rect.height;
+            }
           }}
           onDrag={(e) => {
             if (e.clientY) {
@@ -382,17 +402,21 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           onDragEnd={onDragEnd}
         />
         <div
+          aria-label="Top Right Corner Resize Handle"
           className="absolute h-3 -right-1 w-3 -top-1"
           style={{ cursor: "ne-resize" }}
           draggable
           onDragStart={(e) => {
             cancelDragImage(e);
-            const rect = (e.target as HTMLDivElement).parentElement
-              .querySelector(".dnp-content")
-              .getBoundingClientRect();
-            dragRef.current.top = rect.top;
-            dragRef.current.height = rect.height;
-            dragRef.current.left = rect.left;
+            const targetElement = (
+              e.target as HTMLDivElement
+            ).parentElement?.querySelector(".dnp-content");
+            const rect = targetElement?.getBoundingClientRect();
+            if (rect) {
+              dragRef.current.top = rect.top;
+              dragRef.current.height = rect.height;
+              dragRef.current.left = rect.left;
+            }
           }}
           onDrag={(e) => {
             if (e.clientY) {
@@ -406,15 +430,17 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           onDragEnd={onDragEnd}
         />
         <div
+          aria-label="Right Resize Handle"
           className="absolute w-3 bottom-2 -right-1"
           style={{ height: "calc(100% - 16px)", cursor: "e-resize" }}
           draggable
           onDragStart={(e) => {
             cancelDragImage(e);
-            const rect = (e.target as HTMLDivElement).parentElement
-              .querySelector(".dnp-content")
-              .getBoundingClientRect();
-            dragRef.current.left = rect.left;
+            const targetElement = (
+              e.target as HTMLDivElement
+            ).parentElement?.querySelector(".dnp-content");
+            const rect = targetElement?.getBoundingClientRect();
+            if (rect) dragRef.current.left = rect.left;
           }}
           onDrag={(e) => {
             if (e.clientY) {
@@ -424,16 +450,20 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
           onDragEnd={onDragEnd}
         />
         <div
+          aria-label="Bottom Right Corner Resize Handle"
           className="absolute h-3 -right-1 w-3 -bottom-1"
           style={{ cursor: "se-resize" }}
           draggable
           onDragStart={(e) => {
             cancelDragImage(e);
-            const rect = (e.target as HTMLDivElement).parentElement
-              .querySelector(".dnp-content")
-              .getBoundingClientRect();
-            dragRef.current.top = rect.top;
-            dragRef.current.left = rect.left;
+            const targetElement = (
+              e.target as HTMLDivElement
+            ).parentElement?.querySelector(".dnp-content");
+            const rect = targetElement?.getBoundingClientRect();
+            if (rect) {
+              dragRef.current.top = rect.top;
+              dragRef.current.left = rect.left;
+            }
           }}
           onDrag={(e) => {
             if (e.clientY) {
@@ -455,12 +485,13 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
 };
 
 const toggleFocus = () => {
+  const selection = window.getSelection();
+  const range = selection?.getRangeAt(0);
   const popup =
-    (window.getSelection().getRangeAt(0)
-      .commonAncestorContainer as Element) instanceof Element
-      ? (
-          window.getSelection().getRangeAt(0).commonAncestorContainer as Element
-        ).closest(".roamjs-daily-notes-popup")
+    range?.commonAncestorContainer instanceof Element
+      ? (range.commonAncestorContainer as Element).closest(
+          ".roamjs-daily-notes-popup"
+        )
       : null;
   if (!popup) {
     const firstPopupBlock = document.querySelector<HTMLDivElement>(
