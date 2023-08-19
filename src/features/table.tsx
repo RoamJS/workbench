@@ -50,41 +50,119 @@ const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
     });
     return getBasicTreeByParentUid(rowUid);
   };
+  const createOptionsNode = async () => {
+    const optionsUid = window.roamAlphaAPI.util.generateUID();
+    await createBlock({
+      node: {
+        text: "options",
+        uid: optionsUid,
+        children: [
+          {
+            text: "striped",
+          },
+        ],
+      },
+      parentUid: blockUid,
+    });
+    return getBasicTreeByParentUid(optionsUid);
+  };
 
+  const [loading, setLoading] = useState(true);
   const [headerNodes, setHeaderNodes] = useState<RoamBasicNode[]>([]);
   const [rowsNodes, setRowsNodes] = useState<RoamBasicNode[]>([]);
+  const [options, setOptions] = useState<{
+    striped?: boolean;
+    bordered?: boolean;
+    condensed?: boolean;
+    interactive?: boolean;
+  }>({});
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const tree = getBasicTreeByParentUid(blockUid);
-      let headerNodesResult = tree.filter(
-        (c) => c.text.toLowerCase() === "header"
-      );
-      let rowsNodesResult = tree.filter((c) => c.text.toLowerCase() === "rows");
+  const fetchData = async () => {
+    const tree = getBasicTreeByParentUid(blockUid);
 
-      if (!headerNodesResult.length) {
-        headerNodesResult = await createHeaderNode();
-      }
+    // check if header, rows, options nodes exist
+    const headerNodesExist = tree.some(
+      (c) => c.text.toLowerCase() === "header"
+    );
+    const rowsNodesExist = tree.some((c) => c.text.toLowerCase() === "rows");
+    const optionsNodesExist = tree.some(
+      (c) => c.text.toLowerCase() === "options"
+    );
 
-      if (!rowsNodesResult.length) {
-        rowsNodesResult = await createRowsNode();
-      }
+    // create initial config
+    if (!headerNodesExist) await createHeaderNode();
+    if (!rowsNodesExist) await createRowsNode();
+    if (!optionsNodesExist) await createOptionsNode();
 
-      setHeaderNodes(headerNodesResult);
-      setRowsNodes(rowsNodesResult);
+    // fold {{wb-table}} block on first create
+    if (!headerNodesExist && !rowsNodesExist && !optionsNodesExist) {
+      window.roamAlphaAPI.data.block.update({
+        block: { uid: blockUid, open: false },
+      });
+    }
+
+    // get header, rows, options nodes
+    const updatedTree = getBasicTreeByParentUid(blockUid);
+    const headerNodes = updatedTree.filter(
+      (c) => c.text.toLowerCase() === "header"
+    );
+    const rowsNodes = updatedTree.filter(
+      (c) => c.text.toLowerCase() === "rows"
+    );
+    const optionsNodes = updatedTree.filter(
+      (c) => c.text.toLowerCase() === "options"
+    );
+
+    const options = {
+      striped: optionsNodes[0]?.children.some(
+        (c) => c.text.toLowerCase() === "striped"
+      ),
+      bordered: optionsNodes[0]?.children.some(
+        (c) => c.text.toLowerCase() === "bordered"
+      ),
+      condensed: optionsNodes[0]?.children.some(
+        (c) => c.text.toLowerCase() === "condensed"
+      ),
+      interactive: optionsNodes[0]?.children.some(
+        (c) => c.text.toLowerCase() === "interactive"
+      ),
     };
 
+    setHeaderNodes(headerNodes);
+    setRowsNodes(rowsNodes);
+    setOptions(options);
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
     fetchData();
   }, [blockUid]);
 
-  const handleChange = (uid: string, value: string) => {
+  const updateText = (uid: string, value: string) => {
     updateBlock({ uid, text: value });
   };
 
-  return !headerNodes.length || !rowsNodes.length ? (
-    <div>loading</div>
+  return loading ? (
+    <div
+      style={{
+        width: "300px",
+        height: "150px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      loading ...
+    </div>
   ) : (
-    <HTMLTable striped={true}>
+    <HTMLTable
+      className="workbench-table"
+      bordered={options.bordered}
+      condensed={options.condensed}
+      interactive={options.interactive}
+      striped={options.striped}
+    >
       <thead>
         <tr>
           {!!headerNodes.length &&
@@ -93,7 +171,7 @@ const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
                 <EditableText
                   placeholder=""
                   defaultValue={c.text}
-                  onConfirm={(value) => handleChange(c.uid, value)}
+                  onConfirm={(value) => updateText(c.uid, value)}
                 />
               </th>
             ))}
@@ -104,11 +182,12 @@ const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
           rowsNodes[0].children.map((c) => (
             <tr key={c.uid} className={c.text}>
               {c.children.map((c) => (
-                <td key={c.uid}>
+                <td key={c.uid} style={{ margin: "10px" }}>
                   <EditableText
+                    minWidth={55}
                     placeholder=""
                     defaultValue={c.text}
-                    onConfirm={(value) => handleChange(c.uid, value)}
+                    onConfirm={(value) => updateText(c.uid, value)}
                   />
                 </td>
               ))}
