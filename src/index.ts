@@ -15,6 +15,7 @@ import * as privacyMode from "./features/privacyMode";
 import * as roamNavigator from "./features/deepnav";
 import * as ocr from "./features/ocr";
 import * as workBench from "./features/workBench";
+import * as table from "./features/table";
 import * as tagCycle from "./features/tagCycle";
 import * as tally from "./features/tally";
 import * as tutorials from "./features/tutorials";
@@ -144,6 +145,14 @@ const FEATURES = [
     // settings: privacyModeSettings,
     docs: "privacy-mode.md",
     gif: "short-demo-privacy-mode",
+  },
+  {
+    id: "table",
+    name: "Table",
+    module: table,
+    description: "Editable table component.",
+    docs: "table.md",
+    gif: "short-demo-table",
   },
   {
     id: "tag-cycle",
