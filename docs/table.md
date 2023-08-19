@@ -28,6 +28,17 @@ You can edit individual cells when the table is rendered, but inder the hood, ea
 
 This way you can create custom tables with templates or other automated ways.
 
+### Styling
+
+- table class name: `roamjs-workbench-table`
+- headers: `wbt-header-{headerText}`
+- rows: `wbt-row-{rowText}`
+- cells `wbt-cell-{cellText}`
+
+This allows for tailored styling and flexibility in design.
+
+Note: Currently, the header, row, and cell classes are only set on load / refresh.
+
 ### Headers
 
 Headers are created as children of a `header` block.
@@ -107,8 +118,8 @@ Example:
 
 </details>
 
-# Demo
+<!-- # Demo -->
 
 <!-- TODO -->
 
-![](media/table-demo.gif)
+<!-- ![](media/table-demo.gif) -->

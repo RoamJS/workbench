@@ -142,6 +142,10 @@ const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
   const updateText = (uid: string, value: string) => {
     updateBlock({ uid, text: value });
   };
+  function sanitizeClassName(text: string) {
+    text = text.length > 20 ? text.substring(0, 20) : text;
+    return text.replace(/[^a-zA-Z0-9-_]/g, "-");
+  }
 
   return loading ? (
     <div
@@ -157,7 +161,7 @@ const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
     </div>
   ) : (
     <HTMLTable
-      className="workbench-table"
+      className="roamjs-workbench-table"
       bordered={options.bordered}
       condensed={options.condensed}
       interactive={options.interactive}
@@ -167,7 +171,10 @@ const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
         <tr>
           {!!headerNodes.length &&
             headerNodes[0].children.map((c) => (
-              <th key={c.uid} className={c.text}>
+              <th
+                key={c.uid}
+                className={`wbt-header-${sanitizeClassName(c.text)}`}
+              >
                 <EditableText
                   placeholder=""
                   defaultValue={c.text}
@@ -180,14 +187,15 @@ const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
       <tbody>
         {!!rowsNodes.length &&
           rowsNodes[0].children.map((c) => (
-            <tr key={c.uid} className={c.text}>
+            <tr key={c.uid} className={`wbt-row-${sanitizeClassName(c.text)}`}>
               {c.children.map((c) => (
-                <td key={c.uid} style={{ margin: "10px" }}>
+                <td key={c.uid}>
                   <EditableText
                     minWidth={55}
                     placeholder=""
                     defaultValue={c.text}
                     onConfirm={(value) => updateText(c.uid, value)}
+                    className={`wbt-cell-${sanitizeClassName(c.text)}`}
                   />
                 </td>
               ))}
