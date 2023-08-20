@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   HTMLTable,
   EditableText,
@@ -8,6 +14,8 @@ import {
   Card,
   Elevation,
   FormGroup,
+  RadioGroup,
+  Radio,
 } from "@blueprintjs/core";
 import createButtonObserver from "roamjs-components/dom/createButtonObserver";
 import createBlock from "roamjs-components/writes/createBlock";
@@ -24,17 +32,72 @@ type ConfigurationProps = {
   onSubmit: () => void;
 };
 
+type Settings = {
+  tree: RoamBasicNode[];
+  headerNode: RoamBasicNode;
+  rowsNode: RoamBasicNode;
+  optionsNode: RoamBasicNode;
+  stylesNode: RoamBasicNode;
+  isEditing: boolean;
+  options: {
+    striped: boolean;
+    bordered: boolean;
+    condensed: boolean;
+    interactive: boolean;
+  };
+};
+
 //
 // TODO
 // FIX THE EDIT/LOADING MESS
 //
-// ADD LOADING DIV
-//
 
+const getSettings = (blockUid: string) => {
+  const tree = getBasicTreeByParentUid(blockUid);
+  const headerNode = getSubTree({ tree, key: "header" });
+  const rowsNode = getSubTree({ tree, key: "rows" });
+  const optionsNode = getSubTree({ tree, key: "options" });
+  const stylesNode = getSubTree({
+    tree: optionsNode.children,
+    key: "styles",
+  });
+  const viewNode = getSubTree({ tree: optionsNode.children, key: "view" });
+  const setView = viewNode.children[0]?.text;
+  const isEditing = tree.some((c) => c.text.toLowerCase() === "editing");
+
+  const styles = {
+    striped: stylesNode.children.some(
+      (c) => c.text.toLowerCase() === "striped"
+    ),
+    bordered: stylesNode.children.some(
+      (c) => c.text.toLowerCase() === "bordered"
+    ),
+    condensed: stylesNode.children.some(
+      (c) => c.text.toLowerCase() === "condensed"
+    ),
+    interactive: stylesNode.children.some(
+      (c) => c.text.toLowerCase() === "interactive"
+    ),
+  };
+
+  return {
+    tree,
+    headerNode,
+    rowsNode,
+    optionsNode,
+    stylesNode,
+    isEditing,
+    styles,
+    viewNode,
+    setView,
+  };
+};
 const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
+  const [isCreatingBlocks, setIsCreatingBlocks] = useState(false);
   const [numRows, setNumRows] = useState(3);
   const [numCols, setNumCols] = useState(3);
-  const [options, setLocalOptions] = useState({
+  const [initialView, setInitialView] = useState("plain");
+  const [initialStyles, setInitialStyleOptions] = useState({
     striped: true,
     bordered: false,
     condensed: false,
@@ -56,7 +119,6 @@ const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
     });
     return getBasicTreeByParentUid(headerUid);
   };
-
   const createRowsNode = async (numHeaders: number, numRows: number) => {
     const rowUid = window.roamAlphaAPI.util.generateUID();
     const children = Array.from({ length: numRows }, (_, i) => ({
@@ -73,7 +135,7 @@ const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
     });
     return getBasicTreeByParentUid(rowUid);
   };
-  const createOptionsNode = async (options: {}) => {
+  const createOptionsNode = async (options: {}, initialView: string) => {
     const optionsUid = window.roamAlphaAPI.util.generateUID();
     const children = Object.entries(options).map(([key, value]) => ({
       text: value ? key : "",
@@ -82,19 +144,32 @@ const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
       node: {
         text: "options",
         uid: optionsUid,
-        children,
+        children: [
+          {
+            text: "styles",
+            children,
+          },
+          {
+            text: "view",
+            children: [
+              {
+                text: initialView,
+              },
+            ],
+          },
+        ],
       },
       parentUid: blockUid,
     });
     return getBasicTreeByParentUid(optionsUid);
   };
 
-  const handleOptionsConfig = (
+  const handleStyles = (
     e: React.FormEvent<HTMLInputElement>,
     option: string
   ) => {
     const value = (e.target as HTMLInputElement).checked;
-    setLocalOptions((prevOptions) => ({
+    setInitialStyleOptions((prevOptions) => ({
       ...prevOptions,
       [option]: value,
     }));
@@ -104,7 +179,7 @@ const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
     // create initial config
     createHeaderNode(numCols);
     createRowsNode(numCols, numRows);
-    createOptionsNode(options);
+    createOptionsNode(initialStyles, initialView);
 
     // fold {{wb-table}} block on first create
     // window.roamAlphaAPI.data.block.update({
@@ -143,25 +218,41 @@ const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
             style={{ width: "50px" }}
           />
         </FormGroup>
-        <div className="flex flex-column">
-          {Object.entries(options).map(([key, value], index) => (
+        <div className="flex flex-col">
+          {Object.entries(initialStyles).map(([key, value], index) => (
             <div className="px-2" key={index}>
               <Checkbox
                 alignIndicator={"right"}
                 checked={value}
                 label={key}
-                onChange={(e) => handleOptionsConfig(e, key)}
+                onChange={(e) => handleStyles(e, key)}
                 className="capitalize"
               />
             </div>
           ))}
         </div>
+
+        <RadioGroup
+          onChange={(e) => setInitialView((e.target as HTMLInputElement).value)}
+          selectedValue={initialView}
+        >
+          <Radio label="Basic Text" value="plain" />
+          <Radio label="Embed" value="embed" />
+        </RadioGroup>
+
         <div className="text-right mt-4">
           <Button
+            loading={isCreatingBlocks}
             text="Create Table"
             onClick={() => {
+              setIsCreatingBlocks(true);
               createTableNodes();
-              onSubmit();
+
+              // TODO FIX THIS
+              setTimeout(() => {
+                onSubmit();
+                setIsCreatingBlocks(false);
+              }, 1000);
             }}
             intent={"primary"}
           />
@@ -172,29 +263,16 @@ const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
 };
 
 const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
+  // What is this doing?
   const [loading, setLoading] = useState(true);
-  const [headerNodes, setHeaderNodes] = useState<RoamBasicNode[]>([]);
-  const [rowsNodes, setRowsNodes] = useState<RoamBasicNode[]>([]);
-  const [options, setOptions] = useState<{
-    striped?: boolean;
-    bordered?: boolean;
-    condensed?: boolean;
-    interactive?: boolean;
-  }>({});
-
-  const tree = useMemo(() => getBasicTreeByParentUid(blockUid), [blockUid]);
-  const [isEdit, _setIsEdit] = useState(
-    () => !!getSubTree({ tree, key: "editing" }).uid
-  );
+  // Need to trigger this again after config is submitted
+  const settings = useMemo(() => getSettings(blockUid), [blockUid, loading]);
+  const [isEdit, _setIsEdit] = useState(settings.isEditing);
   const [hasData, setHasData] = useState(() => {
-    const headerNodesExist = tree.some(
-      (c) => c.text.toLowerCase() === "header"
+    return (
+      settings.headerNode.children.length > 0 &&
+      settings.rowsNode.children.length > 0
     );
-    const rowsNodesExist = tree.some((c) => c.text.toLowerCase() === "rows");
-    const optionsNodesExist = tree.some(
-      (c) => c.text.toLowerCase() === "options"
-    );
-    return headerNodesExist && rowsNodesExist && optionsNodesExist;
   });
   const setIsEdit = useCallback(
     (b: boolean) => {
@@ -203,13 +281,12 @@ const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
         ? createBlock({
             parentUid: blockUid,
             node: { text: "editing" },
-            order: 2,
           })
-        : deleteBlock(getSubTree({ parentUid: blockUid, key: "editing" }).uid);
+        : // this is not triggering on intital config submit
+          deleteBlock(getSubTree({ parentUid: blockUid, key: "editing" }).uid);
     },
     [blockUid]
   );
-
   useEffect(() => {
     console.log(
       `useEffect: edit: ${isEdit}, loading: ${loading}, data:${hasData}`
@@ -217,60 +294,11 @@ const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
     if (!isEdit) {
       if (hasData) {
         setLoading(false);
-        console.log("set loading to false");
       } else {
         setIsEdit(true);
-        console.log("set edit to true");
       }
     }
   }, [isEdit, setLoading, setIsEdit, hasData]);
-  const fetchData = async (tree: RoamBasicNode[]) => {
-    // check if header, rows, options nodes exist
-    const headerNodesExist = tree.some(
-      (c) => c.text.toLowerCase() === "header"
-    );
-    const rowsNodesExist = tree.some((c) => c.text.toLowerCase() === "rows");
-    const optionsNodesExist = tree.some(
-      (c) => c.text.toLowerCase() === "options"
-    );
-
-    // if header, rows, options nodes don't exist, exit
-    if (!headerNodesExist || !rowsNodesExist || !optionsNodesExist) {
-      return;
-    }
-
-    // get header, rows, options nodes
-    const headerNodes = tree.filter((c) => c.text.toLowerCase() === "header");
-    const rowsNodes = tree.filter((c) => c.text.toLowerCase() === "rows");
-    const optionsNodes = tree.filter((c) => c.text.toLowerCase() === "options");
-
-    const options = {
-      striped: optionsNodes[0]?.children.some(
-        (c) => c.text.toLowerCase() === "striped"
-      ),
-      bordered: optionsNodes[0]?.children.some(
-        (c) => c.text.toLowerCase() === "bordered"
-      ),
-      condensed: optionsNodes[0]?.children.some(
-        (c) => c.text.toLowerCase() === "condensed"
-      ),
-      interactive: optionsNodes[0]?.children.some(
-        (c) => c.text.toLowerCase() === "interactive"
-      ),
-    };
-
-    setHeaderNodes(headerNodes);
-    setRowsNodes(rowsNodes);
-    setOptions(options);
-
-    setLoading(false);
-  };
-  useEffect(() => {
-    const tree = getBasicTreeByParentUid(blockUid);
-    fetchData(tree).then(() =>
-      console.log("useEffect: Loading after fetch:", loading)
-    );
-  }, [blockUid, loading]);
 
   const updateText = (uid: string, value: string) => {
     updateBlock({ uid, text: value });
@@ -279,55 +307,85 @@ const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
     text = text.length > 20 ? text.substring(0, 20) : text;
     return text.replace(/[^a-zA-Z0-9-_]/g, "-");
   }
+  const CellEmbed = ({ uid }: { uid: string }) => {
+    const contentRef = useRef(null);
+    useEffect(() => {
+      const el = contentRef.current;
+      console.log(`useEffect: CellEmbed: ${uid}, el ${el}`);
+      if (el) {
+        window.roamAlphaAPI.ui.components.renderBlock({
+          uid,
+          el,
+        });
+      }
+    }, [contentRef]);
+    return (
+      <div className="roamjs-table-embed">
+        <div ref={contentRef} />
+      </div>
+    );
+  };
 
-  return isEdit ? (
+  return isEdit && loading ? (
     <Configuration
       blockUid={blockUid}
       onSubmit={() => {
+        // TODO FIX THIS
         setIsEdit(false);
-        setHasData(true);
-        fetchData(tree);
+        setTimeout(() => {
+          setHasData(true);
+          setLoading(false);
+        }, 1000);
         console.log(`onsubmit`);
       }}
     />
   ) : (
     <HTMLTable
-      className="roamjs-workbench-table"
-      bordered={options.bordered}
-      condensed={options.condensed}
-      interactive={options.interactive}
-      striped={options.striped}
+      className={`roamjs-workbench-table table-fixed w-full pointer-events-auto ${
+        settings.setView === "plain" ? "basic-text" : ""
+      }`}
+      bordered={settings.styles.bordered}
+      condensed={settings.styles.condensed}
+      interactive={settings.styles.interactive}
+      striped={settings.styles.striped}
     >
       <thead>
         <tr>
-          {!!headerNodes.length &&
-            headerNodes[0].children.map((c) => (
+          {!!settings.headerNode.children.length &&
+            settings.headerNode.children.map((c) => (
               <th
                 key={c.uid}
                 className={`wbt-header-${sanitizeClassName(c.text)}`}
               >
-                <EditableText
-                  placeholder=""
-                  defaultValue={c.text}
-                  onConfirm={(value) => updateText(c.uid, value)}
-                />
+                {settings.setView === "plain" ? (
+                  <EditableText
+                    placeholder=""
+                    defaultValue={c.text}
+                    onConfirm={(value) => updateText(c.uid, value)}
+                  />
+                ) : (
+                  <CellEmbed uid={c.uid} />
+                )}
               </th>
             ))}
         </tr>
       </thead>
       <tbody>
-        {!!rowsNodes.length &&
-          rowsNodes[0].children.map((c) => (
+        {!!settings.rowsNode.children.length &&
+          settings.rowsNode.children.map((c) => (
             <tr key={c.uid} className={`wbt-row-${sanitizeClassName(c.text)}`}>
               {c.children.map((c) => (
                 <td key={c.uid}>
-                  <EditableText
-                    minWidth={55}
-                    placeholder=""
-                    defaultValue={c.text}
-                    onConfirm={(value) => updateText(c.uid, value)}
-                    className={`wbt-cell-${sanitizeClassName(c.text)}`}
-                  />
+                  {settings.setView === "plain" ? (
+                    <EditableText
+                      placeholder=""
+                      defaultValue={c.text}
+                      onConfirm={(value) => updateText(c.uid, value)}
+                      className={`wbt-cell-${sanitizeClassName(c.text)} w-full`}
+                    />
+                  ) : (
+                    <CellEmbed uid={c.uid} />
+                  )}
                 </td>
               ))}
             </tr>
@@ -361,6 +419,15 @@ export const toggleFeature = (flag: boolean) => {
 
       .roamjs-workbench-table-config .roamjs-input-label label {
         min-width: 70px;
+      }
+      .roamjs-workbench-table.basic-text td {
+        user-select: none;
+        pointer-events: none;
+      }
+      .roamjs-workbench-table.basic-text input,
+      .roamjs-workbench-table.basic-text span
+       {
+        pointer-events: auto;
       }
     `);
     unloads.add(() => tableButtonObserver.disconnect());
