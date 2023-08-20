@@ -10,12 +10,12 @@ import { OnloadArgs } from "roamjs-components/types";
 import { Feature } from "../index";
 
 const SettingsTable =
-  (
-    FEATURES: Feature[],
-    initialSettings: { [key: string]: boolean },
-    extensionAPI: OnloadArgs["extensionAPI"]
-  ) =>
-  () => {
+  (FEATURES: Feature[], extensionAPI: OnloadArgs["extensionAPI"]) => () => {
+    const initialSettings: { [key: string]: boolean } = {};
+    FEATURES.forEach(({ id }) => {
+      const flag = extensionAPI.settings.get(id);
+      initialSettings[id] = !!flag;
+    });
     const [featureToggleSettings, setFeatureToggleSettings] =
       useState(initialSettings);
 
@@ -53,6 +53,8 @@ const SettingsTable =
       >
         <thead>
           <tr style={{ ...thBorder }}>
+            <th style={{ ...settingsStyle, ...noBorder }}>Enabled</th>
+            <th style={{ ...featureStyle, ...noBorder }}>Feature</th>
             <th
               style={{
                 ...settingsStyle,
@@ -62,10 +64,8 @@ const SettingsTable =
             >
               Info
             </th>
-            <th style={{ ...featureStyle, ...noBorder }}>Feature</th>
-            <th style={{ ...settingsStyle, ...noBorder }}>Documentation</th>
             {/* <th style={{ ...settingsStyle }}>Settings</th> */}
-            <th style={{ ...settingsStyle, ...noBorder }}>Enabled</th>
+            <th style={{ ...settingsStyle, ...noBorder }}>Documentation</th>
           </tr>
         </thead>
         <tbody>
@@ -80,6 +80,36 @@ const SettingsTable =
               }}
             >
               <td
+                aria-label="On/Off Switch"
+                style={{ ...settingsStyle, ...noBorder }}
+              >
+                <Switch
+                  checked={featureToggleSettings[id]}
+                  onChange={(e) => {
+                    const updatedSettings = {
+                      ...featureToggleSettings,
+                      [id]: (e.target as HTMLInputElement).checked,
+                    };
+                    setFeatureToggleSettings(updatedSettings);
+                    extensionAPI.settings.set(
+                      id,
+                      (e.target as HTMLInputElement).checked
+                    );
+                    module.toggleFeature(
+                      (e.target as HTMLInputElement).checked,
+                      extensionAPI
+                    );
+                  }}
+                />
+              </td>
+              <td
+                aria-label="Feature Name"
+                style={{ ...featureStyle, ...noBorder }}
+              >
+                <span>{name}</span>
+              </td>
+              <td
+                aria-label="Info button"
                 style={{
                   ...settingsStyle,
                   ...noBorder,
@@ -112,19 +142,9 @@ const SettingsTable =
                   <Button icon="info-sign" />
                 </Popover>
               </td>
-              <td style={{ ...featureStyle, ...noBorder }}>
-                <span>{name}</span>
-              </td>
-              <td style={{ ...settingsStyle, ...noBorder }}>
-                <AnchorButton
-                  intent="primary"
-                  icon="document-open"
-                  href={`https://github.com/RoamJs/workbench/blob/main/docs/${docs}`}
-                />
-              </td>
               {/* placeholder for when settings migrated to API */}
               {/* https://github.com/RoamJS/workbench/issues/402 */}
-              {/* <td style={{ ...settingsStyle, ...cellsBorder }}>
+              {/* <td aria-label="Settings button" style={{ ...settingsStyle, ...cellsBorder }}>
                   {settings ? (
                     <Button
                       intent="primary"
@@ -135,24 +155,14 @@ const SettingsTable =
                     />
                   ) : null}
                 </td> */}
-              <td style={{ ...settingsStyle, ...noBorder }}>
-                <Switch
-                  checked={featureToggleSettings[id]}
-                  onChange={(e) => {
-                    const updatedSettings = {
-                      ...featureToggleSettings,
-                      [id]: (e.target as HTMLInputElement).checked,
-                    };
-                    setFeatureToggleSettings(updatedSettings);
-                    extensionAPI.settings.set(
-                      id,
-                      (e.target as HTMLInputElement).checked
-                    );
-                    module.toggleFeature(
-                      (e.target as HTMLInputElement).checked,
-                      extensionAPI
-                    );
-                  }}
+              <td
+                aria-label="Docs Button"
+                style={{ ...settingsStyle, ...noBorder }}
+              >
+                <AnchorButton
+                  intent="primary"
+                  icon="document-open"
+                  href={`https://github.com/RoamJs/workbench/blob/main/docs/${docs}`}
                 />
               </td>
             </tr>
