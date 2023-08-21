@@ -202,7 +202,7 @@ export default runExtension(async ({ extensionAPI, extension }) => {
         name: "WorkBench Features",
         action: {
           type: "reactComponent",
-          component: SettingsTable(FEATURES, initialSettings, extensionAPI),
+          component: SettingsTable(FEATURES, extensionAPI),
         },
       },
     ],
