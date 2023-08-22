@@ -23,6 +23,7 @@ Click on the name of the feature for more details and information about it.
 | [Live Preview](https://github.com/RoamJs/workbench/blob/main/docs/live-preview.md)             | See live and editable previews of page links underneath your mouse cursor.                               |
 | [Mind Map](https://github.com/RoamJs/workbench/blob/main/docs/mindmap.md)                      | Visualize pieces of your Roam graph as a mind map!                                                       |
 | [Privacy Mode](https://github.com/RoamJs/workbench/blob/main/docs/privacy-mode.md)             | This feature redacts confidential information when showing your Roam database to others.                 |
+| [Table](https://github.com/RoamJs/workbench/blob/main/docs/table.md)                           | Editable table component that can be used in your Roam database.                                         |
 | [Tag Cycle](https://github.com/RoamJs/workbench/blob/main/docs/tag-cycle.md)                   | Define custom tag cycles tied to a keyboard shortcut!                                                    |
 | [Tally](https://github.com/RoamJs/workbench/blob/main/docs/tally.md)                           | Introduces a tally button component to use directly in your Roam graph.                                  |
 | [Tutorials](https://github.com/RoamJs/workbench/blob/main/docs/tutorials.md)                   | Learn how to use extensions and Roam basics right from within Roam.                                      |
