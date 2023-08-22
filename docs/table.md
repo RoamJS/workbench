@@ -72,7 +72,7 @@ Each child block of a row will create the cell in that row.
 
 ### Options
 
-Styles are set as children of a `options` block.
+Styles are set as children of a `options > styles` block.
 
 Options include:
 
@@ -86,8 +86,9 @@ Example:
 ```
 - {{wb-table}}
     - options
-        - striped
-        - bordered
+        - styles
+            - striped
+            - bordered
 ```
 
 ### Full Example
@@ -112,6 +113,7 @@ Example:
             - cell5
             - cell6
     - options
+        - styles
             - striped
             - bordered
 ```
