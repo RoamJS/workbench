@@ -250,15 +250,14 @@ const Configuration = ({
           ))}
         </div>
 
-        {/* fix width issue when editing embed block */}
-        {/* <RadioGroup
+        <RadioGroup
           disabled={hasOptions} // TODO: allow edit
           onChange={(e) => setInitialView((e.target as HTMLInputElement).value)}
           selectedValue={initialView}
         >
           <Radio label="Basic Text" value="plain" />
           <Radio label="Embed" value="embed" />
-        </RadioGroup> */}
+        </RadioGroup>
 
         <div className="text-right mt-4">
           <Button
@@ -340,7 +339,7 @@ const DisplayTable = ({ blockUid }: DisplayTableProps) => {
           settings.rowsNode.children.map((c) => (
             <tr key={c.uid} className={`wbt-row-${sanitizeClassName(c.text)}`}>
               {c.children.map((c) => (
-                <td key={c.uid}>
+                <td key={c.uid} className="overflow-hidden">
                   {settings.setView === "embed" ? (
                     <CellEmbed uid={c.uid} />
                   ) : (
@@ -415,6 +414,9 @@ export const toggleFeature = (flag: boolean) => {
        {
         pointer-events: auto;
         width: 100%;
+      }
+      .roamjs-workbench-table .rm-block-separator {
+        display: none;
       }
     `);
     unloads.add(() => tableButtonObserver.disconnect());
