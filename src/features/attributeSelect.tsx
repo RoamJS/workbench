@@ -71,16 +71,25 @@ const AttributeButton = ({
       minimal
       onClick={(e) => {
         const configUid = getPageUidByPageTitle(CONFIG);
-        const tree = getBasicTreeByParentUid(configUid);
-        const attributeUid = tree.find((t) => t.text === "attributes")?.uid;
-        const options = getSubTree({
+        //
+        // How can this be optimized?
+        //
+        const attributesNode = getSubTree({
+          key: "attributes",
+          parentUid: configUid,
+        });
+        const attributeUid = getSubTree({
           key: attributeName,
+          parentUid: attributesNode.uid,
+        }).uid;
+        const options = getSubTree({
+          key: "options",
           parentUid: attributeUid,
         }).children.map((t) => t.text);
         renderOverlay({
           Overlay: ChooseAttributeOverlay,
           id: "attribute-select",
-          props: { tree, options, uid, attributeName },
+          props: { options, uid, attributeName },
         });
       }}
     />
@@ -103,14 +112,31 @@ const renderAttributeButton = (
 
 const AttributeConfigPanel = () => {
   const [value, setValue] = useState("");
+  const [definedAttributes, setDefinedAttributes] = useState<string[]>(
+    getDefinedAttributes()
+  );
+  const [activeTab, setActiveTab] = useState(definedAttributes[0]);
+  const handleTabChange = (tabName: string) => {
+    setActiveTab(tabName);
+  };
+  const handleRemoveAttribute = (attribute: string) => {
+    setDefinedAttributes((attrs) => attrs.filter((a) => a !== attribute));
+    const index = definedAttributes.indexOf(activeTab);
+    if (attribute === definedAttributes[index]) {
+      setActiveTab(definedAttributes[0]);
+    }
+  };
   const configUid = getPageUidByPageTitle(CONFIG);
   const attributesUid = getSubTree({
     key: "attributes",
     parentUid: configUid,
   }).uid;
-  const [definedAttributes, setDefinedAttributes] = useState<string[]>(
-    getDefinedAttributes()
-  );
+  window.roamAlphaAPI.data.block.update({
+    block: {
+      uid: attributesUid,
+      open: false,
+    },
+  });
   const attributesInGraph = (
     window.roamAlphaAPI.data.fast.q(
       `[:find
@@ -129,7 +155,7 @@ const AttributeConfigPanel = () => {
     .filter((a) => !definedAttributes.includes(a));
 
   return (
-    <div className={Classes.DIALOG_BODY}>
+    <div className={`${Classes.DIALOG_BODY} m-0`}>
       <div className="flex mb-8">
         <div id="attribute-select-autocomplete">
           <AutocompleteInput
@@ -150,29 +176,36 @@ const AttributeConfigPanel = () => {
             createBlock({
               node: {
                 text: value,
-                children: [{ text: "" }],
+                children: [{ text: "options", children: [{ text: "" }] }],
               },
               order: "last",
               parentUid: attributesUid,
             }).then(() => {
               setDefinedAttributes(definedAttributes.concat([value]));
+              setActiveTab(value);
               // Automcomplete setting value to "" is not working
               setValue("");
             });
           }}
         />
       </div>
-      <Tabs id="attribute-select-attributes" vertical={true}>
+      <Tabs
+        id="attribute-select-attributes"
+        vertical={true}
+        onChange={handleTabChange}
+        selectedTabId={activeTab}
+      >
         {definedAttributes.map((a, i) => (
           <Tab
             className="w-full"
-            id={i}
+            id={a}
             title={a}
             panel={
               <TabsPanel
+                key={activeTab}
                 attributeName={a}
                 attributesUid={attributesUid}
-                setDefinedAttributes={setDefinedAttributes}
+                handleRemoveAttribute={handleRemoveAttribute}
               />
             }
           />
@@ -184,15 +217,19 @@ const AttributeConfigPanel = () => {
 const TabsPanel = ({
   attributeName,
   attributesUid,
-  setDefinedAttributes,
+  handleRemoveAttribute,
 }: {
   attributeName: string;
   attributesUid: string;
-  setDefinedAttributes: React.Dispatch<React.SetStateAction<string[]>>;
+  handleRemoveAttribute: (attribute: string) => void;
 }) => {
   const attributeUid = getSubTree({
     key: attributeName,
     parentUid: attributesUid,
+  }).uid;
+  const options = getSubTree({
+    key: "options",
+    parentUid: attributeUid,
   }).uid;
 
   const contentRef = useRef(null);
@@ -200,7 +237,7 @@ const TabsPanel = ({
     const el = contentRef.current;
     if (el) {
       window.roamAlphaAPI.ui.components.renderBlock({
-        uid: attributeUid,
+        uid: options,
         el,
       });
     }
@@ -217,9 +254,7 @@ const TabsPanel = ({
         style={{ marginLeft: 16 }}
         onClick={() => {
           deleteBlock(attributeUid).then(() => {
-            setDefinedAttributes((definedAttributes: string[]) =>
-              definedAttributes.filter((a) => a !== attributeName)
-            );
+            handleRemoveAttribute(attributeName);
           });
         }}
       />
@@ -245,7 +280,7 @@ const ConfigPage = ({}: {}): React.ReactElement => {
         ref={titleRef}
         tabIndex={-1}
       >
-        <h4 style={{ padding: 4 }}>Attribute Select Configuration</h4>
+        <h4 style={{ paddingBottom: 4 }}>Attribute Select Configuration</h4>
       </div>
       <AttributeConfigPanel />
     </Card>
