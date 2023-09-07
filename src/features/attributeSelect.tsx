@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { Classes, Button, Dialog, Label } from "@blueprintjs/core";
-import addStyle from "roamjs-components/dom/addStyle";
+import { Classes, Button, Dialog, Tabs, Tab, Card } from "@blueprintjs/core";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
 import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
 import getBlockUidFromTarget from "roamjs-components/dom/getBlockUidFromTarget";
@@ -11,18 +10,17 @@ import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
 import AutocompleteInput from "roamjs-components/components/AutocompleteInput";
-import CustomPanel from "roamjs-components/components/ConfigPanels/CustomPanel";
 import createBlock from "roamjs-components/writes/createBlock";
-import { PullBlock } from "roamjs-components/types";
-import { createConfigObserver } from "roamjs-components/components/ConfigPage";
+import { OnloadArgs, PullBlock } from "roamjs-components/types";
 import getSubTree from "roamjs-components/util/getSubTree";
 import updateBlock from "roamjs-components/writes/updateBlock";
+import deleteBlock from "roamjs-components/writes/deleteBlock";
+import createPage from "roamjs-components/writes/createPage";
+import { addCommand } from "./workBench";
 
 const CONFIG = `roam/js/attribute-select`;
 
-type Entry = { text: string };
-
-const Overlay = ({
+const ChooseAttributeOverlay = ({
   options,
   onClose,
   uid,
@@ -32,7 +30,7 @@ const Overlay = ({
   uid: string;
   attributeName: string;
 }>) => {
-  const [value, setValue] = useState<Entry>();
+  const [value, setValue] = useState("");
 
   return (
     <Dialog
@@ -41,10 +39,6 @@ const Overlay = ({
       onClose={onClose}
     >
       <div className={Classes.DIALOG_BODY}>
-        {/* <Label>
-          Current Value:
-          <span style={{ marginLeft: 8 }}>{currentvalue}</span>
-        </Label> */}
         <AutocompleteInput options={options} setValue={setValue} autoFocus />
         <Button
           disabled={!value}
@@ -52,7 +46,6 @@ const Overlay = ({
           intent="primary"
           text={"Update"}
           onClick={() => {
-            console.log(uid, attributeName, value);
             updateBlock({
               text: `${attributeName}:: ${value}`,
               uid,
@@ -64,7 +57,13 @@ const Overlay = ({
     </Dialog>
   );
 };
-const AttributeButton = ({ attributeName, uid }) => {
+const AttributeButton = ({
+  attributeName,
+  uid,
+}: {
+  attributeName: string;
+  uid: string;
+}) => {
   return (
     <Button
       icon="chevron-down"
@@ -78,9 +77,8 @@ const AttributeButton = ({ attributeName, uid }) => {
           key: attributeName,
           parentUid: attributeUid,
         }).children.map((t) => t.text);
-        console.log(options);
         renderOverlay({
-          Overlay,
+          Overlay: ChooseAttributeOverlay,
           id: "attribute-select",
           props: { tree, options, uid, attributeName },
         });
@@ -89,7 +87,11 @@ const AttributeButton = ({ attributeName, uid }) => {
   );
 };
 
-export const renderAttributeButton = (parent, attributeName, blockUid) => {
+const renderAttributeButton = (
+  parent: HTMLSpanElement,
+  attributeName: string,
+  blockUid: string
+) => {
   const containerSpan = document.createElement("span");
   containerSpan.onmousedown = (e) => e.stopPropagation();
   ReactDOM.render(
@@ -99,24 +101,17 @@ export const renderAttributeButton = (parent, attributeName, blockUid) => {
   parent.appendChild(containerSpan);
 };
 
-const attributeObserver = createHTMLObserver({
-  className: "rm-attr-ref",
-  tag: "SPAN",
-  callback: (s: HTMLSpanElement) => {
-    const blockUid = getBlockUidFromTarget(s);
-    const attributeUid = s.getAttribute("data-link-uid");
-    const attributeName = attributeUid
-      ? getPageTitleByPageUid(attributeUid)
-      : "";
-    renderAttributeButton(s, attributeName, blockUid);
-    s.setAttribute("data-roamjs-attribute-select", "true");
-  },
-});
-
-const AttributePanel = () => {
-  const [value, setValue] = useState<string>();
-
-  const options = (
+const AttributeConfigPanel = () => {
+  const [value, setValue] = useState("");
+  const configUid = getPageUidByPageTitle(CONFIG);
+  const attributesUid = getSubTree({
+    key: "attributes",
+    parentUid: configUid,
+  }).uid;
+  const [definedAttributes, setDefinedAttributes] = useState<string[]>(
+    getDefinedAttributes()
+  );
+  const attributesInGraph = (
     window.roamAlphaAPI.data.fast.q(
       `[:find
         (pull ?page [:node/title])
@@ -129,63 +124,220 @@ const AttributePanel = () => {
         [?page :block/uid ?uid]
       ]`
     ) as [PullBlock][]
-  ).map((p) => p[0]?.[":node/title"] || "");
+  )
+    .map((p) => p[0]?.[":node/title"] || "")
+    .filter((a) => !definedAttributes.includes(a));
 
-  const parentUid = getPageUidByPageTitle(CONFIG);
   return (
     <div className={Classes.DIALOG_BODY}>
-      <Label style={{ width: 120, marginBottom: 0 }}>
-        Attribute Label
-        <AutocompleteInput
-          value={value}
-          setValue={setValue}
-          options={options}
-          placeholder={"search"}
+      <div className="flex mb-8">
+        <div id="attribute-select-autocomplete">
+          <AutocompleteInput
+            value={""}
+            setValue={setValue}
+            options={attributesInGraph}
+            placeholder={"Choose Attribute To Add"}
+          />
+        </div>
+        <Button
+          intent="primary"
+          className="mx-2"
+          disabled={!value}
+          text={"Add Attribute"}
+          rightIcon={"plus"}
+          style={{ marginLeft: 16 }}
+          onClick={() => {
+            createBlock({
+              node: {
+                text: value,
+                children: [{ text: "" }],
+              },
+              order: "last",
+              parentUid: attributesUid,
+            }).then(() => {
+              setDefinedAttributes(definedAttributes.concat([value]));
+              // Automcomplete setting value to "" is not working
+              setValue("");
+            });
+          }}
         />
-      </Label>
+      </div>
+      <Tabs id="attribute-select-attributes" vertical={true}>
+        {definedAttributes.map((a, i) => (
+          <Tab
+            className="w-full"
+            id={i}
+            title={a}
+            panel={
+              <TabsPanel
+                attributeName={a}
+                attributesUid={attributesUid}
+                setDefinedAttributes={setDefinedAttributes}
+              />
+            }
+          />
+        ))}
+      </Tabs>
+    </div>
+  );
+};
+const TabsPanel = ({
+  attributeName,
+  attributesUid,
+  setDefinedAttributes,
+}: {
+  attributeName: string;
+  attributesUid: string;
+  setDefinedAttributes: React.Dispatch<React.SetStateAction<string[]>>;
+}) => {
+  const attributeUid = getSubTree({
+    key: attributeName,
+    parentUid: attributesUid,
+  }).uid;
+
+  const contentRef = useRef(null);
+  useEffect(() => {
+    const el = contentRef.current;
+    if (el) {
+      window.roamAlphaAPI.ui.components.renderBlock({
+        uid: attributeUid,
+        el,
+      });
+    }
+  }, [contentRef]);
+
+  return (
+    <div className="relative">
+      <div ref={contentRef}></div>
       <Button
-        disabled={!value}
-        text={"Add"}
-        rightIcon={"plus"}
+        intent="danger"
+        className="mx-2 absolute right-0 top-0"
+        text={"Remove Attribute"}
+        rightIcon={"trash"}
         style={{ marginLeft: 16 }}
         onClick={() => {
-          createBlock({
-            node: {
-              text: value,
-            },
-            parentUid,
+          deleteBlock(attributeUid).then(() => {
+            setDefinedAttributes((definedAttributes: string[]) =>
+              definedAttributes.filter((a) => a !== attributeName)
+            );
           });
         }}
       />
     </div>
   );
 };
+
+const getDefinedAttributes = (): string[] => {
+  const attributesUid = window.roamAlphaAPI.data.fast.q(
+    `[:find ?u :where [?b :block/page ?p] [?b :block/uid ?u] [?b :block/string "attributes"] [?p :node/title "roam/js/attribute-select"]]`
+  )[0]?.[0] as string;
+  const attributesTree = getBasicTreeByParentUid(attributesUid);
+  const definedAttributes = attributesTree.map((t) => t.text);
+  return definedAttributes;
+};
+
+const ConfigPage = ({}: {}): React.ReactElement => {
+  const titleRef = useRef<HTMLDivElement>(null);
+  return (
+    <Card style={{ color: "#202B33" }} className={"roamjs-config-panel"}>
+      <div
+        style={{ display: "flex", justifyContent: "space-between" }}
+        ref={titleRef}
+        tabIndex={-1}
+      >
+        <h4 style={{ padding: 4 }}>Attribute Select Configuration</h4>
+      </div>
+      <AttributeConfigPanel />
+    </Card>
+  );
+};
+const renderConfigPage = ({
+  h,
+  pageUid,
+}: {
+  h: HTMLHeadingElement;
+  pageUid: string;
+}) => {
+  const uid = pageUid;
+  const attribute = `data-roamjs-${uid}`;
+  const containerParent = h.parentElement?.parentElement;
+  if (containerParent && !containerParent.hasAttribute(attribute)) {
+    containerParent.setAttribute(attribute, "true");
+    const parent = document.createElement("div");
+    const configPageId = "attribute-select";
+    parent.id = `${configPageId}-config`;
+    containerParent.insertBefore(
+      parent,
+      h.parentElement?.nextElementSibling || null
+    );
+    ReactDOM.render(<ConfigPage />, parent);
+  }
+};
+
+const shutdown = () => {
+  unloads.forEach((u) => u());
+  unloads.clear();
+};
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = async (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   if (flag) {
-    createConfigObserver({
-      title: "roam/js/attribute-select",
-      config: {
-        tabs: [
-          {
-            id: "home",
-            fields: [
-              {
-                title: "attributes",
-                Panel: CustomPanel,
-                description: "Specify the attributes you want to use.",
-                options: {
-                  component: AttributePanel,
-                },
-              },
-            ],
-          },
-        ],
+    const definedAttributes = getDefinedAttributes();
+    const pageUid =
+      getPageUidByPageTitle(CONFIG) ||
+      (await createPage({
+        title: CONFIG,
+        tree: [{ text: "attributes" }],
+      }));
+
+    const observer = createHTMLObserver({
+      className: "rm-title-display",
+      tag: "H1",
+      callback: (d: HTMLElement) => {
+        const h = d as HTMLHeadingElement;
+        if (h.innerText === CONFIG) {
+          renderConfigPage({
+            pageUid,
+            h,
+          });
+        }
       },
-    }).then((a) => unloads.add(() => a.observer.disconnect()));
-    unloads.add(() => attributeObserver.disconnect());
+    });
+    const attributeObserver = createHTMLObserver({
+      className: "rm-attr-ref",
+      tag: "SPAN",
+      callback: (s: HTMLSpanElement) => {
+        const blockUid = getBlockUidFromTarget(s);
+        const attributeUid = s.getAttribute("data-link-uid");
+        const attributeName = attributeUid
+          ? getPageTitleByPageUid(attributeUid)
+          : "";
+        if (
+          !s.hasAttribute("data-roamjs-attribute-select") &&
+          definedAttributes.includes(attributeName)
+        ) {
+          renderAttributeButton(s, attributeName, blockUid);
+          s.setAttribute("data-roamjs-attribute-select", "true");
+        }
+      },
+    });
+    unloads.add(() => {
+      observer.disconnect();
+      attributeObserver.disconnect();
+      addCommand(
+        {
+          label: "Refresh Attribute Select",
+          callback: async () => {
+            shutdown();
+            toggleFeature(true, extensionAPI);
+          },
+        },
+        extensionAPI
+      );
+    });
   } else {
-    unloads.forEach((u) => u());
-    unloads.clear();
+    shutdown();
   }
 };
