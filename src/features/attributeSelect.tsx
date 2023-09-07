@@ -37,6 +37,7 @@ const ChooseAttributeOverlay = ({
       title={`Select Value for ${attributeName}`}
       isOpen={true}
       onClose={onClose}
+      className="w-auto"
     >
       <div className={Classes.DIALOG_BODY}>
         <AutocompleteInput options={options} setValue={setValue} autoFocus />
