@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { Classes, Button, Tabs, Tab, Card, Popover } from "@blueprintjs/core";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
@@ -135,7 +135,7 @@ const renderAttributeButton = (
 
 const AttributeConfigPanel = () => {
   const [value, setValue] = useState("");
-  const [definedAttributes, setDefinedAttributes] = useState<string[]>(
+  const [definedAttributes, setDefinedAttributes] = useState<string[]>(() =>
     getDefinedAttributes()
   );
   const [activeTab, setActiveTab] = useState(definedAttributes[0]);
@@ -154,15 +154,19 @@ const AttributeConfigPanel = () => {
     key: "attributes",
     parentUid: configUid,
   }).uid;
-  window.roamAlphaAPI.data.block.update({
-    block: {
-      uid: attributesUid,
-      open: false,
-    },
-  });
-  const attributesInGraph = (
-    window.roamAlphaAPI.data.fast.q(
-      `[:find
+  useEffect(() => {
+    window.roamAlphaAPI.data.block.update({
+      block: {
+        uid: attributesUid,
+        open: false,
+      },
+    });
+  }, [configUid]);
+  const initialAttributesInGraph = useMemo(
+    () =>
+      (
+        window.roamAlphaAPI.data.fast.q(
+          `[:find
         (pull ?page [:node/title])
       :where
         [?b :attrs/lookup _]
@@ -172,10 +176,13 @@ const AttributeConfigPanel = () => {
         [(untuple ?s) [?e ?uid]]
         [?page :block/uid ?uid]
       ]`
-    ) as [PullBlock][]
-  )
-    .map((p) => p[0]?.[":node/title"] || "")
-    .filter((a) => !definedAttributes.includes(a));
+        ) as [PullBlock][]
+      ).map((p) => p[0]?.[":node/title"] || ""),
+    []
+  );
+  const [attributesInGraph, setAttributesInGraph] = useState<string[]>(
+    initialAttributesInGraph
+  );
 
   return (
     <div className={`${Classes.DIALOG_BODY} m-0`}>
@@ -184,7 +191,9 @@ const AttributeConfigPanel = () => {
           <AutocompleteInput
             value={""}
             setValue={setValue}
-            options={attributesInGraph}
+            options={attributesInGraph.filter(
+              (a) => !definedAttributes.includes(a)
+            )}
             placeholder={"Choose Attribute To Add"}
           />
         </div>
@@ -246,15 +255,17 @@ const TabsPanel = ({
   attributesUid: string;
   handleRemoveAttribute: (attribute: string) => void;
 }) => {
-  const attributeUid = getSubTree({
-    key: attributeName,
-    parentUid: attributesUid,
-  }).uid;
-  const options = getSubTree({
-    key: "options",
-    parentUid: attributeUid,
-  }).uid;
-
+  const { attributeUid, options } = useMemo(() => {
+    const attributeUid = getSubTree({
+      key: attributeName,
+      parentUid: attributesUid,
+    }).uid;
+    const options = getSubTree({
+      key: "options",
+      parentUid: attributeUid,
+    }).uid;
+    return { attributeUid, options };
+  }, [attributeName, attributesUid]);
   const contentRef = useRef(null);
   useEffect(() => {
     const el = contentRef.current;

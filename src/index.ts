@@ -46,7 +46,7 @@ const FEATURES = [
     name: "Attribute Select",
     description: "Create Dropdowns to fill in Attribute values.",
     module: attributeSelect,
-    docs: "alert.md",
+    docs: "attribute-select.md",
     gif: "short-demo-alert",
   },
   {
