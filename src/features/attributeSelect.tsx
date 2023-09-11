@@ -133,7 +133,13 @@ const renderAttributeButton = (
   parent.appendChild(containerSpan);
 };
 
-const AttributeConfigPanel = () => {
+const AttributeConfigPanel = ({
+  onAdd,
+  onRemove,
+}: {
+  onAdd: (attr: string) => void;
+  onRemove: (attr: string) => void;
+}) => {
   const [value, setValue] = useState("");
   const [definedAttributes, setDefinedAttributes] = useState<string[]>(() =>
     getDefinedAttributes()
@@ -148,6 +154,7 @@ const AttributeConfigPanel = () => {
     if (attribute === definedAttributes[index]) {
       setActiveTab(definedAttributes[0]);
     }
+    onRemove(attribute);
   };
   const configUid = getPageUidByPageTitle(CONFIG);
   const attributesUid = getSubTree({
@@ -217,6 +224,7 @@ const AttributeConfigPanel = () => {
               setActiveTab(value);
               // Automcomplete setting value to "" is not working
               setValue("");
+              onAdd(value);
             });
           }}
         />
@@ -305,7 +313,13 @@ const getDefinedAttributes = (): string[] => {
   return definedAttributes;
 };
 
-const ConfigPage = ({}: {}): React.ReactElement => {
+const ConfigPage = ({
+  onAdd,
+  onRemove,
+}: {
+  onAdd: (attr: string) => void;
+  onRemove: (attr: string) => void;
+}): React.ReactElement => {
   const titleRef = useRef<HTMLDivElement>(null);
   return (
     <Card style={{ color: "#202B33" }} className={"roamjs-config-panel"}>
@@ -316,16 +330,20 @@ const ConfigPage = ({}: {}): React.ReactElement => {
       >
         <h4 style={{ paddingBottom: 4 }}>Attribute Select Configuration</h4>
       </div>
-      <AttributeConfigPanel />
+      <AttributeConfigPanel onAdd={onAdd} onRemove={onRemove} />
     </Card>
   );
 };
 const renderConfigPage = ({
   h,
   pageUid,
+  onAdd,
+  onRemove,
 }: {
   h: HTMLHeadingElement;
   pageUid: string;
+  onAdd: (attr: string) => void;
+  onRemove: (attr: string) => void;
 }) => {
   const uid = pageUid;
   const attribute = `data-roamjs-${uid}`;
@@ -339,21 +357,39 @@ const renderConfigPage = ({
       parent,
       h.parentElement?.nextElementSibling || null
     );
-    ReactDOM.render(<ConfigPage />, parent);
+    ReactDOM.render(<ConfigPage onAdd={onAdd} onRemove={onRemove} />, parent);
   }
 };
 
-const shutdown = () => {
-  unloads.forEach((u) => u());
-  unloads.clear();
+let definedAttributes: string[] = [];
+let attributeObserver: MutationObserver;
+const updateAttributeObserver = () => {
+  if (attributeObserver) {
+    attributeObserver.disconnect();
+  }
+  attributeObserver = createHTMLObserver({
+    className: "rm-attr-ref",
+    tag: "SPAN",
+    callback: (s: HTMLSpanElement) => {
+      const blockUid = getBlockUidFromTarget(s);
+      const attributeUid = s.getAttribute("data-link-uid");
+      const attributeName = attributeUid
+        ? getPageTitleByPageUid(attributeUid)
+        : "";
+      if (
+        !s.hasAttribute("data-roamjs-attribute-select") &&
+        definedAttributes.includes(attributeName)
+      ) {
+        renderAttributeButton(s, attributeName, blockUid);
+        s.setAttribute("data-roamjs-attribute-select", "true");
+      }
+    },
+  });
 };
 const unloads = new Set<() => void>();
-export const toggleFeature = async (
-  flag: boolean,
-  extensionAPI: OnloadArgs["extensionAPI"]
-) => {
+export const toggleFeature = async (flag: boolean) => {
   if (flag) {
-    const definedAttributes = getDefinedAttributes();
+    definedAttributes = getDefinedAttributes();
     const pageUid =
       getPageUidByPageTitle(CONFIG) ||
       (await createPage({
@@ -370,43 +406,27 @@ export const toggleFeature = async (
           renderConfigPage({
             pageUid,
             h,
+            onAdd: (attr: string) => {
+              definedAttributes.push(attr);
+              updateAttributeObserver();
+            },
+            onRemove: (attr: string) => {
+              definedAttributes = definedAttributes.filter((a) => a !== attr);
+              updateAttributeObserver();
+            },
           });
         }
       },
     });
-    const attributeObserver = createHTMLObserver({
-      className: "rm-attr-ref",
-      tag: "SPAN",
-      callback: (s: HTMLSpanElement) => {
-        const blockUid = getBlockUidFromTarget(s);
-        const attributeUid = s.getAttribute("data-link-uid");
-        const attributeName = attributeUid
-          ? getPageTitleByPageUid(attributeUid)
-          : "";
-        if (
-          !s.hasAttribute("data-roamjs-attribute-select") &&
-          definedAttributes.includes(attributeName)
-        ) {
-          renderAttributeButton(s, attributeName, blockUid);
-          s.setAttribute("data-roamjs-attribute-select", "true");
-        }
-      },
-    });
+
+    updateAttributeObserver();
+
     unloads.add(() => {
       observer.disconnect();
       attributeObserver.disconnect();
-      addCommand(
-        {
-          label: "Refresh Attribute Select",
-          callback: async () => {
-            shutdown();
-            toggleFeature(true, extensionAPI);
-          },
-        },
-        extensionAPI
-      );
     });
   } else {
-    shutdown();
+    unloads.forEach((u) => u());
+    unloads.clear();
   }
 };
