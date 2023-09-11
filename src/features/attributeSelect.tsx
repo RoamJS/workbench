@@ -1,14 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { Classes, Button, Dialog, Tabs, Tab, Card } from "@blueprintjs/core";
+import { Classes, Button, Tabs, Tab, Card, Popover } from "@blueprintjs/core";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
 import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
 import getBlockUidFromTarget from "roamjs-components/dom/getBlockUidFromTarget";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
-import renderOverlay, {
-  RoamOverlayProps,
-} from "roamjs-components/util/renderOverlay";
 import AutocompleteInput from "roamjs-components/components/AutocompleteInput";
 import createBlock from "roamjs-components/writes/createBlock";
 import { OnloadArgs, PullBlock } from "roamjs-components/types";
@@ -17,6 +14,7 @@ import updateBlock from "roamjs-components/writes/updateBlock";
 import deleteBlock from "roamjs-components/writes/deleteBlock";
 import createPage from "roamjs-components/writes/createPage";
 import { addCommand } from "./workBench";
+import MenuItemSelect from "roamjs-components/components/MenuItemSelect";
 
 const CONFIG = `roam/js/attribute-select`;
 
@@ -25,37 +23,45 @@ const ChooseAttributeOverlay = ({
   onClose,
   uid,
   attributeName,
-}: RoamOverlayProps<{
+}: {
   options: string[];
+  onClose: () => void;
   uid: string;
   attributeName: string;
-}>) => {
+}) => {
   const [value, setValue] = useState("");
 
   return (
-    <Dialog
-      title={`Select Value for ${attributeName}`}
-      isOpen={true}
-      onClose={onClose}
-      className="w-auto"
-    >
-      <div className={Classes.DIALOG_BODY}>
-        <AutocompleteInput options={options} setValue={setValue} autoFocus />
-        <Button
-          disabled={!value}
-          className="m-2"
-          intent="primary"
-          text={"Update"}
-          onClick={() => {
-            updateBlock({
-              text: `${attributeName}:: ${value}`,
-              uid,
-            });
-            onClose();
-          }}
-        />
-      </div>
-    </Dialog>
+    <div className="roamjs-attribute-select-popover p-4">
+      {/* Should move to MenuItemSelect */}
+      {/* <MenuItemSelect
+        items={options}
+        onItemSelect={(s) => setValue(s)}
+        activeItem={value}
+        filterable={true} // change roamjs-components to allow for filter
+        createNewItemRenderer={} // https://blueprintjs.com/docs/versions/3/#select/select-component
+        createNewItemFromQuery={} // https://blueprintjs.com/docs/versions/3/#select/select-component
+      /> */}
+      <AutocompleteInput
+        options={options}
+        setValue={setValue}
+        autoFocus
+        placeholder="type or click to see options"
+      />
+      <Button
+        disabled={!value}
+        className="m-2"
+        intent="primary"
+        text={"Update"}
+        onClick={() => {
+          updateBlock({
+            text: `${attributeName}:: ${value}`,
+            uid,
+          });
+          onClose();
+        }}
+      />
+    </div>
   );
 };
 const AttributeButton = ({
@@ -65,35 +71,51 @@ const AttributeButton = ({
   attributeName: string;
   uid: string;
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [options, setOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const configUid = getPageUidByPageTitle(CONFIG);
+      const attributesNode = getSubTree({
+        key: "attributes",
+        parentUid: configUid,
+      });
+      const attributeUid = getSubTree({
+        key: attributeName,
+        parentUid: attributesNode.uid,
+      }).uid;
+      const newOptions = getSubTree({
+        key: "options",
+        parentUid: attributeUid,
+      }).children.map((t) => t.text);
+
+      setOptions(newOptions);
+    }
+  }, [isOpen]);
+
   return (
-    <Button
-      icon="chevron-down"
-      intent="primary"
-      minimal
-      onClick={(e) => {
-        const configUid = getPageUidByPageTitle(CONFIG);
-        //
-        // How can this be optimized?
-        //
-        const attributesNode = getSubTree({
-          key: "attributes",
-          parentUid: configUid,
-        });
-        const attributeUid = getSubTree({
-          key: attributeName,
-          parentUid: attributesNode.uid,
-        }).uid;
-        const options = getSubTree({
-          key: "options",
-          parentUid: attributeUid,
-        }).children.map((t) => t.text);
-        renderOverlay({
-          Overlay: ChooseAttributeOverlay,
-          id: "attribute-select",
-          props: { options, uid, attributeName },
-        });
-      }}
-    />
+    <Popover
+      isOpen={isOpen}
+      onClose={() => setIsOpen(false)}
+      content={
+        <>
+          <ChooseAttributeOverlay
+            options={options}
+            uid={uid}
+            attributeName={attributeName}
+            onClose={() => setIsOpen(false)}
+          />
+        </>
+      }
+    >
+      <Button
+        icon="chevron-down"
+        intent="primary"
+        minimal
+        onClick={() => setIsOpen(true)}
+      />
+    </Popover>
   );
 };
 
