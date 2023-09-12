@@ -185,28 +185,15 @@ const AttributeConfigPanel = ({
 
   return (
     <div className={`${Classes.DIALOG_BODY} m-0`}>
-      <div className="flex mb-8">
+      <div className="flex mb-8 items-center">
         {showAddAttribute ? (
           <>
-            <div id="attribute-select-autocomplete">
-              <MenuItemSelect
-                items={attributesInGraph.filter(
-                  (a) => !definedAttributes.includes(a)
-                )}
-                onItemSelect={(s) => setValue(s)}
-                activeItem={value}
-                filterable={true}
-                query={query}
-                onQueryChange={(newQuery) => setQuery(newQuery)}
-              />
-            </div>
             <Button
               intent="primary"
-              className="mx-2"
+              className="mr-2"
               disabled={!value}
               text={"Add Attribute"}
               rightIcon={"plus"}
-              style={{ marginLeft: 16 }}
               onClick={() => {
                 createBlock({
                   node: {
@@ -224,21 +211,39 @@ const AttributeConfigPanel = ({
                 });
               }}
             />
+            <div id="attribute-select-autocomplete">
+              <MenuItemSelect
+                items={attributesInGraph.filter(
+                  (a) => !definedAttributes.includes(a)
+                )}
+                onItemSelect={(s) => setValue(s)}
+                activeItem={value}
+                filterable={true}
+                query={query}
+                onQueryChange={(newQuery) => setQuery(newQuery)}
+              />
+            </div>
           </>
         ) : (
-          <Button
-            intent="primary"
-            text={isLoading ? "Loading..." : "Add An Attribute"}
-            rightIcon={isLoading ? "refresh" : "plus"}
-            loading={isLoading}
-            onClick={() => {
-              // TODO: FIX THIS
-              setIsLoading(true);
-              getAttributesInGraph();
-              setIsLoading(false);
-              setShowAddAttribute(true);
-            }}
-          />
+          <>
+            <Button
+              intent="primary"
+              text={"Add An Attribute"}
+              rightIcon={"plus"}
+              loading={isLoading}
+              onClick={() => {
+                setIsLoading(true);
+                setTimeout(() => {
+                  getAttributesInGraph();
+                  setIsLoading(false);
+                  setShowAddAttribute(true);
+                }, 0);
+              }}
+            />
+            <div className="text-gray-500 ml-2">
+              {isLoading ? "Loading Attributes..." : ""}
+            </div>
+          </>
         )}
       </div>
       <Tabs
