@@ -6,7 +6,6 @@ import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageU
 import getBlockUidFromTarget from "roamjs-components/dom/getBlockUidFromTarget";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
-import AutocompleteInput from "roamjs-components/components/AutocompleteInput";
 import createBlock from "roamjs-components/writes/createBlock";
 import { PullBlock } from "roamjs-components/types";
 import getSubTree from "roamjs-components/util/getSubTree";
@@ -132,6 +131,8 @@ const AttributeConfigPanel = ({
   onAdd: (attr: string) => void;
   onRemove: (attr: string) => void;
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [showAddAttribute, setShowAddAttribute] = useState(false);
   const [query, setQuery] = useState("");
   const [value, setValue] = useState("");
   const [definedAttributes, setDefinedAttributes] = useState<string[]>(() =>
@@ -162,67 +163,83 @@ const AttributeConfigPanel = ({
       },
     });
   }, [configUid]);
-  const initialAttributesInGraph = useMemo(
-    () =>
-      (
-        window.roamAlphaAPI.data.fast.q(
-          `[:find
-        (pull ?page [:node/title])
-      :where
-        [?b :attrs/lookup _]
-        [?b :entity/attrs ?a]
-        [(untuple ?a) [[?c ?d]]]
-        [(get ?d :value) ?s]
-        [(untuple ?s) [?e ?uid]]
-        [?page :block/uid ?uid]
-      ]`
-        ) as [PullBlock][]
-      ).map((p) => p[0]?.[":node/title"] || ""),
-    []
-  );
-  const [attributesInGraph, setAttributesInGraph] = useState<string[]>(
-    initialAttributesInGraph
-  );
+  const getAttributesInGraph = () => {
+    const attributesInGraph = (
+      window.roamAlphaAPI.data.fast.q(
+        `[:find
+          (pull ?page [:node/title])
+        :where
+          [?b :attrs/lookup _]
+          [?b :entity/attrs ?a]
+          [(untuple ?a) [[?c ?d]]]
+          [(get ?d :value) ?s]
+          [(untuple ?s) [?e ?uid]]
+          [?page :block/uid ?uid]
+        ]`
+      ) as [PullBlock][]
+    ).map((p) => p[0]?.[":node/title"] || "");
+    setAttributesInGraph(attributesInGraph);
+  };
+
+  const [attributesInGraph, setAttributesInGraph] = useState<string[]>([]);
 
   return (
     <div className={`${Classes.DIALOG_BODY} m-0`}>
       <div className="flex mb-8">
-        <div id="attribute-select-autocomplete">
-          <MenuItemSelect
-            items={attributesInGraph.filter(
-              (a) => !definedAttributes.includes(a)
-            )}
-            onItemSelect={(s) => setValue(s)}
-            activeItem={value}
-            filterable={true}
-            query={query}
-            onQueryChange={(newQuery) => setQuery(newQuery)}
+        {showAddAttribute ? (
+          <>
+            <div id="attribute-select-autocomplete">
+              <MenuItemSelect
+                items={attributesInGraph.filter(
+                  (a) => !definedAttributes.includes(a)
+                )}
+                onItemSelect={(s) => setValue(s)}
+                activeItem={value}
+                filterable={true}
+                query={query}
+                onQueryChange={(newQuery) => setQuery(newQuery)}
+              />
+            </div>
+            <Button
+              intent="primary"
+              className="mx-2"
+              disabled={!value}
+              text={"Add Attribute"}
+              rightIcon={"plus"}
+              style={{ marginLeft: 16 }}
+              onClick={() => {
+                createBlock({
+                  node: {
+                    text: value,
+                    children: [{ text: "options", children: [{ text: "" }] }],
+                  },
+                  order: "last",
+                  parentUid: attributesUid,
+                }).then(() => {
+                  setDefinedAttributes(definedAttributes.concat([value]));
+                  setActiveTab(value);
+                  setValue("");
+                  onAdd(value);
+                  setQuery("");
+                });
+              }}
+            />
+          </>
+        ) : (
+          <Button
+            intent="primary"
+            text={isLoading ? "Loading..." : "Add An Attribute"}
+            rightIcon={isLoading ? "refresh" : "plus"}
+            loading={isLoading}
+            onClick={() => {
+              // TODO: FIX THIS
+              setIsLoading(true);
+              getAttributesInGraph();
+              setIsLoading(false);
+              setShowAddAttribute(true);
+            }}
           />
-        </div>
-        <Button
-          intent="primary"
-          className="mx-2"
-          disabled={!value}
-          text={"Add Attribute"}
-          rightIcon={"plus"}
-          style={{ marginLeft: 16 }}
-          onClick={() => {
-            createBlock({
-              node: {
-                text: value,
-                children: [{ text: "options", children: [{ text: "" }] }],
-              },
-              order: "last",
-              parentUid: attributesUid,
-            }).then(() => {
-              setDefinedAttributes(definedAttributes.concat([value]));
-              setActiveTab(value);
-              setValue("");
-              onAdd(value);
-              setQuery("");
-            });
-          }}
-        />
+        )}
       </div>
       <Tabs
         id="attribute-select-attributes"
