@@ -8,12 +8,11 @@ import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByPar
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import AutocompleteInput from "roamjs-components/components/AutocompleteInput";
 import createBlock from "roamjs-components/writes/createBlock";
-import { OnloadArgs, PullBlock } from "roamjs-components/types";
+import { PullBlock } from "roamjs-components/types";
 import getSubTree from "roamjs-components/util/getSubTree";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import deleteBlock from "roamjs-components/writes/deleteBlock";
 import createPage from "roamjs-components/writes/createPage";
-import { addCommand } from "./workBench";
 import MenuItemSelect from "roamjs-components/components/MenuItemSelect";
 
 const CONFIG = `roam/js/attribute-select`;
@@ -33,20 +32,13 @@ const ChooseAttributeOverlay = ({
 
   return (
     <div className="roamjs-attribute-select-popover p-4">
-      {/* Should move to MenuItemSelect */}
-      {/* <MenuItemSelect
+      <MenuItemSelect
         items={options}
         onItemSelect={(s) => setValue(s)}
         activeItem={value}
         filterable={true} // change roamjs-components to allow for filter
-        createNewItemRenderer={} // https://blueprintjs.com/docs/versions/3/#select/select-component
-        createNewItemFromQuery={} // https://blueprintjs.com/docs/versions/3/#select/select-component
-      /> */}
-      <AutocompleteInput
-        options={options}
-        setValue={setValue}
-        autoFocus
-        placeholder="type or click to see options"
+        // createNewItemRenderer={} // https://blueprintjs.com/docs/versions/3/#select/select-component
+        // createNewItemFromQuery={} // https://blueprintjs.com/docs/versions/3/#select/select-component
       />
       <Button
         disabled={!value}
@@ -140,6 +132,7 @@ const AttributeConfigPanel = ({
   onAdd: (attr: string) => void;
   onRemove: (attr: string) => void;
 }) => {
+  const [query, setQuery] = useState("");
   const [value, setValue] = useState("");
   const [definedAttributes, setDefinedAttributes] = useState<string[]>(() =>
     getDefinedAttributes()
@@ -195,13 +188,15 @@ const AttributeConfigPanel = ({
     <div className={`${Classes.DIALOG_BODY} m-0`}>
       <div className="flex mb-8">
         <div id="attribute-select-autocomplete">
-          <AutocompleteInput
-            value={""}
-            setValue={setValue}
-            options={attributesInGraph.filter(
+          <MenuItemSelect
+            items={attributesInGraph.filter(
               (a) => !definedAttributes.includes(a)
             )}
-            placeholder={"Choose Attribute To Add"}
+            onItemSelect={(s) => setValue(s)}
+            activeItem={value}
+            filterable={true}
+            query={query}
+            onQueryChange={(newQuery) => setQuery(newQuery)}
           />
         </div>
         <Button
@@ -222,9 +217,9 @@ const AttributeConfigPanel = ({
             }).then(() => {
               setDefinedAttributes(definedAttributes.concat([value]));
               setActiveTab(value);
-              // Automcomplete setting value to "" is not working
               setValue("");
               onAdd(value);
+              setQuery("");
             });
           }}
         />
