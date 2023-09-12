@@ -258,43 +258,124 @@ const TabsPanel = ({
   attributesUid: string;
   handleRemoveAttribute: (attribute: string) => void;
 }) => {
-  const { attributeUid, options } = useMemo(() => {
+  const [potentialOptions, setPotentialOptions] = useState<string[]>([]);
+  const [selectedOption, setSelectedOption] = useState("");
+  const [showPossibleOptions, setShowPotentialOptions] = useState(false);
+  const { attributeUid, optionsNode, chosenOptions } = useMemo(() => {
     const attributeUid = getSubTree({
       key: attributeName,
       parentUid: attributesUid,
     }).uid;
-    const options = getSubTree({
+    const optionsNode = getSubTree({
       key: "options",
       parentUid: attributeUid,
-    }).uid;
-    return { attributeUid, options };
+    });
+    const chosenOptions = optionsNode.children.map((t) => t.text);
+    return { attributeUid, optionsNode, chosenOptions };
   }, [attributeName, attributesUid]);
+
+  // For a better UX replace renderBlock with a controlled list
+  // add Edit, Delete, and Add New buttons
   const contentRef = useRef(null);
   useEffect(() => {
     const el = contentRef.current;
     if (el) {
       window.roamAlphaAPI.ui.components.renderBlock({
-        uid: options,
+        uid: optionsNode.uid,
         el,
       });
     }
   }, [contentRef]);
 
+  const findAllPotentialOptions = (attributeName: string) => {
+    const regex = new RegExp(`^${attributeName}::\\s*`);
+    return Array.from(
+      new Set(
+        window.roamAlphaAPI.data.fast
+          .q(
+            `
+        [:find ?b :where [?r :node/title "${attributeName}"] [?c :block/refs ?r] [?c :block/string ?b]]`
+          )
+          .map((p) => {
+            const rawString = p[0] as string;
+            return rawString.replace(regex, "").trim();
+          })
+      )
+    )
+      .filter((option) => option !== "")
+      .filter((option) => !chosenOptions.includes(option))
+      .sort();
+  };
+
   return (
-    <div className="relative">
-      <div ref={contentRef}></div>
-      <Button
-        intent="danger"
-        className="mx-2 absolute right-0 top-0"
-        text={"Remove Attribute"}
-        rightIcon={"trash"}
-        style={{ marginLeft: 16 }}
-        onClick={() => {
-          deleteBlock(attributeUid).then(() => {
-            handleRemoveAttribute(attributeName);
-          });
-        }}
-      />
+    <div className="relative flex">
+      <div ref={contentRef} className="flex-1"></div>
+      <div className="flex flex-col items-start flex-1 space-y-4 mx-2">
+        <Button
+          intent="danger"
+          text={"Remove Attribute"}
+          rightIcon={"trash"}
+          onClick={() => {
+            deleteBlock(attributeUid).then(() => {
+              handleRemoveAttribute(attributeName);
+            });
+          }}
+        />
+        <Button
+          intent="primary"
+          text={"Find All Current Values"}
+          rightIcon={"search"}
+          onClick={() => {
+            const potentialOptions = findAllPotentialOptions(attributeName);
+            setPotentialOptions(potentialOptions);
+            setShowPotentialOptions(true);
+          }}
+        />
+        {showPossibleOptions && (
+          <div className="flex items-start space-x-4">
+            {!potentialOptions.length && (
+              <div className="text-gray-500">No additional values found</div>
+            )}
+            {potentialOptions.length > 0 && (
+              <>
+                <MenuItemSelect
+                  items={potentialOptions}
+                  onItemSelect={(s) => setSelectedOption(s)}
+                  activeItem={selectedOption}
+                  filterable={true}
+                />
+                <Button
+                  intent="primary"
+                  text={"Add Option"}
+                  rightIcon={"plus"}
+                  onClick={() => {
+                    if (chosenOptions.length === 1 && chosenOptions[0] === "") {
+                      updateBlock({
+                        uid: optionsNode.children[0].uid,
+                        text: selectedOption,
+                      });
+                    } else {
+                      createBlock({
+                        node: {
+                          text: selectedOption,
+                        },
+                        order: "last",
+                        parentUid: optionsNode.uid,
+                      });
+                    }
+                    setPotentialOptions(
+                      potentialOptions.filter(
+                        (option) => option !== selectedOption
+                      )
+                    );
+                    setSelectedOption("");
+                  }}
+                />
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
