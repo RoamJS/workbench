@@ -89,6 +89,7 @@ const AttributeButton = ({
     <Popover
       isOpen={isOpen}
       onClose={() => setIsOpen(false)}
+      className="roamjs-attribute-select-popover"
       content={
         <>
           <ChooseAttributeOverlay
@@ -101,6 +102,8 @@ const AttributeButton = ({
       }
     >
       <Button
+        className="roamjs-attribute-select-button p-0"
+        style={{ minHeight: 15, minWidth: 20 }}
         icon="chevron-down"
         intent="primary"
         minimal
@@ -399,7 +402,17 @@ const TabsPanel = ({
                   text={"Add Option"}
                   rightIcon={"plus"}
                   onClick={() => {
-                    if (chosenOptions.length === 1 && chosenOptions[0] === "") {
+                    const updatedOptionNode = getSubTree({
+                      key: "options",
+                      parentUid: attributeUid,
+                    });
+                    const updatedChosenOptions = updatedOptionNode.children.map(
+                      (t) => t.text
+                    );
+                    if (
+                      updatedChosenOptions.length === 1 &&
+                      updatedChosenOptions[0] === ""
+                    ) {
                       updateBlock({
                         uid: optionsNode.children[0].uid,
                         text: selectedOption,
