@@ -183,6 +183,45 @@ const AttributeConfigPanel = ({
 
   const [attributesInGraph, setAttributesInGraph] = useState<string[]>([]);
 
+  const focusBlock = (uid: string) => {
+    const el = document.querySelector(
+      `.attribute-${uid} .rm-api-render--block .rm-level-1 .rm-block__input`
+    );
+    if (!el) return;
+    const match = el.id.match(
+      /block-input-(uuid[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12})-([\w\d]+)/i
+    );
+    if (match) {
+      const location = match[1];
+      const blockUid = match[2];
+      window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+        location: {
+          "block-uid": blockUid,
+          "window-id": location,
+        },
+      });
+    }
+  };
+
+  const handleAddAttribute = async () => {
+    const uid = await createBlock({
+      node: {
+        text: value,
+        children: [{ text: "options", children: [{ text: "" }] }],
+      },
+      order: "last",
+      parentUid: attributesUid,
+    });
+
+    setDefinedAttributes([...definedAttributes, value]);
+    setActiveTab(value);
+    setValue("");
+    onAdd(value);
+    setQuery("");
+
+    focusBlock(uid);
+  };
+
   return (
     <div className={`${Classes.DIALOG_BODY} m-0`}>
       <div className="flex mb-8 items-center">
@@ -194,22 +233,7 @@ const AttributeConfigPanel = ({
               disabled={!value}
               text={"Add Attribute"}
               rightIcon={"plus"}
-              onClick={() => {
-                createBlock({
-                  node: {
-                    text: value,
-                    children: [{ text: "options", children: [{ text: "" }] }],
-                  },
-                  order: "last",
-                  parentUid: attributesUid,
-                }).then(() => {
-                  setDefinedAttributes(definedAttributes.concat([value]));
-                  setActiveTab(value);
-                  setValue("");
-                  onAdd(value);
-                  setQuery("");
-                });
-              }}
+              onClick={handleAddAttribute}
             />
             <div id="attribute-select-autocomplete">
               <MenuItemSelect
@@ -331,7 +355,10 @@ const TabsPanel = ({
 
   return (
     <div className="relative flex">
-      <div ref={contentRef} className="flex-1"></div>
+      <div
+        ref={contentRef}
+        className={`flex-1 attribute-${attributeUid}`}
+      ></div>
       <div className="flex flex-col items-start flex-1 space-y-4 mx-2">
         <Button
           intent="danger"
@@ -367,6 +394,7 @@ const TabsPanel = ({
                   filterable={true}
                 />
                 <Button
+                  disabled={!selectedOption}
                   intent="primary"
                   text={"Add Option"}
                   rightIcon={"plus"}
