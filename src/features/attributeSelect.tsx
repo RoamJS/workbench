@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, ReactText } from "react";
 import ReactDOM from "react-dom";
-import { Classes, Button, Tabs, Tab, Card, Popover } from "@blueprintjs/core";
+import { Classes, Button, Tabs, Tab, Card, MenuItem } from "@blueprintjs/core";
+import { Select } from "@blueprintjs/select";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
 import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
 import getBlockUidFromTarget from "roamjs-components/dom/getBlockUidFromTarget";
@@ -13,48 +14,69 @@ import updateBlock from "roamjs-components/writes/updateBlock";
 import deleteBlock from "roamjs-components/writes/deleteBlock";
 import createPage from "roamjs-components/writes/createPage";
 import MenuItemSelect from "roamjs-components/components/MenuItemSelect";
+import addStyle from "roamjs-components/dom/addStyle";
+import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
 
 const CONFIG = `roam/js/attribute-select`;
 
-const ChooseAttributeOverlay = ({
-  options,
-  onClose,
-  uid,
-  attributeName,
-}: {
-  options: string[];
-  onClose: () => void;
-  uid: string;
+type AttributeButtonPopoverProps<T> = {
+  items: T[];
+  onItemSelect?: (selectedItem: T) => void;
+  setIsOpen: (isOpen: boolean) => void;
   attributeName: string;
-}) => {
-  const [value, setValue] = useState("");
+  uid: string;
+  currentValue: string;
+  filterable?: boolean;
+};
+
+const AttributeButtonPopover = <T extends ReactText>({
+  items,
+  setIsOpen,
+  attributeName,
+  uid,
+  currentValue,
+  filterable = false,
+}: AttributeButtonPopoverProps<T>) => {
+  const AttributeSelect = Select.ofType<T>();
+  const itemPredicate = (query: string, item: T) => {
+    return String(item).toLowerCase().includes(query.toLowerCase());
+  };
 
   return (
-    <div className="roamjs-attribute-select-popover p-4">
-      <MenuItemSelect
-        items={options}
-        onItemSelect={(s) => setValue(s)}
-        activeItem={value}
-        filterable={true} // change roamjs-components to allow for filter
-        // createNewItemRenderer={} // https://blueprintjs.com/docs/versions/3/#select/select-component
-        // createNewItemFromQuery={} // https://blueprintjs.com/docs/versions/3/#select/select-component
-      />
+    <AttributeSelect
+      className="inline-menu-item-select"
+      itemRenderer={(item, { modifiers, handleClick }) => (
+        <MenuItem
+          key={item}
+          text={item}
+          active={modifiers.active}
+          onClick={handleClick}
+        />
+      )}
+      itemPredicate={itemPredicate}
+      items={items}
+      onItemSelect={(s) => {
+        updateBlock({
+          text: `${attributeName}:: ${s}`,
+          uid,
+        });
+      }}
+      activeItem={currentValue as T}
+      // onActiveItemChange={} // TODO: get this working for keyboard support
+      filterable={filterable}
+    >
       <Button
-        disabled={!value}
-        className="m-2"
+        className="roamjs-attribute-select-button p-0 ml-1"
+        icon="chevron-down"
+        style={{ minHeight: 15, minWidth: 20 }}
         intent="primary"
-        text={"Update"}
-        onClick={() => {
-          updateBlock({
-            text: `${attributeName}:: ${value}`,
-            uid,
-          });
-          onClose();
-        }}
+        minimal
+        onClick={() => setIsOpen(true)}
       />
-    </div>
+    </AttributeSelect>
   );
 };
+
 const AttributeButton = ({
   attributeName,
   uid,
@@ -64,6 +86,7 @@ const AttributeButton = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
+  const [currentValue, setCurrentValue] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -82,34 +105,18 @@ const AttributeButton = ({
       }).children.map((t) => t.text);
 
       setOptions(newOptions);
+      const regex = new RegExp(`^${attributeName}::\\s*`);
+      setCurrentValue(getTextByBlockUid(uid).replace(regex, "").trim());
     }
   }, [isOpen]);
-
   return (
-    <Popover
-      isOpen={isOpen}
-      onClose={() => setIsOpen(false)}
-      className="roamjs-attribute-select-popover"
-      content={
-        <>
-          <ChooseAttributeOverlay
-            options={options}
-            uid={uid}
-            attributeName={attributeName}
-            onClose={() => setIsOpen(false)}
-          />
-        </>
-      }
-    >
-      <Button
-        className="roamjs-attribute-select-button p-0"
-        style={{ minHeight: 15, minWidth: 20 }}
-        icon="chevron-down"
-        intent="primary"
-        minimal
-        onClick={() => setIsOpen(true)}
-      />
-    </Popover>
+    <AttributeButtonPopover
+      setIsOpen={setIsOpen}
+      items={options}
+      attributeName={attributeName}
+      uid={uid}
+      currentValue={currentValue}
+    />
   );
 };
 
@@ -135,7 +142,6 @@ const AttributeConfigPanel = ({
   onRemove: (attr: string) => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [showAddAttribute, setShowAddAttribute] = useState(false);
   const [query, setQuery] = useState("");
   const [value, setValue] = useState("");
   const [definedAttributes, setDefinedAttributes] = useState<string[]>(() =>
@@ -166,6 +172,7 @@ const AttributeConfigPanel = ({
       },
     });
   }, [configUid]);
+  const [attributesInGraph, setAttributesInGraph] = useState<string[]>([]);
   const getAttributesInGraph = () => {
     const attributesInGraph = (
       window.roamAlphaAPI.data.fast.q(
@@ -183,10 +190,13 @@ const AttributeConfigPanel = ({
     ).map((p) => p[0]?.[":node/title"] || "");
     setAttributesInGraph(attributesInGraph);
   };
-
-  const [attributesInGraph, setAttributesInGraph] = useState<string[]>([]);
-
-  const focusBlock = (uid: string) => {
+  const focusAndOpenSelect = () => {
+    const selectElement = document.querySelector(
+      ".attribute-select-autocomplete-select button"
+    ) as HTMLElement;
+    if (selectElement) selectElement.click();
+  };
+  const focusOnBlock = (uid: string) => {
     const el = document.querySelector(
       `.attribute-${uid} .rm-api-render--block .rm-level-1 .rm-block__input`
     );
@@ -222,13 +232,13 @@ const AttributeConfigPanel = ({
     onAdd(value);
     setQuery("");
 
-    focusBlock(uid);
+    focusOnBlock(uid);
   };
 
   return (
     <div className={`${Classes.DIALOG_BODY} m-0`}>
       <div className="flex mb-8 items-center">
-        {showAddAttribute ? (
+        {attributesInGraph.length > 0 ? (
           <>
             <Button
               intent="primary"
@@ -240,6 +250,7 @@ const AttributeConfigPanel = ({
             />
             <div id="attribute-select-autocomplete">
               <MenuItemSelect
+                className="attribute-select-autocomplete-select"
                 items={attributesInGraph.filter(
                   (a) => !definedAttributes.includes(a)
                 )}
@@ -255,15 +266,16 @@ const AttributeConfigPanel = ({
           <>
             <Button
               intent="primary"
-              text={"Add An Attribute"}
+              text={"Add Attribute"}
               rightIcon={"plus"}
               loading={isLoading}
               onClick={() => {
                 setIsLoading(true);
                 setTimeout(() => {
                   getAttributesInGraph();
+
                   setIsLoading(false);
-                  setShowAddAttribute(true);
+                  focusAndOpenSelect();
                 }, 0);
               }}
             />
@@ -528,6 +540,10 @@ const updateAttributeObserver = () => {
 const unloads = new Set<() => void>();
 export const toggleFeature = async (flag: boolean) => {
   if (flag) {
+    addStyle(`
+      .inline-menu-item-select > span > div {display:inline} 
+      #attribute-select-config .rm-block-separator {display: none;}
+    `);
     definedAttributes = getDefinedAttributes();
     const pageUid =
       getPageUidByPageTitle(CONFIG) ||
