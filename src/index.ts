@@ -4,6 +4,7 @@ import addStyle from "roamjs-components/dom/addStyle";
 // features
 import * as alert from "./features/alert";
 import * as article from "./features/article";
+import * as attributeSelect from "./features/attributeSelect";
 import * as dailyNotesPopup from "./features/dailyNotesPopup";
 import * as decorators from "./features/decorators";
 import * as dictionary from "./features/dictionary";
@@ -39,6 +40,14 @@ const FEATURES = [
     module: alert,
     docs: "alert.md",
     gif: "short-demo-alert",
+  },
+  {
+    id: "attributeSelect",
+    name: "Attribute Select",
+    description: "Create Dropdowns to fill in Attribute values.",
+    module: attributeSelect,
+    docs: "attribute-select.md",
+    gif: "short-demo-attribute-select",
   },
   {
     id: "workBench",
