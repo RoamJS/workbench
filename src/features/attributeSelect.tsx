@@ -173,6 +173,7 @@ const AttributeConfigPanel = ({
     });
   }, [configUid]);
   const [attributesInGraph, setAttributesInGraph] = useState<string[]>([]);
+  const [noAttributesInGraph, setNoAttributesInGraph] = useState(false);
   const getAttributesInGraph = () => {
     const attributesInGraph = (
       window.roamAlphaAPI.data.fast.q(
@@ -188,7 +189,12 @@ const AttributeConfigPanel = ({
         ]`
       ) as [PullBlock][]
     ).map((p) => p[0]?.[":node/title"] || "");
-    setAttributesInGraph(attributesInGraph);
+    if (attributesInGraph.length === 0) {
+      setNoAttributesInGraph(true);
+    } else {
+      setAttributesInGraph(attributesInGraph);
+      setNoAttributesInGraph(false);
+    }
   };
   const focusAndOpenSelect = () => {
     const selectElement = document.querySelector(
@@ -281,6 +287,7 @@ const AttributeConfigPanel = ({
             />
             <div className="text-gray-500 ml-2">
               {isLoading ? "Loading Attributes..." : ""}
+              {noAttributesInGraph ? "No Attributes Found" : ""}
             </div>
           </>
         )}

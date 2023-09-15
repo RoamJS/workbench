@@ -1,6 +1,4 @@
-# Attribute Select for Roam Research
-
-## Overview
+# Overview
 
 The Attribute Select feature offers an intuitive way to interact with attributes in your Roam Research database. It provides a dropdown button next to each attribute in your database, allowing you to select from predefined options. This can be incredibly useful for attributes that have a limited set of possible values, like `Status`, `Priority`, or `Type`.
 
@@ -51,6 +49,6 @@ You can customize the appearance of the dropdowns by targeting the following CSS
 - Dropdown button: `roamjs-attribute-select-button`
 - Popover content: `roamjs-attribute-select-popover`
 
-# Demo
+<!-- # Demo -->
 
-https://github.com/RoamJS/workbench/assets/3792666/b9c30998-c878-48de-a8bd-3e834844bd92
+<!-- TODO -->
