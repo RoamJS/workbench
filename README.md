@@ -11,6 +11,7 @@ Click on the name of the feature for more details and information about it.
 | Plugin                                                                                         | Description                                                                                              |
 | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | [Alert](https://github.com/RoamJs/workbench/blob/main/docs/alert.md)                           | Allows users to schedule alerts within their graphs.                                                     |
+| [Attribute Select](https://github.com/RoamJs/workbench/blob/main/docs/attribute-select.md)     | Add a dropdown to specific Attributes that shows user set values.                                        |
 | [Command Palette+](https://github.com/RoamJs/workbench/blob/main/docs/command-palette-plus.md) | Adds an extensive set of user generated and prebuilt commands to help users push Roam to new places.     |
 | [Daily Note Popup](https://github.com/RoamJs/workbench/blob/main/docs/daily-note-popup.md)     | Toggle your Daily Notes page in a popup window for quick access.                                         |
 | [Decorated Blocks](https://github.com/RoamJs/workbench/blob/main/docs/decorated-blocks.md)     | Decorates blocks with various configurable features for quick actions.                                   |
