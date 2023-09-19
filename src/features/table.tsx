@@ -11,6 +11,10 @@ import {
   RadioGroup,
   Radio,
   Label,
+  MenuItem,
+  Popover,
+  Menu,
+  MenuDivider,
 } from "@blueprintjs/core";
 import createButtonObserver from "roamjs-components/dom/createButtonObserver";
 import createBlock from "roamjs-components/writes/createBlock";
@@ -20,6 +24,7 @@ import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByPar
 import { RoamBasicNode } from "roamjs-components/types";
 import addStyle from "roamjs-components/dom/addStyle";
 import getSubTree from "roamjs-components/util/getSubTree";
+import getUids from "roamjs-components/dom/getUids";
 
 type ConfigurationProps = {
   blockUid: string;
@@ -281,7 +286,9 @@ const Configuration = ({
   );
 };
 const DisplayTable = ({ blockUid }: DisplayTableProps) => {
-  const settings = useMemo(() => getSettings(blockUid), [blockUid]);
+  const [settings, setSettings] = useState(() => getSettings(blockUid));
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const updateText = (uid: string, value: string) => {
     updateBlock({ uid, text: value });
@@ -303,43 +310,145 @@ const DisplayTable = ({ blockUid }: DisplayTableProps) => {
     }, [contentRef]);
     return <div className="roamjs-table-embed" ref={contentRef}></div>;
   };
+  const TableMenu = () => {
+    return (
+      <Popover
+        enforceFocus={false}
+        autoFocus={false}
+        isOpen={isMenuOpen}
+        target={<Button minimal icon={"more"} />}
+        onInteraction={(v) => {
+          setIsMenuOpen(v);
+        }}
+        content={
+          <Menu>
+            <MenuItem icon={"add"} text={"Add"}>
+              <MenuItem
+                icon={"add-row-bottom"}
+                text={"Add Row"}
+                onClick={async () => {
+                  if (!settings.rowsNode.uid) return;
+                  await createBlock({
+                    node: {
+                      text: `row${settings.rowsNode.children.length + 1}`,
+                      children: Array.from(
+                        { length: settings.headerNode.children.length },
+                        () => ({ text: "" })
+                      ),
+                    },
+                    order: "last",
+                    parentUid: settings.rowsNode.uid,
+                  });
+                  setSettings(getSettings(blockUid));
+                }}
+              />
+              <MenuItem
+                icon={"add-column-right"}
+                text={"Add Column"}
+                onClick={async () => {
+                  if (!settings.headerNode.uid) return;
+                  await createBlock({
+                    node: {
+                      text: `Header ${settings.headerNode.children.length + 1}`,
+                    },
+                    order: "last",
+                    parentUid: settings.headerNode.uid,
+                  });
+                  for (const row of settings.rowsNode.children) {
+                    await createBlock({
+                      order: "last",
+                      node: {
+                        text: "",
+                      },
+
+                      parentUid: row.uid,
+                    });
+                  }
+                  setSettings(getSettings(blockUid));
+                }}
+              />
+            </MenuItem>
+            <MenuItem icon={"remove"} text={"Remove"}>
+              <MenuItem
+                icon={"remove-row-bottom"}
+                text={"Remove Last Row"}
+                onClick={async () => {
+                  if (!settings.rowsNode.uid) return;
+                  const lastRow =
+                    settings.rowsNode.children[
+                      settings.rowsNode.children.length - 1
+                    ];
+                  await window.roamAlphaAPI.deleteBlock({
+                    block: { uid: lastRow.uid },
+                  });
+                  setSettings(getSettings(blockUid));
+                }}
+              />
+              <MenuItem
+                icon={"remove-column-right"}
+                text={"Remove Last Column"}
+                onClick={async () => {
+                  if (!settings.headerNode.uid) return;
+                  const lastHeader =
+                    settings.headerNode.children[
+                      settings.headerNode.children.length - 1
+                    ];
+                  await window.roamAlphaAPI.deleteBlock({
+                    block: { uid: lastHeader.uid },
+                  });
+                  for (const row of settings.rowsNode.children) {
+                    const lastCell = row.children[row.children.length - 1];
+                    await window.roamAlphaAPI.deleteBlock({
+                      block: { uid: lastCell.uid },
+                    });
+                  }
+                  setSettings(getSettings(blockUid));
+                }}
+              />
+            </MenuItem>
+            <MenuDivider />
+            <MenuItem
+              icon={"edit"}
+              text={"Edit Block"}
+              onClick={() => {
+                const location = getUids(
+                  containerRef.current?.closest(".roam-block") as HTMLDivElement
+                );
+                window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+                  location: {
+                    "window-id": location.windowId,
+                    "block-uid": location.blockUid,
+                  },
+                });
+              }}
+            />
+          </Menu>
+        }
+      />
+    );
+  };
   return (
-    <HTMLTable
-      className={`roamjs-workbench-table table-fixed w-full pointer-events-auto ${
-        settings.setView === "plain" ? "basic-text" : ""
-      }`}
-      bordered={settings.styles.bordered}
-      condensed={settings.styles.condensed}
-      interactive={settings.styles.interactive}
-      striped={settings.styles.striped}
-    >
-      <thead>
-        <tr>
-          {!!settings.headerNode.children.length &&
-            settings.headerNode.children.map((c) => (
-              <th
-                key={c.uid}
-                className={`wbt-header-${sanitizeClassName(c.text)}`}
-              >
-                {settings.setView === "embed" ? (
-                  <CellEmbed uid={c.uid} />
-                ) : (
-                  <EditableText
-                    placeholder=""
-                    defaultValue={c.text}
-                    onConfirm={(value) => updateText(c.uid, value)}
-                  />
-                )}
-              </th>
-            ))}
-        </tr>
-      </thead>
-      <tbody>
-        {!!settings.rowsNode.children.length &&
-          settings.rowsNode.children.map((c) => (
-            <tr key={c.uid} className={`wbt-row-${sanitizeClassName(c.text)}`}>
-              {c.children.map((c) => (
-                <td key={c.uid} className="overflow-hidden">
+    <div className="relative" ref={containerRef}>
+      <span className="absolute top-1 right-0">
+        <TableMenu />
+      </span>
+      <HTMLTable
+        className={`roamjs-workbench-table table-fixed w-full pointer-events-auto ${
+          settings.setView === "plain" ? "basic-text" : ""
+        }`}
+        bordered={settings.styles.bordered}
+        condensed={settings.styles.condensed}
+        interactive={settings.styles.interactive}
+        striped={settings.styles.striped}
+      >
+        <thead>
+          <tr>
+            {!!settings.headerNode.children.length &&
+              settings.headerNode.children.map((c) => (
+                <th
+                  key={c.uid}
+                  className={`wbt-header-${sanitizeClassName(c.text)}`}
+                >
                   {settings.setView === "embed" ? (
                     <CellEmbed uid={c.uid} />
                   ) : (
@@ -347,15 +456,40 @@ const DisplayTable = ({ blockUid }: DisplayTableProps) => {
                       placeholder=""
                       defaultValue={c.text}
                       onConfirm={(value) => updateText(c.uid, value)}
-                      className={`wbt-cell-${sanitizeClassName(c.text)} w-full`}
                     />
                   )}
-                </td>
+                </th>
               ))}
-            </tr>
-          ))}
-      </tbody>
-    </HTMLTable>
+          </tr>
+        </thead>
+        <tbody>
+          {!!settings.rowsNode.children.length &&
+            settings.rowsNode.children.map((c) => (
+              <tr
+                key={c.uid}
+                className={`wbt-row-${sanitizeClassName(c.text)} w-full`}
+              >
+                {c.children.map((c) => (
+                  <td key={c.uid} className="overflow-hidden">
+                    {settings.setView === "embed" ? (
+                      <CellEmbed uid={c.uid} />
+                    ) : (
+                      <EditableText
+                        placeholder=""
+                        defaultValue={c.text}
+                        onConfirm={(value) => updateText(c.uid, value)}
+                        className={`wbt-cell-${sanitizeClassName(
+                          c.text
+                        )} w-full`}
+                      />
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+        </tbody>
+      </HTMLTable>
+    </div>
   );
 };
 
@@ -386,7 +520,10 @@ export const toggleFeature = (flag: boolean) => {
     const tableButtonObserver = createButtonObserver({
       attribute: "wb-table",
       render: (b: HTMLButtonElement) => {
-        createComponentRender(Table)(b);
+        createComponentRender(
+          ({ blockUid }) => <Table blockUid={blockUid} />,
+          "roamjs-workbench-table-parent"
+        )(b);
       },
     });
     addStyle(`
@@ -415,7 +552,8 @@ export const toggleFeature = (flag: boolean) => {
         pointer-events: auto;
         width: 100%;
       }
-      .roamjs-workbench-table .rm-block-separator {
+      .roamjs-workbench-table .rm-block-separator,
+      .roamjs-workbench-table-parent .roamjs-edit-component {
         display: none;
       }
     `);
