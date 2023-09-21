@@ -8,7 +8,7 @@ import getBlockUidFromTarget from "roamjs-components/dom/getBlockUidFromTarget";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import createBlock from "roamjs-components/writes/createBlock";
-import { PullBlock } from "roamjs-components/types";
+import { InputTextNode, PullBlock } from "roamjs-components/types";
 import getSubTree from "roamjs-components/util/getSubTree";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import deleteBlock from "roamjs-components/writes/deleteBlock";
@@ -119,11 +119,14 @@ const AttributeButton = ({
         setOptions(optionsNode.children.map((t) => t.text));
       } else if (useSmartBlocks && window.roamjs?.extension?.smartblocks) {
         window.roamjs.extension.smartblocks
-          .getSmartblockOutput({
+          .triggerSmartblock({
             srcUid: optionsNode.uid,
           })
           .then((r) => {
-            setOptions(r[0].children.map((t) => t.text));
+            const result = r as InputTextNode[];
+            setOptions(
+              result[0].children?.map((t: InputTextNode) => t.text) || []
+            );
           });
       } else {
         setOptions(optionsNode.children.map((t) => t.text));
