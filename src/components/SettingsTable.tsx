@@ -163,6 +163,7 @@ const SettingsTable =
                   intent="primary"
                   icon="document-open"
                   href={`https://github.com/RoamJs/workbench/blob/main/docs/${docs}`}
+                  target="_blank"
                 />
               </td>
             </tr>
