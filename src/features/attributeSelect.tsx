@@ -123,10 +123,8 @@ const AttributeButton = ({
             srcUid: optionsNode.uid,
           })
           .then((r) => {
-            const result = r as InputTextNode[];
-            setOptions(
-              result[0].children?.map((t: InputTextNode) => t.text) || []
-            );
+            const results = r as InputTextNode[];
+            setOptions(results.map((t) => t.text) || []);
           });
       } else {
         setOptions(optionsNode.children.map((t) => t.text));
