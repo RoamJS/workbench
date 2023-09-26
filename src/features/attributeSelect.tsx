@@ -8,7 +8,7 @@ import getBlockUidFromTarget from "roamjs-components/dom/getBlockUidFromTarget";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import createBlock from "roamjs-components/writes/createBlock";
-import { PullBlock } from "roamjs-components/types";
+import { InputTextNode, PullBlock } from "roamjs-components/types";
 import getSubTree from "roamjs-components/util/getSubTree";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import deleteBlock from "roamjs-components/writes/deleteBlock";
@@ -16,6 +16,7 @@ import createPage from "roamjs-components/writes/createPage";
 import MenuItemSelect from "roamjs-components/components/MenuItemSelect";
 import addStyle from "roamjs-components/dom/addStyle";
 import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
+import { render as renderToast } from "roamjs-components/components/Toast";
 
 const CONFIG = `roam/js/attribute-select`;
 
@@ -99,16 +100,40 @@ const AttributeButton = ({
         key: attributeName,
         parentUid: attributesNode.uid,
       }).uid;
-      const newOptions = getSubTree({
+      const optionsNode = getSubTree({
         key: "options",
         parentUid: attributeUid,
-      }).children.map((t) => t.text);
+      });
 
-      setOptions(newOptions);
+      const useSmartBlocks =
+        optionsNode.children.filter((obj) => obj.text.includes("<%")).length >
+        0;
+
+      if (useSmartBlocks && !window.roamjs?.extension?.smartblocks) {
+        renderToast({
+          content:
+            "This attribute requires SmartBlocks. Enable SmartBlocks in Roam Depot to use this template.",
+          id: "smartblocks-extension-disabled",
+          intent: "warning",
+        });
+        setOptions(optionsNode.children.map((t) => t.text));
+      } else if (useSmartBlocks && window.roamjs?.extension?.smartblocks) {
+        window.roamjs.extension.smartblocks
+          .triggerSmartblock({
+            srcUid: optionsNode.uid,
+          })
+          .then((r) => {
+            const results = r as InputTextNode[];
+            setOptions(results.map((t) => t.text) || []);
+          });
+      } else {
+        setOptions(optionsNode.children.map((t) => t.text));
+      }
       const regex = new RegExp(`^${attributeName}::\\s*`);
       setCurrentValue(getTextByBlockUid(uid).replace(regex, "").trim());
     }
   }, [isOpen]);
+
   return (
     <AttributeButtonPopover
       setIsOpen={setIsOpen}
@@ -317,6 +342,7 @@ const AttributeConfigPanel = ({
     </div>
   );
 };
+
 const TabsPanel = ({
   attributeName,
   attributesUid,
@@ -492,6 +518,7 @@ const ConfigPage = ({
     </Card>
   );
 };
+
 const renderConfigPage = ({
   h,
   pageUid,
