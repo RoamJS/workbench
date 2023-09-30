@@ -10,45 +10,57 @@ import {
   FormGroup,
   RadioGroup,
   Radio,
-  Label,
   MenuItem,
   Popover,
   Menu,
   MenuDivider,
+  Divider,
 } from "@blueprintjs/core";
 import createButtonObserver from "roamjs-components/dom/createButtonObserver";
 import createBlock from "roamjs-components/writes/createBlock";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import { createComponentRender } from "roamjs-components/components/ComponentContainer";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
-import { RoamBasicNode } from "roamjs-components/types";
 import addStyle from "roamjs-components/dom/addStyle";
 import getSubTree from "roamjs-components/util/getSubTree";
 import getUids from "roamjs-components/dom/getUids";
+import setInputSetting from "roamjs-components/util/setInputSetting";
+import setInputSettings from "roamjs-components/util/setInputSettings";
 
 type ConfigurationProps = {
   blockUid: string;
-  headerNode: RoamBasicNode;
-  rowsNode: RoamBasicNode;
-  optionsNode: RoamBasicNode;
   onSubmit: () => void;
 };
 
 type DisplayTableProps = {
   blockUid: string;
+  setIsEdit: (isEdit: boolean) => void;
+};
+
+type StyleOptionsType = {
+  striped: boolean;
+  bordered: boolean;
+  condensed: boolean;
+  interactive: boolean;
 };
 
 const getSettings = (blockUid: string) => {
+  const parentUid = blockUid;
   const tree = getBasicTreeByParentUid(blockUid);
-  const headerNode = getSubTree({ tree, key: "header" });
-  const rowsNode = getSubTree({ tree, key: "rows" });
-  const optionsNode = getSubTree({ tree, key: "options" });
+  const headerNode = getSubTree({ tree, key: "header", parentUid });
+  const rowsNode = getSubTree({ tree, key: "rows", parentUid });
+  const optionsNode = getSubTree({ tree, key: "options", parentUid });
   const stylesNode = getSubTree({
     tree: optionsNode.children,
     key: "styles",
+    parentUid: optionsNode.uid,
   });
-  const viewNode = getSubTree({ tree: optionsNode.children, key: "view" });
-  const setView = viewNode.children[0]?.text;
+  const viewNode = getSubTree({
+    tree: optionsNode.children,
+    key: "view",
+    parentUid: optionsNode.uid,
+  });
+  const view = viewNode.children[0]?.text;
   const isEditing = tree.some((c) => c.text.toLowerCase() === "editing");
 
   const styles = {
@@ -75,128 +87,98 @@ const getSettings = (blockUid: string) => {
     isEditing,
     styles,
     viewNode,
-    setView,
+    view,
   };
 };
-const Configuration = ({
-  blockUid,
-  onSubmit,
-  headerNode,
-  rowsNode,
-  optionsNode,
-}: ConfigurationProps) => {
-  const hasHeaders = headerNode.children.length > 0;
-  const hasRows = rowsNode.children.length > 0;
-  const hasOptions = optionsNode.children.length > 0;
+const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
+  const settings = getSettings(blockUid);
+  const {
+    headerNode,
+    rowsNode,
+    optionsNode,
+    styles,
+    view: initialView,
+  } = settings;
+
+  const initialNumHeaders = headerNode.children.length;
+  const initialNumRows = rowsNode.children.length;
+  const firstLoad = !initialNumHeaders && !initialNumRows;
   const [isCreatingBlocks, setIsCreatingBlocks] = useState(false);
   const [numRows, setNumRows] = useState(3);
   const [numCols, setNumCols] = useState(3);
-  const [initialView, setInitialView] = useState("plain");
-  const [initialStyles, setInitialStyleOptions] = useState({
-    striped: true,
-    bordered: false,
-    condensed: false,
-    interactive: false,
-  });
+  const [view, setView] = useState(initialView || "plain");
+  const [styleOptions, setStyleOptions] = useState(
+    firstLoad
+      ? { striped: true, bordered: false, condensed: false, interactive: false }
+      : styles
+  );
 
   const createHeaderNode = async (numHeaders: number) => {
-    const children = Array.from({ length: numHeaders }, (_, i) => ({
+    if (initialNumHeaders) return;
+    const headers = Array.from({ length: numHeaders }, (_, i) => ({
       text: `Header ${i + 1}`,
     }));
-    if (headerNode.uid) {
-      children.forEach((child) => {
+    await Promise.all(
+      headers.map((child) => {
         createBlock({
           node: {
             text: child.text,
           },
           parentUid: headerNode.uid,
         });
-      });
-    } else {
-      const headerUid = window.roamAlphaAPI.util.generateUID();
-      await createBlock({
-        node: {
-          text: "header",
-          uid: headerUid,
-          children,
-        },
-        parentUid: blockUid,
-      });
-    }
+      })
+    );
   };
   const createRowsNode = async (numHeaders: number, numRows: number) => {
-    const children = Array.from({ length: numRows }, (_, i) => ({
+    if (initialNumRows) return;
+    const rows = Array.from({ length: numRows }, (_, i) => ({
       text: `row${i + 1}`,
       children: Array.from({ length: numHeaders }, () => ({ text: "" })),
     }));
-    if (rowsNode.uid) {
-      children.forEach((child) => {
+    await Promise.all(
+      rows.map((child) =>
         createBlock({
           node: {
             text: child.text,
             children: child.children,
           },
           parentUid: rowsNode.uid,
-        });
-      });
-    } else {
-      const rowUid = window.roamAlphaAPI.util.generateUID();
-      await createBlock({
-        node: {
-          text: "rows",
-          uid: rowUid,
-          children,
-        },
-        parentUid: blockUid,
-      });
-    }
-  };
-  const createOptionsNode = async (options: {}, initialView: string) => {
-    const optionsUid = window.roamAlphaAPI.util.generateUID();
-    const children = Object.entries(options)
-      .filter(([_, value]) => value)
-      .map(([key, value]) => ({
-        text: value ? key : "",
-      }));
-    await createBlock({
-      node: {
-        text: "options",
-        uid: optionsUid,
-        children: [
-          {
-            text: "styles",
-            children,
-          },
-          {
-            text: "view",
-            children: [
-              {
-                text: initialView,
-              },
-            ],
-          },
-        ],
-      },
-      parentUid: blockUid,
-    });
+        })
+      )
+    );
   };
 
-  const handleStyles = (
+  const setOptions = async (styleOptions: StyleOptionsType, view: string) => {
+    setInputSettings({
+      blockUid: optionsNode.uid,
+      key: "styles",
+      values: Object.entries(styleOptions)
+        .filter(([_, value]) => value)
+        .map(([key, value]) => (value ? key : "")),
+    });
+    await setInputSetting({
+      blockUid: optionsNode.uid,
+      key: "view",
+      value: view,
+    });
+  };
+  const handleStylesChange = (
     e: React.FormEvent<HTMLInputElement>,
     option: string
   ) => {
     const value = (e.target as HTMLInputElement).checked;
-    setInitialStyleOptions((prevOptions) => ({
+    setStyleOptions((prevOptions) => ({
       ...prevOptions,
       [option]: value,
     }));
   };
 
-  const createTableNodes = async () => {
-    // consolidate these
-    if (!hasHeaders) createHeaderNode(numCols);
-    if (!hasRows) createRowsNode(numCols, numRows);
-    if (!hasOptions) createOptionsNode(initialStyles, initialView);
+  const handleSubmit = async () => {
+    await Promise.all([
+      createHeaderNode(numCols),
+      createRowsNode(numCols, numRows),
+      setOptions(styleOptions, view),
+    ]);
 
     // fold {{wb-table}} block
     window.roamAlphaAPI.data.block.update({
@@ -207,76 +189,69 @@ const Configuration = ({
   return (
     <div className="roamjs-workbench-table-config" style={{ width: "215px" }}>
       <Card interactive={true} elevation={Elevation.ZERO} className="p-8">
-        <FormGroup
-          label="Rows"
-          labelFor="rows-input"
-          inline={true}
-          className="roamjs-input-label"
-        >
-          <NumericInput
-            id="rows-input"
-            disabled={hasRows}
-            type="number"
-            defaultValue={numRows}
-            onValueChange={(value) => setNumRows(value)}
-            style={{ width: "50px" }}
-          />
-        </FormGroup>
-        <FormGroup
-          label="Columns"
-          labelFor="cols-input"
-          inline={true}
-          className="roamjs-input-label"
-        >
-          <NumericInput
-            id="cols-input"
-            disabled={hasHeaders}
-            type="number"
-            defaultValue={numCols}
-            onValueChange={(value) => setNumCols(value)}
-            style={{ width: "50px" }}
-          />
-        </FormGroup>
-
-        {hasOptions && <Label>Options edit currently disabled.</Label>}
-
+        {firstLoad && (
+          <>
+            <FormGroup
+              label="Rows"
+              labelFor="rows-input"
+              inline={true}
+              className="roamjs-input-label"
+            >
+              <NumericInput
+                id="rows-input"
+                type="number"
+                defaultValue={numRows}
+                onValueChange={(value) => setNumRows(value)}
+                style={{ width: "50px" }}
+              />
+            </FormGroup>
+            <FormGroup
+              label="Columns"
+              labelFor="cols-input"
+              inline={true}
+              className="roamjs-input-label"
+            >
+              <NumericInput
+                id="cols-input"
+                type="number"
+                defaultValue={numCols}
+                onValueChange={(value) => setNumCols(value)}
+                style={{ width: "50px" }}
+              />
+            </FormGroup>
+            <Divider className="my-3" />
+          </>
+        )}
         <div className="flex flex-col">
-          {Object.entries(initialStyles).map(([key, value], index) => (
-            <div className="px-2" key={index}>
+          {Object.entries(styleOptions).map(([key, value], index) => (
+            <div key={index}>
               <Checkbox
-                disabled={hasOptions} // TODO: allow edit
                 alignIndicator={"right"}
                 checked={value}
                 label={key}
-                onChange={(e) => handleStyles(e, key)}
+                onChange={(e) => handleStylesChange(e, key)}
                 className="capitalize"
               />
             </div>
           ))}
         </div>
-
+        <Divider className="mb-3 mt-0" />
         <RadioGroup
-          disabled={hasOptions} // TODO: allow edit
-          onChange={(e) => setInitialView((e.target as HTMLInputElement).value)}
-          selectedValue={initialView}
+          onChange={(e) => setView((e.target as HTMLInputElement).value)}
+          selectedValue={view}
         >
-          <Radio label="Basic Text" value="plain" />
-          <Radio label="Embed" value="embed" />
+          <Radio label="Basic Text" value="plain" alignIndicator="right" />
+          <Radio label="Embed" value="embed" alignIndicator="right" />
         </RadioGroup>
-
-        <div className="text-right mt-4">
+        <div className="text-center mt-8">
           <Button
             loading={isCreatingBlocks}
-            text="Create Table"
-            onClick={() => {
+            text={firstLoad ? "Create Table" : "Update Settings"}
+            onClick={async () => {
               setIsCreatingBlocks(true);
-              createTableNodes();
-
-              // TODO FIX THIS
-              setTimeout(() => {
-                onSubmit();
-                setIsCreatingBlocks(false);
-              }, 1000);
+              await handleSubmit();
+              onSubmit();
+              setIsCreatingBlocks(false);
             }}
             intent={"primary"}
           />
@@ -285,7 +260,7 @@ const Configuration = ({
     </div>
   );
 };
-const DisplayTable = ({ blockUid }: DisplayTableProps) => {
+const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
   const [settings, setSettings] = useState(() => getSettings(blockUid));
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -408,6 +383,11 @@ const DisplayTable = ({ blockUid }: DisplayTableProps) => {
             </MenuItem>
             <MenuDivider />
             <MenuItem
+              icon={"cog"}
+              text={"Settings"}
+              onClick={() => setIsEdit(true)}
+            />
+            <MenuItem
               icon={"edit"}
               text={"Edit Block"}
               onClick={() => {
@@ -434,7 +414,7 @@ const DisplayTable = ({ blockUid }: DisplayTableProps) => {
       </span>
       <HTMLTable
         className={`roamjs-workbench-table table-fixed w-full pointer-events-auto ${
-          settings.setView === "plain" ? "basic-text" : ""
+          settings.view === "plain" ? "basic-text" : ""
         }`}
         bordered={settings.styles.bordered}
         condensed={settings.styles.condensed}
@@ -449,7 +429,7 @@ const DisplayTable = ({ blockUid }: DisplayTableProps) => {
                   key={c.uid}
                   className={`wbt-header-${sanitizeClassName(c.text)}`}
                 >
-                  {settings.setView === "embed" ? (
+                  {settings.view === "embed" ? (
                     <CellEmbed uid={c.uid} />
                   ) : (
                     <EditableText
@@ -471,7 +451,7 @@ const DisplayTable = ({ blockUid }: DisplayTableProps) => {
               >
                 {c.children.map((c) => (
                   <td key={c.uid} className="overflow-hidden">
-                    {settings.setView === "embed" ? (
+                    {settings.view === "embed" ? (
                       <CellEmbed uid={c.uid} />
                     ) : (
                       <EditableText
@@ -494,23 +474,18 @@ const DisplayTable = ({ blockUid }: DisplayTableProps) => {
 };
 
 const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
-  const settings = useMemo(() => getSettings(blockUid), [blockUid]);
+  const tree = useMemo(() => getBasicTreeByParentUid(blockUid), [blockUid]);
+  const rowsNode = useMemo(() => getSubTree({ tree, key: "rows" }), [tree]);
+  const headerNode = useMemo(() => getSubTree({ tree, key: "header" }), [tree]);
+
   const [isEdit, setIsEdit] = useState(
-    !settings.headerNode.children.length || !settings.rowsNode.children.length
+    !headerNode.children.length || !rowsNode.children.length
   );
 
   return isEdit ? (
-    <Configuration
-      blockUid={blockUid}
-      headerNode={settings.headerNode}
-      rowsNode={settings.rowsNode}
-      optionsNode={settings.optionsNode}
-      onSubmit={() => {
-        setIsEdit(false);
-      }}
-    />
+    <Configuration blockUid={blockUid} onSubmit={() => setIsEdit(false)} />
   ) : (
-    <DisplayTable blockUid={blockUid} />
+    <DisplayTable blockUid={blockUid} setIsEdit={setIsEdit} />
   );
 };
 
