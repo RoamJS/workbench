@@ -61,8 +61,10 @@ const getSettings = (blockUid: string) => {
     parentUid: optionsNode.uid,
   });
   const view = viewNode.children[0]?.text;
-  const isEditing = tree.some((c) => c.text.toLowerCase() === "editing");
-
+  const isLoaded = !!getSubTree({
+    tree,
+    key: "loaded",
+  }).uid;
   const styles = {
     striped: stylesNode.children.some(
       (c) => c.text.toLowerCase() === "striped"
@@ -78,39 +80,45 @@ const getSettings = (blockUid: string) => {
     ),
   };
 
+  // fold {{wb-table}} block
+  if (!isLoaded)
+    window.roamAlphaAPI.data.block.update({
+      block: { uid: blockUid, open: false },
+    });
+
   return {
     tree,
     headerNode,
     rowsNode,
     optionsNode,
     stylesNode,
-    isEditing,
+    isLoaded,
     styles,
     viewNode,
     view,
   };
 };
 const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
-  const settings = getSettings(blockUid);
+  const initialSettings = useMemo(() => getSettings(blockUid), [blockUid]);
   const {
     headerNode,
     rowsNode,
     optionsNode,
     styles,
     view: initialView,
-  } = settings;
+    isLoaded,
+  } = initialSettings;
 
   const initialNumHeaders = headerNode.children.length;
   const initialNumRows = rowsNode.children.length;
-  const firstLoad = !initialNumHeaders && !initialNumRows;
   const [isCreatingBlocks, setIsCreatingBlocks] = useState(false);
   const [numRows, setNumRows] = useState(3);
   const [numCols, setNumCols] = useState(3);
   const [view, setView] = useState(initialView || "plain");
   const [styleOptions, setStyleOptions] = useState(
-    firstLoad
-      ? { striped: true, bordered: false, condensed: false, interactive: false }
-      : styles
+    isLoaded
+      ? styles
+      : { striped: true, bordered: false, condensed: false, interactive: false }
   );
 
   const createHeaderNode = async (numHeaders: number) => {
@@ -162,34 +170,24 @@ const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
       value: view,
     });
   };
-  const handleStylesChange = (
-    e: React.FormEvent<HTMLInputElement>,
-    option: string
-  ) => {
-    const value = (e.target as HTMLInputElement).checked;
-    setStyleOptions((prevOptions) => ({
-      ...prevOptions,
-      [option]: value,
-    }));
-  };
 
   const handleSubmit = async () => {
+    const addLoadedBlock = isLoaded
+      ? Promise.resolve()
+      : createBlock({ node: { text: "loaded" }, parentUid: blockUid });
+
     await Promise.all([
       createHeaderNode(numCols),
       createRowsNode(numCols, numRows),
       setOptions(styleOptions, view),
+      addLoadedBlock,
     ]);
-
-    // fold {{wb-table}} block
-    window.roamAlphaAPI.data.block.update({
-      block: { uid: blockUid, open: false },
-    });
   };
 
   return (
     <div className="roamjs-workbench-table-config" style={{ width: "215px" }}>
-      <Card interactive={true} elevation={Elevation.ZERO} className="p-8">
-        {firstLoad && (
+      <Card elevation={Elevation.ONE} className="p-8">
+        {!isLoaded && (
           <>
             <FormGroup
               label="Rows"
@@ -229,7 +227,13 @@ const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
                 alignIndicator={"right"}
                 checked={value}
                 label={key}
-                onChange={(e) => handleStylesChange(e, key)}
+                onChange={(e) => {
+                  const isChecked = (e.target as HTMLInputElement).checked;
+                  setStyleOptions((prevOptions) => ({
+                    ...prevOptions,
+                    [key]: isChecked,
+                  }));
+                }}
                 className="capitalize"
               />
             </div>
@@ -246,7 +250,7 @@ const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
         <div className="text-center mt-8">
           <Button
             loading={isCreatingBlocks}
-            text={firstLoad ? "Create Table" : "Update Settings"}
+            text={isLoaded ? "Update Settings" : "Create Table"}
             onClick={async () => {
               setIsCreatingBlocks(true);
               await handleSubmit();
@@ -300,7 +304,7 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
             <MenuItem icon={"add"} text={"Add"}>
               <MenuItem
                 icon={"add-row-bottom"}
-                text={"Add Row"}
+                text={"Row"}
                 onClick={async () => {
                   if (!settings.rowsNode.uid) return;
                   await createBlock({
@@ -319,7 +323,7 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
               />
               <MenuItem
                 icon={"add-column-right"}
-                text={"Add Column"}
+                text={"Column"}
                 onClick={async () => {
                   if (!settings.headerNode.uid) return;
                   await createBlock({
@@ -346,7 +350,7 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
             <MenuItem icon={"remove"} text={"Remove"}>
               <MenuItem
                 icon={"remove-row-bottom"}
-                text={"Remove Last Row"}
+                text={"Last Row"}
                 onClick={async () => {
                   if (!settings.rowsNode.uid) return;
                   const lastRow =
@@ -361,7 +365,7 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
               />
               <MenuItem
                 icon={"remove-column-right"}
-                text={"Remove Last Column"}
+                text={"Last Column"}
                 onClick={async () => {
                   if (!settings.headerNode.uid) return;
                   const lastHeader =
