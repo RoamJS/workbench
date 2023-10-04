@@ -57,7 +57,7 @@ const createWeeklyPage = (pageName: string) => {
   const weekUid = createPage({ title: pageName });
   const tree = getFullTreeByParentUid(getPageUidByPageTitle(CONFIG)).children;
   const format = getFormat(tree);
-  const [, day, dayFormat] = format.match(new RegExp(DATE_REGEX.source));
+  const [, day, dayFormat] = format.match(new RegExp(DATE_REGEX.source)) || [];
   const firstDateFormatted = pageName.match(
     new RegExp(
       `^${format
@@ -65,7 +65,10 @@ const createWeeklyPage = (pageName: string) => {
         .replace(/\[/g, "\\[")
         .replace(/\]/g, "\\]")}$`
     )
-  )[1];
+  )?.[1];
+  if (!firstDateFormatted) {
+    return weekUid;
+  }
   const date = parse(firstDateFormatted, dayFormat, new Date());
   const weekStartsOn = DAYS.indexOf(day) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
   const autoTag = tree.some((t) => toFlexRegex("auto tag").test(t.text));
@@ -150,7 +153,7 @@ export const toggleFeature = (
           },
         ],
       },
-    }).then((a) => unloads.add(() => a.observer.disconnect()));
+    }).then((a) => unloads.add(() => a.observer?.disconnect()));
 
     const goToThisWeek = () => {
       const format = getFormat();
@@ -192,14 +195,19 @@ export const toggleFeature = (
       );
       const exec = formatRegex.exec(title);
       if (exec) {
-        const dateArray = exec
-          .slice(1)
-          .map((d, i) => parse(d, formats[i], new Date()));
+        const dateArray = exec.slice(1).map((d, i) => {
+          try {
+            return parse(d, formats[i], new Date());
+          } catch (e) {
+            return new Date(NaN);
+          }
+        });
         return {
           dateArray,
           formats,
           valid:
-            dateArray.length && dateArray.every((s) => !isNaN(s.valueOf())),
+            dateArray.length &&
+            dateArray.every((s) => s && !isNaN(s.valueOf())),
         };
       }
       return { dateArray: [], formats, valid: false };
@@ -242,7 +250,7 @@ export const toggleFeature = (
             buttonContainer.style.justifyContent = "space-between";
             buttonContainer.style.marginBottom = "32px";
             buttonContainer.id = "roamjs-weekly-mode-nav";
-            headerContainer.appendChild(buttonContainer);
+            headerContainer?.appendChild(buttonContainer);
 
             const makeButton = (pagename: string, label: string) => {
               const button = document.createElement("button");
@@ -274,7 +282,7 @@ export const toggleFeature = (
     const h1Observer = createHTMLObserver({
       tag: "H1",
       className: "rm-title-display",
-      callback: (header: HTMLHeadingElement) => {
+      callback: (header: HTMLElement) => {
         const title = getPageTitleValueByHtmlElement(header);
         const { valid } = getFormatDateData(title);
         if (valid) {
