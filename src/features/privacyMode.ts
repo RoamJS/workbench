@@ -47,7 +47,7 @@ const scanBlocksForPageReferences = (
     .querySelectorAll<HTMLHeadingElement>(".rm-search-title")
     .forEach((e) => {
       if (isPrivate.has(e.innerText)) {
-        e.parentElement.classList.add(privacyClassName);
+        e.parentElement?.classList.add(privacyClassName);
       }
     });
   setTimeout(() => {
@@ -66,15 +66,15 @@ const scanBlocksForPageReferences = (
       });
   }, 25);
 
-  if (isPrivate.has(pageName)) {
+  if (pageName && isPrivate.has(pageName)) {
     if (isPageTitleOnly[pageName]) {
       document
         .querySelector(".rm-title-display")
-        .parentElement.classList.add(privacyClassName);
+        ?.parentElement?.classList.add(privacyClassName);
     } else {
       document
         .querySelector(".roam-article > div")
-        .classList.add(privacyClassName);
+        ?.classList.add(privacyClassName);
     }
   }
 

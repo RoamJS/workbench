@@ -150,7 +150,7 @@ const updateBreadcrumbs = async () => {
     const topbar = document.querySelector(".rm-topbar");
     const render = (el: HTMLElement) => {
       const root = document.createElement("div");
-      topbar.insertBefore(root, el);
+      topbar?.insertBefore(root, el);
       ReactDOM.render(<Container />, root);
     };
 
@@ -167,7 +167,8 @@ const updateBreadcrumbs = async () => {
   }
 };
 
-const findLastBlock = (el: Element) => {
+const findLastBlock = (el: Element | null) => {
+  if (!el) return null;
   const firstLogPage = el.querySelector(".roam-log-page");
   const container = firstLogPage
     ? firstLogPage.querySelector(".flex-v-box")
@@ -182,7 +183,11 @@ const findLastBlock = (el: Element) => {
   return null;
 };
 
-const addBlocks = (el: Element, lastBlock: HTMLDivElement, prefix: string) => {
+const addBlocks = (
+  el: Element,
+  lastBlock: HTMLDivElement | null,
+  prefix: string
+) => {
   let offset = 0;
   const blocks = el.querySelectorAll<HTMLDivElement>(
     [
@@ -209,12 +214,13 @@ const addBlocks = (el: Element, lastBlock: HTMLDivElement, prefix: string) => {
       mustBeKeys: key,
       navigate: async () => {
         if (block.id === "block-input-ghost") {
+          const rmSideWindow = block.closest(".rm-sidebar-window");
           return (
-            block.closest(".rm-sidebar-window")
+            rmSideWindow
               ? Promise.resolve(
                   Array.from(
                     document.querySelectorAll(".rm-sidebar-window")
-                  ).indexOf(block.closest(".rm-sidebar-window"))
+                  ).indexOf(rmSideWindow)
                 ).then((order) => {
                   const win = window.roamAlphaAPI.ui.rightSidebar
                     .getWindows()
@@ -232,20 +238,20 @@ const addBlocks = (el: Element, lastBlock: HTMLDivElement, prefix: string) => {
                     parentUid,
                     windowId: `${getCurrentUserUid()}-body-outline-${parentUid}`,
                   }))
-          ).then(
-            (args) =>
-              args &&
-              createBlock({
-                parentUid: args.parentUid,
-                node: { text: "" },
-              }).then((blockUid) =>
-                window.roamAlphaAPI.ui.setBlockFocusAndSelection({
-                  location: {
-                    "block-uid": blockUid,
-                    "window-id": args.windowId,
-                  },
-                })
-              )
+          ).then((args) =>
+            args?.parentUid
+              ? createBlock({
+                  parentUid: args.parentUid,
+                  node: { text: "" },
+                }).then((blockUid) =>
+                  window.roamAlphaAPI.ui.setBlockFocusAndSelection({
+                    location: {
+                      "block-uid": blockUid,
+                      "window-id": args.windowId,
+                    },
+                  })
+                )
+              : Promise.resolve()
           );
         } else if (block.matches("h1.rm-title-display")) {
           block.dispatchEvent(
@@ -317,7 +323,7 @@ const addLinks = (linkItems: Item[], container: Element) => {
           extraClasses: [LINK_HINT_CLASS],
           navigate,
         });
-      if (link.tagName === "A") {
+      if (link.tagName === "A" && parent) {
         if (parent.classList.contains("rm-ref-page-view-title")) {
           pushLink(parent, () =>
             window.roamAlphaAPI.ui.mainWindow.openPage({
@@ -326,16 +332,17 @@ const addLinks = (linkItems: Item[], container: Element) => {
           );
         } else if (link.classList.contains("rm-alias")) {
           pushLink(link, async () => link.click());
-        } else if (link.hasAttribute("href")) {
+        } else if (link.hasAttribute("href") && link) {
           pushLink(link, async () => {
-            window.open(link.getAttribute("href"));
+            const href = link.getAttribute("href");
+            if (href) window.open(href);
           });
         } else {
           console.warn("Unexpected <a> element", link);
         }
       } else if (link.classList.contains("rm-page-ref")) {
-        const uidAttr = parent.getAttribute("data-link-uid");
-        if (uidAttr) {
+        const uidAttr = parent?.getAttribute("data-link-uid");
+        if (uidAttr && parent) {
           pushLink(parent, () =>
             window.roamAlphaAPI.ui.mainWindow.openBlock({
               block: { uid: uidAttr },
@@ -344,7 +351,7 @@ const addLinks = (linkItems: Item[], container: Element) => {
         } else if (link.hasAttribute("data-tag")) {
           pushLink(link, () =>
             window.roamAlphaAPI.ui.mainWindow.openPage({
-              page: { title: link.getAttribute("data-tag") },
+              page: { title: link.getAttribute("data-tag") ?? "" },
             })
           );
         } else {
@@ -537,7 +544,7 @@ const assignKeysToItems = (items: Item[]) => {
   };
   // Handle items with 'mustBeKeys' set.
   addViaKeyFunc("no-shortening", (it) => {
-    return it.mustBeKeys;
+    return it.mustBeKeys ?? "";
   });
   // When initials are at least MAX_NAVIGATE_PREFIX in length, prefer
   // assigning those.
@@ -546,7 +553,7 @@ const assignKeysToItems = (items: Item[]) => {
     if (initials && initials.length >= MAX_NAVIGATE_PREFIX) {
       return initials.slice(0, MAX_NAVIGATE_PREFIX);
     } else {
-      return null;
+      return "";
     }
   });
   // Attempt to use prefix as the key sequence.
@@ -554,7 +561,7 @@ const assignKeysToItems = (items: Item[]) => {
     if (it.text) {
       return it.text.slice(0, MAX_NAVIGATE_PREFIX);
     } else {
-      return null;
+      return "";
     }
   });
   // For the ones that didn't have unambiguous prefixes, try other character
@@ -604,13 +611,14 @@ const setupNavigate = () => {
     // Add top level navigations to the list of navigateItems
     if (sidebar) {
       Array.from(sidebar.getElementsByClassName("log-button")).forEach(
-        (logButton: HTMLDivElement) => {
+        (logButton: Element) => {
+          const element = logButton as HTMLDivElement;
           const text = (
             logButton.querySelector(".icon")?.nextSibling?.nodeValue || ""
           ).toLowerCase();
           if (text === "daily notes") {
             const option = {
-              element: logButton,
+              element,
               mustBeKeys: "g",
               navigate: () =>
                 window.roamAlphaAPI.ui.mainWindow.openDailyNotes(),
@@ -618,7 +626,7 @@ const setupNavigate = () => {
             navigateItems.push(option);
           } else if (text === "graph overview") {
             const option = {
-              element: logButton,
+              element,
               mustBeKeys: "o" + ENTER_SYMBOL,
               navigate: async () => {
                 window.location.hash = `#/${
@@ -631,7 +639,7 @@ const setupNavigate = () => {
             navigateItems.push(option);
           } else if (text === "all pages") {
             const option = {
-              element: logButton,
+              element,
               mustBeKeys: "ap",
               navigate: async () => {
                 window.location.hash = `#/${
@@ -644,10 +652,10 @@ const setupNavigate = () => {
             navigateItems.push(option);
           } else if (text === "roam depot") {
             const option = {
-              element: logButton,
+              element,
               mustBeKeys: "rd",
               navigate: async () => {
-                logButton.click();
+                element.click();
               },
             };
             navigateItems.push(option);
