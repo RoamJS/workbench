@@ -290,6 +290,12 @@ export const addCommand = (
           type: "WorkBench Command Error",
           message: error.message,
           stack: error.stack,
+          version: process.env.VERSION,
+          notebookUuid: JSON.stringify({
+            owner: "RoamJS",
+            app: "workbench",
+            workspace: window.roamAlphaAPI.graph.name,
+          }),
         },
       }).catch(() => {});
     }

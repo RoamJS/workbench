@@ -187,7 +187,7 @@ const toggleLinkedRefs = () => {
   (
     document.querySelector(".rm-reference-container .rm-caret") as HTMLElement
   ).click();
-  document.querySelector(".rm-reference-container .rm-caret").scrollIntoView();
+  document.querySelector(".rm-reference-container .rm-caret")?.scrollIntoView();
 };
 const toggleUnlinkedRefs = async () => {
   const rmReferenceDiv = document.querySelector(
@@ -278,13 +278,13 @@ const copyBlockRef = () => {
 };
 const copyBlockRefAsAlias = () => {
   const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
-  const selectedText = window.getSelection().toString();
+  const selectedText = window.getSelection()?.toString();
   const formatToUse = get("CopyRefAsAliasFormat");
   const outputText =
     selectedText != "" && formatToUse
       ? formatToUse
           .replace("UID", `((${uid}))`)
-          .replace("SELECTEDTEXT", selectedText)
+          .replace("SELECTEDTEXT", selectedText ?? "")
           .trim()
       : selectedText != ""
       ? `"${selectedText}" [*](((${uid})))`
