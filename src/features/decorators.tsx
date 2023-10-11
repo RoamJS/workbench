@@ -48,7 +48,8 @@ import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBloc
 import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
 import createBlockObserver from "roamjs-components/dom/createBlockObserver";
 import getReferenceBlockUid from "roamjs-components/dom/getReferenceBlockUid";
-import type { OnloadArgs } from "roamjs-components/types";
+import type { OnloadArgs, PullBlock } from "roamjs-components/types";
+import getCommandPalette from "../utils/getCommandPalette";
 
 const TODO_REGEX = /{{(\[\[)?TODO(\]\])?}}\s*/;
 
@@ -68,7 +69,7 @@ const MoveTodoMenu = ({
   const tomorrow = useMemo(() => {
     const title = getPageTitleByBlockUid(blockUid);
     const ref = DAILY_NOTE_PAGE_TITLE_REGEX.test(title)
-      ? window.roamAlphaAPI.util.pageTitleToDate(title)
+      ? window.roamAlphaAPI.util.pageTitleToDate(title) ?? new Date()
       : new Date();
     return addDays(ref, 1);
   }, []);
@@ -87,6 +88,7 @@ const MoveTodoMenu = ({
     clearTimeout(unmountRef.current);
   }, [unmountRef]);
   useEffect(() => {
+    if (!p.parentElement) return;
     p.parentElement.onmouseleave = unmount;
     p.parentElement.addEventListener("mouseenter", clear);
   }, [clear, unmount]);
@@ -97,7 +99,10 @@ const MoveTodoMenu = ({
     const blockUids = [
       blockUid,
       ...Array.from(document.getElementsByClassName("block-highlight-blue"))
-        .map((d) => getUids(d.querySelector(".roam-block")).blockUid)
+        .map(
+          (d) =>
+            getUids(d.querySelector<HTMLDivElement>(".roam-block")).blockUid
+        )
         .filter((b) => b !== blockUid),
     ];
     const targetDate = window.roamAlphaAPI.util.dateToPageTitle(target);
@@ -177,11 +182,13 @@ const MoveTodoMenu = ({
                   )
                 );
               setTimeout(() => {
-                blockIds.forEach((id) =>
-                  document
-                    .getElementById(id)
-                    .closest(".roam-block-container")
-                    .classList.add("block-highlight-blue")
+                blockIds.forEach(
+                  (id) =>
+                    id &&
+                    document
+                      .getElementById(id)
+                      ?.closest(".roam-block-container")
+                      ?.classList.add("block-highlight-blue")
                 );
               }, 1);
             }}
@@ -249,13 +256,13 @@ const render = ({
       <MoveTodoMenu
         p={p}
         blockUid={blockUid}
-        removeListener={() => block.removeEventListener("mouseenter", onEnter)}
+        removeListener={() => block?.removeEventListener("mouseenter", onEnter)}
         archivedDefault={archivedDefault}
         move={move}
       />,
       p
     );
-  block.addEventListener("mouseenter", onEnter);
+  block?.addEventListener("mouseenter", onEnter);
 };
 
 const settings = [
@@ -315,14 +322,15 @@ export const toggleFeature = (
   flag: boolean,
   extensionAPI: OnloadArgs["extensionAPI"]
 ) => {
+  const commandPalette = getCommandPalette(extensionAPI);
   if (flag) {
-    extensionAPI.ui.commandPalette.addCommand({
+    commandPalette.addCommand({
       label: "(WB) Toggle Block Decorators",
       callback: () => renderOverlay({ Overlay: DecoratorSettings }),
     });
     toggleDecorations(true);
   } else {
-    extensionAPI.ui.commandPalette.removeCommand({
+    commandPalette.removeCommand({
       label: "(WB) Toggle Block Decorators",
     });
     unloads.forEach((u) => u());
@@ -343,7 +351,7 @@ export const toggleDecorations = (flag: boolean) => {
       const moveTodosObserver = createHTMLObserver({
         tag: "LABEL",
         className: "check-container",
-        callback: (l: HTMLLabelElement) => {
+        callback: (l: Element) => {
           const input = l.getElementsByTagName("input")[0];
           if (!input.checked) {
             const blockUid = getBlockUidFromTarget(input);
@@ -493,11 +501,11 @@ export const toggleDecorations = (flag: boolean) => {
       document.head.appendChild(css);
       unloads.add(() => css.remove());
       const getRefTitlesByBlockUid = (uid: string): string[] =>
-        window.roamAlphaAPI
-          .q(
-            `[:find (pull ?r [:node/title]) :where [?e :block/refs ?r] [?e :block/uid "${uid}"]]`
-          )
-          .map((b: { title: string }[]) => b[0]?.title || "");
+        (
+          window.roamAlphaAPI.data.fast.q(
+            `[:find (pull ?r [:node/title]) :where [?e :block/uid "${uid}"] [?e :block/refs ?r]]`
+          ) as [PullBlock][]
+        ).map((b) => b[0]?.[":node/title"] ?? "");
 
       const renderColorPreviews = (
         container: HTMLElement,
@@ -526,7 +534,8 @@ export const toggleDecorations = (flag: boolean) => {
                 newSpan.id = `${previewIdPrefix}${i}`;
                 renderedRef.appendChild(newSpan);
               });
-            } catch (e) {
+            } catch (err) {
+              const e = err as Error;
               if (
                 !e.message ||
                 !e.message.startsWith("Unable to parse color from string")

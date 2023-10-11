@@ -37,6 +37,7 @@ import createTagRegex from "roamjs-components/util/createTagRegex";
 import registerSmartBlocksCommand from "roamjs-components/util/registerSmartBlocksCommand";
 import type { OnloadArgs } from "roamjs-components/types/native";
 import apiPost from "roamjs-components/util/apiPost";
+import getCommandPalette from "../utils/getCommandPalette";
 
 export let active = false;
 type ExtendAddCommandOptions = Omit<AddCommandOptions, "callback"> & {
@@ -130,10 +131,8 @@ const runInboxCommand = async (uids: string[], children: RoamBasicNode[]) => {
   );
 
   const blockrefValues = { true: true, reverse: "reverse" };
-  let blockRef: boolean | string = await userCommands.findBlockAmongstChildren(
-    children,
-    "blockref:"
-  );
+  let blockRef: boolean | string | null =
+    await userCommands.findBlockAmongstChildren(children, "blockref:");
   if (blockRef == null) blockRef = false;
   else {
     const key = blockRef.toLowerCase();
@@ -268,7 +267,7 @@ export const addCommand = (
       const uids = uid
         ? [uid]
         : Array.from(document.querySelectorAll(`.block-highlight-blue`)).map(
-            (d) => getUidsFromId(d.querySelector(".roam-block").id).blockUid
+            (d) => getUidsFromId(d.querySelector(".roam-block")?.id).blockUid
           );
       Promise.resolve(args.callback(uids)).then(() => {
         if (restoreFocus && uids.length === 1) {
@@ -307,23 +306,17 @@ export const addCommand = (
     "disable-hotkey": args.disableHotkey,
     "default-hotkey": args.defaultHotkey,
   };
-  extensionAPI.ui.commandPalette.addCommand(options);
+  const commandPalette = getCommandPalette(extensionAPI);
+  commandPalette.addCommand(options);
   const command = {
     display,
     cmd: callbackFunction,
   };
   _commands.add(command);
   return () => {
-    removeCommand(display, extensionAPI);
+    commandPalette.removeCommand({ label: display });
     _commands.delete(command);
   };
-};
-
-export const removeCommand = (
-  label: string,
-  extensionAPI: OnloadArgs["extensionAPI"]
-) => {
-  extensionAPI.ui.commandPalette.removeCommand({ label });
 };
 
 const moveBlocks = ({
@@ -393,7 +386,8 @@ const promptPathAndCallback = ({
       renderFormDialog({
         // @ts-ignore
         onClose: () => resolve(false),
-        onSubmit: (data: { block: string; page?: string }) => {
+        onSubmit: (_data) => {
+          const data = _data as { page?: string; block?: string };
           const parentUid = data.page
             ? getPageUidByPageTitle(data.page) || data.block
             : data.block;
@@ -684,12 +678,12 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
     {
       label: "Move Block(s) - to top & zoom (mbtz)",
       callback: async (uids: string[]) => {
-        promptMoveBlocks({ uids, getBase: () => 0 }).then(
-          (success) =>
-            success &&
-            window.roamAlphaAPI.ui.mainWindow.openBlock({
-              block: { uid: getParentUidByBlockUid(uids[0]) },
-            })
+        promptMoveBlocks({ uids, getBase: () => 0 }).then((success) =>
+          success
+            ? window.roamAlphaAPI.ui.mainWindow.openBlock({
+                block: { uid: getParentUidByBlockUid(uids[0]) },
+              })
+            : Promise.resolve()
         );
       },
     },
@@ -701,10 +695,11 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
       callback: async (uids: string[]) => {
         promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
           (success) =>
-            success &&
-            window.roamAlphaAPI.ui.mainWindow.openBlock({
-              block: { uid: getParentUidByBlockUid(uids[0]) },
-            })
+            success
+              ? window.roamAlphaAPI.ui.mainWindow.openBlock({
+                  block: { uid: getParentUidByBlockUid(uids[0]) },
+                })
+              : Promise.resolve()
         );
       },
     },
@@ -714,8 +709,8 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
     {
       label: "Move Block(s) - to top & sidebar (mbts)",
       callback: async (uids: string[]) => {
-        promptMoveBlocks({ uids, getBase: () => 0 }).then(
-          (success) => success && openBlockInSidebar(uids[0])
+        promptMoveBlocks({ uids, getBase: () => 0 }).then((success) =>
+          success ? openBlockInSidebar(uids[0]) : Promise.resolve()
         );
       },
     },
@@ -726,7 +721,8 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
       label: "Move Block(s) - to bottom & sidebar (mbbs)",
       callback: async (uids: string[]) => {
         promptMoveBlocks({ uids, getBase: getChildrenLengthByParentUid }).then(
-          (success) => success && openBlockInSidebar(uids[0])
+          (success) =>
+            success ? openBlockInSidebar(uids[0]) : Promise.resolve()
         );
       },
     },
@@ -795,7 +791,12 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
           const [blockUid] = uids;
           const parentUid = blockUid
             ? getParentUidByBlockUid(blockUid)
-            : await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+            : await window.roamAlphaAPI.ui.mainWindow
+                .getOpenPageOrBlockUid()
+                .then(
+                  (uid) =>
+                    uid || window.roamAlphaAPI.util.dateToPageUid(new Date())
+                );
           const order = blockUid
             ? getOrderByBlockUid(blockUid)
             : getChildrenLengthByParentUid(blockUid);
@@ -820,7 +821,12 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
           const [blockUid] = uids;
           const parentUid = blockUid
             ? getParentUidByBlockUid(blockUid)
-            : await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+            : await window.roamAlphaAPI.ui.mainWindow
+                .getOpenPageOrBlockUid()
+                .then(
+                  (uid) =>
+                    uid || window.roamAlphaAPI.util.dateToPageUid(new Date())
+                );
           const order = blockUid
             ? getOrderByBlockUid(blockUid)
             : getChildrenLengthByParentUid(blockUid);
@@ -1079,22 +1085,25 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
   const confirmDeletePage = (pageUID: string, pageTitle: string) => {
     return confirm(
       `Are you sure you want to **DELETE** the page?\n\n**${pageTitle}**`
-    ).then(
-      (success) =>
-        success &&
-        window.roamAlphaAPI.ui.mainWindow
-          .openDailyNotes()
-          .then(() =>
-            window.roamAlphaAPI.deletePage({ page: { uid: pageUID } })
-          )
+    ).then((success) =>
+      success
+        ? window.roamAlphaAPI.ui.mainWindow
+            .openDailyNotes()
+            .then(() =>
+              window.roamAlphaAPI.deletePage({ page: { uid: pageUID } })
+            )
+        : Promise.resolve()
     );
   };
   addCommand(
     {
       label: "Delete current page (dcp)",
       callback: async () => {
-        const uid =
-          await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
+        const uid = await window.roamAlphaAPI.ui.mainWindow
+          .getOpenPageOrBlockUid()
+          .then(
+            (uid) => uid || window.roamAlphaAPI.util.dateToPageUid(new Date())
+          );
         if ((await get("workBenchDcpConfirm")) == "off") {
           return window.roamAlphaAPI.ui.mainWindow
             .openDailyNotes()
@@ -1234,9 +1243,10 @@ export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
     extensionAPI
   );
 
+  const commandPalette = getCommandPalette(extensionAPI);
   unloads.add(() => {
     _commands.forEach((c) =>
-      extensionAPI.ui.commandPalette.removeCommand({ label: c.display })
+      commandPalette.removeCommand({ label: c.display })
     );
     _commands.clear();
   });
