@@ -482,16 +482,34 @@ export const toggleDecorations = (flag: boolean) => {
     if (opts["Hex Color Preview Enabled"]) {
       const HEX_COLOR_PREVIEW_CLASSNAME = "roamjs-hex-color-preview";
       const css = document.createElement("style");
-      css.textContent = `span.${HEX_COLOR_PREVIEW_CLASSNAME} {
-        width: 16px;
-        height: 16px;
-        display: inline-block;
-        margin-left: 4px;
-        top: 3px;
-        position: relative;
-    }`;
+      css.id = "roamjs-hex-color-preview-css";
+      css.textContent = `input.${HEX_COLOR_PREVIEW_CLASSNAME} {
+          width: 16px;
+          height: 16px;
+          margin-left: 4px;
+          border: none;
+          outline: none;
+          appearance: none;
+          padding: 0;
+        }
+        /* Remove the color well for Firefox */
+        input.roamjs-hex-color-preview::-moz-color-swatch-wrapper {
+            padding: 0;
+        }
+        input.roamjs-hex-color-preview::-moz-color-swatch {
+            border: none;
+        }
+        /* Remove the color well for Chrome */
+        input.roamjs-hex-color-preview::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input.roamjs-hex-color-preview::-webkit-color-swatch {
+            border: none;
+        }
+      `;
       document.head.appendChild(css);
       unloads.add(() => css.remove());
+
       const getRefTitlesByBlockUid = (uid: string): string[] =>
         window.roamAlphaAPI
           .q(
@@ -513,18 +531,37 @@ export const toggleDecorations = (flag: boolean) => {
             try {
               const c = Color(`#${r}`);
               const previewIdPrefix = `hex-color-preview-${blockUid}-${r}-`;
+
+              // Filter out spans that do not match the current reference or already have a color preview.
               const renderedRefSpans = renderedRefs.filter(
                 (s) =>
                   s.getAttribute("data-tag") === r &&
                   (!s.lastElementChild ||
                     !s.lastElementChild.id.startsWith(previewIdPrefix))
               );
+
               renderedRefSpans.forEach((renderedRef, i) => {
-                const newSpan = document.createElement("span");
-                newSpan.style.backgroundColor = c.string();
-                newSpan.className = HEX_COLOR_PREVIEW_CLASSNAME;
-                newSpan.id = `${previewIdPrefix}${i}`;
-                renderedRef.appendChild(newSpan);
+                const newInput = document.createElement("input");
+                newInput.type = "color";
+                newInput.value = c.hex();
+                newInput.className = HEX_COLOR_PREVIEW_CLASSNAME;
+                newInput.id = `${previewIdPrefix}${i}`;
+                newInput.onmousedown = (e) => e.stopPropagation();
+                renderedRef.appendChild(newInput);
+                newInput.onchange = async (e) => {
+                  const target = e.target as HTMLInputElement;
+                  const newColor = target.value;
+                  const uid = getBlockUidFromTarget(target);
+                  const blockText = getTextByBlockUid(uid);
+                  const newText = blockText.replace(
+                    new RegExp(`#${r}`, "g"),
+                    newColor
+                  );
+                  window.roamAlphaAPI.updateBlock({
+                    block: { uid, string: newText },
+                  });
+                  target.value = newColor;
+                };
               });
             } catch (e) {
               if (
