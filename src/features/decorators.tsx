@@ -45,12 +45,13 @@ import renderOverlay, {
 import openBlockInSidebar from "roamjs-components/writes/openBlockInSidebar";
 import createHashtagObserver from "roamjs-components/dom/createHashtagObserver";
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
-import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParentUid";
 import createBlockObserver from "roamjs-components/dom/createBlockObserver";
 import getReferenceBlockUid from "roamjs-components/dom/getReferenceBlockUid";
 import type { OnloadArgs } from "roamjs-components/types";
 
 const TODO_REGEX = /{{(\[\[)?TODO(\]\])?}}\s*/;
+
+type RoamBlockEl = HTMLDivElement | HTMLTextAreaElement | null;
 
 const MoveTodoMenu = ({
   blockUid,
@@ -67,9 +68,10 @@ const MoveTodoMenu = ({
 }): React.ReactElement => {
   const tomorrow = useMemo(() => {
     const title = getPageTitleByBlockUid(blockUid);
-    const ref = DAILY_NOTE_PAGE_TITLE_REGEX.test(title)
+    let ref = DAILY_NOTE_PAGE_TITLE_REGEX.test(title)
       ? window.roamAlphaAPI.util.pageTitleToDate(title)
       : new Date();
+    if (!ref) ref = new Date();
     return addDays(ref, 1);
   }, []);
   const maxDate = useMemo(() => {
@@ -86,22 +88,46 @@ const MoveTodoMenu = ({
   const clear = useCallback(() => {
     clearTimeout(unmountRef.current);
   }, [unmountRef]);
+
   useEffect(() => {
-    p.parentElement.onmouseleave = unmount;
-    p.parentElement.addEventListener("mouseenter", clear);
-  }, [clear, unmount]);
+    if (p && p.parentElement) {
+      const parentElement = p.parentElement;
+      const handleMouseLeave = () => unmount();
+      const handleMouseEnter = () => clear();
+      parentElement.onmouseleave = handleMouseLeave;
+      parentElement.addEventListener("mouseenter", handleMouseEnter);
+
+      return () => {
+        if (parentElement) {
+          parentElement.removeEventListener("mouseleave", handleMouseLeave);
+          parentElement.removeEventListener("mouseenter", handleMouseEnter);
+        }
+      };
+    }
+  }, [clear, unmount, p]);
+
   const [loading, setLoading] = useState(false);
   const [archive, setArchive] = useState(archivedDefault);
-  const onClick = () => {
+
+  const onMove = async () => {
     setLoading(true);
-    const blockUids = [
-      blockUid,
-      ...Array.from(document.getElementsByClassName("block-highlight-blue"))
-        .map((d) => getUids(d.querySelector(".roam-block")).blockUid)
-        .filter((b) => b !== blockUid),
-    ];
+
+    const highlightedBlocks = Array.from(
+      document.getElementsByClassName("block-highlight-blue")
+    );
+    const additionalBlockUids = highlightedBlocks
+      .map((blockElement) => {
+        const roamBlockEl: RoamBlockEl =
+          blockElement.querySelector(".roam-block");
+        if (!roamBlockEl) return;
+        return getUids(roamBlockEl).blockUid;
+      })
+      .filter((uid) => uid !== null && uid !== blockUid);
+    const blockUids = [blockUid, ...additionalBlockUids];
+
     const targetDate = window.roamAlphaAPI.util.dateToPageTitle(target);
     const parentUid = getPageUidByPageTitle(targetDate);
+
     return (
       parentUid ? Promise.resolve(parentUid) : createPage({ title: targetDate })
     )
@@ -109,6 +135,7 @@ const MoveTodoMenu = ({
         const order = getChildrenLengthByPageUid(parentUid);
         return Promise.all(
           blockUids.map((buid, i) => {
+            if (!buid) return Promise.resolve();
             const text = getTextByBlockUid(buid);
             const children = getShallowTreeByParentUid(buid);
             return move
@@ -158,6 +185,30 @@ const MoveTodoMenu = ({
       })
       .finally(unmount);
   };
+
+  const onTodoClick = () => {
+    const elements = Array.from(
+      document.getElementsByClassName("block-highlight-blue")
+    );
+
+    const blockIds = elements
+      .map((el) => el.querySelector(".roam-block")?.id)
+      .filter((id): id is string => id !== null && id !== undefined)
+      .filter((d) => {
+        const textContent = getTextByBlockUid(getUidsFromId(d).blockUid);
+        return /{{\[\[TODO\]\]}}/.test(textContent);
+      });
+
+    setTimeout(() => {
+      blockIds.forEach((id) => {
+        const element = document.getElementById(id);
+        if (!element) return;
+        const container = element.closest(".roam-block-container");
+        container?.classList.add("block-highlight-blue");
+      });
+    }, 1);
+  };
+
   return (
     <Popover
       target={
@@ -166,25 +217,7 @@ const MoveTodoMenu = ({
             minimal
             icon={"play"}
             style={{ minHeight: 18, height: 18, width: 18, minWidth: 18 }}
-            onClick={() => {
-              const blockIds = Array.from(
-                document.getElementsByClassName("block-highlight-blue")
-              )
-                .map((d) => d.querySelector(".roam-block")?.id)
-                .filter((d) =>
-                  /{{\[\[TODO\]\]}}/.test(
-                    getTextByBlockUid(getUidsFromId(d).blockUid)
-                  )
-                );
-              setTimeout(() => {
-                blockIds.forEach((id) =>
-                  document
-                    .getElementById(id)
-                    .closest(".roam-block-container")
-                    .classList.add("block-highlight-blue")
-                );
-              }, 1);
-            }}
+            onClick={onTodoClick}
           />
         </Tooltip>
       }
@@ -210,7 +243,7 @@ const MoveTodoMenu = ({
             }}
           >
             <Button
-              onClick={onClick}
+              onClick={onMove}
               intent={Intent.PRIMARY}
               disabled={loading}
               text={loading ? <Spinner size={Spinner.SIZE_SMALL} /> : "Move"}
@@ -231,7 +264,7 @@ const MoveTodoMenu = ({
   );
 };
 
-const render = ({
+const renderTodoButton = ({
   p,
   blockUid,
   archivedDefault = false,
@@ -243,6 +276,7 @@ const render = ({
   move?: boolean;
 }): void => {
   const block = p.parentElement;
+  if (!block) return;
   const onEnter = () =>
     !p.childElementCount &&
     ReactDOM.render(
@@ -343,7 +377,8 @@ export const toggleDecorations = (flag: boolean) => {
       const moveTodosObserver = createHTMLObserver({
         tag: "LABEL",
         className: "check-container",
-        callback: (l: HTMLLabelElement) => {
+        callback: (e: HTMLElement) => {
+          const l = e as HTMLLabelElement;
           const input = l.getElementsByTagName("input")[0];
           if (!input.checked) {
             const blockUid = getBlockUidFromTarget(input);
@@ -355,7 +390,7 @@ export const toggleDecorations = (flag: boolean) => {
                 const p = document.createElement("span");
                 p.onmousedown = (e) => e.stopPropagation();
                 block.appendChild(p);
-                render({
+                renderTodoButton({
                   p,
                   blockUid,
                   archivedDefault,
@@ -381,7 +416,7 @@ export const toggleDecorations = (flag: boolean) => {
               const p = document.createElement("span");
               p.onmousedown = (e) => e.stopPropagation();
               block.appendChild(p);
-              render({
+              renderTodoButton({
                 p,
                 blockUid,
                 archivedDefault,
@@ -512,12 +547,15 @@ export const toggleDecorations = (flag: boolean) => {
       document.head.appendChild(css);
       unloads.add(() => css.remove());
 
-      const getRefTitlesByBlockUid = (uid: string): string[] =>
-        window.roamAlphaAPI
-          .q(
-            `[:find (pull ?r [:node/title]) :where [?e :block/refs ?r] [?e :block/uid "${uid}"]]`
-          )
-          .map((b: { title: string }[]) => b[0]?.title || "");
+      type BlockReference = { title: string };
+      const getRefTitlesByBlockUid = (uid: string): string[] => {
+        const queryResult = window.roamAlphaAPI.q(
+          `[:find (pull ?r [:node/title]) :where [?e :block/refs ?r] [?e :block/uid "${uid}"]]`
+        );
+        return (queryResult as BlockReference[][]).map(
+          (b) => b[0]?.title || ""
+        );
+      };
 
       const renderColorPreviews = (
         container: HTMLElement,
@@ -572,9 +610,10 @@ export const toggleDecorations = (flag: boolean) => {
                 };
               });
             } catch (e) {
+              const error = e as Error;
               if (
-                !e.message ||
-                !e.message.startsWith("Unable to parse color from string")
+                !error.message ||
+                !error.message.startsWith("Unable to parse color from string")
               ) {
                 throw e;
               }
