@@ -561,10 +561,14 @@ export const toggleDecorations = (flag: boolean) => {
                     new RegExp(`#${r}`, "g"),
                     newColor
                   );
-                  window.roamAlphaAPI.updateBlock({
+                  await window.roamAlphaAPI.updateBlock({
                     block: { uid, string: newText },
                   });
                   target.value = newColor;
+                  toggleDecorations(false);
+                  setTimeout(() => {
+                    toggleDecorations(true);
+                  }, 100);
                 };
               });
             } catch (e) {
