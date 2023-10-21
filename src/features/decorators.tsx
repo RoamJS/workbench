@@ -238,7 +238,7 @@ const MoveTodoMenu = ({
   );
 };
 
-const render = ({
+const renderTodoButton = ({
   p,
   blockUid,
   archivedDefault = false,
@@ -363,7 +363,7 @@ export const toggleDecorations = (flag: boolean) => {
                 const p = document.createElement("span");
                 p.onmousedown = (e) => e.stopPropagation();
                 block.appendChild(p);
-                render({
+                renderTodoButton({
                   p,
                   blockUid,
                   archivedDefault,
@@ -389,7 +389,7 @@ export const toggleDecorations = (flag: boolean) => {
               const p = document.createElement("span");
               p.onmousedown = (e) => e.stopPropagation();
               block.appendChild(p);
-              render({
+              renderTodoButton({
                 p,
                 blockUid,
                 archivedDefault,
@@ -490,14 +490,33 @@ export const toggleDecorations = (flag: boolean) => {
     if (opts["Hex Color Preview Enabled"]) {
       const HEX_COLOR_PREVIEW_CLASSNAME = "roamjs-hex-color-preview";
       const css = document.createElement("style");
-      css.textContent = `span.${HEX_COLOR_PREVIEW_CLASSNAME} {
-        width: 16px;
-        height: 16px;
-        display: inline-block;
-        margin-left: 4px;
-        top: 3px;
-        position: relative;
-    }`;
+      css.id = "roamjs-hex-color-preview-css";
+      css.textContent = `input.${HEX_COLOR_PREVIEW_CLASSNAME} {
+          width: 16px;
+          height: 16px;
+          margin-left: 4px;
+          border: none;
+          outline: none;
+          appearance: none;
+          padding: 1px;
+          color: unset;
+          background-color: unset;
+        }
+        /* Remove the color well for Firefox */
+        input.roamjs-hex-color-preview::-moz-color-swatch-wrapper {
+            padding: 0;
+        }
+        input.roamjs-hex-color-preview::-moz-color-swatch {
+            border: none;
+        }
+        /* Remove the color well for Chrome */
+        input.roamjs-hex-color-preview::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input.roamjs-hex-color-preview::-webkit-color-swatch {
+            border: none;
+        }
+      `;
       document.head.appendChild(css);
       unloads.add(() => css.remove());
       const getRefTitlesByBlockUid = (uid: string): string[] =>
@@ -528,11 +547,33 @@ export const toggleDecorations = (flag: boolean) => {
                     !s.lastElementChild.id.startsWith(previewIdPrefix))
               );
               renderedRefSpans.forEach((renderedRef, i) => {
-                const newSpan = document.createElement("span");
-                newSpan.style.backgroundColor = c.string();
-                newSpan.className = HEX_COLOR_PREVIEW_CLASSNAME;
-                newSpan.id = `${previewIdPrefix}${i}`;
-                renderedRef.appendChild(newSpan);
+                const newInput = document.createElement("input");
+                newInput.type = "color";
+                newInput.value = c.hex();
+                if (newInput.value.toLocaleLowerCase() === "#ffffff")
+                  newInput.style.boxShadow = "inset 0 0 0 1px hsla(0,0%,0%,.2)";
+                newInput.className = HEX_COLOR_PREVIEW_CLASSNAME;
+                newInput.id = `${previewIdPrefix}${i}`;
+                newInput.onmousedown = (e) => e.stopPropagation();
+                renderedRef.appendChild(newInput);
+                newInput.onchange = async (e) => {
+                  const target = e.target as HTMLInputElement;
+                  const newColor = target.value;
+                  const uid = getBlockUidFromTarget(target);
+                  const blockText = getTextByBlockUid(uid);
+                  const newText = blockText.replace(
+                    new RegExp(`#${r}`, "g"),
+                    newColor
+                  );
+                  await window.roamAlphaAPI.updateBlock({
+                    block: { uid, string: newText },
+                  });
+                  target.value = newColor;
+                  toggleDecorations(false);
+                  setTimeout(() => {
+                    toggleDecorations(true);
+                  }, 100);
+                };
               });
             } catch (err) {
               const e = err as Error;
