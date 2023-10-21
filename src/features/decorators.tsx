@@ -490,7 +490,9 @@ export const toggleDecorations = (flag: boolean) => {
           border: none;
           outline: none;
           appearance: none;
-          padding: 0;
+          padding: 1px;
+          color: unset;
+          background-color: unset;
         }
         /* Remove the color well for Firefox */
         input.roamjs-hex-color-preview::-moz-color-swatch-wrapper {
@@ -544,6 +546,8 @@ export const toggleDecorations = (flag: boolean) => {
                 const newInput = document.createElement("input");
                 newInput.type = "color";
                 newInput.value = c.hex();
+                if (newInput.value.toLocaleLowerCase() === "#ffffff")
+                  newInput.style.boxShadow = "inset 0 0 0 1px hsla(0,0%,0%,.2)";
                 newInput.className = HEX_COLOR_PREVIEW_CLASSNAME;
                 newInput.id = `${previewIdPrefix}${i}`;
                 newInput.onmousedown = (e) => e.stopPropagation();
