@@ -559,6 +559,7 @@ export const toggleDecorations = (flag: boolean) => {
                 newInput.onchange = async (e) => {
                   const target = e.target as HTMLInputElement;
                   const newColor = target.value;
+                  const colorString = newColor.replace("#", "");
                   const uid = getBlockUidFromTarget(target);
                   const blockText = getTextByBlockUid(uid);
                   const newText = blockText.replace(
@@ -568,10 +569,15 @@ export const toggleDecorations = (flag: boolean) => {
                   await window.roamAlphaAPI.updateBlock({
                     block: { uid, string: newText },
                   });
-                  target.value = newColor;
-                  toggleDecorations(false);
+                  const parent = renderedRef.closest(`.roam-block`);
                   setTimeout(() => {
-                    toggleDecorations(true);
+                    const afterChangeInput = parent?.querySelector(
+                      `[data-tag="${colorString}"]`
+                    );
+                    afterChangeInput?.appendChild(newInput);
+                    if (colorString === "ffffff")
+                      newInput.style.boxShadow =
+                        "inset 0 0 0 1px hsla(0,0%,0%,.2)";
                   }, 100);
                 };
               });
