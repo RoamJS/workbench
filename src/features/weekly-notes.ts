@@ -7,7 +7,7 @@ import { createConfigObserver } from "roamjs-components/components/ConfigPage";
 import TextPanel from "roamjs-components/components/ConfigPanels/TextPanel";
 import FlagPanel from "roamjs-components/components/ConfigPanels/FlagPanel";
 import getSettingValueFromTree from "roamjs-components/util/getSettingValueFromTree";
-import { render } from "roamjs-components/components/Toast";
+import { render as renderToast } from "roamjs-components/components/Toast";
 import type { OnloadArgs, TreeNode } from "roamjs-components/types/native";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
 import getPageTitleValueByHtmlElement from "roamjs-components/dom/getPageTitleValueByHtmlElement";
@@ -18,6 +18,10 @@ import toFlexRegex from "roamjs-components/util/toFlexRegex";
 import createBlock from "roamjs-components/writes/createBlock";
 import createPage from "roamjs-components/writes/createPage";
 import { addCommand } from "./workBench";
+import {
+  Field,
+  UnionField,
+} from "roamjs-components/components/ConfigPanels/types";
 
 const ID = "weekly-notes";
 const DAYS = [
@@ -43,15 +47,35 @@ const getFormat = (tree?: TreeNode[]) =>
       tree || getFullTreeByParentUid(getPageUidByPageTitle(CONFIG)).children,
   }));
 
-const dateFnsFormat = (...args: Parameters<typeof _dateFnsFormat>) =>
-  _dateFnsFormat(args[0], args[1], {
-    useAdditionalWeekYearTokens: true,
-  });
+const dateFnsFormat = (...args: Parameters<typeof _dateFnsFormat>) => {
+  try {
+    return _dateFnsFormat(args[0], args[1], {
+      useAdditionalWeekYearTokens: true,
+    });
+  } catch (e) {
+    renderToast({
+      id: "weekly-notes-error",
+      content: `Invalid date format: ${(e as Error).message}`,
+      intent: "danger",
+    });
+    return null;
+  }
+};
 
-const parse = (...args: Parameters<typeof _parse>) =>
-  _parse(args[0], args[1], args[2], {
-    useAdditionalWeekYearTokens: true,
-  });
+const parse = (...args: Parameters<typeof _parse>) => {
+  try {
+    return _parse(args[0], args[1], args[2], {
+      useAdditionalWeekYearTokens: true,
+    });
+  } catch (e) {
+    renderToast({
+      id: "weekly-notes-error",
+      content: `Invalid date format: ${(e as Error).message}`,
+      intent: "danger",
+    });
+    return null;
+  }
+};
 
 const createWeeklyPage = (pageName: string) => {
   const weekUid = createPage({ title: pageName });
@@ -70,6 +94,9 @@ const createWeeklyPage = (pageName: string) => {
     return weekUid;
   }
   const date = parse(firstDateFormatted, dayFormat, new Date());
+  if (!date) {
+    return weekUid;
+  }
   const weekStartsOn = DAYS.indexOf(day) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
   const autoTag = tree.some((t) => toFlexRegex("auto tag").test(t.text));
   const autoEmbed = tree.some((t) => toFlexRegex("auto embed").test(t.text));
@@ -129,26 +156,26 @@ export const toggleFeature = (
                 defaultValue: FORMAT_DEFAULT_VALUE,
                 description:
                   "Format of your weekly page titles. When changing the format, be sure to rename your old weekly pages.",
-              },
+              } as Field<UnionField>,
               {
                 title: "auto load",
                 Panel: FlagPanel,
                 description:
                   "Automatically load the current weekly note on initial Roam load of daily note page",
-              },
+              } as Field<UnionField>,
               {
                 title: "auto tag",
                 Panel: FlagPanel,
                 description:
                   "Automatically tag the weekly page on all the related daily pages when it's created",
                 defaultValue: true,
-              },
+              } as Field<UnionField>,
               {
                 title: "auto embed",
                 Panel: FlagPanel,
                 description:
                   "Automatically embed the related daily pages into a newly created weekly page",
-              },
+              } as Field<UnionField>,
             ],
           },
         ],
@@ -163,7 +190,7 @@ export const toggleFeature = (
       ) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
       const pageName = format.replace(DATE_REGEX, (_, day, f) => {
         const dayOfWeek = setDay(today, DAYS.indexOf(day), { weekStartsOn });
-        return dateFnsFormat(dayOfWeek, f);
+        return dateFnsFormat(dayOfWeek, f) ?? "";
       });
       navigateToPage(pageName);
     };
@@ -195,13 +222,12 @@ export const toggleFeature = (
       );
       const exec = formatRegex.exec(title);
       if (exec) {
-        const dateArray = exec.slice(1).map((d, i) => {
-          try {
+        const dateArray = exec
+          .slice(1)
+          .map((d, i) => {
             return parse(d, formats[i], new Date());
-          } catch (e) {
-            return new Date(NaN);
-          }
-        });
+          })
+          .filter((d): d is Date => !!d);
         return {
           dateArray,
           formats,
@@ -224,20 +250,22 @@ export const toggleFeature = (
         }
         const { dateArray, valid, formats } = getFormatDateData(title);
         if (valid) {
-          const prevTitle = dateArray.reduce(
-            (prev, cur, i) =>
-              prev.replace(
-                dateFnsFormat(cur, formats[i]),
-                dateFnsFormat(subWeeks(cur, 1), formats[i])
-              ),
+          const formattedDateArray = dateArray
+            .map((d, i) => ({
+              cur: dateFnsFormat(d, formats[i]),
+              prev: dateFnsFormat(subWeeks(d, 1), formats[i]),
+              next: dateFnsFormat(addWeeks(d, 1), formats[i]),
+            }))
+            .filter(
+              (info): info is { cur: string; prev: string; next: string } =>
+                !!info.cur && !!info.prev && !!info.next
+            );
+          const prevTitle = formattedDateArray.reduce(
+            (acc, info) => acc.replace(info.cur, info.prev),
             title
           );
-          const nextTitle = dateArray.reduce(
-            (prev, cur, i) =>
-              prev.replace(
-                dateFnsFormat(cur, formats[i]),
-                dateFnsFormat(addWeeks(cur, 1), formats[i])
-              ),
+          const nextTitle = formattedDateArray.reduce(
+            (acc, info) => acc.replace(info.cur, info.next),
             title
           );
           setTimeout(() => {
@@ -288,7 +316,7 @@ export const toggleFeature = (
         if (valid) {
           header.onmousedown = (e) => {
             if (!e.shiftKey) {
-              render({
+              renderToast({
                 id: "week-uid",
                 content: "Weekly Note Titles Cannot be Changed",
               });
