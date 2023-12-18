@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  DragEvent,
+} from "react";
 import {
   HTMLTable,
   EditableText,
@@ -264,10 +271,18 @@ const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
     </div>
   );
 };
+
+const dragImage = document.createElement("img");
+dragImage.src =
+  "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
 const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
   const [settings, setSettings] = useState(() => getSettings(blockUid));
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const rows = settings.rowsNode.children;
+  const headers = settings.headerNode.children;
 
   const updateText = (uid: string, value: string) => {
     updateBlock({ uid, text: value });
@@ -411,6 +426,63 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
       />
     );
   };
+
+  const [thRefs, setThRefs] = useState<
+    React.RefObject<HTMLTableHeaderCellElement>[]
+  >([]);
+  useEffect(() => {
+    setThRefs(
+      headers.map((_) => React.createRef<HTMLTableHeaderCellElement>())
+    );
+  }, [headers]);
+  const trRef = useRef<HTMLTableRowElement>(null);
+
+  const onDragStart = useCallback(
+    (e) => {
+      e.dataTransfer.setDragImage(dragImage, 0, 0);
+    },
+    [dragImage]
+  );
+
+  const dragHandler = useCallback(
+    (e: DragEvent<HTMLDivElement>) => {
+      const delta = e.clientX - e.currentTarget.getBoundingClientRect().left;
+      const cellWidth =
+        e.currentTarget.parentElement?.getBoundingClientRect().width;
+      if (typeof cellWidth === "undefined") return;
+      if (cellWidth + delta <= 0) return;
+      const rowWidth =
+        e.currentTarget.parentElement?.parentElement?.getBoundingClientRect()
+          .width;
+      if (typeof rowWidth === "undefined") return;
+      if (cellWidth + delta >= rowWidth) return;
+      const column = e.currentTarget.getAttribute("data-column");
+      const save = e.type === "dragend";
+      if (trRef.current) {
+        trRef.current.style.cursor = save ? "" : "ew-resize"; // Not working.
+      }
+      if (!save) return;
+      if (!column) return;
+      const columnIndex = parseInt(column.split("-")[1]) - 1;
+      const th = thRefs[columnIndex]?.current;
+      if (!th) return;
+      th.style.width = `${((cellWidth + delta) / rowWidth) * 100}%`;
+      const widthsUid = getSubTree({
+        parentUid: settings.optionsNode.uid,
+        key: "widths",
+      }).uid;
+      setInputSettings({
+        blockUid: widthsUid,
+        key: "widths",
+        values: thRefs
+          .map((ref, index) => [index.toString(), ref.current?.style.width])
+          .filter(([index, width]) => width)
+          .map(([index, width]) => `${index} - ${width}`),
+      });
+    },
+    [settings.optionsNode.uid, trRef, thRefs]
+  );
+
   return (
     <div className="relative" ref={containerRef}>
       <span className="absolute top-1 right-0">
@@ -427,46 +499,69 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
       >
         <thead>
           <tr>
-            {!!settings.headerNode.children.length &&
-              settings.headerNode.children.map((c) => (
-                <th
-                  key={c.uid}
-                  className={`wbt-header-${sanitizeClassName(c.text)}`}
+            {!!headers &&
+              headers.map((header, i) => (
+                <td
+                  ref={thRefs[i]}
+                  key={header.uid}
+                  className={`wbt-header-${sanitizeClassName(header.text)}`}
                 >
                   {settings.view === "embed" ? (
-                    <CellEmbed uid={c.uid} />
+                    <CellEmbed uid={header.uid} />
                   ) : (
                     <EditableText
                       placeholder=""
-                      defaultValue={c.text}
-                      onConfirm={(value) => updateText(c.uid, value)}
+                      defaultValue={header.text}
+                      onConfirm={(value) => updateText(header.uid, value)}
                     />
                   )}
-                </th>
+                </td>
               ))}
           </tr>
         </thead>
         <tbody>
-          {!!settings.rowsNode.children.length &&
-            settings.rowsNode.children.map((c) => (
+          {!!rows.length &&
+            rows.map((row) => (
               <tr
-                key={c.uid}
-                className={`wbt-row-${sanitizeClassName(c.text)} w-full`}
+                ref={trRef}
+                key={row.uid}
+                className={`wbt-row-${sanitizeClassName(row.text)} w-full`}
               >
-                {c.children.map((c) => (
-                  <td key={c.uid} className="overflow-hidden">
+                {row.children.map((cell, index) => (
+                  <td key={cell.uid} className="overflow-hidden relative">
                     {settings.view === "embed" ? (
-                      <CellEmbed uid={c.uid} />
+                      <CellEmbed uid={cell.uid} />
                     ) : (
                       <EditableText
                         placeholder=""
-                        defaultValue={c.text}
-                        onConfirm={(value) => updateText(c.uid, value)}
+                        defaultValue={cell.text}
+                        onConfirm={(value) => updateText(cell.uid, value)}
                         className={`wbt-cell-${sanitizeClassName(
-                          c.text
+                          cell.text
                         )} w-full`}
                       />
                     )}
+                    <>
+                      {index < row.children.length - 1 && (
+                        <div
+                          style={{
+                            width: 11,
+                            cursor: "ew-resize",
+                            position: "absolute",
+                            top: 0,
+                            right: 0,
+                            bottom: 0,
+                            borderRight: `1px solid rgba(16,22,26,0.15)`,
+                            paddingLeft: 5,
+                          }}
+                          data-column={`column-${index + 1}`}
+                          draggable
+                          onDragStart={onDragStart}
+                          onDrag={dragHandler}
+                          onDragEnd={dragHandler}
+                        />
+                      )}
+                    </>
                   </td>
                 ))}
               </tr>
