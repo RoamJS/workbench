@@ -86,6 +86,11 @@ const getSettings = (blockUid: string) => {
       (c) => c.text.toLowerCase() === "interactive"
     ),
   };
+  const widths = getSubTree({
+    tree: optionsNode.children,
+    key: "widths",
+    parentUid: optionsNode.uid,
+  }).children.map((c) => c.text);
 
   // fold {{wb-table}} block
   if (!isLoaded)
@@ -103,6 +108,7 @@ const getSettings = (blockUid: string) => {
     styles,
     viewNode,
     view,
+    widths,
   };
 };
 const Configuration = ({ blockUid, onSubmit }: ConfigurationProps) => {
@@ -280,6 +286,24 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
   const [settings, setSettings] = useState(() => getSettings(blockUid));
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const columnWidths = useMemo(() => {
+    const widths =
+      typeof settings.widths === "string"
+        ? [settings.widths]
+        : settings.widths || [];
+    return Object.fromEntries(
+      widths
+        .map((w) => {
+          const match = /^(.*) - ([^-]+)$/.exec(w);
+          return match;
+        })
+        .filter((m): m is RegExpExecArray => !!m)
+        .map((match) => {
+          return [match[1], match[2]];
+        })
+    );
+  }, [settings]);
 
   const rows = settings.rowsNode.children;
   const headers = settings.headerNode.children;
@@ -461,18 +485,16 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
       if (trRef.current) {
         trRef.current.style.cursor = save ? "" : "ew-resize"; // Not working.
       }
-      if (!save) return;
+      const newWidth = `${((cellWidth + delta) / rowWidth) * 100}%`;
       if (!column) return;
       const columnIndex = parseInt(column.split("-")[1]) - 1;
       const th = thRefs[columnIndex]?.current;
       if (!th) return;
-      th.style.width = `${((cellWidth + delta) / rowWidth) * 100}%`;
-      const widthsUid = getSubTree({
-        parentUid: settings.optionsNode.uid,
-        key: "widths",
-      }).uid;
+      th.style.width = newWidth;
+      if (!save) return;
+      th.style.width = newWidth;
       setInputSettings({
-        blockUid: widthsUid,
+        blockUid: settings.optionsNode.uid,
         key: "widths",
         values: thRefs
           .map((ref, index) => [index.toString(), ref.current?.style.width])
@@ -501,10 +523,11 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
           <tr>
             {!!headers &&
               headers.map((header, i) => (
-                <td
+                <th
                   ref={thRefs[i]}
                   key={header.uid}
                   className={`wbt-header-${sanitizeClassName(header.text)}`}
+                  style={{ width: columnWidths[i] }}
                 >
                   {settings.view === "embed" ? (
                     <CellEmbed uid={header.uid} />
@@ -515,19 +538,20 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
                       onConfirm={(value) => updateText(header.uid, value)}
                     />
                   )}
-                </td>
+                </th>
               ))}
           </tr>
         </thead>
         <tbody>
           {!!rows.length &&
-            rows.map((row) => (
+            rows.map((row, i) => (
               <tr
                 ref={trRef}
                 key={row.uid}
                 className={`wbt-row-${sanitizeClassName(row.text)} w-full`}
+                data-column={`column-${i + 1}`}
               >
-                {row.children.map((cell, index) => (
+                {row.children.map((cell, i) => (
                   <td key={cell.uid} className="overflow-hidden relative">
                     {settings.view === "embed" ? (
                       <CellEmbed uid={cell.uid} />
@@ -542,7 +566,7 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
                       />
                     )}
                     <>
-                      {index < row.children.length - 1 && (
+                      {i < row.children.length - 1 && (
                         <div
                           style={{
                             width: 11,
@@ -555,7 +579,7 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
                             paddingLeft: 5,
                             pointerEvents: "auto",
                           }}
-                          data-column={`column-${index + 1}`}
+                          data-column={`column-${i + 1}`}
                           draggable
                           onDragStart={onDragStart}
                           onDrag={dragHandler}
