@@ -526,7 +526,9 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
                 <th
                   ref={thRefs[i]}
                   key={header.uid}
-                  className={`wbt-header-${sanitizeClassName(header.text)}`}
+                  className={`wbt-header-${sanitizeClassName(
+                    header.text
+                  )} overflow-hidden`}
                   style={{ width: columnWidths[i] }}
                 >
                   {settings.view === "embed" ? (
