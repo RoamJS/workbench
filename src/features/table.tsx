@@ -553,6 +553,7 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
                             bottom: 0,
                             borderRight: `1px solid rgba(16,22,26,0.15)`,
                             paddingLeft: 5,
+                            pointerEvents: "auto",
                           }}
                           data-column={`column-${index + 1}`}
                           draggable
