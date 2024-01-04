@@ -668,8 +668,8 @@ const setupNavigate = () => {
       // Add starred shortcuts to the list of navigateItems
       const starredPages = sidebar.querySelector(".starred-pages");
       if (starredPages) {
-        const item = starredPages.querySelector("a");
-        if (item) {
+        const items = starredPages.querySelectorAll("a");
+        items.forEach((item) => {
           const page = item.querySelector<HTMLDivElement>(".page");
           if (page) {
             const text = page.innerText;
@@ -684,7 +684,7 @@ const setupNavigate = () => {
                 }),
             });
           }
-        }
+        });
       }
     }
 
