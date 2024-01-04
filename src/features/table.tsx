@@ -33,6 +33,9 @@ import getSubTree from "roamjs-components/util/getSubTree";
 import getUids from "roamjs-components/dom/getUids";
 import setInputSetting from "roamjs-components/util/setInputSetting";
 import setInputSettings from "roamjs-components/util/setInputSettings";
+import { OnloadArgs } from "roamjs-components/types";
+import { render as renderToast } from "roamjs-components/components/Toast";
+import { addCommand } from "./workBench";
 
 type ConfigurationProps = {
   blockUid: string;
@@ -577,7 +580,6 @@ const DisplayTable = ({ blockUid, setIsEdit }: DisplayTableProps) => {
                             top: 0,
                             right: 0,
                             bottom: 0,
-                            borderRight: `1px solid rgba(16,22,26,0.15)`,
                             paddingLeft: 5,
                             pointerEvents: "auto",
                           }}
@@ -616,7 +618,10 @@ const Table = ({ blockUid }: { blockUid: string }): JSX.Element => {
 };
 
 const unloads = new Set<() => void>();
-export const toggleFeature = (flag: boolean) => {
+export const toggleFeature = (
+  flag: boolean,
+  extensionAPI: OnloadArgs["extensionAPI"]
+) => {
   if (flag) {
     const tableButtonObserver = createButtonObserver({
       attribute: "wb-table",
@@ -627,6 +632,35 @@ export const toggleFeature = (flag: boolean) => {
         )(b);
       },
     });
+
+    unloads.add(
+      addCommand(
+        {
+          label: "Create Table",
+          callback: async () => {
+            const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+            if (!uid) {
+              renderToast({
+                id: "workbench-table-create-block",
+                content:
+                  "Must be focused on a block to create a WorkBench Table",
+              });
+              return;
+            }
+            // setTimeout is needed because sometimes block is left blank
+            setTimeout(async () => {
+              await updateBlock({
+                uid,
+                text: "{{wb-table}}",
+              });
+            }, 200);
+            document.querySelector("body")?.click();
+          },
+        },
+        extensionAPI
+      )
+    );
+
     addStyle(`
       /* Chrome, Safari, Edge, Opera */
       .roamjs-workbench-table-config input::-webkit-outer-spin-button,
@@ -658,6 +692,7 @@ export const toggleFeature = (flag: boolean) => {
         display: none;
       }
     `);
+
     unloads.add(() => tableButtonObserver.disconnect());
   } else {
     unloads.forEach((u) => u());
