@@ -35,6 +35,7 @@ import setInputSetting from "roamjs-components/util/setInputSetting";
 import setInputSettings from "roamjs-components/util/setInputSettings";
 import { OnloadArgs } from "roamjs-components/types";
 import { render as renderToast } from "roamjs-components/components/Toast";
+import { addCommand } from "./workBench";
 
 type ConfigurationProps = {
   blockUid: string;
@@ -632,27 +633,33 @@ export const toggleFeature = (
       },
     });
 
-    extensionAPI.ui.commandPalette.addCommand({
-      label: "Create WorkBench Table",
-      callback: async () => {
-        const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
-        if (!uid) {
-          renderToast({
-            id: "workbench-table-create-block",
-            content: "Must be focused on a block to create a WorkBench Table",
-          });
-          return;
-        }
-        // setTimeout is needed because sometimes block is left blank
-        setTimeout(async () => {
-          await updateBlock({
-            uid,
-            text: "{{wb-table}}",
-          });
-        }, 200);
-        document.querySelector("body")?.click();
-      },
-    });
+    unloads.add(
+      addCommand(
+        {
+          label: "Create Table",
+          callback: async () => {
+            const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
+            if (!uid) {
+              renderToast({
+                id: "workbench-table-create-block",
+                content:
+                  "Must be focused on a block to create a WorkBench Table",
+              });
+              return;
+            }
+            // setTimeout is needed because sometimes block is left blank
+            setTimeout(async () => {
+              await updateBlock({
+                uid,
+                text: "{{wb-table}}",
+              });
+            }, 200);
+            document.querySelector("body")?.click();
+          },
+        },
+        extensionAPI
+      )
+    );
 
     addStyle(`
       /* Chrome, Safari, Edge, Opera */
