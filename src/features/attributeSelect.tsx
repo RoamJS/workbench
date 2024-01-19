@@ -1,6 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState, ReactText } from "react";
 import ReactDOM from "react-dom";
-import { Classes, Button, Tabs, Tab, Card, MenuItem } from "@blueprintjs/core";
+import {
+  Classes,
+  Button,
+  Tabs,
+  Tab,
+  Card,
+  MenuItem,
+  FormGroup,
+  Label,
+  NumericInput,
+  Slider,
+  Popover,
+} from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
 import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
@@ -17,6 +29,9 @@ import MenuItemSelect from "roamjs-components/components/MenuItemSelect";
 import addStyle from "roamjs-components/dom/addStyle";
 import getTextByBlockUid from "roamjs-components/queries/getTextByBlockUid";
 import { render as renderToast } from "roamjs-components/components/Toast";
+import setInputSetting from "roamjs-components/util/setInputSetting";
+import setInputSettings from "roamjs-components/util/setInputSettings";
+import getSettingValueFromTree from "roamjs-components/util/getSettingValueFromTree";
 
 const CONFIG = `roam/js/attribute-select`;
 
@@ -28,6 +43,7 @@ type AttributeButtonPopoverProps<T> = {
   uid: string;
   currentValue: string;
   filterable?: boolean;
+  isOpen: boolean;
 };
 
 const AttributeButtonPopover = <T extends ReactText>({
@@ -37,12 +53,16 @@ const AttributeButtonPopover = <T extends ReactText>({
   uid,
   currentValue,
   filterable = false,
+  isOpen,
 }: AttributeButtonPopoverProps<T>) => {
   const AttributeSelect = Select.ofType<T>();
   const itemPredicate = (query: string, item: T) => {
     return String(item).toLowerCase().includes(query.toLowerCase());
   };
-
+  const [sliderValue, setSliderValue] = useState(0);
+  useEffect(() => {
+    setSliderValue(Number(currentValue));
+  }, [isOpen, currentValue]);
   return (
     <AttributeSelect
       className="inline-menu-item-select"
@@ -89,26 +109,38 @@ const AttributeButton = ({
   const [options, setOptions] = useState<string[]>([]);
   const [currentValue, setCurrentValue] = useState("");
 
+  const configUid = getPageUidByPageTitle(CONFIG);
+  const attributesNode = getSubTree({
+    key: "attributes",
+    parentUid: configUid,
+  });
+  const attributeUid = getSubTree({
+    key: attributeName,
+    parentUid: attributesNode.uid,
+  }).uid;
+  const optionType =
+    getSettingValueFromTree({
+      key: "type",
+      parentUid: attributeUid,
+    }) || "text";
+
   useEffect(() => {
-    if (isOpen) {
-      const configUid = getPageUidByPageTitle(CONFIG);
-      const attributesNode = getSubTree({
-        key: "attributes",
-        parentUid: configUid,
-      });
-      const attributeUid = getSubTree({
-        key: attributeName,
-        parentUid: attributesNode.uid,
-      }).uid;
-      const optionsNode = getSubTree({
-        key: "options",
-        parentUid: attributeUid,
-      });
+    if (!isOpen) return;
+    const optionsNode = getSubTree({
+      key: "options",
+      parentUid: attributeUid,
+    });
+    const rangeNode = getSubTree({
+      key: "range",
+      parentUid: attributeUid,
+    });
+    const useSmartBlocks =
+      optionsNode.children.filter((obj) => obj.text.includes("<%")).length > 0;
 
-      const useSmartBlocks =
-        optionsNode.children.filter((obj) => obj.text.includes("<%")).length >
-        0;
-
+    if (optionType === "number") {
+      setOptions([rangeNode.children[0]?.text, rangeNode.children[1]?.text]);
+    }
+    if (optionType === "text") {
       if (useSmartBlocks && !window.roamjs?.extension?.smartblocks) {
         renderToast({
           content:
@@ -129,19 +161,62 @@ const AttributeButton = ({
       } else {
         setOptions(optionsNode.children.map((t) => t.text));
       }
-      const regex = new RegExp(`^${attributeName}::\\s*`);
-      setCurrentValue(getTextByBlockUid(uid).replace(regex, "").trim());
     }
+    const regex = new RegExp(`^${attributeName}::\\s*`);
+    setCurrentValue(getTextByBlockUid(uid).replace(regex, "").trim());
   }, [isOpen]);
-
+  const [sliderValue, setSliderValue] = useState(0);
+  useEffect(() => {
+    setSliderValue(Number(currentValue));
+  }, [isOpen, currentValue]);
+  const min = Number(options[0]) || 0;
+  const max = Number(options[1]) || 10;
   return (
-    <AttributeButtonPopover
-      setIsOpen={setIsOpen}
-      items={options}
-      attributeName={attributeName}
-      uid={uid}
-      currentValue={currentValue}
-    />
+    <>
+      {optionType === "number" ? (
+        <Popover
+          isOpen={!!options.length && isOpen}
+          popoverClassName="bp3-select-popover"
+          position="bottom"
+          content={
+            <Slider
+              value={sliderValue}
+              min={min}
+              max={max}
+              className="w-64 my-2 mx-4"
+              onChange={(value) => setSliderValue(value)}
+              onRelease={(s) => {
+                updateBlock({
+                  text: `${attributeName}:: ${s}`,
+                  uid,
+                });
+                setIsOpen(false);
+              }}
+            />
+          }
+          target={
+            <Button
+              className="roamjs-attribute-select-button p-0 ml-1"
+              icon="chevron-down"
+              style={{ minHeight: 15, minWidth: 20 }}
+              intent="primary"
+              minimal
+              onClick={() => setIsOpen(true)}
+            />
+          }
+          onClose={() => setIsOpen(false)}
+        />
+      ) : (
+        <AttributeButtonPopover
+          setIsOpen={setIsOpen}
+          items={options}
+          attributeName={attributeName}
+          uid={uid}
+          currentValue={currentValue}
+          isOpen={isOpen}
+        />
+      )}
+    </>
   );
 };
 
@@ -355,18 +430,34 @@ const TabsPanel = ({
   const [potentialOptions, setPotentialOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState("");
   const [showPossibleOptions, setShowPotentialOptions] = useState(false);
-  const { attributeUid, optionsNode, chosenOptions } = useMemo(() => {
-    const attributeUid = getSubTree({
-      key: attributeName,
-      parentUid: attributesUid,
-    }).uid;
-    const optionsNode = getSubTree({
-      key: "options",
-      parentUid: attributeUid,
-    });
-    const chosenOptions = optionsNode.children.map((t) => t.text);
-    return { attributeUid, optionsNode, chosenOptions };
-  }, [attributeName, attributesUid]);
+  const { attributeUid, optionsNode, chosenOptions, rangeNode } =
+    useMemo(() => {
+      const attributeUid = getSubTree({
+        key: attributeName,
+        parentUid: attributesUid,
+      }).uid;
+      const optionsNode = getSubTree({
+        key: "options",
+        parentUid: attributeUid,
+      });
+      const chosenOptions = optionsNode.children.map((t) => t.text);
+      const rangeNode = getSubTree({
+        key: "range",
+        parentUid: attributeUid,
+      });
+      return { attributeUid, optionsNode, chosenOptions, rangeNode };
+    }, [attributeName, attributesUid]);
+  const initialOptionType = useMemo(
+    () =>
+      getSettingValueFromTree({
+        key: "type",
+        parentUid: attributeUid,
+      }),
+    [attributeUid]
+  );
+  const [optionType, setOptionType] = useState(initialOptionType || "text");
+  const [min, setMin] = useState(Number(rangeNode.children[0]?.text) || 0);
+  const [max, setMax] = useState(Number(rangeNode.children[1]?.text) || 10);
 
   // For a better UX replace renderBlock with a controlled list
   // add Edit, Delete, and Add New buttons
@@ -379,7 +470,7 @@ const TabsPanel = ({
         el,
       });
     }
-  }, [contentRef]);
+  }, [contentRef, optionType]);
 
   const findAllPotentialOptions = (attributeName: string) => {
     const regex = new RegExp(`^${attributeName}::\\s*`);
@@ -402,89 +493,154 @@ const TabsPanel = ({
   };
 
   return (
-    <div className="relative flex">
-      <div
-        ref={contentRef}
-        className={`flex-1 attribute-${attributeUid}`}
-      ></div>
-      <div className="flex flex-col items-start flex-1 space-y-4 mx-2">
-        <Button
-          intent="danger"
-          text={"Remove Attribute"}
-          rightIcon={"trash"}
-          onClick={() => {
-            deleteBlock(attributeUid).then(() => {
-              handleRemoveAttribute(attributeName);
-            });
-          }}
-        />
-        <Button
-          intent="primary"
-          text={"Find All Current Values"}
-          rightIcon={"search"}
-          onClick={() => {
-            const potentialOptions = findAllPotentialOptions(attributeName);
-            setPotentialOptions(potentialOptions);
-            setShowPotentialOptions(true);
-          }}
-        />
-        {showPossibleOptions && (
-          <div className="flex items-start space-x-4">
-            {!potentialOptions.length && (
-              <div className="text-gray-500">No additional values found</div>
-            )}
-            {potentialOptions.length > 0 && (
-              <>
-                <MenuItemSelect
-                  items={potentialOptions}
-                  onItemSelect={(s) => setSelectedOption(s)}
-                  activeItem={selectedOption}
-                  filterable={true}
-                />
-                <Button
-                  disabled={!selectedOption}
-                  intent="primary"
-                  text={"Add Option"}
-                  rightIcon={"plus"}
-                  onClick={() => {
-                    const updatedOptionNode = getSubTree({
-                      key: "options",
-                      parentUid: attributeUid,
+    <>
+      <div className="relative flex">
+        {optionType === "text" ? (
+          <div
+            ref={contentRef}
+            className={`flex-1 attribute-${attributeUid}`}
+          />
+        ) : optionType === "number" ? (
+          <>
+            <div className="flex-1">
+              <FormGroup inline={true}>
+                <Label>{"Min"}</Label>
+                <NumericInput
+                  value={min}
+                  onValueChange={(value) => {
+                    setMin(value);
+                    setInputSettings({
+                      blockUid: attributeUid,
+                      values: [String(value), String(max)],
+                      key: "range",
                     });
-                    const updatedChosenOptions = updatedOptionNode.children.map(
-                      (t) => t.text
-                    );
-                    if (
-                      updatedChosenOptions.length === 1 &&
-                      updatedChosenOptions[0] === ""
-                    ) {
-                      updateBlock({
-                        uid: optionsNode.children[0].uid,
-                        text: selectedOption,
-                      });
-                    } else {
-                      createBlock({
-                        node: {
-                          text: selectedOption,
-                        },
-                        order: "last",
-                        parentUid: optionsNode.uid,
-                      });
-                    }
-                    setPotentialOptions(
-                      potentialOptions.filter(
-                        (option) => option !== selectedOption
-                      )
-                    );
-                    setSelectedOption("");
                   }}
                 />
+              </FormGroup>
+              <FormGroup inline={true}>
+                <Label>Max</Label>
+                <NumericInput
+                  value={max}
+                  onValueChange={(value) => {
+                    setMax(value);
+                    setInputSettings({
+                      blockUid: attributeUid,
+                      values: [String(min), String(value)],
+                      key: "range",
+                    });
+                  }}
+                />
+              </FormGroup>
+            </div>
+          </>
+        ) : (
+          "Error"
+        )}
+        <div className="flex flex-col items-start flex-1 space-y-4 mx-2">
+          <FormGroup label={"Type"} inline={true} className="m-0">
+            <MenuItemSelect
+              items={["text", "number"]}
+              onItemSelect={(value) => {
+                setOptionType(value);
+                setInputSetting({
+                  blockUid: attributeUid,
+                  key: "type",
+                  value,
+                });
+                setShowPotentialOptions(false);
+              }}
+              activeItem={optionType}
+            />
+          </FormGroup>
+
+          {optionType === "text" && (
+            <Button
+              intent="primary"
+              text={"Find All Current Values"}
+              rightIcon={"search"}
+              onClick={() => {
+                const potentialOptions = findAllPotentialOptions(attributeName);
+                setPotentialOptions(potentialOptions);
+                setShowPotentialOptions(true);
+              }}
+            />
+          )}
+          <div
+            className="flex items-start space-x-4"
+            style={{ minHeight: "40px" }}
+          >
+            {showPossibleOptions && (
+              <>
+                {!potentialOptions.length && (
+                  <div className="text-gray-500">
+                    No additional values found
+                  </div>
+                )}
+                {potentialOptions.length > 0 && (
+                  <>
+                    <MenuItemSelect
+                      items={potentialOptions}
+                      onItemSelect={(s) => setSelectedOption(s)}
+                      activeItem={selectedOption}
+                      filterable={true}
+                    />
+                    <Button
+                      disabled={!selectedOption}
+                      intent="primary"
+                      text={"Add Option"}
+                      rightIcon={"plus"}
+                      onClick={() => {
+                        const updatedOptionNode = getSubTree({
+                          key: "options",
+                          parentUid: attributeUid,
+                        });
+                        const updatedChosenOptions =
+                          updatedOptionNode.children.map((t) => t.text);
+                        if (
+                          updatedChosenOptions.length === 1 &&
+                          updatedChosenOptions[0] === ""
+                        ) {
+                          updateBlock({
+                            uid: optionsNode.children[0].uid,
+                            text: selectedOption,
+                          });
+                        } else {
+                          createBlock({
+                            node: {
+                              text: selectedOption,
+                            },
+                            order: "last",
+                            parentUid: optionsNode.uid,
+                          });
+                        }
+                        setPotentialOptions(
+                          potentialOptions.filter(
+                            (option) => option !== selectedOption
+                          )
+                        );
+                        setSelectedOption("");
+                      }}
+                    />
+                  </>
+                )}
               </>
             )}
           </div>
-        )}
+          <div style={{ marginTop: "10rem" }}>
+            <Button
+              intent="danger"
+              text={"Remove Attribute"}
+              rightIcon={"trash"}
+              onClick={() => {
+                deleteBlock(attributeUid).then(() => {
+                  handleRemoveAttribute(attributeName);
+                });
+              }}
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
