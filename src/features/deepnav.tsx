@@ -253,7 +253,10 @@ const addBlocks = (
                 )
               : Promise.resolve()
           );
-        } else if (block.matches("h1.rm-title-display")) {
+        } else if (
+          block.matches("h1.rm-title-display") ||
+          (block.id.includes("block-input") && block.id.includes("mentions"))
+        ) {
           block.dispatchEvent(
             new MouseEvent("mousedown", {
               bubbles: true,
