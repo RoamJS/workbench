@@ -55,9 +55,9 @@ export const toggleFeature = (flag: boolean) => {
         const bullets = [];
         let currentText = "";
         for (let b = 0; b < textBullets.length; b++) {
-          const s = textBullets[b];
+          const s = textBullets[b].trim();
           if (s) {
-            currentText += s;
+            currentText += ` ${s}`;
           } else {
             bullets.push(
               currentText.startsWith("* ") ||
