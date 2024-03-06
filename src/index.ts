@@ -30,9 +30,9 @@ export type Feature = {
   module: any;
   docs: string;
   gif: string;
-  // settings: any;
+  settings?: { [key: string]: string };
 };
-const FEATURES = [
+export const FEATURES: Feature[] = [
   {
     id: "alert",
     name: "Alert",
@@ -64,7 +64,9 @@ const FEATURES = [
     name: "Daily Notes Popup",
     module: dailyNotesPopup,
     description: "A popup window with the current Daily Notes Page",
-    // settings: dailyNotesPopupSettings,
+    settings: {
+      "Daily Subtitles": "dailySubtitles",
+    },
     docs: "daily-note-popup.md",
     gif: "short-demo-dnp",
   },
@@ -74,7 +76,7 @@ const FEATURES = [
     module: decorators,
     description:
       "Decorates blocks with various configurable features for quick actions.",
-    // settings: decoratedBlocksSettings,
+    // settings: { "Move Archives": "decoratorsMoveArchives" }, // undocumented
     docs: "decorated-blocks.md",
     gif: "short-demo-decorated-blocks",
   },
@@ -91,7 +93,7 @@ const FEATURES = [
     name: "Dictionary",
     module: dictionary,
     description: "Look up terms in the dictionary",
-    // settings: dictionarySettings,
+    settings: { Format: "Dictionary format" },
     docs: "dictionary.md",
     gif: "short-demo-dictionary",
   },
@@ -109,6 +111,7 @@ const FEATURES = [
     module: jumpnav,
     description:
       "Keyboard shortcuts for interacting with the Roam user interface",
+    // settings: {"CopyRefAsAliasFormat":"CopyRefAsAliasFormat"}, // undocumented
     docs: "hot-keys.md",
     gif: "short-demo-hot-keys",
   },
@@ -134,7 +137,12 @@ const FEATURES = [
     module: livePreview,
     description:
       "See live and editable preview of pages upon hovering over tags and page links",
-    // settings: livePreviewSettings,
+    settings: {
+      Height: "LivePreviewHeight",
+      Width: "LivePreviewWidth",
+      Modifier: "LivePreviewModifier",
+      Delay: "LivePreviewDelay",
+    },
     docs: "live-preview.md",
     gif: "short-demo-live-preview",
   },
