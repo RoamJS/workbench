@@ -20,17 +20,28 @@ import getFullTreeByParentUid from "roamjs-components/queries/getFullTreeByParen
 import { addCommand } from "./workBench";
 import getParentUidByBlockUid from "roamjs-components/queries/getParentUidByBlockUid";
 
-const OPTIONS: Record<string, string> = {
-  puretext_Space: "Text with space indentation",
-  puretext_Tab: "Text with tab indentation",
-  pureText_NoIndentation: "Text with no indentation",
-  markdown_Github: "GitHub Flavored Markdown",
-  markdown_Github_flatten: "GitHub Flavored Markdown - flatten",
-  html_Simple: "HTML",
-  html_Markdown_Github_flatten: "HTML after Markdown Flattening",
-  json_Simple: "JSON in simple format",
-  json_Simple_withIndentation:
-    "JSON in simple format with Indentation in text string",
+const OPTIONS: Record<string, { label: string; fileFormat: string }> = {
+  puretext_Space: { label: "Text with space indentation", fileFormat: ".txt" },
+  puretext_Tab: { label: "Text with tab indentation", fileFormat: ".txt" },
+  pureText_NoIndentation: {
+    label: "Text with no indentation",
+    fileFormat: ".txt",
+  },
+  markdown_Github: { label: "GitHub Flavored Markdown", fileFormat: ".md" },
+  markdown_Github_flatten: {
+    label: "GitHub Flavored Markdown - flatten",
+    fileFormat: ".md",
+  },
+  html_Simple: { label: "HTML", fileFormat: ".html" },
+  html_Markdown_Github_flatten: {
+    label: "HTML after Markdown Flattening",
+    fileFormat: ".html",
+  },
+  json_Simple: { label: "JSON in simple format", fileFormat: ".json" },
+  json_Simple_withIndentation: {
+    label: "JSON in simple format with Indentation in text string",
+    fileFormat: ".json",
+  },
 };
 
 const sortObjectsByOrder = (o: TreeNode[]) => {
@@ -397,11 +408,14 @@ const FormatConverterUI = ({
     () => localStorage.getItem("formatConverterUI_lastFormat") as string,
     []
   );
-  const [value, setValue] = useState(lastValue || "puretext_Space");
+  const [selectedFormat, setSelectedFormat] = useState(
+    lastValue || "puretext_Space"
+  );
+  const [drawerSize, setDrawerSize] = useState("50%");
   const [displayValue, setDisplayValue] = useState("");
   const changeFormat = useCallback(async () => {
-    localStorage.setItem("formatConverterUI_lastFormat", value);
-    switch (value) {
+    localStorage.setItem("formatConverterUI_lastFormat", selectedFormat);
+    switch (selectedFormat) {
       case "puretext_Tab":
         setDisplayValue(
           await iterateThroughTree(uid, formatter.pureText_TabIndented)
@@ -442,22 +456,24 @@ const FormatConverterUI = ({
         setDisplayValue((await flatJson(uid, true)) as string);
         break;
     }
-  }, [value, uid]);
+  }, [selectedFormat, uid]);
   useEffect(() => {
     changeFormat();
   }, [changeFormat]);
   return (
     <Drawer
+      title={"WorkBench Format Converter"}
+      className={"workbench-format-converter pointer-events-auto"}
+      portalClassName={"pointer-events-none"}
       isOpen={isOpen}
       onClose={onClose}
-      title={"WorkBench Format Converter"}
       position={"bottom"}
       hasBackdrop={false}
       canOutsideClickClose={false}
-      portalClassName={"pointer-events-none"}
-      className={"pointer-events-auto"}
       enforceFocus={false}
       autoFocus={false}
+      size={drawerSize}
+      canEscapeKeyClose={true}
     >
       <div
         className={Classes.DRAWER_BODY}
@@ -467,18 +483,20 @@ const FormatConverterUI = ({
           overflow: "hidden",
         }}
       >
-        <div>
-          <div className="flex items-center justify-between">
-            <Label style={{ padding: 10, flexGrow: 1 }}>
+        <div style={{ height: "calc(100% - 100px)" }}>
+          <div className="flex flex-col md:flex-row items-center mb-2">
+            {/* Output format select */}
+            <Label className="p-3" style={{ marginBottom: 0 }}>
               Output format:
               <MenuItemSelect
-                activeItem={value}
-                onItemSelect={(item) => setValue(item)}
+                activeItem={selectedFormat}
+                onItemSelect={(item) => setSelectedFormat(item)}
                 items={Object.keys(OPTIONS)}
-                transformItem={(k) => OPTIONS[k]}
+                transformItem={(k) => OPTIONS[k].label}
               />
             </Label>
-            <div className="flex gap-4 items-center">
+            {/* Middle Buttons */}
+            <div className="flex p-3 gap-4 items-center justify-center">
               <Button
                 icon={"refresh"}
                 small
@@ -500,11 +518,12 @@ const FormatConverterUI = ({
                 title="Save to a file"
                 onClick={() => {
                   const currentPageName = getPageTitleByPageUid(uid);
+                  const extension = OPTIONS[selectedFormat].fileFormat;
                   const filename =
                     (currentPageName + "-" + new Date().toISOString()).replace(
                       /(\W+)/gi,
                       "-"
-                    ) + ".txt";
+                    ) + extension;
                   const element = document.createElement("a");
                   element.setAttribute(
                     "href",
@@ -525,15 +544,20 @@ const FormatConverterUI = ({
                 }}
               />
             </div>
+            {/* Draw Size Buttons */}
+            <div className="p-3">
+              {["25%", "50%", "75%", "100%"].map((size) => (
+                <Button
+                  text={size}
+                  minimal={drawerSize !== size}
+                  onClick={() => setDrawerSize(size)}
+                />
+              ))}
+            </div>
           </div>
-          <div style={{ marginLeft: 10, marginRight: 10 }}>
+          <div className="mx-3 h-full">
             <textarea
-              style={{
-                fontFamily: "monospace",
-                width: "100%",
-                height: "300px",
-                overflow: "auto",
-              }}
+              className="p-2 w-full h-full overflow-auto font-mono"
               value={displayValue}
               onChange={(e) => setDisplayValue(e.target.value)}
             />
