@@ -25,13 +25,6 @@ The format of a keyboard shortcut is deliminated by `+`. The following modifiers
 
 Additionally, could use `SHIFT`, but it should added after the modifier. The Key pressed is the last component.
 
-This is what it would look like for Roam's native TODO/DONE cycle:
-
-- CTRL+Enter
-  - `{leave blank}`
-  - TODO
-  - DONE
-
 Here is what I use for my project tracking:
 
 ![](media/tag-cycle-project-tracking.png)
@@ -63,8 +56,8 @@ Front could combine with some of the other modifiers above. So to fully reproduc
 
 - CTRL+Enter FRONT RAW
   - `{leave blank}`
-  - TODO
-  - DONE
+  - {{[[TODO]]}}
+  - {{[[DONE]]}}
 
 If you change the blocks on the configuration page, the changes will take effect as soon as you navigate away from the blocks.
 
