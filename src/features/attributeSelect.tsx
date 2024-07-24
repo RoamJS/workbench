@@ -775,3 +775,11 @@ export const toggleFeature = async (flag: boolean) => {
     unloads.clear();
   }
 };
+
+// @ts-ignore
+window.roamjs.extension.workbench = {
+  refreshAttributeSelect: () => {
+    definedAttributes = getDefinedAttributes();
+    updateAttributeObserver();
+  },
+};
