@@ -49,6 +49,12 @@ You can customize the appearance of the dropdowns by targeting the following CSS
 - Dropdown button: `roamjs-attribute-select-button`
 - Popover content: `roamjs-attribute-select-popover`
 
+## Developer API
+
+For developers of other extensions who want to interact with the Attribute Select feature, we expose the following API, available on the global `window.roamjs.extension.workbench` object:
+
+- `refreshAttributeSelect` - `() => void` Refreshes the defined attributes and updates the attribute observer. This is useful when attributes or options have been programmatically updated and need to be reflected in the UI without a page reload.
+
 <!-- # Demo -->
 
 <!-- TODO -->

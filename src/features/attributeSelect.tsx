@@ -766,6 +766,13 @@ export const toggleFeature = async (flag: boolean) => {
 
     updateAttributeObserver();
 
+    window.roamjs.extension.workbench = {
+      refreshAttributeSelect: () => {
+        definedAttributes = getDefinedAttributes();
+        updateAttributeObserver();
+      },
+    };
+
     unloads.add(() => {
       observer.disconnect();
       attributeObserver.disconnect();
@@ -773,5 +780,8 @@ export const toggleFeature = async (flag: boolean) => {
   } else {
     unloads.forEach((u) => u());
     unloads.clear();
+    if (window.roamjs?.extension?.workbench?.refreshAttributeSelect) {
+      delete window.roamjs.extension.workbench.refreshAttributeSelect;
+    }
   }
 };
