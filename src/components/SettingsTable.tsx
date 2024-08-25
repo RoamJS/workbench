@@ -34,12 +34,10 @@ const SettingsTable =
       overflow: "hidden",
       textOverflow: "ellipsis",
       whiteSpace: "nowrap",
-      color: "white",
       verticalAlign: "middle",
     };
     const featureStyle: React.CSSProperties = {
       textAlign: "left",
-      color: "white",
       verticalAlign: "middle",
     };
     const thBorder: React.CSSProperties = {
@@ -55,6 +53,14 @@ const SettingsTable =
 
     return (
       <>
+        <style>
+          {/* override blueprint styles while still allowing 3rd party theming */}
+          {`
+            .rm-extensions-settings table.bp3-html-table th {
+              color: white;
+            }
+          `}
+        </style>
         <HTMLTable
           bordered={false}
           style={{ ...noBorder }}
