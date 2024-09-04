@@ -56,8 +56,8 @@ const SettingsTable =
         <style>
           {/* override blueprint styles while still allowing 3rd party theming */}
           {`
-            .rm-extensions-settings table.bp3-html-table th,
-            .rm-extensions-settings table.bp3-html-table td {
+            .rm-settings-panel table.workbench-settings th,
+            .rm-settings-panel table.workbench-settings td {
               color: white;
             }
           `}
