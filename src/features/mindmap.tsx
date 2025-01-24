@@ -283,6 +283,7 @@ ${toOpml(tree)}
       canOutsideClickClose={false}
       canEscapeKeyClose
       enforceFocus={false}
+      autoFocus={false}
     >
       <div
         id={"roamjs-mindmap-container"}
