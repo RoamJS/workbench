@@ -65,11 +65,10 @@ const AttributeButtonPopover = <T extends ReactText>({
 
   const formatDisplayText = (text: string): string => {
     // TODO: for doantrang982/eng-77-decouple-display-from-output: Create formatDisplayText from configPage
-    // Currently: Remove any [[]] wrapping from the text
-    const match = text.match(/\[\[(.*?)\]\]/);
-    if (match && match[1]) {
-      return match[1];
-    }
+    // const match = text.match(/\[\[(.*?)\]\]/);
+    // if (match && match[1]) {
+    //   return match[1];
+    // }
     return text;
   };
 
@@ -83,7 +82,7 @@ const AttributeButtonPopover = <T extends ReactText>({
       items={items}
       activeItem={currentValue as T}
       filterable={shouldFilter}
-      transformItem={(item) => formatDisplayText(String(item))}
+      // transformItem={(item) => formatDisplayText(String(item))}
       onItemSelect={(s) => {
         updateBlock({
           text: `${attributeName}:: ${s}`,
