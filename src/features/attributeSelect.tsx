@@ -55,7 +55,6 @@ const AttributeButtonPopover = <T extends ReactText>({
   filterable = false,
   isOpen,
 }: AttributeButtonPopoverProps<T>) => {
-  const AttributeSelect = Select.ofType<T>();
   const itemPredicate = (query: string, item: T) => {
     return String(item).toLowerCase().includes(query.toLowerCase());
   };
@@ -63,38 +62,50 @@ const AttributeButtonPopover = <T extends ReactText>({
   useEffect(() => {
     setSliderValue(Number(currentValue));
   }, [isOpen, currentValue]);
+
+  const formatDisplayText = (text: string): string => {
+    // TODO: for doantrang982/eng-77-decouple-display-from-output: Create formatDisplayText from configPage
+    // const match = text.match(/\[\[(.*?)\]\]/);
+    // if (match && match[1]) {
+    //   return match[1];
+    // }
+    return text;
+  };
+
+  // Only show filter if we have more than 10 items
+  const shouldFilter = filterable && items.length > 10;
+
   return (
-    <AttributeSelect
+    <MenuItemSelect
       className="inline-menu-item-select"
-      itemRenderer={(item, { modifiers, handleClick }) => (
-        <MenuItem
-          key={item}
-          text={item}
-          active={modifiers.active}
-          onClick={handleClick}
-        />
-      )}
       itemPredicate={itemPredicate}
       items={items}
+      activeItem={currentValue as T}
+      filterable={shouldFilter}
+      // transformItem={(item) => formatDisplayText(String(item))}
       onItemSelect={(s) => {
         updateBlock({
           text: `${attributeName}:: ${s}`,
           uid,
         });
+        setIsOpen(false);
       }}
-      activeItem={currentValue as T}
-      // onActiveItemChange={} // TODO: get this working for keyboard support
-      filterable={filterable}
+      popoverProps={{
+        isOpen,
+        onClose: () => setIsOpen(false),
+      }}
     >
-      <Button
-        className="roamjs-attribute-select-button p-0 ml-1"
-        icon="chevron-down"
-        style={{ minHeight: 15, minWidth: 20 }}
-        intent="primary"
-        minimal
-        onClick={() => setIsOpen(true)}
-      />
-    </AttributeSelect>
+      {() => (
+        <Button
+          className="roamjs-attribute-select-button p-0 ml-1"
+          icon="chevron-down"
+          style={{ minHeight: 15, minWidth: 20 }}
+          intent="primary"
+          minimal
+          onClick={() => setIsOpen(true)}
+        />
+      )}
+    </MenuItemSelect>
   );
 };
 
@@ -214,6 +225,7 @@ const AttributeButton = ({
           uid={uid}
           currentValue={currentValue}
           isOpen={isOpen}
+          filterable={true}
         />
       )}
     </>
