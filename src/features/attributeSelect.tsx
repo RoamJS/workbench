@@ -286,21 +286,22 @@ const AttributeConfigPanel = ({
   }, [configUid]);
   const [attributesInGraph, setAttributesInGraph] = useState<string[]>([]);
   const [noAttributesInGraph, setNoAttributesInGraph] = useState(false);
-  const getAttributesInGraph = () => {
-    const attributesInGraph = (
-      window.roamAlphaAPI.data.fast.q(
+  const getAttributesInGraph = async () => {
+    const results =
+      // @ts-ignore
+      (await window.roamAlphaAPI.data.backend.q(
         `[:find
-          (pull ?page [:node/title])
-        :where
-          [?b :attrs/lookup _]
-          [?b :entity/attrs ?a]
-          [(untuple ?a) [[?c ?d]]]
-          [(get ?d :value) ?s]
-          [(untuple ?s) [?e ?uid]]
-          [?page :block/uid ?uid]
-        ]`
-      ) as [PullBlock][]
-    ).map((p) => p[0]?.[":node/title"] || "");
+            (pull ?page [:node/title])
+          :where
+            [?b :attrs/lookup _]
+            [?b :entity/attrs ?a]
+            [(untuple ?a) [[?c ?d]]]
+            [(get ?d :value) ?s]
+            [(untuple ?s) [?e ?uid]]
+            [?page :block/uid ?uid]
+          ]`
+      )) as [PullBlock][];
+    const attributesInGraph = results.map((p) => p[0]?.[":node/title"] || "");
     if (attributesInGraph.length === 0) {
       setNoAttributesInGraph(true);
     } else {
@@ -389,8 +390,8 @@ const AttributeConfigPanel = ({
               loading={isLoading}
               onClick={() => {
                 setIsLoading(true);
-                setTimeout(() => {
-                  getAttributesInGraph();
+                setTimeout(async () => {
+                  await getAttributesInGraph();
 
                   setIsLoading(false);
                   focusAndOpenSelect();
