@@ -12,6 +12,8 @@ import {
   NumericInput,
   Slider,
   Popover,
+  Icon,
+  Tooltip,
 } from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
@@ -34,6 +36,17 @@ import setInputSettings from "roamjs-components/util/setInputSettings";
 import getSettingValueFromTree from "roamjs-components/util/getSettingValueFromTree";
 
 const CONFIG = `roam/js/attribute-select`;
+
+const TEMPLATE_MAP = {
+  "No styling": "text => text",
+  "Remove Double Brackets": `text => text.replace(/^\\[\\[(.*?)\\]\\]$/g, '$1')`,
+  "Convert to Uppercase": "text => text.toUpperCase()",
+  "Add Prefix": "text => `Status: ${text}`",
+  "Capitalize Words": "text => text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')",
+  "Custom Format": "text => text"
+} as const;
+
+type TemplateName = keyof typeof TEMPLATE_MAP;
 
 type AttributeButtonPopoverProps<T> = {
   items: T[];
@@ -59,17 +72,40 @@ const AttributeButtonPopover = <T extends ReactText>({
     return String(item).toLowerCase().includes(query.toLowerCase());
   };
   const [sliderValue, setSliderValue] = useState(0);
+
   useEffect(() => {
     setSliderValue(Number(currentValue));
   }, [isOpen, currentValue]);
 
   const formatDisplayText = (text: string): string => {
-    // TODO: for doantrang982/eng-77-decouple-display-from-output: Create formatDisplayText from configPage
-    // const match = text.match(/\[\[(.*?)\]\]/);
-    // if (match && match[1]) {
-    //   return match[1];
-    // }
-    return text;
+    try {
+      const configUid = getPageUidByPageTitle(CONFIG);
+      const attributesNode = getSubTree({
+        key: "attributes",
+        parentUid: configUid,
+      });
+      const attributeUid = getSubTree({
+        key: attributeName,
+        parentUid: attributesNode.uid,
+      }).uid;
+      const format = getSettingValueFromTree({
+        key: "format",
+        parentUid: attributeUid,
+      }) || "text => text";
+
+      const transform = new Function("text", `
+        try {
+          return (${format})(text);
+        } catch (e) {
+          console.error("Error in transform function:", e);
+          return text;
+        }
+      `) as (text: string) => string;
+      return transform(text);
+    } catch (e) {
+      console.error("Invalid transformation function:", e);
+      return text;
+    }
   };
 
   // Only show filter if we have more than 10 items
@@ -82,7 +118,7 @@ const AttributeButtonPopover = <T extends ReactText>({
       items={items}
       activeItem={currentValue as T}
       filterable={shouldFilter}
-      // transformItem={(item) => formatDisplayText(String(item))}
+      transformItem={(item) => formatDisplayText(String(item))}
       onItemSelect={(s) => {
         updateBlock({
           text: `${attributeName}:: ${s}`,
@@ -471,6 +507,33 @@ const TabsPanel = ({
   const [optionType, setOptionType] = useState(initialOptionType || "text");
   const [min, setMin] = useState(Number(rangeNode.children[0]?.text) || 0);
   const [max, setMax] = useState(Number(rangeNode.children[1]?.text) || 10);
+  
+  const { initialFormat, initialTemplate } = useMemo(() => {
+    const savedFormat = getSettingValueFromTree({
+      key: "format",
+      parentUid: attributeUid,
+    }) || "text => text";
+    
+    const savedTemplate = getSettingValueFromTree({
+      key: "template",
+      parentUid: attributeUid,
+    });
+    
+    if (savedTemplate) {
+      return { initialFormat: savedFormat, initialTemplate: savedTemplate };
+    }
+    
+    const matchingTemplate = Object.entries(TEMPLATE_MAP).find(
+      ([_, func]) => func === savedFormat
+    );
+    return { 
+      initialFormat: savedFormat, 
+      initialTemplate: matchingTemplate ? matchingTemplate[0] : "No styling" 
+    };
+  }, [attributeUid]);
+
+  const [transformFunction, setTransformFunction] = useState(initialFormat);
+  const [selectedTemplate, setSelectedTemplate] = useState(initialTemplate);
 
   // For a better UX replace renderBlock with a controlled list
   // add Edit, Delete, and Add New buttons
@@ -567,16 +630,99 @@ const TabsPanel = ({
           </FormGroup>
 
           {optionType === "text" && (
-            <Button
-              intent="primary"
-              text={"Find All Current Values"}
-              rightIcon={"search"}
-              onClick={() => {
-                const potentialOptions = findAllPotentialOptions(attributeName);
-                setPotentialOptions(potentialOptions);
-                setShowPotentialOptions(true);
-              }}
-            />
+            <>
+              <FormGroup 
+                label={
+                  <div className="flex items-center gap-2">
+                    <span>Display Format</span>
+                    <Tooltip
+                      content="JavaScript function that takes 'text' as input and returns formatted string"
+                      placement="top"
+                    >
+                      <Icon icon="info-sign" className="opacity-80" />
+                    </Tooltip>
+                  </div>
+                } 
+                className="m-0"
+              >
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center gap-2">
+                    <MenuItemSelect
+                      items={Object.keys(TEMPLATE_MAP)}
+                      onItemSelect={(template) => {
+                        const newFunction = TEMPLATE_MAP[template as TemplateName];
+                        setSelectedTemplate(template);
+                        setTransformFunction(newFunction);
+                        setInputSetting({
+                          blockUid: attributeUid,
+                          key: "format",
+                          value: newFunction,
+                        });
+                        setInputSetting({
+                          blockUid: attributeUid,
+                          key: "template",
+                          value: template,
+                        });
+                      }}
+                      activeItem={selectedTemplate}
+                    />
+                    <Tooltip  
+                      content={
+                        <div className="text-sm">
+                          <p className="font-bold mb-2">Available Templates:</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            {Object.entries(TEMPLATE_MAP).map(([name, func]) => (
+                              <li key={name}>
+                                <span className="font-mono">{name}:</span>{" "}
+                                {name === "Remove Double Brackets" && "Removes [[text]] format"}
+                                {name === "Convert to Uppercase" && "Makes text all caps"}
+                                {name === "Add Prefix" && "Adds \"Status:\" before text"}
+                                {name === "Capitalize Words" && "Makes first letter of each word uppercase"}
+                                {name === "Custom Format" && "Start with a blank template"}
+                                {name === "No styling" && "No styling"}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      }
+                      placement="top"
+                    >           
+                      <Icon icon="info-sign" className="opacity-80" />   
+                    </Tooltip>
+                  </div>
+                  <textarea
+                    className="bp3-input font-mono text-sm min-h-[100px] p-2 resize-y"
+                    placeholder="text => text"
+                    value={transformFunction}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      setTransformFunction(newValue);
+                      setSelectedTemplate("Custom Format");
+                      setInputSetting({
+                        blockUid: attributeUid,
+                        key: "format",
+                        value: newValue,
+                      });
+                      setInputSetting({
+                        blockUid: attributeUid,
+                        key: "template",
+                        value: "Custom Format",
+                      });
+                    }}
+                  />
+                </div>
+              </FormGroup>
+              <Button
+                intent="primary"
+                text={"Find All Current Values"}
+                rightIcon={"search"}
+                onClick={() => {
+                  const potentialOptions = findAllPotentialOptions(attributeName);
+                  setPotentialOptions(potentialOptions);
+                  setShowPotentialOptions(true);
+                }}
+              />
+            </>
           )}
           <div
             className="flex items-start space-x-4"
