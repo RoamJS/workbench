@@ -38,15 +38,59 @@ import getSettingValueFromTree from "roamjs-components/util/getSettingValueFromT
 const CONFIG = `roam/js/attribute-select`;
 
 const TEMPLATE_MAP = {
-  "No styling": "text => text",
-  "Remove Double Brackets": `text => text.replace(/^\\[\\[(.*?)\\]\\]$/g, '$1')`,
-  "Convert to Uppercase": "text => text.toUpperCase()",
-  "Add Prefix": "text => `Status: ${text}`",
-  "Capitalize Words": "text => text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')",
-  "Custom Format": "text => text"
+  "No styling": {
+    transform: (text: string) => text,
+    description: "No styling"
+  },
+  "Remove Double Brackets": {
+    transform: (text: string) => text.replace(/^\[\[(.*?)\]\]$/g, '$1'),
+    description: "Removes [[text]] format"
+  },
+  "Convert to Uppercase": {
+    transform: (text: string) => text.toUpperCase(),
+    description: "Makes text all caps"
+  },
+  "Capitalize Words": {
+    transform: (text: string) => text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+    description: "Makes first letter of each word uppercase"
+  },
+  "Custom Format": {
+    transform: (text: string, pattern?: string, replacement?: string) => {
+      if (!pattern) return text;
+      try {
+        const regex = new RegExp(pattern);
+        return text.replace(regex, replacement || '');
+      } catch (e) {
+        console.error("Invalid regex:", e);
+        return text;
+      }
+    },
+    description: "Apply custom regex pattern"
+  }
 } as const;
 
 type TemplateName = keyof typeof TEMPLATE_MAP;
+
+const applyFormatting = (
+  text: string, 
+  templateName: string, 
+  customPattern?: string, 
+  customReplacement?: string
+): string => {
+  try {
+    const template = TEMPLATE_MAP[templateName as TemplateName];
+    if (!template) return text;
+    
+    if (templateName === "Custom Format" && customPattern) {
+      return template.transform(text, customPattern, customReplacement);
+    }
+    
+    return template.transform(text);
+  } catch (e) {
+    console.error("Error in transform function:", e);
+    return text;
+  }
+};
 
 type AttributeButtonPopoverProps<T> = {
   items: T[];
@@ -88,22 +132,30 @@ const AttributeButtonPopover = <T extends ReactText>({
         key: attributeName,
         parentUid: attributesNode.uid,
       }).uid;
-      const format = getSettingValueFromTree({
-        key: "format",
+      
+      const template = getSettingValueFromTree({
+        key: "template",
         parentUid: attributeUid,
-      }) || "text => text";
-
-      const transform = new Function("text", `
-        try {
-          return (${format})(text);
-        } catch (e) {
-          console.error("Error in transform function:", e);
-          return text;
-        }
-      `) as (text: string) => string;
-      return transform(text);
+      }) || "No styling";
+      
+      const customPattern = getSettingValueFromTree({
+        key: "customPattern",
+        parentUid: attributeUid,
+      });
+      
+      const customReplacement = getSettingValueFromTree({
+        key: "customReplacement",
+        parentUid: attributeUid,
+      });
+      
+      return applyFormatting(
+        text, 
+        template, 
+        customPattern, 
+        customReplacement
+      );
     } catch (e) {
-      console.error("Invalid transformation function:", e);
+      console.error("Error formatting text:", e);
       return text;
     }
   };
@@ -508,32 +560,32 @@ const TabsPanel = ({
   const [min, setMin] = useState(Number(rangeNode.children[0]?.text) || 0);
   const [max, setMax] = useState(Number(rangeNode.children[1]?.text) || 10);
   
-  const { initialFormat, initialTemplate } = useMemo(() => {
-    const savedFormat = getSettingValueFromTree({
-      key: "format",
-      parentUid: attributeUid,
-    }) || "text => text";
-    
+  const { initialTemplate, initialCustomPattern, initialCustomReplacement } = useMemo(() => {
     const savedTemplate = getSettingValueFromTree({
       key: "template",
       parentUid: attributeUid,
-    });
+    }) || "No styling";
     
-    if (savedTemplate) {
-      return { initialFormat: savedFormat, initialTemplate: savedTemplate };
-    }
+    const savedCustomPattern = getSettingValueFromTree({
+      key: "customPattern",
+      parentUid: attributeUid,
+    }) || "";
     
-    const matchingTemplate = Object.entries(TEMPLATE_MAP).find(
-      ([_, func]) => func === savedFormat
-    );
+    const savedCustomReplacement = getSettingValueFromTree({
+      key: "customReplacement",
+      parentUid: attributeUid,
+    }) || "";
+    
     return { 
-      initialFormat: savedFormat, 
-      initialTemplate: matchingTemplate ? matchingTemplate[0] : "No styling" 
+      initialTemplate: savedTemplate, 
+      initialCustomPattern: savedCustomPattern,
+      initialCustomReplacement: savedCustomReplacement
     };
   }, [attributeUid]);
 
-  const [transformFunction, setTransformFunction] = useState(initialFormat);
   const [selectedTemplate, setSelectedTemplate] = useState(initialTemplate);
+  const [customPattern, setCustomPattern] = useState(initialCustomPattern);
+  const [customReplacement, setCustomReplacement] = useState(initialCustomReplacement);
 
   // For a better UX replace renderBlock with a controlled list
   // add Edit, Delete, and Add New buttons
@@ -636,7 +688,7 @@ const TabsPanel = ({
                   <div className="flex items-center gap-2">
                     <span>Display Format</span>
                     <Tooltip
-                      content="JavaScript function that takes 'text' as input and returns formatted string"
+                      content="Select a template or use a custom regex pattern"
                       placement="top"
                     >
                       <Icon icon="info-sign" className="opacity-80" />
@@ -650,14 +702,7 @@ const TabsPanel = ({
                     <MenuItemSelect
                       items={Object.keys(TEMPLATE_MAP)}
                       onItemSelect={(template) => {
-                        const newFunction = TEMPLATE_MAP[template as TemplateName];
                         setSelectedTemplate(template);
-                        setTransformFunction(newFunction);
-                        setInputSetting({
-                          blockUid: attributeUid,
-                          key: "format",
-                          value: newFunction,
-                        });
                         setInputSetting({
                           blockUid: attributeUid,
                           key: "template",
@@ -671,15 +716,10 @@ const TabsPanel = ({
                         <div className="text-sm">
                           <p className="font-bold mb-2">Available Templates:</p>
                           <ul className="list-disc list-inside space-y-1">
-                            {Object.entries(TEMPLATE_MAP).map(([name, func]) => (
+                            {Object.entries(TEMPLATE_MAP).map(([name, { description }]) => (
                               <li key={name}>
                                 <span className="font-mono">{name}:</span>{" "}
-                                {name === "Remove Double Brackets" && "Removes [[text]] format"}
-                                {name === "Convert to Uppercase" && "Makes text all caps"}
-                                {name === "Add Prefix" && "Adds \"Status:\" before text"}
-                                {name === "Capitalize Words" && "Makes first letter of each word uppercase"}
-                                {name === "Custom Format" && "Start with a blank template"}
-                                {name === "No styling" && "No styling"}
+                                {description}
                               </li>
                             ))}
                           </ul>
@@ -690,26 +730,58 @@ const TabsPanel = ({
                       <Icon icon="info-sign" className="opacity-80" />   
                     </Tooltip>
                   </div>
-                  <textarea
-                    className="bp3-input font-mono text-sm min-h-[100px] p-2 resize-y"
-                    placeholder="text => text"
-                    value={transformFunction}
-                    onChange={(e) => {
-                      const newValue = e.target.value;
-                      setTransformFunction(newValue);
-                      setSelectedTemplate("Custom Format");
-                      setInputSetting({
-                        blockUid: attributeUid,
-                        key: "format",
-                        value: newValue,
-                      });
-                      setInputSetting({
-                        blockUid: attributeUid,
-                        key: "template",
-                        value: "Custom Format",
-                      });
-                    }}
-                  />
+                  
+                  {selectedTemplate === "Custom Format" && (
+                    <div className="space-y-2">
+                      <FormGroup label="Pattern (regex)" className="m-0">
+                        <input
+                          className="bp3-input font-mono text-sm w-full"
+                          placeholder="E.g., \[\[(.*?)\]\]"
+                          value={customPattern}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            setCustomPattern(newValue);
+                            setInputSetting({
+                              blockUid: attributeUid,
+                              key: "customPattern",
+                              value: newValue,
+                            });
+                          }}
+                        />
+                      </FormGroup>
+                      
+                      <FormGroup label="Replacement" className="m-0">
+                        <input
+                          className="bp3-input font-mono text-sm w-full"
+                          placeholder="E.g., $1"
+                          value={customReplacement}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            setCustomReplacement(newValue);
+                            setInputSetting({
+                              blockUid: attributeUid,
+                              key: "customReplacement",
+                              value: newValue,
+                            });
+                          }}
+                        />
+                      </FormGroup>
+                      
+                      <div className="bg-gray-100 p-2 rounded text-sm">
+                        <div className="font-bold mb-1">Preview:</div>
+                        <div>
+                          <span className="font-bold">Input:</span> <span className="font-mono">[[Example]]</span>
+                        </div>
+                        <div>
+                          <span className="font-bold">Output:</span> <span className="font-mono">
+                            {customPattern ? 
+                              applyFormatting("[[Example]]", "Custom Format", customPattern, customReplacement) :
+                              "[[Example]]"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </FormGroup>
               <Button
@@ -893,6 +965,7 @@ export const toggleFeature = async (flag: boolean) => {
       .inline-menu-item-select > span > div {display:inline} 
       #attribute-select-config .rm-block-separator {display: none;}
     `);
+    
     definedAttributes = getDefinedAttributes();
     const pageUid =
       getPageUidByPageTitle(CONFIG) ||
