@@ -230,40 +230,59 @@ const toggleReferenceParents = () =>
     .forEach((element) => {
       element.click();
     });
-const expandReferenceChildren = () =>
-  document
-    .querySelectorAll<HTMLElement>(".rm-reference-item  .block-expand")
-    .forEach((element) => {
-      element.dispatchEvent(
-        new MouseEvent("contextmenu", {
-          bubbles: true,
-        })
-      );
-      const li = Array.from(
-        document.querySelector(
-          '.bp3-transition-container:not([style*="display: none;"]) .bp3-popover-content > div > ul'
-        )?.children || []
-      ).find((e: Element) => (e as HTMLLinkElement).innerText === "Expand all");
-      (li?.childNodes[0] as HTMLElement)?.click();
-    });
-const collapseReferenceChildren = () =>
-  document
-    .querySelectorAll<HTMLElement>(".rm-reference-item  .block-expand")
-    .forEach((element) => {
-      element.dispatchEvent(
-        new MouseEvent("contextmenu", {
-          bubbles: true,
-        })
-      );
-      const li = Array.from(
-        document.querySelector(
-          '.bp3-transition-container:not([style*="display: none;"]) .bp3-popover-content > div > ul'
-        )?.children || []
-      ).find(
-        (e: Element) => (e as HTMLLinkElement).innerText === "Collapse all"
-      );
-      (li?.childNodes[0] as HTMLElement).click();
-    });
+const findContextMenuOption = (optionText: string): HTMLElement | null => {
+  const contextMenu = document.querySelector(
+    '.bp3-transition-container:not([style*="display: none;"]) .bp3-popover-content > div > ul'
+  );
+  if (!contextMenu) return null;
+
+  const options = Array.from(contextMenu.children);
+  const targetOption = options.find(
+    (e: Element) => (e as HTMLLinkElement).innerText === optionText
+  );
+  return (targetOption?.childNodes[0] as HTMLElement) || null;
+};
+
+const triggerContextMenu = (element: HTMLElement) => {
+  const event = new MouseEvent("contextmenu", {
+    bubbles: true,
+    button: 2,
+  });
+
+  element.dispatchEvent(event);
+};
+
+const expandReferenceChildren = () => {
+  const expandButtons = document.querySelectorAll<HTMLElement>(
+    ".rm-reference-item .block-expand"
+  );
+
+  expandButtons.forEach((button) => {
+    try {
+      triggerContextMenu(button);
+      const expandOption = findContextMenuOption("Expand all");
+      expandOption?.click();
+    } catch (error) {
+      console.error("Failed to expand reference children:", error);
+    }
+  });
+};
+
+const collapseReferenceChildren = () => {
+  const expandButtons = document.querySelectorAll<HTMLElement>(
+    ".rm-reference-item .block-expand"
+  );
+
+  expandButtons.forEach((button) => {
+    try {
+      triggerContextMenu(button);
+      const collapseOption = findContextMenuOption("Collapse all");
+      collapseOption?.click();
+    } catch (error) {
+      console.error("Failed to collapse reference children:", error);
+    }
+  });
+};
 const copyBlockRef = () => {
   const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
   if (uid) {
