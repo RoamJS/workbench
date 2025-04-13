@@ -258,13 +258,9 @@ const expandReferenceChildren = () => {
   );
 
   expandButtons.forEach((button) => {
-    try {
-      triggerContextMenu(button);
-      const expandOption = findContextMenuOption("Expand all");
-      expandOption?.click();
-    } catch (error) {
-      console.error("Failed to expand reference children:", error);
-    }
+    triggerContextMenu(button);
+    const expandOption = findContextMenuOption("Expand all");
+    expandOption?.click();
   });
 };
 
@@ -274,13 +270,9 @@ const collapseReferenceChildren = () => {
   );
 
   expandButtons.forEach((button) => {
-    try {
-      triggerContextMenu(button);
-      const collapseOption = findContextMenuOption("Collapse all");
-      collapseOption?.click();
-    } catch (error) {
-      console.error("Failed to collapse reference children:", error);
-    }
+    triggerContextMenu(button);
+    const collapseOption = findContextMenuOption("Collapse all");
+    collapseOption?.click();
   });
 };
 const copyBlockRef = () => {
