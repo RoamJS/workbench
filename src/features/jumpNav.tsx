@@ -560,7 +560,7 @@ const replaceLastReferenceWithTextAndAlias = () => {
       }).then(() =>
         setTimeout(() => {
           window.roamAlphaAPI.ui.setBlockFocusAndSelection({
-            location,
+            location: location || undefined,
             selection: { start: prefix.length },
           });
         }, 200)
@@ -621,13 +621,14 @@ const expandCollapseBlockTree = () => {
   Promise.resolve(
     window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"] ||
       window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid()
-  ).then((blockUid) =>
+  ).then((blockUid) => {
+    if (!blockUid) return;
     renderOverlay({
       id: "exp-col-dialog",
       Overlay: ExpColDialog,
       props: { blockUid },
-    })
-  );
+    });
+  });
 };
 
 const commands = [
