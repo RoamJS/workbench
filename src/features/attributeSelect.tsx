@@ -43,7 +43,7 @@ const TEMPLATE_MAP = {
     description: "No styling"
   },
   "Remove Double Brackets": {
-    transform: (text: string) => text.replace(/^\[\[(.*?)\]\]$/g, '$1'),
+    transform: (text: string) => text.replace(/\[\[(.*?)\]\]/g, '$1'),
     description: "Removes [[text]] format"
   },
   "Convert to Uppercase": {
@@ -51,7 +51,10 @@ const TEMPLATE_MAP = {
     description: "Makes text all caps"
   },
   "Capitalize Words": {
-    transform: (text: string) => text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+    transform: (text: string) => text.split(' ').map(word => {
+      if (!word) return '';
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' '),
     description: "Makes first letter of each word uppercase"
   },
   "Custom Format": {
@@ -71,12 +74,19 @@ const TEMPLATE_MAP = {
 
 type TemplateName = keyof typeof TEMPLATE_MAP;
 
-const applyFormatting = (
-  text: string, 
-  templateName: string, 
-  customPattern?: string, 
-  customReplacement?: string
-): string => {
+type FormatParams = {
+  text: string;
+  templateName: string;
+  customPattern?: string;
+  customReplacement?: string;
+};
+
+const applyFormatting = ({
+  text,
+  templateName,
+  customPattern,
+  customReplacement
+}: FormatParams): string => {
   try {
     const template = TEMPLATE_MAP[templateName as TemplateName];
     if (!template) return text;
@@ -120,8 +130,8 @@ const AttributeButtonPopover = <T extends ReactText>({
   useEffect(() => {
     setSliderValue(Number(currentValue));
   }, [isOpen, currentValue]);
-
-  const formatDisplayText = (text: string): string => {
+  
+  const formatConfig = useMemo(() => {
     try {
       const configUid = getPageUidByPageTitle(CONFIG);
       const attributesNode = getSubTree({
@@ -133,32 +143,38 @@ const AttributeButtonPopover = <T extends ReactText>({
         parentUid: attributesNode.uid,
       }).uid;
       
-      const template = getSettingValueFromTree({
-        key: "template",
-        parentUid: attributeUid,
-      }) || "No styling";
-      
-      const customPattern = getSettingValueFromTree({
-        key: "customPattern",
-        parentUid: attributeUid,
-      });
-      
-      const customReplacement = getSettingValueFromTree({
-        key: "customReplacement",
-        parentUid: attributeUid,
-      });
-      
-      return applyFormatting(
-        text, 
-        template, 
-        customPattern, 
-        customReplacement
-      );
+      return {
+        templateName: getSettingValueFromTree({
+          key: "template",
+          parentUid: attributeUid,
+        }) || "No styling",
+        
+        customPattern: getSettingValueFromTree({
+          key: "customPattern",
+          parentUid: attributeUid,
+        }),
+        
+        customReplacement: getSettingValueFromTree({
+          key: "customReplacement",
+          parentUid: attributeUid,
+        })
+      };
     } catch (e) {
-      console.error("Error formatting text:", e);
-      return text;
+      console.error("Error getting format config:", e);
+      return {
+        templateName: "No styling",
+        customPattern: undefined,
+        customReplacement: undefined
+      };
     }
-  };
+  }, [attributeName]);
+
+  const formatText = useMemo(() => 
+    (text: string) => applyFormatting({
+      text,
+      ...formatConfig
+    }),
+  [formatConfig]);
 
   // Only show filter if we have more than 10 items
   const shouldFilter = filterable && items.length > 10;
@@ -170,7 +186,7 @@ const AttributeButtonPopover = <T extends ReactText>({
       items={items}
       activeItem={currentValue as T}
       filterable={shouldFilter}
-      transformItem={(item) => formatDisplayText(String(item))}
+      transformItem={(item) => formatText(String(item))}
       onItemSelect={(s) => {
         updateBlock({
           text: `${attributeName}:: ${s}`,
@@ -586,6 +602,8 @@ const TabsPanel = ({
   const [selectedTemplate, setSelectedTemplate] = useState(initialTemplate);
   const [customPattern, setCustomPattern] = useState(initialCustomPattern);
   const [customReplacement, setCustomReplacement] = useState(initialCustomReplacement);
+  const [isValidRegex, setIsValidRegex] = useState(true);
+
 
   // For a better UX replace renderBlock with a controlled list
   // add Edit, Delete, and Add New buttons
@@ -735,12 +753,18 @@ const TabsPanel = ({
                     <div className="space-y-2">
                       <FormGroup label="Pattern (regex)" className="m-0">
                         <input
-                          className="bp3-input font-mono text-sm w-full"
+                          className={`bp3-input font-mono text-sm w-full ${!isValidRegex ? 'bp3-intent-danger' : ''}`}
                           placeholder="E.g., \[\[(.*?)\]\]"
                           value={customPattern}
                           onChange={(e) => {
                             const newValue = e.target.value;
                             setCustomPattern(newValue);
+                            try {
+                              if (newValue) new RegExp(newValue);
+                              setIsValidRegex(true);
+                            } catch (e) {
+                              setIsValidRegex(false);
+                            }
                             setInputSetting({
                               blockUid: attributeUid,
                               key: "customPattern",
@@ -748,6 +772,11 @@ const TabsPanel = ({
                             });
                           }}
                         />
+                        {!isValidRegex && (
+                          <div className="text-red-500 text-xs mt-1">
+                            Invalid regular expression
+                          </div>
+                        )}
                       </FormGroup>
                       
                       <FormGroup label="Replacement" className="m-0">
@@ -775,7 +804,12 @@ const TabsPanel = ({
                         <div>
                           <span className="font-bold">Output:</span> <span className="font-mono">
                             {customPattern ? 
-                              applyFormatting("[[Example]]", "Custom Format", customPattern, customReplacement) :
+                              applyFormatting({
+                                text: "[[Example]]",
+                                templateName: "Custom Format",
+                                customPattern,
+                                customReplacement
+                              }) :
                               "[[Example]]"}
                           </span>
                         </div>
