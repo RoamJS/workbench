@@ -339,7 +339,10 @@ const AttributeConfigPanel = ({
     const uid = await createBlock({
       node: {
         text: value,
-        children: [{ text: "options", children: [{ text: "" }] }],
+        children: [
+          { text: "options", children: [{ text: "" }] },
+          { text: "range", children: [] },
+        ],
       },
       order: "last",
       parentUid: attributesUid,
