@@ -12,6 +12,8 @@ import {
   NumericInput,
   Slider,
   Popover,
+  Icon,
+  Tooltip,
 } from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
@@ -34,6 +36,71 @@ import setInputSettings from "roamjs-components/util/setInputSettings";
 import getSettingValueFromTree from "roamjs-components/util/getSettingValueFromTree";
 
 const CONFIG = `roam/js/attribute-select`;
+
+const TEMPLATE_MAP = {
+  "No styling": {
+    transform: (text: string) => text,
+    description: "No styling"
+  },
+  "Remove Double Brackets": {
+    transform: (text: string) => text.replace(/\[\[(.*?)\]\]/g, '$1'),
+    description: "Removes [[text]] format"
+  },
+  "Convert to Uppercase": {
+    transform: (text: string) => text.toUpperCase(),
+    description: "Makes text all caps"
+  },
+  "Capitalize Words": {
+    transform: (text: string) => text.split(' ').map(word => {
+      if (!word) return '';
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' '),
+    description: "Makes first letter of each word uppercase"
+  },
+  "Custom Format": {
+    transform: (text: string, pattern?: string, replacement?: string) => {
+      if (!pattern) return text;
+      try {
+        const regex = new RegExp(pattern);
+        return text.replace(regex, replacement || '');
+      } catch (e) {
+        console.error("Invalid regex:", e);
+        return text;
+      }
+    },
+    description: "Apply custom regex pattern"
+  }
+} as const;
+
+type TemplateName = keyof typeof TEMPLATE_MAP;
+
+type FormatParams = {
+  text: string;
+  templateName: string;
+  customPattern?: string;
+  customReplacement?: string;
+};
+
+const applyFormatting = ({
+  text,
+  templateName,
+  customPattern,
+  customReplacement
+}: FormatParams): string => {
+  try {
+    const template = TEMPLATE_MAP[templateName as TemplateName];
+    if (!template) return text;
+    
+    if (templateName === "Custom Format" && customPattern) {
+      return template.transform(text, customPattern, customReplacement);
+    }
+    
+    return template.transform(text);
+  } catch (e) {
+    console.error("Error in transform function:", e);
+    return text;
+  }
+};
 
 type AttributeButtonPopoverProps<T> = {
   items: T[];
@@ -59,18 +126,55 @@ const AttributeButtonPopover = <T extends ReactText>({
     return String(item).toLowerCase().includes(query.toLowerCase());
   };
   const [sliderValue, setSliderValue] = useState(0);
+
   useEffect(() => {
     setSliderValue(Number(currentValue));
   }, [isOpen, currentValue]);
+  
+  const formatConfig = useMemo(() => {
+    try {
+      const configUid = getPageUidByPageTitle(CONFIG);
+      const attributesNode = getSubTree({
+        key: "attributes",
+        parentUid: configUid,
+      });
+      const attributeUid = getSubTree({
+        key: attributeName,
+        parentUid: attributesNode.uid,
+      }).uid;
+      
+      return {
+        templateName: getSettingValueFromTree({
+          key: "template",
+          parentUid: attributeUid,
+        }) || "No styling",
+        
+        customPattern: getSettingValueFromTree({
+          key: "customPattern",
+          parentUid: attributeUid,
+        }),
+        
+        customReplacement: getSettingValueFromTree({
+          key: "customReplacement",
+          parentUid: attributeUid,
+        })
+      };
+    } catch (e) {
+      console.error("Error getting format config:", e);
+      return {
+        templateName: "No styling",
+        customPattern: undefined,
+        customReplacement: undefined
+      };
+    }
+  }, [attributeName]);
 
-  const formatDisplayText = (text: string): string => {
-    // TODO: for doantrang982/eng-77-decouple-display-from-output: Create formatDisplayText from configPage
-    // const match = text.match(/\[\[(.*?)\]\]/);
-    // if (match && match[1]) {
-    //   return match[1];
-    // }
-    return text;
-  };
+  const formatText = useMemo(() => 
+    (text: string) => applyFormatting({
+      text,
+      ...formatConfig
+    }),
+  [formatConfig]);
 
   // Only show filter if we have more than 10 items
   const shouldFilter = filterable && items.length > 10;
@@ -82,7 +186,7 @@ const AttributeButtonPopover = <T extends ReactText>({
       items={items}
       activeItem={currentValue as T}
       filterable={shouldFilter}
-      // transformItem={(item) => formatDisplayText(String(item))}
+      transformItem={(item) => formatText(String(item))}
       onItemSelect={(s) => {
         updateBlock({
           text: `${attributeName}:: ${s}`,
@@ -474,6 +578,35 @@ const TabsPanel = ({
   const [optionType, setOptionType] = useState(initialOptionType || "text");
   const [min, setMin] = useState(Number(rangeNode.children[0]?.text) || 0);
   const [max, setMax] = useState(Number(rangeNode.children[1]?.text) || 10);
+  
+  const { initialTemplate, initialCustomPattern, initialCustomReplacement } = useMemo(() => {
+    const savedTemplate = getSettingValueFromTree({
+      key: "template",
+      parentUid: attributeUid,
+    }) || "No styling";
+    
+    const savedCustomPattern = getSettingValueFromTree({
+      key: "customPattern",
+      parentUid: attributeUid,
+    }) || "";
+    
+    const savedCustomReplacement = getSettingValueFromTree({
+      key: "customReplacement",
+      parentUid: attributeUid,
+    }) || "";
+    
+    return { 
+      initialTemplate: savedTemplate, 
+      initialCustomPattern: savedCustomPattern,
+      initialCustomReplacement: savedCustomReplacement
+    };
+  }, [attributeUid]);
+
+  const [selectedTemplate, setSelectedTemplate] = useState(initialTemplate);
+  const [customPattern, setCustomPattern] = useState(initialCustomPattern);
+  const [customReplacement, setCustomReplacement] = useState(initialCustomReplacement);
+  const [isValidRegex, setIsValidRegex] = useState(true);
+
 
   // For a better UX replace renderBlock with a controlled list
   // add Edit, Delete, and Add New buttons
@@ -570,16 +703,135 @@ const TabsPanel = ({
           </FormGroup>
 
           {optionType === "text" && (
-            <Button
-              intent="primary"
-              text={"Find All Current Values"}
-              rightIcon={"search"}
-              onClick={() => {
-                const potentialOptions = findAllPotentialOptions(attributeName);
-                setPotentialOptions(potentialOptions);
-                setShowPotentialOptions(true);
-              }}
-            />
+            <>
+              <FormGroup 
+                label={
+                  <div className="flex items-center gap-2">
+                    <span>Display Format</span>
+                    <Tooltip
+                      content="Select a template or use a custom regex pattern"
+                      placement="top"
+                    >
+                      <Icon icon="info-sign" className="opacity-80" />
+                    </Tooltip>
+                  </div>
+                } 
+                className="m-0"
+              >
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center gap-2">
+                    <MenuItemSelect
+                      items={Object.keys(TEMPLATE_MAP)}
+                      onItemSelect={(template) => {
+                        setSelectedTemplate(template);
+                        setInputSetting({
+                          blockUid: attributeUid,
+                          key: "template",
+                          value: template,
+                        });
+                      }}
+                      activeItem={selectedTemplate}
+                    />
+                    <Tooltip  
+                      content={
+                        <div className="text-sm">
+                          <p className="font-bold mb-2">Available Templates:</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            {Object.entries(TEMPLATE_MAP).map(([name, { description }]) => (
+                              <li key={name}>
+                                <span className="font-mono">{name}:</span>{" "}
+                                {description}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      }
+                      placement="top"
+                    >           
+                      <Icon icon="info-sign" className="opacity-80" />   
+                    </Tooltip>
+                  </div>
+                  
+                  {selectedTemplate === "Custom Format" && (
+                    <div className="space-y-2">
+                      <FormGroup label="Pattern (regex)" className="m-0">
+                        <input
+                          className={`bp3-input font-mono text-sm w-full ${!isValidRegex ? 'bp3-intent-danger' : ''}`}
+                          placeholder="E.g., \[\[(.*?)\]\]"
+                          value={customPattern}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            setCustomPattern(newValue);
+                            try {
+                              if (newValue) new RegExp(newValue);
+                              setIsValidRegex(true);
+                            } catch (e) {
+                              setIsValidRegex(false);
+                            }
+                            setInputSetting({
+                              blockUid: attributeUid,
+                              key: "customPattern",
+                              value: newValue,
+                            });
+                          }}
+                        />
+                        {!isValidRegex && (
+                          <div className="text-red-500 text-xs mt-1">
+                            Invalid regular expression
+                          </div>
+                        )}
+                      </FormGroup>
+                      
+                      <FormGroup label="Replacement" className="m-0">
+                        <input
+                          className="bp3-input font-mono text-sm w-full"
+                          placeholder="E.g., $1"
+                          value={customReplacement}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            setCustomReplacement(newValue);
+                            setInputSetting({
+                              blockUid: attributeUid,
+                              key: "customReplacement",
+                              value: newValue,
+                            });
+                          }}
+                        />
+                      </FormGroup>
+                      
+                      <div className="bg-gray-100 p-2 rounded text-sm">
+                        <div className="font-bold mb-1">Preview:</div>
+                        <div>
+                          <span className="font-bold">Input:</span> <span className="font-mono">[[Example]]</span>
+                        </div>
+                        <div>
+                          <span className="font-bold">Output:</span> <span className="font-mono">
+                            {customPattern ? 
+                              applyFormatting({
+                                text: "[[Example]]",
+                                templateName: "Custom Format",
+                                customPattern,
+                                customReplacement
+                              }) :
+                              "[[Example]]"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </FormGroup>
+              <Button
+                intent="primary"
+                text={"Find All Current Values"}
+                rightIcon={"search"}
+                onClick={() => {
+                  const potentialOptions = findAllPotentialOptions(attributeName);
+                  setPotentialOptions(potentialOptions);
+                  setShowPotentialOptions(true);
+                }}
+              />
+            </>
           )}
           <div
             className="flex items-start space-x-4"
@@ -750,6 +1002,7 @@ export const toggleFeature = async (flag: boolean) => {
       .inline-menu-item-select > span > div {display:inline} 
       #attribute-select-config .rm-block-separator {display: none;}
     `);
+    
     definedAttributes = getDefinedAttributes();
     const pageUid =
       getPageUidByPageTitle(CONFIG) ||
