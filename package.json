@@ -23,7 +23,7 @@
     "@types/mozilla-readability": "^0.2.0",
     "@types/turndown": "^5.0.1"
   },
-  "version": "1.6.3",
+  "version": "1.7.0",
   "samepage": {
     "extends": "node_modules/roamjs-components/package.json"
   }
