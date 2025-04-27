@@ -34,6 +34,7 @@ import { render as renderToast } from "roamjs-components/components/Toast";
 import setInputSetting from "roamjs-components/util/setInputSetting";
 import setInputSettings from "roamjs-components/util/setInputSettings";
 import getSettingValueFromTree from "roamjs-components/util/getSettingValueFromTree";
+import fuzzy from "fuzzy";
 
 const CONFIG = `roam/js/attribute-select`;
 
@@ -122,9 +123,6 @@ const AttributeButtonPopover = <T extends ReactText>({
   filterable = false,
   isOpen,
 }: AttributeButtonPopoverProps<T>) => {
-  const itemPredicate = (query: string, item: T) => {
-    return String(item).toLowerCase().includes(query.toLowerCase());
-  };
   const [sliderValue, setSliderValue] = useState(0);
 
   useEffect(() => {
@@ -182,7 +180,17 @@ const AttributeButtonPopover = <T extends ReactText>({
   return (
     <MenuItemSelect
       className="inline-menu-item-select"
-      itemPredicate={itemPredicate}
+      itemListPredicate={(query: string, items: T[]) => {
+        if (!query) return items;
+        const stringItems = items.map(String);
+        const results = fuzzy
+          .filter(query, stringItems)
+          .map((f) => items[stringItems.indexOf(f.original)]);
+        if (results.length > 50) {
+          return results.slice(0, 50).concat("Only first 50 shown ..." as T);
+        }
+        return results;
+      }}
       items={items}
       activeItem={currentValue as T}
       filterable={shouldFilter}
