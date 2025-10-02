@@ -11,8 +11,8 @@ import getUids from "roamjs-components/dom/getUids";
 import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
 import type { OnloadArgs } from "roamjs-components/types";
 import { addCommand } from "./workBench";
+import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
 
-let observerHeadings: MutationObserver | undefined = undefined;
 let closeDailyNotesPopup: (() => void) | undefined;
 
 export const moveForwardToDate = (bForward: boolean) => {
@@ -543,96 +543,133 @@ const jumpDateIcon = () => {
   return true;
 };
 
+// Daily Note Subtitles / Banner
+const ROAM_TITLE_CLASS = "rm-title-display";
+const ROAM_TITLE_CONTAINER_CLASS = "rm-title-display-container";
+const DAY_BANNER_CLASS = "roam-title-day-banner";
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+const WEEKDAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+// Daily Note Subtitles / Banner - Utils
+const parseDateFromHeading = (headingText: string): Date | null => {
+  const [month, date = "", year = ""] = headingText.split(" ");
+  const dateMatch = date.match(/^(\d{1,2})(st|nd|rd|th),$/);
+
+  if (!year || !dateMatch || !MONTHS.includes(month)) {
+    return null;
+  }
+
+  const pageDate = new Date(
+    Number(year),
+    MONTHS.indexOf(month),
+    Number(dateMatch[1])
+  );
+  return !isNaN(pageDate.valueOf()) ? pageDate : null;
+};
+const createDayBanner = (
+  dayOfWeek: number,
+  heading: HTMLHeadingElement
+): HTMLDivElement => {
+  const banner = document.createElement("div");
+  banner.className = DAY_BANNER_CLASS;
+  banner.innerText = WEEKDAYS[dayOfWeek];
+  banner.style.fontSize = "10pt";
+  banner.style.position = "relative";
+
+  // Calculate positioning based on heading's margin
+  const headingMargin = getComputedStyle(heading).marginBottom;
+  const marginValue = Number(headingMargin.replace("px", "")) || 0;
+  banner.style.top = `-${marginValue + 6}px`;
+
+  return banner;
+};
+const insertBanner = (
+  banner: HTMLDivElement,
+  heading: HTMLHeadingElement
+): void => {
+  const container = heading.closest(`.${ROAM_TITLE_CONTAINER_CLASS}`);
+  const insertionPoint = container || heading;
+  insertionPoint.insertAdjacentElement("afterend", banner);
+};
+const hasExistingBanner = (heading: HTMLHeadingElement): boolean => {
+  // Check if banner is next sibling of container (works for all instances now)
+  const container = heading.closest(`.${ROAM_TITLE_CONTAINER_CLASS}`);
+  if (container) {
+    const containerNextSibling = container.nextElementSibling;
+    if (
+      containerNextSibling &&
+      containerNextSibling.classList.contains(DAY_BANNER_CLASS)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+const addDateToRoamTitleBanner = (heading: HTMLHeadingElement): void => {
+  if (hasExistingBanner(heading)) return;
+
+  const pageDate = parseDateFromHeading(heading.innerText);
+  if (!pageDate) return;
+
+  const dayOfWeek = pageDate.getDay();
+  const banner = createDayBanner(dayOfWeek, heading);
+  insertBanner(banner, heading);
+};
+const processExistingHeadings = (): void => {
+  const existingHeadings = document.querySelectorAll(`.${ROAM_TITLE_CLASS}`);
+  existingHeadings.forEach((heading) => {
+    addDateToRoamTitleBanner(heading as HTMLHeadingElement);
+  });
+};
+
+// Daily Note Subtitles / Banner - Observer
+let observerHeadings: { disconnect: () => void } | undefined = undefined;
+const setupHeadingObserver = (): void => {
+  observerHeadings = createHTMLObserver({
+    tag: "H1",
+    className: ROAM_TITLE_CLASS,
+    callback: (element) =>
+      addDateToRoamTitleBanner(element as HTMLHeadingElement),
+  });
+};
+const cleanupHeadingObserver = (): void => {
+  if (observerHeadings) {
+    observerHeadings.disconnect();
+    observerHeadings = undefined;
+  }
+};
+
+// Main Daily Notes Popup Component
 export const component = {
   async initialize() {
     const setting = get("dailySubtitles");
-    if (setting != "off") {
-      // TODO - Move This
-      const MONTHS = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ];
-      const addDateToRoamTitleBanners = (titles: HTMLHeadingElement[]) => {
-        titles.forEach((title) => {
-          if (
-            title.nextElementSibling &&
-            title.nextElementSibling.classList.contains("roam-title-day-banner")
-          ) {
-            return;
-          }
-          const [month, date = "", year = ""] = title.innerText.split(" ");
-          const dateMatch = date.match(/^(\d{1,2})(st|nd|rd|th),$/);
-          const pageDate =
-            year &&
-            dateMatch &&
-            MONTHS.includes(month) &&
-            new Date(Number(year), MONTHS.indexOf(month), Number(dateMatch[1]));
-          if (pageDate && !isNaN(pageDate.valueOf())) {
-            var weekdays = new Array(
-              "Sunday",
-              "Monday",
-              "Tuesday",
-              "Wednesday",
-              "Thursday",
-              "Friday",
-              "Saturday"
-            );
-            var day = pageDate.getDay();
-            var div = document.createElement("DIV");
-            div.className = "roam-title-day-banner";
-            div.innerText = weekdays[day];
-            div.style.fontSize = "10pt";
-            div.style.top =
-              -(
-                Number(getComputedStyle(title).marginBottom.replace("px", "")) +
-                6
-              ) + "px";
-            div.style.position = "relative";
-            title.insertAdjacentElement("afterend", div);
-          }
-        });
-      };
+    if (setting === "off") return;
 
-      const className = "rm-title-display";
-      addDateToRoamTitleBanners(
-        Array.from(document.querySelectorAll(`.${className}`))
-      );
-      observerHeadings = new MutationObserver((ms) => {
-        const titles = ms
-          .flatMap((m) =>
-            Array.from(m.addedNodes).filter(
-              (d) =>
-                /^H\d$/.test(d.nodeName) &&
-                (d as Element).classList.contains(className)
-            )
-          )
-          .concat(
-            ms.flatMap((m) =>
-              Array.from(m.addedNodes)
-                .filter((n) => n.hasChildNodes())
-                .flatMap((d) =>
-                  Array.from((d as Element).getElementsByClassName(className))
-                )
-            )
-          )
-          .map((n) => n as HTMLHeadingElement);
-        addDateToRoamTitleBanners(titles);
-      });
-      observerHeadings.observe(document.body, {
-        childList: true,
-        subtree: true,
-      });
-    }
+    processExistingHeadings();
+    setupHeadingObserver();
   },
 
   saveUIChanges(UIValues: {
@@ -719,7 +756,7 @@ export const toggleFeature = (
     );
     component.initialize();
   } else {
-    observerHeadings?.disconnect();
+    cleanupHeadingObserver();
     unloads.forEach((u) => u());
     unloads.clear();
   }
