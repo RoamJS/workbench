@@ -614,13 +614,7 @@ const insertBanner = (
   insertionPoint.insertAdjacentElement("afterend", banner);
 };
 const hasExistingBanner = (heading: HTMLHeadingElement): boolean => {
-  // Check DNP case: banner is next sibling of heading
-  const nextSibling = heading.nextElementSibling;
-  if (nextSibling && nextSibling.classList.contains(DAY_BANNER_CLASS)) {
-    return true;
-  }
-
-  // Check page/sidebar case: banner is next sibling of container
+  // Check if banner is next sibling of container (works for all instances now)
   const container = heading.closest(`.${ROAM_TITLE_CONTAINER_CLASS}`);
   if (container) {
     const containerNextSibling = container.nextElementSibling;
