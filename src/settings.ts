@@ -3,12 +3,17 @@
 
 import getBlockUidsAndTextsReferencingPage from "roamjs-components/queries/getBlockUidsAndTextsReferencingPage";
 
+const normalizeSpaces = (value: string) =>
+  value.replace(/[\u200B\u200C\u200D\uFEFF]/gu, "").replace(/\s+/gu, " ");
+
 export const get = (settingName: string) => {
   let customTrigger = getBlockUidsAndTextsReferencingPage("42Setting");
-  var result = null;
+  let result = null;
+
   for (let s of customTrigger) {
-    if (s.text.includes(settingName)) {
-      result = s.text
+    const normalizedText = normalizeSpaces(s.text);
+    if (normalizedText.includes(settingName)) {
+      result = normalizedText
         .replace("#42Setting ", "")
         .replace("#[[42Setting]] ", "")
         .replace("[[42Setting]] ", "")
