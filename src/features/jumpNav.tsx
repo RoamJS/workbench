@@ -478,22 +478,12 @@ const toggleQueries = () =>
     .forEach((element) => {
       element.click();
     });
-const addShortcutToLeftSidebar = () => {
-  const previousElement = document.activeElement as HTMLElement;
-  const emptyShortcuts = document.getElementsByClassName(
-    "bp3-button bp3-icon-star-empty"
-  ) as HTMLCollectionOf<HTMLSpanElement>;
-  const shortcuts = document.getElementsByClassName(
-    "bp3-button bp3-icon-star"
-  ) as HTMLCollectionOf<HTMLSpanElement>;
-  if (emptyShortcuts.length) {
-    emptyShortcuts[0].click();
-    previousElement?.focus();
-  } else if (shortcuts.length) {
-    shortcuts[0]?.click();
-    previousElement?.focus();
-  }
-};
+const addShortcutToLeftSidebar = () =>
+  getCurrentPageUid().then((uid) =>
+    window.roamAlphaAPI.data.page
+      // @ts-expect-error - addShortcut is not yet in roamjs-components types
+      .addShortcut(uid, 0)
+  );
 const pasteBlockWithChildrenAsReferences = () => {
   const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
   if (uid) {
@@ -630,7 +620,7 @@ const commands = [
   { label: "Collapse all blocks on page", callback: collapseAllBlocksOnPage },
   { label: "Open this page in sidebar", callback: openPageInSidebar },
   {
-    label: "Add shortcut to page to left sidebar",
+    label: "Add current page to shortcuts",
     callback: addShortcutToLeftSidebar,
   },
   { label: "Toggle Linked Refs", callback: toggleLinkedRefs },
