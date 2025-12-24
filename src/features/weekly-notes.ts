@@ -240,56 +240,15 @@ export const toggleFeature = (
     };
 
     const hashListener = (newUrl: string) => {
+      // Clean up navigation buttons when navigating away
       document.getElementById("roamjs-weekly-mode-nav")?.remove?.();
+
+      // Clear format cache when visiting config page
       const urlUid = newUrl.match(/\/page\/(.*)$/)?.[1];
       if (urlUid) {
         const title = getPageTitleByPageUid(urlUid);
         if (title === CONFIG) {
           formatCache.current = "";
-          return;
-        }
-        const { dateArray, valid, formats } = getFormatDateData(title);
-        if (valid) {
-          const formattedDateArray = dateArray
-            .map((d, i) => ({
-              cur: dateFnsFormat(d, formats[i]),
-              prev: dateFnsFormat(subWeeks(d, 1), formats[i]),
-              next: dateFnsFormat(addWeeks(d, 1), formats[i]),
-            }))
-            .filter(
-              (info): info is { cur: string; prev: string; next: string } =>
-                !!info.cur && !!info.prev && !!info.next
-            );
-          const prevTitle = formattedDateArray.reduce(
-            (acc, info) => acc.replace(info.cur, info.prev),
-            title
-          );
-          const nextTitle = formattedDateArray.reduce(
-            (acc, info) => acc.replace(info.cur, info.next),
-            title
-          );
-          setTimeout(() => {
-            const header = document.querySelector(
-              ".roam-article h1.rm-title-display"
-            ) as HTMLHeadingElement;
-            const headerContainer = header.parentElement;
-            const buttonContainer = document.createElement("div");
-            buttonContainer.style.display = "flex";
-            buttonContainer.style.justifyContent = "space-between";
-            buttonContainer.style.marginBottom = "32px";
-            buttonContainer.id = "roamjs-weekly-mode-nav";
-            headerContainer?.appendChild(buttonContainer);
-
-            const makeButton = (pagename: string, label: string) => {
-              const button = document.createElement("button");
-              button.className = "bp3-button";
-              button.onclick = () => navigateToPage(pagename);
-              button.innerText = label;
-              buttonContainer.appendChild(button);
-            };
-            makeButton(prevTitle, "Last Week");
-            makeButton(nextTitle, "Next Week");
-          });
         }
       }
     };
@@ -312,8 +271,9 @@ export const toggleFeature = (
       className: "rm-title-display",
       callback: (header: HTMLElement) => {
         const title = getPageTitleValueByHtmlElement(header);
-        const { valid } = getFormatDateData(title);
+        const { dateArray, valid, formats } = getFormatDateData(title);
         if (valid) {
+          // Prevent title editing
           header.onmousedown = (e) => {
             if (!e.shiftKey) {
               renderToast({
@@ -323,6 +283,48 @@ export const toggleFeature = (
               e.stopPropagation();
             }
           };
+
+          // Remove any existing navigation buttons
+          document.getElementById("roamjs-weekly-mode-nav")?.remove?.();
+
+          // Calculate previous and next week titles
+          const formattedDateArray = dateArray
+            .map((d, i) => ({
+              cur: dateFnsFormat(d, formats[i]),
+              prev: dateFnsFormat(subWeeks(d, 1), formats[i]),
+              next: dateFnsFormat(addWeeks(d, 1), formats[i]),
+            }))
+            .filter(
+              (info): info is { cur: string; prev: string; next: string } =>
+                !!info.cur && !!info.prev && !!info.next
+            );
+          const prevTitle = formattedDateArray.reduce(
+            (acc, info) => acc.replace(info.cur, info.prev),
+            title
+          );
+          const nextTitle = formattedDateArray.reduce(
+            (acc, info) => acc.replace(info.cur, info.next),
+            title
+          );
+
+          // Create navigation buttons below the header
+          const headerContainer = header.parentElement;
+          const buttonContainer = document.createElement("div");
+          buttonContainer.style.display = "flex";
+          buttonContainer.style.justifyContent = "space-between";
+          buttonContainer.style.marginBottom = "32px";
+          buttonContainer.id = "roamjs-weekly-mode-nav";
+          headerContainer?.appendChild(buttonContainer);
+
+          const makeButton = (pagename: string, label: string) => {
+            const button = document.createElement("button");
+            button.className = "bp3-button";
+            button.onclick = () => navigateToPage(pagename);
+            button.innerText = label;
+            buttonContainer.appendChild(button);
+          };
+          makeButton(prevTitle, "Last Week");
+          makeButton(nextTitle, "Next Week");
         }
       },
     });
