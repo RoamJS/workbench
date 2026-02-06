@@ -1,8 +1,12 @@
+<a href="https://roamjs.com/">
+    <img src="https://avatars.githubusercontent.com/u/138642184" alt="RoamJS Logo" title="RoamJS" align="right" height="60" />
+</a>
+
 # WorkBench
 
-The ultimate swiss army knife of the Roam power user.
+**The ultimate Roam power-user toolkit: faster navigation, richer command palette, live previews, mind maps, editable tables, OCR, article import, tag cycling, hotkeys, and privacy redaction—choose the modules you want and supercharge your daily workflow.**
 
-WorkBench makes it easy and fast to navigate and manipulate Roam.
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/RoamJS/workbench)
 
 ## Features
 
@@ -41,9 +45,3 @@ To disable or enable a module, simply open your Roam Depot settings for each fea
 ## Demo
 
 [![WorkBench Demo](https://raw.githubusercontent.com/RoamJS/workbench/main/docs/media/workbench-demo-thumbnail.png)](https://www.loom.com/share/0ced5bfcfae04ae38813563b4470dfec)
-
-## Migration Guide
-
-_This extension was first started by [TfTHacker](https://twitter.com/tfthacker) as Roam42 and passed over to RoamJS on 04/20/2021. We are deeply appreciative of all of TftHacker's hard work and generosity._
-
-If you have never used `Roam42` while it was a RoamJS extension, you can safely ignore this. For Roam42 users, use the [migration guide](https://github.com/RoamJs/workbench/blob/main/docs/migration-guide.md) to migrate to the Roam Depot version.
