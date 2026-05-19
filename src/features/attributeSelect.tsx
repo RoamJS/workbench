@@ -118,18 +118,18 @@ const getTableCellBlockUidFromTarget = (
   const row = Number(cell.getAttribute("data-row"));
   const col = Number(cell.getAttribute("data-col"));
   const tableBlock = table.closest(".roam-block") as HTMLElement | null;
-  const tableUid = tableBlock ? getBlockUidFromTarget(tableBlock) : "";
-  if (!tableUid || Number.isNaN(row) || Number.isNaN(col)) return "";
+  const tableUid = tableBlock ? getBlockUidFromTarget(tableBlock) : undefined;
+  if (!tableUid || Number.isNaN(row) || Number.isNaN(col)) return undefined;
 
   const rows = getTableRows(getBasicTreeByParentUid(tableUid));
-  return rows[row]?.[col]?.uid || "";
+  return rows[row]?.[col]?.uid;
 };
 
 const getAttributeBlockUidFromTarget = (target: HTMLElement): string => {
   if (target.closest(".rm-block-ref")) return getBlockUidFromTarget(target);
 
   const tableCellUid = getTableCellBlockUidFromTarget(target);
-  if (tableCellUid !== undefined) return tableCellUid;
+  if (tableCellUid) return tableCellUid;
 
   return getBlockUidFromTarget(target);
 };
