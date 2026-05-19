@@ -22,7 +22,11 @@ import getBlockUidFromTarget from "roamjs-components/dom/getBlockUidFromTarget";
 import getBasicTreeByParentUid from "roamjs-components/queries/getBasicTreeByParentUid";
 import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTitle";
 import createBlock from "roamjs-components/writes/createBlock";
-import { InputTextNode, PullBlock } from "roamjs-components/types";
+import {
+  InputTextNode,
+  PullBlock,
+  RoamBasicNode,
+} from "roamjs-components/types";
 import getSubTree from "roamjs-components/util/getSubTree";
 import updateBlock from "roamjs-components/writes/updateBlock";
 import deleteBlock from "roamjs-components/writes/deleteBlock";
@@ -85,6 +89,67 @@ type FormatParams = {
   customPattern?: string;
   customReplacement?: string;
 };
+
+/* Handle roam {[[table]]} */
+const getTableRows = (nodes: RoamBasicNode[]): RoamBasicNode[][] => {
+  const rows: RoamBasicNode[][] = [];
+  const visit = (node: RoamBasicNode, path: RoamBasicNode[]) => {
+    const nextPath = [...path, node];
+    if (!node.children.length) {
+      rows.push(nextPath);
+      return;
+    }
+    node.children.forEach((child) => visit(child, nextPath));
+  };
+
+  nodes.forEach((node) => visit(node, []));
+  return rows;
+};
+
+const getTableCellBlockUidFromTarget = (
+  target: HTMLElement,
+): string | undefined => {
+  const cell = target.closest(
+    "td[data-row][data-col]",
+  ) as HTMLTableCellElement | null;
+  const table = cell?.closest(".rm-table") as HTMLElement | null;
+  if (!cell || !table) return undefined;
+
+  const row = Number(cell.getAttribute("data-row"));
+  const col = Number(cell.getAttribute("data-col"));
+  const tableBlock = table.closest(".roam-block") as HTMLElement | null;
+  const tableUid = tableBlock ? getBlockUidFromTarget(tableBlock) : undefined;
+  if (!tableUid || Number.isNaN(row) || Number.isNaN(col)) return undefined;
+
+  const rows = getTableRows(getBasicTreeByParentUid(tableUid));
+  return rows[row]?.[col]?.uid;
+};
+
+const getAttributeBlockUidFromTarget = (target: HTMLElement): string => {
+  if (target.closest(".rm-block-ref")) return getBlockUidFromTarget(target);
+
+  const tableCellUid = getTableCellBlockUidFromTarget(target);
+  if (tableCellUid) return tableCellUid;
+
+  return getBlockUidFromTarget(target);
+};
+
+const stopAttributeButtonDomEvent = (e: Event) => {
+  if (e.type === "mousedown") e.preventDefault();
+  e.stopPropagation();
+};
+
+const stopAttributeButtonReactEvent = (
+  e: React.SyntheticEvent<HTMLElement>,
+) => {
+  e.stopPropagation();
+};
+
+const preventAttributeButtonFocus = (e: React.SyntheticEvent<HTMLElement>) => {
+  e.preventDefault();
+  e.stopPropagation();
+};
+/* Handle roam {[[table]]} */
 
 const applyFormatting = ({
   text,
@@ -178,7 +243,7 @@ const AttributeButtonPopover = <T extends ReactText>({
         text,
         ...formatConfig,
       }),
-    [formatConfig]
+    [formatConfig],
   );
 
   // Only show filter if we have more than 10 items
@@ -221,7 +286,15 @@ const AttributeButtonPopover = <T extends ReactText>({
           style={{ minHeight: 15, minWidth: 20 }}
           intent="primary"
           minimal
-          onClick={() => setIsOpen(true)}
+          tabIndex={-1}
+          onPointerDown={stopAttributeButtonReactEvent}
+          onMouseDown={preventAttributeButtonFocus}
+          onMouseUp={stopAttributeButtonReactEvent}
+          onDoubleClick={stopAttributeButtonReactEvent}
+          onClick={(e) => {
+            stopAttributeButtonReactEvent(e);
+            setIsOpen(true);
+          }}
         />
       )}
     </MenuItemSelect>
@@ -331,7 +404,15 @@ const AttributeButton = ({
               style={{ minHeight: 15, minWidth: 20 }}
               intent="primary"
               minimal
-              onClick={() => setIsOpen(true)}
+              tabIndex={-1}
+              onPointerDown={stopAttributeButtonReactEvent}
+              onMouseDown={preventAttributeButtonFocus}
+              onMouseUp={stopAttributeButtonReactEvent}
+              onDoubleClick={stopAttributeButtonReactEvent}
+              onClick={(e) => {
+                stopAttributeButtonReactEvent(e);
+                setIsOpen(true);
+              }}
             />
           }
           onClose={() => setIsOpen(false)}
@@ -354,13 +435,22 @@ const AttributeButton = ({
 const renderAttributeButton = (
   parent: HTMLSpanElement,
   attributeName: string,
-  blockUid: string
+  blockUid: string,
 ) => {
   const containerSpan = document.createElement("span");
-  containerSpan.onmousedown = (e) => e.stopPropagation();
+  [
+    "pointerdown",
+    "mousedown",
+    "mouseup",
+    "click",
+    "dblclick",
+    "focusin",
+  ].forEach((eventName) =>
+    containerSpan.addEventListener(eventName, stopAttributeButtonDomEvent),
+  );
   ReactDOM.render(
     <AttributeButton attributeName={attributeName} uid={blockUid} />,
-    containerSpan
+    containerSpan,
   );
   parent.appendChild(containerSpan);
 };
@@ -376,7 +466,7 @@ const AttributeConfigPanel = ({
   const [query, setQuery] = useState("");
   const [value, setValue] = useState("");
   const [definedAttributes, setDefinedAttributes] = useState<string[]>(() =>
-    getDefinedAttributes()
+    getDefinedAttributes(),
   );
   const [activeTab, setActiveTab] = useState(definedAttributes[0]);
   const handleTabChange = (tabName: string) => {
@@ -418,7 +508,7 @@ const AttributeConfigPanel = ({
             [(get ?d :value) ?s]
             [(untuple ?s) [?e ?uid]]
             [?page :block/uid ?uid]
-          ]`
+          ]`,
       )) as [PullBlock][];
     const attributesInGraph = results.map((p) => p[0]?.[":node/title"] || "");
     if (attributesInGraph.length === 0) {
@@ -430,17 +520,17 @@ const AttributeConfigPanel = ({
   };
   const focusAndOpenSelect = () => {
     const selectElement = document.querySelector(
-      ".attribute-select-autocomplete-select button"
+      ".attribute-select-autocomplete-select button",
     ) as HTMLElement;
     if (selectElement) selectElement.click();
   };
   const focusOnBlock = (uid: string) => {
     const el = document.querySelector(
-      `.attribute-${uid} .rm-api-render--block .rm-level-1 .rm-block__input`
+      `.attribute-${uid} .rm-api-render--block .rm-level-1 .rm-block__input`,
     );
     if (!el) return;
     const match = el.id.match(
-      /block-input-(uuid[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12})-([\w\d]+)/i
+      /block-input-(uuid[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12})-([\w\d]+)/i,
     );
     if (match) {
       const location = match[1];
@@ -493,7 +583,7 @@ const AttributeConfigPanel = ({
               <MenuItemSelect
                 className="attribute-select-autocomplete-select"
                 items={attributesInGraph.filter(
-                  (a) => !definedAttributes.includes(a)
+                  (a) => !definedAttributes.includes(a),
                 )}
                 onItemSelect={(s) => setValue(s)}
                 activeItem={value}
@@ -588,7 +678,7 @@ const TabsPanel = ({
         key: "type",
         parentUid: attributeUid,
       }),
-    [attributeUid]
+    [attributeUid],
   );
   const [optionType, setOptionType] = useState(initialOptionType || "text");
   const [min, setMin] = useState(Number(rangeNode.children[0]?.text) || 0);
@@ -624,7 +714,7 @@ const TabsPanel = ({
   const [selectedTemplate, setSelectedTemplate] = useState(initialTemplate);
   const [customPattern, setCustomPattern] = useState(initialCustomPattern);
   const [customReplacement, setCustomReplacement] = useState(
-    initialCustomReplacement
+    initialCustomReplacement,
   );
   const [isValidRegex, setIsValidRegex] = useState(true);
 
@@ -648,13 +738,13 @@ const TabsPanel = ({
         window.roamAlphaAPI.data.fast
           .q(
             `
-        [:find ?b :where [?r :node/title "${attributeName}"] [?c :block/refs ?r] [?c :block/string ?b]]`
+        [:find ?b :where [?r :node/title "${attributeName}"] [?c :block/refs ?r] [?c :block/string ?b]]`,
           )
           .map((p) => {
             const rawString = p[0] as string;
             return rawString.replace(regex, "").trim();
-          })
-      )
+          }),
+      ),
     )
       .filter((option) => option !== "")
       .filter((option) => !chosenOptions.includes(option))
@@ -763,7 +853,7 @@ const TabsPanel = ({
                                   <span className="font-mono">{name}:</span>{" "}
                                   {description}
                                 </li>
-                              )
+                              ),
                             )}
                           </ul>
                         </div>
@@ -910,8 +1000,8 @@ const TabsPanel = ({
                         }
                         setPotentialOptions(
                           potentialOptions.filter(
-                            (option) => option !== selectedOption
-                          )
+                            (option) => option !== selectedOption,
+                          ),
                         );
                         setSelectedOption("");
                       }}
@@ -941,7 +1031,7 @@ const TabsPanel = ({
 
 const getDefinedAttributes = (): string[] => {
   const attributesUid = window.roamAlphaAPI.data.fast.q(
-    `[:find ?u :where [?b :block/page ?p] [?b :block/uid ?u] [?b :block/string "attributes"] [?p :node/title "roam/js/attribute-select"]]`
+    `[:find ?u :where [?b :block/page ?p] [?b :block/uid ?u] [?b :block/string "attributes"] [?p :node/title "roam/js/attribute-select"]]`,
   )[0]?.[0] as string;
   const attributesTree = getBasicTreeByParentUid(attributesUid);
   const definedAttributes = attributesTree.map((t) => t.text);
@@ -991,7 +1081,7 @@ const renderConfigPage = ({
     parent.id = `${configPageId}-config`;
     containerParent.insertBefore(
       parent,
-      h.parentElement?.nextElementSibling || null
+      h.parentElement?.nextElementSibling || null,
     );
     ReactDOM.render(<ConfigPage onAdd={onAdd} onRemove={onRemove} />, parent);
   }
@@ -1007,12 +1097,13 @@ const updateAttributeObserver = () => {
     className: "rm-attr-ref",
     tag: "SPAN",
     callback: (s: HTMLSpanElement) => {
-      const blockUid = getBlockUidFromTarget(s);
+      const blockUid = getAttributeBlockUidFromTarget(s);
       const attributeUid = s.getAttribute("data-link-uid");
       const attributeName = attributeUid
         ? getPageTitleByPageUid(attributeUid)
         : "";
       if (
+        blockUid &&
         !s.hasAttribute("data-roamjs-attribute-select") &&
         definedAttributes.includes(attributeName)
       ) {
