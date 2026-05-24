@@ -24,6 +24,31 @@ would create a page name of:
 
 For format, check out [this page](https://date-fns.org/v2.21.1/docs/format) for the syntax on what each symbol means.
 
+## ISO Week Format
+
+Weekly Notes supports ISO week-numbering formats. Use the following tokens for ISO week-based naming:
+
+| Token | Description | Example |
+|-------|-------------|---------|
+| `I` | ISO week number (1-53) | `1`, `52` |
+| `II` | ISO week number, 2 digits | `01`, `52` |
+| `R` | ISO week-numbering year | `2024` |
+| `RRRR` | ISO week-numbering year, 4 digits | `2024` |
+
+**Examples:**
+
+```plain text
+{monday:RRRR}-W{monday:II}
+```
+would create: `[[2024-W52]]`
+
+```plain text
+Week {monday:I} {monday:RRRR}
+```
+would create: `[[Week 52 2024]]`
+
+**Note:** ISO weeks always start on Monday. ISO week 1 is the week containing the first Thursday of the year, so dates in late December may belong to week 1 of the following year. Use `R`/`RRRR` (ISO week-numbering year) instead of `yyyy` (calendar year) when using ISO week numbers to ensure consistency.
+
 # Auto Tagging
 
 When a new weekly page is created, the weekly page will be tagged in all of the daily pages that are part of the week. The tag will be added as the top block on the page. This could be toggled on and off in the `roam/js/weekly-notes` page.
