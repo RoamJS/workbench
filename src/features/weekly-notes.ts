@@ -92,21 +92,9 @@ const hasNodeContent = (node: InputTextNode | RoamBasicNode): boolean =>
 const hasSmartBlockSyntax = (node: RoamBasicNode): boolean =>
   node.text.includes("<%") || node.children.some(hasSmartBlockSyntax);
 
-type InstalledExtension = {
-  id?: string;
-  name?: string;
-  enabled?: boolean;
-  version?: string;
-};
-
 const isSmartBlocksEnabled = () => {
-  const getInstalledExtensions = (
-    window.roamAlphaAPI as typeof window.roamAlphaAPI & {
-      depot?: {
-        getInstalledExtensions?: () => Record<string, InstalledExtension>;
-      };
-    }
-  ).depot?.getInstalledExtensions;
+  const getInstalledExtensions =
+    window.roamAlphaAPI.depot?.getInstalledExtensions;
   if (!getInstalledExtensions) return true;
 
   try {
