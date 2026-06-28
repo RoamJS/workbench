@@ -1,4 +1,3 @@
-import { Button } from "@blueprintjs/core";
 import setDay from "date-fns/setDay";
 import _dateFnsFormat from "date-fns/format";
 import _parse from "date-fns/parse";
@@ -34,6 +33,7 @@ import {
   Field,
   UnionField,
 } from "roamjs-components/components/ConfigPanels/types";
+import WeeklyNoteNav from "./WeeklyNoteNav";
 
 const ID = "weekly-notes";
 const DAYS = [
@@ -466,33 +466,17 @@ export const toggleFeature = (
 
       const headerContainer = header.closest(`.${ROAM_TITLE_CONTAINER_CLASS}`);
       const insertionPoint = headerContainer || header;
-      const buttonContainer = document.createElement("div");
-      buttonContainer.style.display = "flex";
-      buttonContainer.style.justifyContent = "space-between";
-      buttonContainer.style.marginBottom = "32px";
-      buttonContainer.id = WEEKLY_NOTE_NAV_ID;
-      insertionPoint.insertAdjacentElement("afterend", buttonContainer);
+      const navContainer = document.createElement("div");
+      navContainer.id = WEEKLY_NOTE_NAV_ID;
+      insertionPoint.insertAdjacentElement("afterend", navContainer);
 
       ReactDOM.render(
-        React.createElement(
-          React.Fragment,
-          null,
-          React.createElement(Button, {
-            icon: "arrow-left",
-            minimal: true,
-            onClick: () => navigateToPage(weeklyNavigationTitles.prevTitle),
-            outlined: true,
-            text: "Last Week",
-          }),
-          React.createElement(Button, {
-            minimal: true,
-            onClick: () => navigateToPage(weeklyNavigationTitles.nextTitle),
-            outlined: true,
-            rightIcon: "arrow-right",
-            text: "Next Week",
-          })
-        ),
-        buttonContainer
+        React.createElement(WeeklyNoteNav, {
+          nextTitle: weeklyNavigationTitles.nextTitle,
+          onNavigate: navigateToPage,
+          prevTitle: weeklyNavigationTitles.prevTitle,
+        }),
+        navContainer
       );
 
       return true;
