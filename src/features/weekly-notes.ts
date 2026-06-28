@@ -102,11 +102,11 @@ type InstalledExtension = {
 const isSmartBlocksEnabled = () => {
   const getInstalledExtensions = (
     window.roamAlphaAPI as typeof window.roamAlphaAPI & {
-      extension?: {
+      depot?: {
         getInstalledExtensions?: () => Record<string, InstalledExtension>;
       };
     }
-  ).extension?.getInstalledExtensions;
+  ).depot?.getInstalledExtensions;
   if (!getInstalledExtensions) return true;
 
   try {
