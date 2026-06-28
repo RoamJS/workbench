@@ -1,8 +1,11 @@
+import { Button } from "@blueprintjs/core";
 import setDay from "date-fns/setDay";
 import _dateFnsFormat from "date-fns/format";
 import _parse from "date-fns/parse";
 import addWeeks from "date-fns/addWeeks";
 import subWeeks from "date-fns/subWeeks";
+import React from "react";
+import ReactDOM from "react-dom";
 import { createConfigObserver } from "roamjs-components/components/ConfigPage";
 import TextPanel from "roamjs-components/components/ConfigPanels/TextPanel";
 import FlagPanel from "roamjs-components/components/ConfigPanels/FlagPanel";
@@ -46,6 +49,7 @@ const DATE_REGEX = new RegExp(`{(${DAYS.join("|")}):(.*?)}`, "g");
 const FORMAT_DEFAULT_VALUE = "{monday:MM/dd yyyy} - {sunday:MM/dd yyyy}";
 const CONFIG = `roam/js/${ID}`;
 const ROAM_TITLE_CONTAINER_CLASS = "rm-title-display-container";
+const WEEKLY_NOTE_NAV_ID = "roamjs-weekly-mode-nav";
 
 const formatCache = { current: "" };
 const getFormat = (tree?: TreeNode[]) =>
@@ -439,6 +443,14 @@ export const toggleFeature = (
       return { prevTitle, nextTitle };
     };
 
+    const removeWeeklyNoteNav = () => {
+      const nav = document.getElementById(WEEKLY_NOTE_NAV_ID);
+      if (nav) {
+        ReactDOM.unmountComponentAtNode(nav);
+        nav.remove();
+      }
+    };
+
     const renderWeeklyNoteNav = (
       header: HTMLHeadingElement,
       title = getPageTitleValueByHtmlElement(header),
@@ -447,7 +459,7 @@ export const toggleFeature = (
       if (!header.closest(".roam-article")) return false;
       if (expectedTitle && title !== expectedTitle) return false;
 
-      document.getElementById("roamjs-weekly-mode-nav")?.remove?.();
+      removeWeeklyNoteNav();
 
       const weeklyNavigationTitles = getWeeklyNavigationTitles(title);
       if (!weeklyNavigationTitles) return false;
@@ -458,36 +470,30 @@ export const toggleFeature = (
       buttonContainer.style.display = "flex";
       buttonContainer.style.justifyContent = "space-between";
       buttonContainer.style.marginBottom = "32px";
-      buttonContainer.id = "roamjs-weekly-mode-nav";
+      buttonContainer.id = WEEKLY_NOTE_NAV_ID;
       insertionPoint.insertAdjacentElement("afterend", buttonContainer);
 
-      const makeButton = (
-        pagename: string,
-        label: string,
-        direction: "left" | "right"
-      ) => {
-        const button = document.createElement("button");
-        button.className = "bp3-button bp3-minimal bp3-outlined";
-        button.type = "button";
-        button.onclick = () => navigateToPage(pagename);
-
-        const icon = document.createElement("span");
-        icon.className = `bp3-icon-standard bp3-icon-arrow-${direction}`;
-        icon.setAttribute("aria-hidden", "true");
-
-        const text = document.createElement("span");
-        text.innerText = label;
-
-        if (direction === "left") {
-          button.append(icon, text);
-        } else {
-          button.append(text, icon);
-        }
-
-        buttonContainer.appendChild(button);
-      };
-      makeButton(weeklyNavigationTitles.prevTitle, "Last Week", "left");
-      makeButton(weeklyNavigationTitles.nextTitle, "Next Week", "right");
+      ReactDOM.render(
+        React.createElement(
+          React.Fragment,
+          null,
+          React.createElement(Button, {
+            icon: "arrow-left",
+            minimal: true,
+            onClick: () => navigateToPage(weeklyNavigationTitles.prevTitle),
+            outlined: true,
+            text: "Last Week",
+          }),
+          React.createElement(Button, {
+            minimal: true,
+            onClick: () => navigateToPage(weeklyNavigationTitles.nextTitle),
+            outlined: true,
+            rightIcon: "arrow-right",
+            text: "Next Week",
+          })
+        ),
+        buttonContainer
+      );
 
       return true;
     };
@@ -500,7 +506,7 @@ export const toggleFeature = (
     };
 
     const hashListener = (newUrl: string) => {
-      document.getElementById("roamjs-weekly-mode-nav")?.remove?.();
+      removeWeeklyNoteNav();
       const urlUid = newUrl.match(/\/page\/(.*)$/)?.[1];
       if (urlUid) {
         const title = getPageTitleByPageUid(urlUid);
@@ -519,6 +525,7 @@ export const toggleFeature = (
     unloads.add(() =>
       window.removeEventListener("hashchange", wrappedListener)
     );
+    unloads.add(removeWeeklyNoteNav);
 
     const autoLoad = getFullTreeByParentUid(
       getPageUidByPageTitle(CONFIG)
@@ -546,6 +553,7 @@ export const toggleFeature = (
           };
         }
       },
+      removeCallback: removeWeeklyNoteNav,
     });
     unloads.add(() => h1Observer.disconnect());
   } else {
