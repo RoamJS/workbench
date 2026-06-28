@@ -3,6 +3,8 @@ import _dateFnsFormat from "date-fns/format";
 import _parse from "date-fns/parse";
 import addWeeks from "date-fns/addWeeks";
 import subWeeks from "date-fns/subWeeks";
+import React from "react";
+import ReactDOM from "react-dom";
 import { createConfigObserver } from "roamjs-components/components/ConfigPage";
 import TextPanel from "roamjs-components/components/ConfigPanels/TextPanel";
 import FlagPanel from "roamjs-components/components/ConfigPanels/FlagPanel";
@@ -31,6 +33,7 @@ import {
   Field,
   UnionField,
 } from "roamjs-components/components/ConfigPanels/types";
+import WeeklyNoteNav from "./WeeklyNoteNav";
 
 const ID = "weekly-notes";
 const DAYS = [
@@ -45,6 +48,8 @@ const DAYS = [
 const DATE_REGEX = new RegExp(`{(${DAYS.join("|")}):(.*?)}`, "g");
 const FORMAT_DEFAULT_VALUE = "{monday:MM/dd yyyy} - {sunday:MM/dd yyyy}";
 const CONFIG = `roam/js/${ID}`;
+const ROAM_TITLE_CONTAINER_CLASS = "rm-title-display-container";
+const WEEKLY_NOTE_NAV_ID = "roamjs-weekly-mode-nav";
 
 const formatCache = { current: "" };
 const getFormat = (tree?: TreeNode[]) =>
@@ -412,8 +417,85 @@ export const toggleFeature = (
       return { dateArray: [], formats, valid: false };
     };
 
+    const getWeeklyNavigationTitles = (title: string) => {
+      const { dateArray, valid, formats } = getFormatDateData(title);
+      if (!valid) return null;
+
+      const formattedDateArray = dateArray
+        .map((d, i) => ({
+          cur: dateFnsFormat(d, formats[i]),
+          prev: dateFnsFormat(subWeeks(d, 1), formats[i]),
+          next: dateFnsFormat(addWeeks(d, 1), formats[i]),
+        }))
+        .filter(
+          (info): info is { cur: string; prev: string; next: string } =>
+            !!info.cur && !!info.prev && !!info.next
+        );
+      const prevTitle = formattedDateArray.reduce(
+        (acc, info) => acc.replace(info.cur, info.prev),
+        title
+      );
+      const nextTitle = formattedDateArray.reduce(
+        (acc, info) => acc.replace(info.cur, info.next),
+        title
+      );
+
+      return { prevTitle, nextTitle };
+    };
+
+    let weeklyNoteNavHeader: HTMLHeadingElement | null = null;
+    const removeWeeklyNoteNav = (header?: HTMLElement) => {
+      if (header && header !== weeklyNoteNavHeader) return;
+
+      const nav = document.getElementById(WEEKLY_NOTE_NAV_ID);
+      if (nav) {
+        ReactDOM.unmountComponentAtNode(nav);
+        nav.remove();
+      }
+      weeklyNoteNavHeader = null;
+    };
+
+    const renderWeeklyNoteNav = (
+      header: HTMLHeadingElement,
+      title = getPageTitleValueByHtmlElement(header),
+      expectedTitle = ""
+    ) => {
+      if (!header.closest(".roam-article")) return false;
+      if (expectedTitle && title !== expectedTitle) return false;
+
+      removeWeeklyNoteNav();
+
+      const weeklyNavigationTitles = getWeeklyNavigationTitles(title);
+      if (!weeklyNavigationTitles) return false;
+
+      const headerContainer = header.closest(`.${ROAM_TITLE_CONTAINER_CLASS}`);
+      const insertionPoint = headerContainer || header;
+      const navContainer = document.createElement("div");
+      navContainer.id = WEEKLY_NOTE_NAV_ID;
+      insertionPoint.insertAdjacentElement("afterend", navContainer);
+
+      ReactDOM.render(
+        React.createElement(WeeklyNoteNav, {
+          nextTitle: weeklyNavigationTitles.nextTitle,
+          onNavigate: navigateToPage,
+          prevTitle: weeklyNavigationTitles.prevTitle,
+        }),
+        navContainer
+      );
+      weeklyNoteNavHeader = header;
+
+      return true;
+    };
+
+    const renderCurrentWeeklyNoteNav = (expectedTitle = "") => {
+      const header = document.querySelector<HTMLHeadingElement>(
+        ".roam-article h1.rm-title-display"
+      );
+      if (header) renderWeeklyNoteNav(header, undefined, expectedTitle);
+    };
+
     const hashListener = (newUrl: string) => {
-      document.getElementById("roamjs-weekly-mode-nav")?.remove?.();
+      removeWeeklyNoteNav();
       const urlUid = newUrl.match(/\/page\/(.*)$/)?.[1];
       if (urlUid) {
         const title = getPageTitleByPageUid(urlUid);
@@ -421,48 +503,8 @@ export const toggleFeature = (
           formatCache.current = "";
           return;
         }
-        const { dateArray, valid, formats } = getFormatDateData(title);
-        if (valid) {
-          const formattedDateArray = dateArray
-            .map((d, i) => ({
-              cur: dateFnsFormat(d, formats[i]),
-              prev: dateFnsFormat(subWeeks(d, 1), formats[i]),
-              next: dateFnsFormat(addWeeks(d, 1), formats[i]),
-            }))
-            .filter(
-              (info): info is { cur: string; prev: string; next: string } =>
-                !!info.cur && !!info.prev && !!info.next
-            );
-          const prevTitle = formattedDateArray.reduce(
-            (acc, info) => acc.replace(info.cur, info.prev),
-            title
-          );
-          const nextTitle = formattedDateArray.reduce(
-            (acc, info) => acc.replace(info.cur, info.next),
-            title
-          );
-          setTimeout(() => {
-            const header = document.querySelector(
-              ".roam-article h1.rm-title-display"
-            ) as HTMLHeadingElement;
-            const headerContainer = header.parentElement;
-            const buttonContainer = document.createElement("div");
-            buttonContainer.style.display = "flex";
-            buttonContainer.style.justifyContent = "space-between";
-            buttonContainer.style.marginBottom = "32px";
-            buttonContainer.id = "roamjs-weekly-mode-nav";
-            headerContainer?.appendChild(buttonContainer);
-
-            const makeButton = (pagename: string, label: string) => {
-              const button = document.createElement("button");
-              button.className = "bp3-button";
-              button.onclick = () => navigateToPage(pagename);
-              button.innerText = label;
-              buttonContainer.appendChild(button);
-            };
-            makeButton(prevTitle, "Last Week");
-            makeButton(nextTitle, "Next Week");
-          });
+        if (getWeeklyNavigationTitles(title)) {
+          setTimeout(() => renderCurrentWeeklyNoteNav(title));
         }
       }
     };
@@ -472,6 +514,7 @@ export const toggleFeature = (
     unloads.add(() =>
       window.removeEventListener("hashchange", wrappedListener)
     );
+    unloads.add(removeWeeklyNoteNav);
 
     const autoLoad = getFullTreeByParentUid(
       getPageUidByPageTitle(CONFIG)
@@ -486,6 +529,7 @@ export const toggleFeature = (
       callback: (header: HTMLElement) => {
         const title = getPageTitleValueByHtmlElement(header);
         const { valid } = getFormatDateData(title);
+        renderWeeklyNoteNav(header as HTMLHeadingElement, title);
         if (valid) {
           header.onmousedown = (e) => {
             if (!e.shiftKey) {
@@ -498,6 +542,7 @@ export const toggleFeature = (
           };
         }
       },
+      removeCallback: removeWeeklyNoteNav,
     });
     unloads.add(() => h1Observer.disconnect());
   } else {
