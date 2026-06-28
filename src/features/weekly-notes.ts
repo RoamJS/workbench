@@ -92,6 +92,47 @@ const hasNodeContent = (node: InputTextNode | RoamBasicNode): boolean =>
 const hasSmartBlockSyntax = (node: RoamBasicNode): boolean =>
   node.text.includes("<%") || node.children.some(hasSmartBlockSyntax);
 
+const waitForSmartBlocks = () =>
+  new Promise<typeof window.roamjs.extension.smartblocks | undefined>(
+    (resolve) => {
+      const getSmartBlocks = () => window.roamjs?.extension?.smartblocks;
+      const smartblocks = getSmartBlocks();
+      if (smartblocks) {
+        resolve(smartblocks);
+        return;
+      }
+
+      const interval = window.setInterval(() => {
+        const smartblocks = getSmartBlocks();
+        if (smartblocks) {
+          cleanup();
+          resolve(smartblocks);
+        }
+      }, 250);
+      const timeout = window.setTimeout(() => {
+        cleanup();
+        resolve(getSmartBlocks());
+      }, 5000);
+      const handleSmartBlocksLoaded = () => {
+        cleanup();
+        resolve(getSmartBlocks());
+      };
+      const cleanup = () => {
+        window.clearInterval(interval);
+        window.clearTimeout(timeout);
+        document.body.removeEventListener(
+          "roamjs:smartblocks:loaded",
+          handleSmartBlocksLoaded
+        );
+      };
+
+      document.body.addEventListener(
+        "roamjs:smartblocks:loaded",
+        handleSmartBlocksLoaded
+      );
+    }
+  );
+
 const createBlocksFromTemplate = async ({
   templateNode,
   pageUid,
@@ -130,7 +171,8 @@ const renderWeeklyTemplate = async ({
   if (!templateNode.uid || !templateChildren.length) return;
 
   const useSmartBlocks = templateChildren.some(hasSmartBlockSyntax);
-  if (useSmartBlocks && !window.roamjs?.extension?.smartblocks) {
+  const smartblocks = useSmartBlocks ? await waitForSmartBlocks() : undefined;
+  if (useSmartBlocks && !smartblocks) {
     renderToast({
       content:
         "This weekly note template requires SmartBlocks. Enable SmartBlocks in Roam Depot to use this template.",
@@ -138,8 +180,8 @@ const renderWeeklyTemplate = async ({
       intent: "warning",
     });
     await createBlocksFromTemplate({ templateNode, pageUid });
-  } else if (useSmartBlocks && window.roamjs?.extension?.smartblocks) {
-    await window.roamjs.extension.smartblocks.triggerSmartblock({
+  } else if (smartblocks) {
+    await smartblocks.triggerSmartblock({
       srcUid: templateNode.uid,
       targetUid: pageUid,
       variables: date ? { DATEBASISMETHOD: date.toJSON() } : undefined,
