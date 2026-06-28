@@ -45,6 +45,7 @@ const DAYS = [
 const DATE_REGEX = new RegExp(`{(${DAYS.join("|")}):(.*?)}`, "g");
 const FORMAT_DEFAULT_VALUE = "{monday:MM/dd yyyy} - {sunday:MM/dd yyyy}";
 const CONFIG = `roam/js/${ID}`;
+const ROAM_TITLE_CONTAINER_CLASS = "rm-title-display-container";
 
 const formatCache = { current: "" };
 const getFormat = (tree?: TreeNode[]) =>
@@ -442,26 +443,49 @@ export const toggleFeature = (
             title
           );
           setTimeout(() => {
-            const header = document.querySelector(
+            const header = document.querySelector<HTMLHeadingElement>(
               ".roam-article h1.rm-title-display"
-            ) as HTMLHeadingElement;
-            const headerContainer = header.parentElement;
+            );
+            const headerContainer = header?.closest(
+              `.${ROAM_TITLE_CONTAINER_CLASS}`
+            );
+            const insertionPoint = headerContainer || header;
+            if (!insertionPoint) return;
+
             const buttonContainer = document.createElement("div");
             buttonContainer.style.display = "flex";
             buttonContainer.style.justifyContent = "space-between";
             buttonContainer.style.marginBottom = "32px";
             buttonContainer.id = "roamjs-weekly-mode-nav";
-            headerContainer?.appendChild(buttonContainer);
+            insertionPoint.insertAdjacentElement("afterend", buttonContainer);
 
-            const makeButton = (pagename: string, label: string) => {
+            const makeButton = (
+              pagename: string,
+              label: string,
+              direction: "left" | "right"
+            ) => {
               const button = document.createElement("button");
-              button.className = "bp3-button";
+              button.className = "bp3-button bp3-minimal bp3-outlined";
+              button.type = "button";
               button.onclick = () => navigateToPage(pagename);
-              button.innerText = label;
+
+              const icon = document.createElement("span");
+              icon.className = `bp3-icon-standard bp3-icon-arrow-${direction}`;
+              icon.setAttribute("aria-hidden", "true");
+
+              const text = document.createElement("span");
+              text.innerText = label;
+
+              if (direction === "left") {
+                button.append(icon, text);
+              } else {
+                button.append(text, icon);
+              }
+
               buttonContainer.appendChild(button);
             };
-            makeButton(prevTitle, "Last Week");
-            makeButton(nextTitle, "Next Week");
+            makeButton(prevTitle, "Last Week", "left");
+            makeButton(nextTitle, "Next Week", "right");
           });
         }
       }
