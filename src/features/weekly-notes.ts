@@ -92,6 +92,43 @@ const hasNodeContent = (node: InputTextNode | RoamBasicNode): boolean =>
 const hasSmartBlockSyntax = (node: RoamBasicNode): boolean =>
   node.text.includes("<%") || node.children.some(hasSmartBlockSyntax);
 
+type InstalledExtension = {
+  id?: string;
+  name?: string;
+  enabled?: boolean;
+  version?: string;
+};
+
+const isSmartBlocksEnabled = () => {
+  const getInstalledExtensions = (
+    window.roamAlphaAPI as typeof window.roamAlphaAPI & {
+      extension?: {
+        getInstalledExtensions?: () => Record<string, InstalledExtension>;
+      };
+    }
+  ).extension?.getInstalledExtensions;
+  if (!getInstalledExtensions) return true;
+
+  try {
+    const installedExtensions = getInstalledExtensions();
+    const smartblocks = Object.entries(installedExtensions).find(
+      ([key, extension]) => {
+        const id = (extension.id || key).toLowerCase();
+        const name = (extension.name || "").toLowerCase();
+        return (
+          id === "smartblocks" ||
+          id.endsWith("+smartblocks") ||
+          name === "smartblocks"
+        );
+      }
+    )?.[1];
+    return !!smartblocks && smartblocks.enabled !== false;
+  } catch (e) {
+    console.error(e);
+    return true;
+  }
+};
+
 const waitForSmartBlocks = () =>
   new Promise<typeof window.roamjs.extension.smartblocks | undefined>(
     (resolve) => {
@@ -99,6 +136,10 @@ const waitForSmartBlocks = () =>
       const smartblocks = getSmartBlocks();
       if (smartblocks) {
         resolve(smartblocks);
+        return;
+      }
+      if (!isSmartBlocksEnabled()) {
+        resolve(undefined);
         return;
       }
 
@@ -112,7 +153,7 @@ const waitForSmartBlocks = () =>
       const timeout = window.setTimeout(() => {
         cleanup();
         resolve(getSmartBlocks());
-      }, 5000);
+      }, 1500);
       const handleSmartBlocksLoaded = () => {
         cleanup();
         resolve(getSmartBlocks());
