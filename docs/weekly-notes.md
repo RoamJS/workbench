@@ -24,6 +24,14 @@ would create a page name of:
 
 For format, check out [this page](https://date-fns.org/v2.21.1/docs/format) for the syntax on what each symbol means.
 
+# Template
+
+You can add blocks under the `Template` setting on the `roam/js/weekly-notes` page. These blocks will be inserted when a new weekly note page is created.
+
+If the template includes SmartBlocks syntax like `<%DATE:In one week%>`, WorkBench will run the template through SmartBlocks when SmartBlocks is enabled. Relative dates are based on the start date parsed from the weekly page title, so `<%DATE:In one week%>` resolves to one week after that weekly note's start date.
+
+If SmartBlocks is not enabled, WorkBench will show a warning and copy the template blocks without processing the SmartBlocks commands.
+
 # Auto Tagging
 
 When a new weekly page is created, the weekly page will be tagged in all of the daily pages that are part of the week. The tag will be added as the top block on the page. This could be toggled on and off in the `roam/js/weekly-notes` page.
