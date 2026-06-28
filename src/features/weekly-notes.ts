@@ -443,12 +443,16 @@ export const toggleFeature = (
       return { prevTitle, nextTitle };
     };
 
-    const removeWeeklyNoteNav = () => {
+    let weeklyNoteNavHeader: HTMLHeadingElement | null = null;
+    const removeWeeklyNoteNav = (header?: HTMLElement) => {
+      if (header && header !== weeklyNoteNavHeader) return;
+
       const nav = document.getElementById(WEEKLY_NOTE_NAV_ID);
       if (nav) {
         ReactDOM.unmountComponentAtNode(nav);
         nav.remove();
       }
+      weeklyNoteNavHeader = null;
     };
 
     const renderWeeklyNoteNav = (
@@ -478,6 +482,7 @@ export const toggleFeature = (
         }),
         navContainer
       );
+      weeklyNoteNavHeader = header;
 
       return true;
     };
