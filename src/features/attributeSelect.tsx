@@ -110,7 +110,7 @@ const getTableCellBlockUidFromTarget = (
   target: HTMLElement,
 ): string | undefined => {
   const cell = target.closest(
-    "td[data-row][data-col]",
+    "td[data-row][data-col], th[data-row][data-col]",
   ) as HTMLTableCellElement | null;
   const table = cell?.closest(".rm-table") as HTMLElement | null;
   if (!cell || !table) return undefined;
