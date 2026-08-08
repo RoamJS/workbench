@@ -34,26 +34,26 @@ import {
   UnionField,
 } from "roamjs-components/components/ConfigPanels/types";
 import WeeklyNoteNav from "./WeeklyNoteNav";
+import {
+  formatWeeklyNoteTitle,
+  resolveSmartBlocksDate,
+  WEEKLY_NOTE_DATE_REGEX,
+  WEEKLY_NOTE_DAYS,
+} from "../utils/weeklyNotes";
 
 const ID = "weekly-notes";
-const DAYS = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-];
-const DATE_REGEX = new RegExp(`{(${DAYS.join("|")}):(.*?)}`, "g");
+const DAYS = WEEKLY_NOTE_DAYS;
+const DATE_REGEX = WEEKLY_NOTE_DATE_REGEX;
 const FORMAT_DEFAULT_VALUE = "{monday:MM/dd yyyy} - {sunday:MM/dd yyyy}";
 const CONFIG = `roam/js/${ID}`;
 const ROAM_TITLE_CONTAINER_CLASS = "rm-title-display-container";
 const WEEKLY_NOTE_NAV_ID = "roamjs-weekly-mode-nav";
+const SMARTBLOCK_COMMAND = "WORKBENCHWEEK";
+const SMARTBLOCKS_LOADED_EVENT = "roamjs:smartblocks:loaded";
 
 const formatCache = { current: "" };
-const getFormat = (tree?: TreeNode[]) =>
-  formatCache.current ||
+const getFormat = (tree?: TreeNode[], refresh = false): string =>
+  (!refresh && formatCache.current) ||
   (formatCache.current = getSettingValueFromTree({
     key: "format",
     defaultValue: FORMAT_DEFAULT_VALUE,
@@ -90,6 +90,13 @@ const parse = (...args: Parameters<typeof _parse>) => {
     return null;
   }
 };
+
+const getWeeklyPageTitle = (date: Date): string | null =>
+  formatWeeklyNoteTitle({
+    date,
+    format: getFormat(undefined, true),
+    formatDate: dateFnsFormat,
+  });
 
 const hasNodeContent = (node: InputTextNode | RoamBasicNode): boolean =>
   !!node.text.trim() || !!node.children?.some(hasNodeContent);
@@ -308,6 +315,42 @@ const navigateToPage = (pageName: string) => {
   }, timeout);
 };
 
+let registeredSmartBlocks:
+  | typeof window.roamjs.extension.smartblocks
+  | undefined;
+
+const unregisterSmartBlocksCommand = (): void => {
+  registeredSmartBlocks?.unregisterCommand(SMARTBLOCK_COMMAND);
+  registeredSmartBlocks = undefined;
+};
+
+const registerSmartBlocksCommand = (): void => {
+  const smartblocks = window.roamjs?.extension?.smartblocks;
+  if (!smartblocks || smartblocks === registeredSmartBlocks) return;
+
+  unregisterSmartBlocksCommand();
+  smartblocks.registerCommand({
+    text: SMARTBLOCK_COMMAND,
+    help: "Returns a link to the WorkBench weekly note containing a resolved date.\n\n1: Optional natural-language date expression. Defaults to today.",
+    handler:
+      ({ proccessBlockText }) =>
+      async (expression = "today") => {
+        const date = await resolveSmartBlocksDate({
+          expression,
+          processBlockText: proccessBlockText,
+          pageTitleToDate: (title) =>
+            window.roamAlphaAPI.util.pageTitleToDate(title) || null,
+        });
+        const pageTitle = getWeeklyPageTitle(date);
+        if (!pageTitle) {
+          throw new Error("Could not apply the configured weekly note format");
+        }
+        return `[[${pageTitle}]]`;
+      },
+  });
+  registeredSmartBlocks = smartblocks;
+};
+
 const unloads = new Set<() => void>();
 export const toggleFeature = (
   flag: boolean,
@@ -360,17 +403,23 @@ export const toggleFeature = (
       },
     }).then((a) => unloads.add(() => a.observer?.disconnect()));
 
+    const handleSmartBlocksLoaded = () => registerSmartBlocksCommand();
+    document.body.addEventListener(
+      SMARTBLOCKS_LOADED_EVENT,
+      handleSmartBlocksLoaded
+    );
+    unloads.add(() =>
+      document.body.removeEventListener(
+        SMARTBLOCKS_LOADED_EVENT,
+        handleSmartBlocksLoaded
+      )
+    );
+    unloads.add(unregisterSmartBlocksCommand);
+    registerSmartBlocksCommand();
+
     const goToThisWeek = () => {
-      const format = getFormat();
-      const today = new Date();
-      const weekStartsOn = DAYS.indexOf(
-        format.match(new RegExp(DATE_REGEX.source))?.[1] || "sunday"
-      ) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
-      const pageName = format.replace(DATE_REGEX, (_, day, f) => {
-        const dayOfWeek = setDay(today, DAYS.indexOf(day), { weekStartsOn });
-        return dateFnsFormat(dayOfWeek, f) ?? "";
-      });
-      navigateToPage(pageName);
+      const pageName = getWeeklyPageTitle(new Date());
+      if (pageName) navigateToPage(pageName);
     };
     const defaultHotkey = window.roamAlphaAPI.platform.isPC
       ? "alt-w"

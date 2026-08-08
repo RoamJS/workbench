@@ -4,6 +4,7 @@
   "scripts": {
     "prebuild:roam": "npm install",
     "build:roam": "samepage build --dry",
+    "test": "samepage test",
     "start": "samepage dev"
   },
   "dependencies": {

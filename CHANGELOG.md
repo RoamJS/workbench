@@ -9,6 +9,12 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 - Minor version bumps are released on a regular cadence.
 - Patch version bumps are for bugfixes and hotfixes.
 
+## [1.8.2] - 2026-08-08
+
+### Added
+
+- `WORKBENCHWEEK` SmartBlocks command - Resolve natural-language dates to links using the configured weekly note title format.
+
 ## [1.8.1] - 2026-06-28
 
 ### Fixed
