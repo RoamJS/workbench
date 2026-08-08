@@ -32,6 +32,24 @@ If the template includes SmartBlocks syntax like `<%DATE:In one week%>`, WorkBen
 
 If SmartBlocks is not enabled, WorkBench will show a warning and copy the template blocks without processing the SmartBlocks commands.
 
+# SmartBlocks command
+
+When Weekly Notes and SmartBlocks are enabled, WorkBench registers a `WORKBENCHWEEK` command that returns a link to the configured weekly note containing a resolved date.
+
+```plain text
+<%WORKBENCHWEEK%>
+<%WORKBENCHWEEK:This week%>
+<%WORKBENCHWEEK:Next week%>
+<%WORKBENCHWEEK:In three weeks%>
+<%WORKBENCHWEEK:Six weeks ago%>
+```
+
+The command uses SmartBlocks' natural-language `DATE` resolver and respects the active `DATEBASIS`. For example:
+
+```plain text
+<%DATEBASIS:DNP%><%WORKBENCHWEEK:In one week%>
+```
+
 # Auto Tagging
 
 When a new weekly page is created, the weekly page will be tagged in all of the daily pages that are part of the week. The tag will be added as the top block on the page. This could be toggled on and off in the `roam/js/weekly-notes` page.
