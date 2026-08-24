@@ -34,32 +34,33 @@ import {
   UnionField,
 } from "roamjs-components/components/ConfigPanels/types";
 import WeeklyNoteNav from "./WeeklyNoteNav";
+import {
+  formatWeeklyNotePageTitle,
+  getWeeklyNoteDayIndex,
+  resolveWeeklyNotePageTitle,
+  WEEKLY_NOTE_DATE_REGEX,
+  WEEKLY_NOTE_DAYS,
+  WEEKLY_NOTE_FORMAT_DEFAULT,
+} from "../utils/weeklyNotePage";
 
 const ID = "weekly-notes";
-const DAYS = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-];
-const DATE_REGEX = new RegExp(`{(${DAYS.join("|")}):(.*?)}`, "g");
-const FORMAT_DEFAULT_VALUE = "{monday:MM/dd yyyy} - {sunday:MM/dd yyyy}";
+const DAYS = WEEKLY_NOTE_DAYS;
+const DATE_REGEX = WEEKLY_NOTE_DATE_REGEX;
+const FORMAT_DEFAULT_VALUE = WEEKLY_NOTE_FORMAT_DEFAULT;
 const CONFIG = `roam/js/${ID}`;
 const ROAM_TITLE_CONTAINER_CLASS = "rm-title-display-container";
 const WEEKLY_NOTE_NAV_ID = "roamjs-weekly-mode-nav";
 
 const formatCache = { current: "" };
-const getFormat = (tree?: TreeNode[]) =>
-  formatCache.current ||
-  (formatCache.current = getSettingValueFromTree({
+const getFormat = (tree?: TreeNode[]) => {
+  if (!tree && formatCache.current) return formatCache.current;
+  return (formatCache.current = getSettingValueFromTree({
     key: "format",
     defaultValue: FORMAT_DEFAULT_VALUE,
     tree:
       tree || getFullTreeByParentUid(getPageUidByPageTitle(CONFIG)).children,
   }));
+};
 
 const dateFnsFormat = (...args: Parameters<typeof _dateFnsFormat>) => {
   try {
@@ -246,7 +247,7 @@ const createWeeklyPage = (pageName: string) => {
 
     try {
       if (date) {
-        const weekStartsOn = DAYS.indexOf(day) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+        const weekStartsOn = getWeeklyNoteDayIndex(day);
         const autoTag = tree.some((t) => toFlexRegex("auto tag").test(t.text));
         const autoEmbed = tree.some((t) =>
           toFlexRegex("auto embed").test(t.text)
@@ -362,14 +363,20 @@ export const toggleFeature = (
 
     const goToThisWeek = () => {
       const format = getFormat();
-      const today = new Date();
-      const weekStartsOn = DAYS.indexOf(
-        format.match(new RegExp(DATE_REGEX.source))?.[1] || "sunday"
-      ) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
-      const pageName = format.replace(DATE_REGEX, (_, day, f) => {
-        const dayOfWeek = setDay(today, DAYS.indexOf(day), { weekStartsOn });
-        return dateFnsFormat(dayOfWeek, f) ?? "";
-      });
+      let pageName = "";
+      try {
+        pageName = formatWeeklyNotePageTitle({
+          date: new Date(),
+          weeklyNoteFormat: format,
+        });
+      } catch (e) {
+        renderToast({
+          id: "weekly-notes-error",
+          content: `Invalid date format: ${(e as Error).message}`,
+          intent: "danger",
+        });
+        return;
+      }
       navigateToPage(pageName);
     };
     const defaultHotkey = window.roamAlphaAPI.platform.isPC
@@ -385,6 +392,52 @@ export const toggleFeature = (
         extensionAPI
       )
     );
+
+    const smartBlocksCommand = {
+      text: "WEEKLYNOTEPAGE",
+      help: "Returns the WorkBench weekly note page containing a natural-language date.",
+      handler:
+        ({
+          targetUid,
+          variables,
+        }: {
+          targetUid: string;
+          variables: Record<string, string>;
+        }) =>
+        (expression?: string) =>
+          `[[${resolveWeeklyNotePageTitle({
+            expression,
+            targetUid,
+            variables,
+            weeklyNoteFormat: getFormat(
+              getFullTreeByParentUid(getPageUidByPageTitle(CONFIG)).children,
+            ),
+          })}]]`,
+    };
+    let registeredSmartBlocks:
+      | typeof window.roamjs.extension.smartblocks
+      | undefined;
+    const registerSmartBlocksCommand = () => {
+      const smartblocks = window.roamjs?.extension?.smartblocks;
+      if (!smartblocks || registeredSmartBlocks === smartblocks) return;
+      smartblocks.registerCommand(smartBlocksCommand);
+      registeredSmartBlocks = smartblocks;
+    };
+    document.body.addEventListener(
+      "roamjs:smartblocks:loaded",
+      registerSmartBlocksCommand,
+    );
+    registerSmartBlocksCommand();
+    unloads.add(() => {
+      document.body.removeEventListener(
+        "roamjs:smartblocks:loaded",
+        registerSmartBlocksCommand,
+      );
+      if (registeredSmartBlocks) {
+        registeredSmartBlocks.unregisterCommand(smartBlocksCommand.text);
+        registeredSmartBlocks = undefined;
+      }
+    });
 
     const getFormatDateData = (title: string) => {
       const format = getFormat();
