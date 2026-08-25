@@ -338,9 +338,13 @@ const queueWeeklyPageInitialization = (pageName: string) => {
 
 const navigateToPage = (pageName: string) => {
   const existingPageUid = getPageUidByPageTitle(pageName);
-  const { pageUid, timeout } = existingPageUid
-    ? { pageUid: existingPageUid, timeout: 1 }
-    : { pageUid: createWeeklyPage(pageName), timeout: 500 };
+  const pageUid = existingPageUid || createPage({ title: pageName });
+  const timeout = existingPageUid ? 1 : 500;
+
+  if (!existingPageUid) {
+    Promise.resolve(pageUid).then(() => createWeeklyPage(pageName));
+  }
+
   setTimeout(() => {
     if (pageUid) {
       Promise.resolve(pageUid).then((uid) =>
