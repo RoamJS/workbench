@@ -8,6 +8,11 @@ import createBlock from "roamjs-components/writes/createBlock";
 import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
 import React from "react";
 import { addCommand } from "./workBench";
+import {
+  getItemAlternativeTexts,
+  getItemInitials,
+  preprocessItemText,
+} from "./deepnavKeys";
 
 type Breadcrumbs = { hash: string; title: string; uid?: string }[];
 
@@ -17,10 +22,12 @@ type Item = {
   mustBeKeys?: string | null;
   text?: string;
   initials?: string;
+  alternativeTexts?: string[];
   extraClasses?: string[];
 };
 
 let currentOptions: Record<string, Item> = {};
+let currentOptionAliases: Record<string, Item> = {};
 let currentNavigatePrefixesUsed: Record<string, boolean> = {};
 let navigateKeysPressed = "";
 
@@ -273,38 +280,6 @@ const addBlocks = (
   }
 };
 
-const preprocessItemText = (txt: string) => {
-  let result = "";
-  for (let i = 0; i < txt.length; i++) {
-    const char = txt[i];
-    const lowerChar = char.toLowerCase();
-    if (lowercaseCharIsAlpha(lowerChar)) {
-      result += lowerChar;
-    }
-  }
-  return result;
-};
-
-const getItemInitials = (txt: string) => {
-  let result = "";
-  for (let i = 0; i < txt.length; i++) {
-    const char = txt[i];
-    const lowerChar = char.toLowerCase();
-    if (
-      lowercaseCharIsAlpha(lowerChar) &&
-      (i === 0 || txt[i - 1] === " " || lowerChar !== char)
-    ) {
-      result += lowerChar;
-    }
-  }
-  return result;
-};
-
-const lowercaseCharIsAlpha = (char: string) => {
-  const code = char.charCodeAt(0);
-  return code > 96 && code < 123; // (a-z)
-};
-
 const addLinks = (linkItems: Item[], container: Element) => {
   const links = container.querySelectorAll<HTMLElement>(
     [".rm-page-ref", "a"].join(", ")
@@ -323,6 +298,7 @@ const addLinks = (linkItems: Item[], container: Element) => {
           mustBeKeys: null,
           text: preprocessItemText(text),
           initials: getItemInitials(text),
+          alternativeTexts: getItemAlternativeTexts(text),
           extraClasses: [LINK_HINT_CLASS],
           navigate,
         });
@@ -334,7 +310,16 @@ const addLinks = (linkItems: Item[], container: Element) => {
             })
           );
         } else if (link.classList.contains("rm-alias")) {
-          pushLink(link, async () => link.click());
+          const pageUid = link.getAttribute("data-link-uid");
+          pushLink(
+            link,
+            link.classList.contains("rm-alias--page") && pageUid
+              ? () =>
+                  window.roamAlphaAPI.ui.mainWindow.openPage({
+                    page: { uid: pageUid },
+                  })
+              : async () => link.click()
+          );
         } else if (link.hasAttribute("href") && link) {
           pushLink(link, async () => {
             const href = link.getAttribute("href");
@@ -344,21 +329,29 @@ const addLinks = (linkItems: Item[], container: Element) => {
           console.warn("Unexpected <a> element", link);
         }
       } else if (link.classList.contains("rm-page-ref")) {
-        const uidAttr = parent?.getAttribute("data-link-uid");
-        if (uidAttr && parent) {
+        const pageUid = parent?.getAttribute("data-link-uid");
+        const tag = link.getAttribute("data-tag");
+        const blockUid = link.getAttribute("data-link-uid");
+        if (pageUid && parent) {
           pushLink(parent, () =>
-            window.roamAlphaAPI.ui.mainWindow.openBlock({
-              block: { uid: uidAttr },
+            window.roamAlphaAPI.ui.mainWindow.openPage({
+              page: { uid: pageUid },
             })
           );
-        } else if (link.hasAttribute("data-tag")) {
+        } else if (tag) {
           pushLink(link, () =>
             window.roamAlphaAPI.ui.mainWindow.openPage({
-              page: { title: link.getAttribute("data-tag") ?? "" },
+              page: { title: tag },
+            })
+          );
+        } else if (blockUid) {
+          pushLink(link, () =>
+            window.roamAlphaAPI.ui.mainWindow.openBlock({
+              block: { uid: blockUid },
             })
           );
         } else {
-          console.warn("Unxpected .rm-page-ref element", link);
+          console.warn("Unexpected .rm-page-ref element", link);
         }
       }
     }
@@ -376,6 +369,7 @@ const endNavigate = () => {
   navigateKeysPressed = "";
   clearBreadcrumbs();
   currentOptions = {};
+  currentOptionAliases = {};
   removeOldTips();
   if (document.body.classList.contains(NAVIGATE_CLASS)) {
     document.body.classList.remove(NAVIGATE_CLASS);
@@ -443,6 +437,8 @@ const renderTip = (key: string, option: Item) => {
 
 // Assign keys to items based on their text.
 const assignKeysToItems = (items: Item[]) => {
+  const allItems = [...items];
+  const assignedItems = new Set<Item>();
   let item;
   let keys;
   let prefix;
@@ -470,6 +466,7 @@ const assignKeysToItems = (items: Item[]) => {
     const noAlias = noAliasing(ks);
     if (noAlias) {
       currentOptions[ks] = x;
+      assignedItems.add(x);
       for (let i = 1; i <= ks.length; i++) {
         currentNavigatePrefixesUsed[ks.slice(0, i)] = true;
       }
@@ -597,6 +594,18 @@ const assignKeysToItems = (items: Item[]) => {
       }
     }
   }
+  allItems.forEach((assignedItem) => {
+    if (!assignedItems.has(assignedItem)) return;
+    assignedItem.alternativeTexts?.forEach((alternativeText) => {
+      const alternativeKey = alternativeText.slice(0, MAX_NAVIGATE_PREFIX);
+      if (alternativeKey && noAliasing(alternativeKey)) {
+        currentOptionAliases[alternativeKey] = assignedItem;
+        for (let i = 1; i <= alternativeKey.length; i++) {
+          currentNavigatePrefixesUsed[alternativeKey.slice(0, i)] = true;
+        }
+      }
+    });
+  });
   // VARGAS-TODO items.forEach addResult(nextAvailableKey, item);
 };
 
@@ -681,6 +690,7 @@ const setupNavigate = () => {
               mustBeKeys: null,
               text: preprocessItemText(text),
               initials: getItemInitials(text),
+              alternativeTexts: getItemAlternativeTexts(text),
               navigate: () =>
                 window.roamAlphaAPI.ui.mainWindow.openPage({
                   page: { title: text },
@@ -803,6 +813,7 @@ export const navigate = () => {
   }
 
   currentOptions = {};
+  currentOptionAliases = {};
   currentNavigatePrefixesUsed = {};
   navigateKeysPressed = "";
   isNavigating = true;
@@ -840,7 +851,9 @@ const handleNavigateKey = (ev: KeyboardEvent) => {
     const key = eventToKey(ev);
     if (key) {
       navigateKeysPressed += key;
-      const option = currentOptions[navigateKeysPressed];
+      const option =
+        currentOptions[navigateKeysPressed] ||
+        currentOptionAliases[navigateKeysPressed];
       if (option) {
         option.navigate().then(endNavigate);
       } else if (!rerenderTips()) {
