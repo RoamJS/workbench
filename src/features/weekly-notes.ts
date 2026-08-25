@@ -280,15 +280,21 @@ const createWeeklyPage = (pageName: string) => {
             const dayDate = setDay(date, i, { weekStartsOn });
             const title = window.roamAlphaAPI.util.dateToPageTitle(dayDate);
             if (autoTag) {
+              const tagText = `#[[${pageName}]]`;
               tagPromises.push(
                 Promise.resolve(
                   getPageUidByPageTitle(title) || createPage({ title })
-                ).then((parentUid) =>
-                  createBlock({
-                    node: { text: `#[[${pageName}]]` },
-                    parentUid,
-                  })
-                )
+                ).then((parentUid) => {
+                  const tagExists = getFullTreeByParentUid(
+                    parentUid
+                  ).children.some(({ text }) => text === tagText);
+                  return tagExists
+                    ? undefined
+                    : createBlock({
+                        node: { text: tagText },
+                        parentUid,
+                      });
+                })
               );
             }
             if (autoEmbed) {
