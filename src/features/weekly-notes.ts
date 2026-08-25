@@ -50,6 +50,7 @@ const FORMAT_DEFAULT_VALUE = WEEKLY_NOTE_FORMAT_DEFAULT;
 const CONFIG = `roam/js/${ID}`;
 const ROAM_TITLE_CONTAINER_CLASS = "rm-title-display-container";
 const WEEKLY_NOTE_NAV_ID = "roamjs-weekly-mode-nav";
+const weeklyTemplatePageUids = new Set<string>();
 
 const formatCache = { current: "" };
 const getFormat = (tree?: TreeNode[]) => {
@@ -216,83 +217,123 @@ const renderWeeklyTemplate = async ({
     });
     await createBlocksFromTemplate({ templateNode, pageUid });
   } else if (smartblocks) {
-    await smartblocks.triggerSmartblock({
-      srcUid: templateNode.uid,
-      targetUid: pageUid,
-      variables: date ? { DATEBASISMETHOD: date.toJSON() } : undefined,
-    });
+    weeklyTemplatePageUids.add(pageUid);
+    try {
+      await smartblocks.triggerSmartblock({
+        srcUid: templateNode.uid,
+        targetUid: pageUid,
+        variables: date ? { DATEBASISMETHOD: date.toJSON() } : undefined,
+      });
+    } finally {
+      weeklyTemplatePageUids.delete(pageUid);
+    }
   } else {
     await createBlocksFromTemplate({ templateNode, pageUid });
   }
 };
 
+const weeklyPageInitializations = new Map<string, Promise<string>>();
 const createWeeklyPage = (pageName: string) => {
-  const weekUid = createPage({ title: pageName });
-  const tree = getFullTreeByParentUid(getPageUidByPageTitle(CONFIG)).children;
-  const format = getFormat(tree);
-  const [, day, dayFormat] = format.match(new RegExp(DATE_REGEX.source)) || [];
-  const firstDateFormatted = pageName.match(
-    new RegExp(
-      `^${format
-        .replace(/{(.*?)}/g, "(.*?)")
-        .replace(/\[/g, "\\[")
-        .replace(/\]/g, "\\]")}$`
-    )
-  )?.[1];
+  const activeInitialization = weeklyPageInitializations.get(pageName);
+  if (activeInitialization) return activeInitialization;
 
-  weekUid.then(async (pageUid) => {
-    const date = firstDateFormatted
-      ? parse(firstDateFormatted, dayFormat, new Date())
-      : null;
-
-    try {
-      if (date) {
-        const weekStartsOn = getWeeklyNoteDayIndex(day);
-        const autoTag = tree.some((t) => toFlexRegex("auto tag").test(t.text));
-        const autoEmbed = tree.some((t) =>
-          toFlexRegex("auto embed").test(t.text)
-        );
-        const tagPromises: Promise<unknown>[] = [];
-        const embedPromises: Promise<unknown>[] = [];
-        DAYS.forEach((_, i) => {
-          const dayDate = setDay(date, i, { weekStartsOn });
-          const title = window.roamAlphaAPI.util.dateToPageTitle(dayDate);
-          if (autoTag) {
-            tagPromises.push(
-              Promise.resolve(
-                getPageUidByPageTitle(title) || createPage({ title })
-              ).then((parentUid) =>
-                createBlock({ node: { text: `#[[${pageName}]]` }, parentUid })
-              )
-            );
-          }
-          if (autoEmbed) {
-            embedPromises.push(
-              createBlock({
-                node: { text: `{{[[embed]]:[[${title}]]}}` },
-                parentUid: pageUid,
-                order: (i - weekStartsOn + 7) % 7,
-              })
-            );
-          }
-        });
-        await Promise.all(embedPromises);
-        await renderWeeklyTemplate({ tree, pageUid, date });
-        await Promise.all(tagPromises);
-      } else {
-        await renderWeeklyTemplate({ tree, pageUid });
+  const weekUid = Promise.resolve(
+    getPageUidByPageTitle(pageName) || createPage({ title: pageName })
+  );
+  const initialization = weekUid
+    .then(async (pageUid) => {
+      if (getFullTreeByParentUid(pageUid).children.some(hasNodeContent)) {
+        return pageUid;
       }
-    } catch (e) {
-      console.error(e);
-      renderToast({
-        id: "weekly-notes-template-error",
-        content: `Weekly note template failed: ${(e as Error).message}`,
-        intent: "danger",
-      });
-    }
-    return pageUid;
-  });
-  return weekUid;
+
+      const tree = getFullTreeByParentUid(
+        getPageUidByPageTitle(CONFIG)
+      ).children;
+      const format = getFormat(tree);
+      const [, day, dayFormat] =
+        format.match(new RegExp(DATE_REGEX.source)) || [];
+      const firstDateFormatted = pageName.match(
+        new RegExp(
+          `^${format
+            .replace(/{(.*?)}/g, "(.*?)")
+            .replace(/\[/g, "\\[")
+            .replace(/\]/g, "\\]")}$`
+        )
+      )?.[1];
+
+      const date = firstDateFormatted
+        ? parse(firstDateFormatted, dayFormat, new Date())
+        : null;
+
+      try {
+        if (date) {
+          const weekStartsOn = getWeeklyNoteDayIndex(day);
+          const autoTag = tree.some((t) =>
+            toFlexRegex("auto tag").test(t.text)
+          );
+          const autoEmbed = tree.some((t) =>
+            toFlexRegex("auto embed").test(t.text)
+          );
+          const tagPromises: Promise<unknown>[] = [];
+          const embedPromises: Promise<unknown>[] = [];
+          DAYS.forEach((_, i) => {
+            const dayDate = setDay(date, i, { weekStartsOn });
+            const title = window.roamAlphaAPI.util.dateToPageTitle(dayDate);
+            if (autoTag) {
+              tagPromises.push(
+                Promise.resolve(
+                  getPageUidByPageTitle(title) || createPage({ title })
+                ).then((parentUid) =>
+                  createBlock({
+                    node: { text: `#[[${pageName}]]` },
+                    parentUid,
+                  })
+                )
+              );
+            }
+            if (autoEmbed) {
+              embedPromises.push(
+                createBlock({
+                  node: { text: `{{[[embed]]:[[${title}]]}}` },
+                  parentUid: pageUid,
+                  order: (i - weekStartsOn + 7) % 7,
+                })
+              );
+            }
+          });
+          await Promise.all(embedPromises);
+          await renderWeeklyTemplate({ tree, pageUid, date });
+          await Promise.all(tagPromises);
+        } else {
+          await renderWeeklyTemplate({ tree, pageUid });
+        }
+      } catch (e) {
+        console.error(e);
+        renderToast({
+          id: "weekly-notes-template-error",
+          content: `Weekly note template failed: ${(e as Error).message}`,
+          intent: "danger",
+        });
+      }
+      return pageUid;
+    })
+    .finally(() => {
+      if (weeklyPageInitializations.get(pageName) === initialization) {
+        weeklyPageInitializations.delete(pageName);
+      }
+    });
+
+  weeklyPageInitializations.set(pageName, initialization);
+  return initialization;
+};
+
+let weeklyPageInitializationQueue = Promise.resolve<unknown>(undefined);
+const queueWeeklyPageInitialization = (pageName: string) => {
+  const initialization = weeklyPageInitializationQueue.then(() =>
+    createWeeklyPage(pageName)
+  );
+  weeklyPageInitializationQueue = initialization.catch(() => undefined);
+  return initialization;
 };
 
 const navigateToPage = (pageName: string) => {
@@ -395,24 +436,45 @@ export const toggleFeature = (
 
     const smartBlocksCommand = {
       text: "WEEKLYNOTEPAGE",
-      help: "Returns the WorkBench weekly note page containing a natural-language date.",
+      help: "Returns the WorkBench weekly note page containing a natural-language date, creating and initializing it when empty.",
       handler:
         ({
           targetUid,
           variables,
+          afterWorkflowMethods,
         }: {
           targetUid: string;
           variables: Record<string, string>;
+          afterWorkflowMethods?: (() => void | Promise<void>)[];
         }) =>
-        (expression?: string) =>
-          `[[${resolveWeeklyNotePageTitle({
+        async (expression?: string) => {
+          const pageName = resolveWeeklyNotePageTitle({
             expression,
             targetUid,
             variables,
             weeklyNoteFormat: getFormat(
               getFullTreeByParentUid(getPageUidByPageTitle(CONFIG)).children,
             ),
-          })}]]`,
+          });
+          if (!weeklyTemplatePageUids.has(targetUid)) {
+            const pageUid =
+              getPageUidByPageTitle(pageName) ||
+              (await createPage({ title: pageName }));
+            const isEmpty = !getFullTreeByParentUid(pageUid).children.some(
+              hasNodeContent
+            );
+            if (isEmpty) {
+              const initialize = () =>
+                queueWeeklyPageInitialization(pageName).then(() => undefined);
+              if (afterWorkflowMethods) {
+                afterWorkflowMethods.push(initialize);
+              } else {
+                window.setTimeout(initialize, 0);
+              }
+            }
+          }
+          return `[[${pageName}]]`;
+        },
     };
     let registeredSmartBlocks:
       | typeof window.roamjs.extension.smartblocks

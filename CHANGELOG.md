@@ -13,7 +13,7 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 
 ### Added
 
-- Weekly note page SmartBlocks command - `<%WEEKLYNOTEPAGE:In one week%>` resolves SmartBlocks natural-language dates and `DATEBASIS` into the configured WorkBench weekly page title.
+- Weekly note page SmartBlocks command - `<%WEEKLYNOTEPAGE:In one week%>` resolves SmartBlocks natural-language dates and `DATEBASIS` into the configured WorkBench weekly page title, creating and initializing the page from the weekly template when it is missing or empty.
 
 ## [1.8.1] - 2026-06-28
 
