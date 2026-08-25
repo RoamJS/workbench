@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   getItemAlternativeTexts,
   getItemInitials,
+  hasMatchingKeyPrefix,
   preprocessItemText,
 } from "./deepnavKeys";
 
@@ -25,4 +26,9 @@ test("creates keys from mixed Chinese alias text", () => {
 
 test("does not add alternative keys for Latin-only text", () => {
   assert.deepEqual(getItemAlternativeTexts("Project Alpha"), []);
+});
+
+test("keeps navigation active while a hidden full-pinyin key is partial", () => {
+  assert.equal(hasMatchingKeyPrefix(["zh"], "z"), true);
+  assert.equal(hasMatchingKeyPrefix(["zh"], "x"), false);
 });

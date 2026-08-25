@@ -11,6 +11,7 @@ import { addCommand } from "./workBench";
 import {
   getItemAlternativeTexts,
   getItemInitials,
+  hasMatchingKeyPrefix,
   preprocessItemText,
 } from "./deepnavKeys";
 
@@ -379,11 +380,15 @@ const endNavigate = () => {
 const rerenderTips = () => {
   updateBreadcrumbs();
   removeOldTips();
-  return Object.entries(currentOptions)
+  const renderedVisibleTip = Object.entries(currentOptions)
     .map(([k, opt]) => {
       return renderTip(k, opt);
     })
     .some((s) => !!s);
+  return (
+    renderedVisibleTip ||
+    hasMatchingKeyPrefix(Object.keys(currentOptionAliases), navigateKeysPressed)
+  );
 };
 
 const renderTip = (key: string, option: Item) => {

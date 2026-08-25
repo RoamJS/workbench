@@ -41,3 +41,6 @@ export const getItemInitials = (text: string) => {
     })
     .join("");
 };
+
+export const hasMatchingKeyPrefix = (keys: string[], prefix: string) =>
+  keys.some((key) => key.startsWith(prefix));
