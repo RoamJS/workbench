@@ -502,12 +502,7 @@ const AttributeConfigPanel = ({
         `[:find
             (pull ?page [:node/title])
           :where
-            [?b :attrs/lookup _]
-            [?b :entity/attrs ?a]
-            [(untuple ?a) [[?c ?d]]]
-            [(get ?d :value) ?s]
-            [(untuple ?s) [?e ?uid]]
-            [?page :block/uid ?uid]
+            [_ :harc/a ?page]
           ]`,
       )) as [PullBlock][];
     const attributesInGraph = results.map((p) => p[0]?.[":node/title"] || "");
