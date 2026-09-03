@@ -9,6 +9,12 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 - Minor version bumps are released on a regular cadence.
 - Patch version bumps are for bugfixes and hotfixes.
 
+## [1.8.3] - 2026-09-03
+
+### Fixed
+
+- Attribute Select - "Refresh attributes" now reads the attribute pages in the graph from Roam's new attributes data model (`:harc/a`); the old `:entity/attrs` data this query relied on is removed by Roam's attributes migration.
+
 ## [1.8.1] - 2026-06-28
 
 ### Fixed
