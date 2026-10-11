@@ -4,7 +4,8 @@
   "scripts": {
     "prebuild:roam": "npm install",
     "build:roam": "samepage build --dry",
-    "start": "samepage dev"
+    "start": "samepage dev",
+    "test": "playwright test tests/weeklyNotePage.spec.ts --workers=1 --reporter=list --output=local/test-results"
   },
   "dependencies": {
     "@mozilla/readability": "^0.3.0",

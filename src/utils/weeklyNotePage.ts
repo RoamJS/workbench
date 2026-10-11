@@ -1,9 +1,5 @@
 import format from "date-fns/format";
 import setDay from "date-fns/setDay";
-import { DAILY_NOTE_PAGE_REGEX } from "roamjs-components/date/constants";
-import parseNlpDate from "roamjs-components/date/parseNlpDate";
-import getPageTitleByBlockUid from "roamjs-components/queries/getPageTitleByBlockUid";
-import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
 
 export const WEEKLY_NOTE_DAYS = [
   "sunday",
@@ -20,7 +16,7 @@ export const WEEKLY_NOTE_FORMAT_DEFAULT =
 
 export const WEEKLY_NOTE_DATE_REGEX = new RegExp(
   `{(${WEEKLY_NOTE_DAYS.join("|")}):(.*?)}`,
-  "g",
+  "g"
 );
 
 type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -33,7 +29,7 @@ export const getWeeklyNoteDayIndex = (day: string): WeekStartsOn => {
 const getWeekStartsOn = (weeklyNoteFormat: string): WeekStartsOn =>
   getWeeklyNoteDayIndex(
     weeklyNoteFormat.match(new RegExp(WEEKLY_NOTE_DATE_REGEX.source))?.[1] ||
-      "sunday",
+      "sunday"
   );
 
 export const formatWeeklyNotePageTitle = ({
@@ -42,7 +38,7 @@ export const formatWeeklyNotePageTitle = ({
 }: {
   date: Date;
   weeklyNoteFormat: string;
-}) => {
+}): string => {
   const weekStartsOn = getWeekStartsOn(weeklyNoteFormat);
   return weeklyNoteFormat.replace(
     WEEKLY_NOTE_DATE_REGEX,
@@ -50,50 +46,37 @@ export const formatWeeklyNotePageTitle = ({
       format(
         setDay(date, getWeeklyNoteDayIndex(day), { weekStartsOn }),
         dayFormat,
-        { useAdditionalWeekYearTokens: true },
-      ),
+        { useAdditionalWeekYearTokens: true }
+      )
   );
 };
 
-const getSmartBlocksDateBasis = ({
-  targetUid,
-  variables,
-}: {
-  targetUid: string;
-  variables: Record<string, string>;
-}) => {
-  const dateBasisMethod = variables.DATEBASISMETHOD;
-  if (dateBasisMethod === "DNP") {
-    const title =
-      getPageTitleByBlockUid(targetUid) || getPageTitleByPageUid(targetUid);
-    const date = DAILY_NOTE_PAGE_REGEX.test(title)
-      ? window.roamAlphaAPI.util.pageTitleToDate(title) || new Date()
-      : new Date();
-    const now = new Date();
-    date.setHours(now.getHours());
-    date.setMinutes(now.getMinutes());
-    return date;
-  }
+export type ProcessSmartBlocksText = (
+  text: string
+) => Promise<{ text: string }[]>;
 
-  if (dateBasisMethod) return new Date(dateBasisMethod);
-  return new Date();
-};
-
-export const resolveWeeklyNotePageTitle = ({
+export const resolveWeeklyNotePageTitle = async ({
   expression = "today",
-  targetUid,
-  variables,
+  processBlockText,
+  pageTitleToDate,
   weeklyNoteFormat,
 }: {
   expression?: string;
-  targetUid: string;
-  variables: Record<string, string>;
+  processBlockText: ProcessSmartBlocksText;
+  pageTitleToDate: (title: string) => Date | null;
   weeklyNoteFormat: string;
-}) => {
-  const dateBasis = getSmartBlocksDateBasis({ targetUid, variables });
-  const resolvedDate = parseNlpDate(expression || "today", dateBasis);
-  return formatWeeklyNotePageTitle({
-    date: /^\s*this\s+week\s*$/i.test(expression) ? dateBasis : resolvedDate,
-    weeklyNoteFormat,
-  });
+}): Promise<string> => {
+  // SmartBlocks can resolve "this week" to Sunday, outside a Monday-based week.
+  // "today" preserves its active DATEBASIS while selecting the containing week.
+  const dateExpression = /^\s*this\s+week\s*$/i.test(expression)
+    ? "today"
+    : expression || "today";
+  const blocks = await processBlockText(`<%DATE:${dateExpression}%>`);
+  const output = blocks[0]?.text?.trim() || "";
+  const pageTitle = /^\[\[(.*)\]\]$/.exec(output)?.[1];
+  const date = pageTitle ? pageTitleToDate(pageTitle) : null;
+  if (!date || Number.isNaN(date.valueOf())) {
+    throw new Error(`Could not resolve "${dateExpression}" to a date`);
+  }
+  return formatWeeklyNotePageTitle({ date, weeklyNoteFormat });
 };

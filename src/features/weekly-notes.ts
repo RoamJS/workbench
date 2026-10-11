@@ -36,6 +36,7 @@ import {
 import WeeklyNoteNav from "./WeeklyNoteNav";
 import {
   formatWeeklyNotePageTitle,
+  ProcessSmartBlocksText,
   getWeeklyNoteDayIndex,
   resolveWeeklyNotePageTitle,
   WEEKLY_NOTE_DATE_REGEX,
@@ -450,29 +451,29 @@ export const toggleFeature = (
       handler:
         ({
           targetUid,
-          variables,
+          proccessBlockText,
           afterWorkflowMethods,
         }: {
           targetUid: string;
-          variables: Record<string, string>;
+          proccessBlockText: ProcessSmartBlocksText;
           afterWorkflowMethods?: (() => void | Promise<void>)[];
         }) =>
         async (expression?: string) => {
-          const pageName = resolveWeeklyNotePageTitle({
+          const pageName = await resolveWeeklyNotePageTitle({
             expression,
-            targetUid,
-            variables,
+            processBlockText: proccessBlockText,
+            pageTitleToDate: (title) =>
+              window.roamAlphaAPI.util.pageTitleToDate(title) || null,
             weeklyNoteFormat: getFormat(
-              getFullTreeByParentUid(getPageUidByPageTitle(CONFIG)).children,
+              getFullTreeByParentUid(getPageUidByPageTitle(CONFIG)).children
             ),
           });
           if (!weeklyTemplatePageUids.has(targetUid)) {
             const pageUid =
               getPageUidByPageTitle(pageName) ||
               (await createPage({ title: pageName }));
-            const isEmpty = !getFullTreeByParentUid(pageUid).children.some(
-              hasNodeContent
-            );
+            const isEmpty =
+              !getFullTreeByParentUid(pageUid).children.some(hasNodeContent);
             if (isEmpty) {
               const initialize = () =>
                 queueWeeklyPageInitialization(pageName).then(() => undefined);
@@ -497,13 +498,13 @@ export const toggleFeature = (
     };
     document.body.addEventListener(
       "roamjs:smartblocks:loaded",
-      registerSmartBlocksCommand,
+      registerSmartBlocksCommand
     );
     registerSmartBlocksCommand();
     unloads.add(() => {
       document.body.removeEventListener(
         "roamjs:smartblocks:loaded",
-        registerSmartBlocksCommand,
+        registerSmartBlocksCommand
       );
       if (registeredSmartBlocks) {
         registeredSmartBlocks.unregisterCommand(smartBlocksCommand.text);
