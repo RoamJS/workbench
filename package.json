@@ -8,7 +8,7 @@
     "test": "playwright test tests/weeklyNotePage.spec.ts --workers=1 --reporter=list --output=local/test-results"
   },
   "dependencies": {
-    "@mozilla/readability": "^0.3.0",
+    "@mozilla/readability": "^0.6.0",
     "buffer": "^6.0.3",
     "charset": "^1.0.1",
     "color": "^4.2.3",
