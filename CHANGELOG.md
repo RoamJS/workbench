@@ -9,6 +9,13 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 - Minor version bumps are released on a regular cadence.
 - Patch version bumps are for bugfixes and hotfixes.
 
+## [Unreleased]
+
+### Changed
+
+- Attribute Select yields to the compatible standalone plugin regardless of load order and resumes when it is disabled, without changing the WorkBench module setting.
+- Attribute Select cleans up its controls and settings panel when suspended or disabled, including pending startup and delayed callbacks.
+
 ## [1.9.0] - 2026-08-24
 
 ### Added
