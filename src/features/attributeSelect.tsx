@@ -39,8 +39,25 @@ import setInputSetting from "roamjs-components/util/setInputSetting";
 import setInputSettings from "roamjs-components/util/setInputSettings";
 import getSettingValueFromTree from "roamjs-components/util/getSettingValueFromTree";
 import fuzzy from "fuzzy";
+import {
+  FEATURE_PRIORITY,
+  FeatureRegistration,
+  registerFeatureProvider,
+} from "../shared/featureOwnership";
 
 const CONFIG = `roam/js/attribute-select`;
+
+const useIsCurrentRuntime = (): (() => boolean) => {
+  const instanceGeneration = useRef(generation);
+  const mounted = useRef(true);
+  useEffect(
+    () => () => {
+      mounted.current = false;
+    },
+    [],
+  );
+  return () => mounted.current && instanceGeneration.current === generation;
+};
 
 const TEMPLATE_MAP = {
   "No styling": {
@@ -308,6 +325,7 @@ const AttributeButton = ({
   attributeName: string;
   uid: string;
 }) => {
+  const isCurrent = useIsCurrentRuntime();
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
   const [currentValue, setCurrentValue] = useState("");
@@ -329,6 +347,7 @@ const AttributeButton = ({
 
   useEffect(() => {
     if (!isOpen) return;
+    let cancelled = false;
     const optionsNode = getSubTree({
       key: "options",
       parentUid: attributeUid,
@@ -358,6 +377,7 @@ const AttributeButton = ({
             srcUid: optionsNode.uid,
           })
           .then((r) => {
+            if (cancelled || !isCurrent()) return;
             const results = r as InputTextNode[];
             setOptions(results.map((t) => t.text) || []);
           });
@@ -367,6 +387,9 @@ const AttributeButton = ({
     }
     const regex = new RegExp(`^${attributeName}::\\s*`);
     setCurrentValue(getTextByBlockUid(uid).replace(regex, "").trim());
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen]);
   const [sliderValue, setSliderValue] = useState(0);
   useEffect(() => {
@@ -438,6 +461,9 @@ const renderAttributeButton = (
   blockUid: string,
 ) => {
   const containerSpan = document.createElement("span");
+  mounts.set(containerSpan, () =>
+    parent.removeAttribute("data-roamjs-attribute-select"),
+  );
   [
     "pointerdown",
     "mousedown",
@@ -462,6 +488,9 @@ const AttributeConfigPanel = ({
   onAdd: (attr: string) => void;
   onRemove: (attr: string) => void;
 }) => {
+  const isCurrent = useIsCurrentRuntime();
+  const discoveryTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(discoveryTimer.current), []);
   const [isLoading, setIsLoading] = useState(false);
   const [query, setQuery] = useState("");
   const [value, setValue] = useState("");
@@ -510,6 +539,7 @@ const AttributeConfigPanel = ({
             [?page :block/uid ?uid]
           ]`,
       )) as [PullBlock][];
+    if (!isCurrent()) return;
     const attributesInGraph = results.map((p) => p[0]?.[":node/title"] || "");
     if (attributesInGraph.length === 0) {
       setNoAttributesInGraph(true);
@@ -557,6 +587,7 @@ const AttributeConfigPanel = ({
       parentUid: attributesUid,
     });
 
+    if (!isCurrent()) return;
     setDefinedAttributes([...definedAttributes, value]);
     setActiveTab(value);
     setValue("");
@@ -602,9 +633,10 @@ const AttributeConfigPanel = ({
               loading={isLoading}
               onClick={() => {
                 setIsLoading(true);
-                setTimeout(async () => {
+                discoveryTimer.current = setTimeout(async () => {
+                  if (!isCurrent()) return;
                   await getAttributesInGraph();
-
+                  if (!isCurrent()) return;
                   setIsLoading(false);
                   focusAndOpenSelect();
                 }, 0);
@@ -652,6 +684,7 @@ const TabsPanel = ({
   attributesUid: string;
   handleRemoveAttribute: (attribute: string) => void;
 }) => {
+  const isCurrent = useIsCurrentRuntime();
   const [potentialOptions, setPotentialOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState("");
   const [showPossibleOptions, setShowPotentialOptions] = useState(false);
@@ -728,6 +761,9 @@ const TabsPanel = ({
         uid: optionsNode.uid,
         el,
       });
+      return () => {
+        ReactDOM.unmountComponentAtNode(el);
+      };
     }
   }, [contentRef, optionType]);
 
@@ -1018,6 +1054,7 @@ const TabsPanel = ({
               rightIcon={"trash"}
               onClick={() => {
                 deleteBlock(attributeUid).then(() => {
+                  if (!isCurrent()) return;
                   handleRemoveAttribute(attributeName);
                 });
               }}
@@ -1079,6 +1116,7 @@ const renderConfigPage = ({
     const parent = document.createElement("div");
     const configPageId = "attribute-select";
     parent.id = `${configPageId}-config`;
+    mounts.set(parent, () => containerParent.removeAttribute(attribute));
     containerParent.insertBefore(
       parent,
       h.parentElement?.nextElementSibling || null,
@@ -1087,16 +1125,36 @@ const renderConfigPage = ({
   }
 };
 
+// Only remove React roots and markers owned by this WorkBench activation.
+const mounts = new Map<HTMLElement, () => void>();
+const removeMount = (mount: HTMLElement): void => {
+  ReactDOM.unmountComponentAtNode(mount);
+  mounts.get(mount)?.();
+  mounts.delete(mount);
+  mount.remove();
+};
+const removeDetachedMounts = (): void => {
+  mounts.forEach((_, mount) => {
+    if (!mount.isConnected) removeMount(mount);
+  });
+};
 let definedAttributes: string[] = [];
-let attributeObserver: MutationObserver;
-const updateAttributeObserver = () => {
-  if (attributeObserver) {
-    attributeObserver.disconnect();
-  }
+let attributeObserver: MutationObserver | undefined;
+let generation = 0;
+const unloads = new Set<() => void>();
+
+const updateAttributeObserver = (): void => {
+  const currentGeneration = generation;
+  attributeObserver?.disconnect();
+  mounts.forEach((_, mount) => {
+    if (mount.tagName === "SPAN") removeMount(mount);
+  });
   attributeObserver = createHTMLObserver({
     className: "rm-attr-ref",
     tag: "SPAN",
+    removeCallback: removeDetachedMounts,
     callback: (s: HTMLSpanElement) => {
+      if (currentGeneration !== generation) return;
       const blockUid = getAttributeBlockUidFromTarget(s);
       const attributeUid = s.getAttribute("data-link-uid");
       const attributeName = attributeUid
@@ -1113,62 +1171,96 @@ const updateAttributeObserver = () => {
     },
   });
 };
-const unloads = new Set<() => void>();
-export const toggleFeature = async (flag: boolean) => {
-  if (flag) {
-    addStyle(`
-      .inline-menu-item-select > span > div {display:inline} 
-      #attribute-select-config .rm-block-separator {display: none;}
-    `);
 
+const stopAttributeSelect = (): void => {
+  generation += 1;
+  unloads.forEach((unload) => unload());
+  unloads.clear();
+  attributeObserver?.disconnect();
+  attributeObserver = undefined;
+  mounts.forEach((_, mount) => removeMount(mount));
+  definedAttributes = [];
+};
+
+const startAttributeSelect = async ({
+  signal,
+}: {
+  signal: AbortSignal;
+}): Promise<void> => {
+  stopAttributeSelect();
+  const currentGeneration = generation;
+  const pageUid =
+    getPageUidByPageTitle(CONFIG) ||
+    (await createPage({ title: CONFIG, tree: [{ text: "attributes" }] }));
+  if (signal.aborted || currentGeneration !== generation) return;
+  const style = addStyle(`
+    .inline-menu-item-select > span > div {display:inline}
+    #attribute-select-config .rm-block-separator {display: none;}
+  `);
+  unloads.add(() => style.remove());
+  definedAttributes = getDefinedAttributes();
+  const observer = createHTMLObserver({
+    className: "rm-title-display",
+    tag: "H1",
+    removeCallback: removeDetachedMounts,
+    callback: (d: HTMLElement) => {
+      if (currentGeneration !== generation) return;
+      const h = d as HTMLHeadingElement;
+      if (h.innerText === CONFIG) {
+        renderConfigPage({
+          pageUid,
+          h,
+          onAdd: (attr: string) => {
+            if (currentGeneration !== generation) return;
+            definedAttributes.push(attr);
+            updateAttributeObserver();
+          },
+          onRemove: (attr: string) => {
+            if (currentGeneration !== generation) return;
+            definedAttributes = definedAttributes.filter((a) => a !== attr);
+            updateAttributeObserver();
+          },
+        });
+      }
+    },
+  });
+  unloads.add(() => observer.disconnect());
+  updateAttributeObserver();
+  const refreshAttributeSelect = (): void => {
+    if (currentGeneration !== generation) return;
     definedAttributes = getDefinedAttributes();
-    const pageUid =
-      getPageUidByPageTitle(CONFIG) ||
-      (await createPage({
-        title: CONFIG,
-        tree: [{ text: "attributes" }],
-      }));
-
-    const observer = createHTMLObserver({
-      className: "rm-title-display",
-      tag: "H1",
-      callback: (d: HTMLElement) => {
-        const h = d as HTMLHeadingElement;
-        if (h.innerText === CONFIG) {
-          renderConfigPage({
-            pageUid,
-            h,
-            onAdd: (attr: string) => {
-              definedAttributes.push(attr);
-              updateAttributeObserver();
-            },
-            onRemove: (attr: string) => {
-              definedAttributes = definedAttributes.filter((a) => a !== attr);
-              updateAttributeObserver();
-            },
-          });
-        }
-      },
-    });
-
     updateAttributeObserver();
-
-    window.roamjs.extension.workbench = {
-      refreshAttributeSelect: () => {
-        definedAttributes = getDefinedAttributes();
-        updateAttributeObserver();
-      },
-    };
-
-    unloads.add(() => {
-      observer.disconnect();
-      attributeObserver.disconnect();
-    });
-  } else {
-    unloads.forEach((u) => u());
-    unloads.clear();
-    if (window.roamjs?.extension?.workbench?.refreshAttributeSelect) {
-      delete window.roamjs.extension.workbench.refreshAttributeSelect;
+  };
+  window.roamjs = window.roamjs || {};
+  window.roamjs.extension = window.roamjs.extension || {};
+  const workbench = window.roamjs.extension.workbench || {};
+  window.roamjs.extension.workbench = workbench;
+  workbench.refreshAttributeSelect = refreshAttributeSelect;
+  unloads.add(() => {
+    if (workbench.refreshAttributeSelect === refreshAttributeSelect) {
+      delete workbench.refreshAttributeSelect;
     }
+  });
+};
+
+let registration: FeatureRegistration | undefined;
+
+// Registration represents the user's enabled setting, including while suspended.
+export const toggleFeature = async (flag: boolean): Promise<void> => {
+  if (!flag) {
+    const previous = registration;
+    registration = undefined;
+    await previous?.release();
+    return;
   }
+  if (!registration) {
+    registration = registerFeatureProvider({
+      feature: "attribute-select",
+      id: "roamjs.workbench",
+      priority: FEATURE_PRIORITY.bundled,
+      start: startAttributeSelect,
+      stop: stopAttributeSelect,
+    });
+  }
+  await registration.ready;
 };
