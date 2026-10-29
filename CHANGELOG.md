@@ -23,6 +23,7 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 
 ### Fixed
 
+- Disabling WorkBench during the first Live Preview settings migration no longer allows delayed startup to reactivate features.
 - Keep unpinned previews open while the pointer moves into editable Roam content, preserve native block bullets, and align person-page icons with their titles.
 - Remove extra spacing inside the settings example page link.
 - Live Preview's resize control has its own corner outside the scrolling area, including at small sizes.

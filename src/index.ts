@@ -214,7 +214,8 @@ export const FEATURES: Feature[] = [
 export default runExtension(async ({ extensionAPI, extension }) => {
   tutorials.setVersion(extension.version);
 
-  await loadLivePreviewSettings(extensionAPI.settings, getLegacySetting).catch(
+  // Settings storage must not delay registration of the extension unload handler.
+  void loadLivePreviewSettings(extensionAPI.settings, getLegacySetting).catch(
     (error: unknown) =>
       console.error(
         "WorkBench could not initialize Live Preview settings",
