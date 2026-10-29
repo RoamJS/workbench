@@ -9,6 +9,26 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 - Minor version bumps are released on a regular cadence.
 - Patch version bumps are for bugfixes and hotfixes.
 
+## [1.10.0] - 2026-10-29
+
+### Added
+
+- Live Preview windows can be moved, resized, pinned, and minimized in place. Pinned pages return after reloading Roam with their saved position, size, and minimized state.
+- Live Preview settings now include width presets and an editable sample preview. Try changes before saving them in WorkBench's extension settings.
+
+### Changed
+
+- The settings sample floats across the full screen, with collapsible controls for more room to move and resize it.
+- Existing Live Preview settings are imported once from `42Setting` blocks. Other WorkBench features keep their existing settings.
+
+### Fixed
+
+- Disabling WorkBench during the first Live Preview settings migration no longer allows delayed startup to reactivate features.
+- Keep unpinned previews open while the pointer moves into editable Roam content, preserve native block bullets, and align person-page icons with their titles.
+- Remove extra spacing inside the settings example page link.
+- Live Preview's resize control has its own corner outside the scrolling area, including at small sizes.
+- Disabling Live Preview removes its event listeners, timers, and rendered pages while preserving saved pinned windows.
+
 ## [1.9.0] - 2026-08-24
 
 ### Added

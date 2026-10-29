@@ -5,7 +5,7 @@
     "prebuild:roam": "npm install",
     "build:roam": "samepage build --dry",
     "start": "samepage dev",
-    "test": "playwright test tests/weeklyNotePage.spec.ts --workers=1 --reporter=list --output=local/test-results"
+    "test": "playwright test tests/*.spec.ts --workers=1 --reporter=list --output=local/test-results"
   },
   "dependencies": {
     "@mozilla/readability": "^0.3.0",
@@ -22,9 +22,11 @@
     "@types/charset": "^1.0.2",
     "@types/color": "^3.0.3",
     "@types/mozilla-readability": "^0.2.0",
-    "@types/turndown": "^5.0.1"
+    "@types/turndown": "^5.0.1",
+    "esbuild": "0.17.14",
+    "jsdom": "20.0.3"
   },
-  "version": "1.9.0",
+  "version": "1.10.0",
   "samepage": {
     "extends": "node_modules/roamjs-components/package.json"
   }

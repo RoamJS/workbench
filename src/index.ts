@@ -22,6 +22,8 @@ import * as tally from "./features/tally";
 import * as tutorials from "./features/tutorials";
 import * as weeklyNotes from "./features/weekly-notes";
 import SettingsTable from "./components/SettingsTable";
+import { loadSettings as loadLivePreviewSettings } from "./features/livePreviewSettings";
+import { get as getLegacySetting } from "./settings";
 
 export type Feature = {
   id: string;
@@ -211,6 +213,15 @@ export const FEATURES: Feature[] = [
 
 export default runExtension(async ({ extensionAPI, extension }) => {
   tutorials.setVersion(extension.version);
+
+  // Settings storage must not delay registration of the extension unload handler.
+  void loadLivePreviewSettings(extensionAPI.settings, getLegacySetting).catch(
+    (error: unknown) =>
+      console.error(
+        "WorkBench could not initialize Live Preview settings",
+        error
+      )
+  );
 
   const initialSettings: { [key: string]: boolean } = {};
   FEATURES.forEach(({ id, module }) => {

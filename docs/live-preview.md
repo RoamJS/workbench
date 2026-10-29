@@ -1,46 +1,31 @@
-# Overview
+# Live Preview
 
-Live Preview allows you to hover over a page or block reference and preview editable contents of that page or block, without leaving the page you are on.
+Enable **Live Preview** in WorkBench's extension settings, then hover over a page link or tag. An editable page opens beside the link without changing your main page. Use Roam's normal block editing and linked references inside the preview.
 
-This allows you to stay in the context of your work without having to navigate to another page to see its content.
+## Keep a page nearby
 
-![](media/short-demo-live-preview.gif)
+- **Pin** keeps the preview open until you close or unpin it. The pin button changes state; the page icon stays the same.
+- **Move** a preview by dragging its title bar. Moving or resizing a temporary preview pins it so your layout stays put.
+- **Resize** from the lower-right corner. The scrollbar ends above this control, even in a small window.
+- **Minimize** collapses a pinned preview to its title bar in the same position. The restore button opens it again at its previous size. Minimizing a temporary preview also pins it.
+- **Close** removes the preview and its saved state.
 
-# How to Use
+Pinned previews return when you reload Roam, with their page, position, size, and minimized state. They are stored in WorkBench's extension settings for the graph. On a smaller screen, windows are kept within the available workspace. A page that has been deleted is skipped during restoration.
 
-Toggle the Live Preview module on inside WorkBench.
+Unpinned previews close after you move away; they stay open while you interact with their content. Escape dismisses temporary previews. Pinned previews remain open. Disabling Live Preview hides all its windows while keeping saved pins for the next time you enable it.
 
-![](media/toggle-live-preview.png)
+For keyboard control, focus a preview's title bar and use the arrow keys to move it. Focus the resize corner and use the arrow keys to change its size. Hold Shift for larger steps.
 
-Once the Live Preview feature is enabled, you could hover over any page reference and the live preview should appear near the reference.
+## Try settings before saving
 
-You can edit the delay time for when the Live Preview appears. To do so, add the following block text to any block in your graph:
+Open the **Live Preview settings** cog in WorkBench. The white settings panel opens beside a floating editable sample page so you can try the controls without changing your graph. Move and resize the sample across the full browser window. Collapse the settings panel with its chevron for more space, then expand it to keep adjusting or save your changes.
 
-> `#42Setting` LivePreviewDelay 100
+Under **Open a preview**, choose **Hover over a page link** or **Hold a key while hovering**, then set the modifier key and hover delay. The modifier can also be pressed while your pointer is already over a link.
 
-The number on the right is in milliseconds, where 100 is the default value used.
+Choose a width preset: **Small**, **Medium**, **Large**, or **Full**. Full uses the available workspace width and keeps the height you chose. Edit the width or resize horizontally to switch to **Custom**. Resizing only the height keeps the width preset.
 
-You can specify a modifier key so that the live preview only appears when you hold down that modifier key with `LivePreviewModifier`. The following values are supported:
+Changes update the example immediately. **Save settings** applies defaults to future previews. Existing windows keep the size and position you chose for them. **Cancel**, Escape, or closing the settings popup discards unsaved changes. **Reset example** restores the sample content. Edits to the sample never change graph pages; edits to a real page preview use Roam's normal editing behavior and update that page.
 
-- `shift` - Shift
-- `cmd` - Command
-- `command` - Command
-- `meta` - Command
-- `ctrl` - Control
-- `control` - Control
-- `alt` - Option/Alt
-- `opt` - Option/Alt
+Existing `LivePreviewWidth`, `LivePreviewHeight`, `LivePreviewModifier`, and `LivePreviewDelay` values are imported once from legacy `42Setting` blocks. Those blocks remain in your graph, but Live Preview subsequently reads and writes its extension settings. Other WorkBench features continue to use their existing settings.
 
-> `#42Setting` LivePreviewModifier Shift
-
-You can specify the height and width of the Live Preview window using `LivePreviewHeight` and `LivePreviewWidth` respectively. The value could be either numerical, or a pixel value.
-
-> `#42Setting` LivePreviewHeight 200
-
-> `#42Setting` LivePreviewWidth 400px
-
-# Demo
-
-The demo below is for an outdated version of Live Preview, but is the closest resource to what exists today.
-
-[Video](https://youtu.be/o1RadyuMCA8)
+Live Preview provides floating windows. Use Roam's built-in Desk for docking pages and blocks.

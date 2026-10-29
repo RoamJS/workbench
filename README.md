@@ -25,7 +25,7 @@ Click on the name of the feature for more details and information about it.
 | [Hot Keys](https://github.com/RoamJs/workbench/blob/main/docs/hot-keys.md)                     | Keyboard shortcuts for interacting with the Roam user interface.                                         |
 | [Image OCR](https://github.com/RoamJs/workbench/blob/main/docs/image-ocr.md)                   | Extract the text from an image and add it as child blocks!                                               |
 | [Import Article](https://github.com/RoamJs/workbench/blob/main/docs/import-article.md)         | Add commands to import web articles directly into Roam.                                                  |
-| [Live Preview](https://github.com/RoamJs/workbench/blob/main/docs/live-preview.md)             | See live and editable previews of page links underneath your mouse cursor.                               |
+| [Live Preview](https://github.com/RoamJs/workbench/blob/main/docs/live-preview.md)             | Hover over page links to read and edit pages in floating windows that you can pin, move, resize, and minimize.                               |
 | [Mind Map](https://github.com/RoamJs/workbench/blob/main/docs/mindmap.md)                      | Visualize pieces of your Roam graph as a mind map!                                                       |
 | [Privacy Mode](https://github.com/RoamJs/workbench/blob/main/docs/privacy-mode.md)             | This feature redacts confidential information when showing your Roam database to others.                 |
 | [Table](https://github.com/RoamJs/workbench/blob/main/docs/table.md)                           | Editable table component that can be used in your Roam database.                                         |
@@ -33,6 +33,14 @@ Click on the name of the feature for more details and information about it.
 | [Tally](https://github.com/RoamJs/workbench/blob/main/docs/tally.md)                           | Introduces a tally button component to use directly in your Roam graph.                                  |
 | [Tutorials](https://github.com/RoamJs/workbench/blob/main/docs/tutorials.md)                   | Learn how to use extensions and Roam basics right from within Roam.                                      |
 | [Weekly Notes](https://github.com/RoamJs/workbench/blob/main/docs/weekly-notes.md)             | Enabling workflows surrounding weekly note pages.                                                        |
+
+## Live Preview
+
+Read and edit a linked page without leaving your outline. Enable **Live Preview** in WorkBench's extension settings, then hover over a page link or tag. Pin useful pages, drag or resize their windows, and minimize them to their title bars. Pinned pages return after reloading Roam.
+
+Use the **Live Preview settings** cog to choose hover or modifier activation, delay, and a Small, Medium, Large, Full, or Custom width. Try changes immediately with a safe floating sample page, then save defaults for new previews. Existing windows keep their individual layout. Roam's built-in Desk remains available for docking.
+
+See the [Live Preview guide](docs/live-preview.md) for controls, keyboard access, persistence, and legacy-setting migration.
 
 ## Enabling Features
 
