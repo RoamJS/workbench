@@ -9,7 +9,7 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 - Minor version bumps are released on a regular cadence.
 - Patch version bumps are for bugfixes and hotfixes.
 
-## [Unreleased]
+## [1.10.0] - 2026-10-29
 
 ### Added
 
