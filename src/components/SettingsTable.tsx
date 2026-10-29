@@ -11,6 +11,7 @@ import {
 import { OnloadArgs } from "roamjs-components/types";
 import { Feature } from "../index";
 import LegacySettings from "./LegacySettings";
+import LivePreviewSettings from "./LivePreviewSettings";
 
 const SettingsTable =
   (FEATURES: Feature[], extensionAPI: OnloadArgs["extensionAPI"]) => () => {
@@ -132,6 +133,14 @@ const SettingsTable =
                     style={{ ...featureStyle, ...noBorder }}
                   >
                     <span>{name}</span>
+                    {isMaxWidth && id === "livePreview" && (
+                      <Button
+                        minimal
+                        icon="cog"
+                        aria-label="Live Preview settings"
+                        onClick={() => handleOpenDialog(id)}
+                      />
+                    )}
                   </td>
                   <td
                     aria-label="Info button"
@@ -177,7 +186,11 @@ const SettingsTable =
                     }}
                   >
                     {settings ? (
-                      <Button icon="cog" onClick={() => handleOpenDialog(id)} />
+                      <Button
+                        icon="cog"
+                        aria-label={`${name} settings`}
+                        onClick={() => handleOpenDialog(id)}
+                      />
                     ) : null}
                   </td>
                   <td
@@ -198,7 +211,7 @@ const SettingsTable =
         </HTMLTable>
         <Dialog
           className="w-auto"
-          isOpen={isDialogOpen}
+          isOpen={isDialogOpen && currentModuleId !== "livePreview"}
           onClose={() => setIsDialogOpen(false)}
           title="Module Settings"
           canOutsideClickClose
@@ -209,6 +222,12 @@ const SettingsTable =
             <LegacySettings moduleId={currentModuleId} />
           </div>
         </Dialog>
+        {isDialogOpen && currentModuleId === "livePreview" && (
+          <LivePreviewSettings
+            extensionAPI={extensionAPI}
+            onClose={() => setIsDialogOpen(false)}
+          />
+        )}
       </>
     );
   };

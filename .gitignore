@@ -5,3 +5,4 @@ build
 main.js
 .env
 dist
+local/
