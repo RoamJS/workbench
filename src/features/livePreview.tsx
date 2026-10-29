@@ -113,6 +113,7 @@ const mountPreviews = ({
       return title ? [{ ...preview, title }] : [];
     }
   );
+  let stackingOrder = windows.map(({ id }) => id);
   let source: HTMLElement | null = null;
   let openTimer = 0;
   let closeTimer = 0;
@@ -168,21 +169,34 @@ const mountPreviews = ({
     persist();
   };
   const activate = (id: string): void => {
-    const preview = windows.find((candidate) => candidate.id === id);
-    if (!preview || windows[windows.length - 1] === preview) return;
-    windows = [...windows.filter((candidate) => candidate.id !== id), preview];
+    if (
+      !windows.some((preview) => preview.id === id) ||
+      stackingOrder[stackingOrder.length - 1] === id
+    )
+      return;
+    // Moving a DOM node during pointerdown can cancel the button's ensuing click.
+    stackingOrder = [
+      ...stackingOrder.filter((candidate) => candidate !== id),
+      id,
+    ];
     render();
   };
   const render = (): void => {
     if (disposed) return;
+    stackingOrder = stackingOrder.filter((id) =>
+      windows.some((preview) => preview.id === id)
+    );
+    windows.forEach(({ id }) => {
+      if (!stackingOrder.includes(id)) stackingOrder.push(id);
+    });
     ReactDOM.render(
       <div className="roamjs-workbench-live-preview-layer">
-        {windows.map((preview, index) => (
+        {windows.map((preview) => (
           <LivePreviewWindow
             key={preview.id}
             preview={preview}
             bounds={getPreviewViewport()}
-            zIndex={200 + index}
+            zIndex={200 + stackingOrder.indexOf(preview.id)}
             onChange={(patch) => update(preview.id, patch)}
             onClose={() => close(preview.id)}
             onActivate={() => activate(preview.id)}
