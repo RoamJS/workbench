@@ -267,3 +267,18 @@ export const getWidthPresetAfterResize = ({
   width: number;
 }): WidthPreset =>
   Math.abs(width - previousWidth) < 1 ? previousPreset : "custom";
+
+export const getSettingsExampleGeometry = ({
+  settings,
+  viewport,
+  controls,
+}: {
+  settings: LivePreviewSettings;
+  viewport: Viewport;
+  controls?: { left: number; right: number; top: number; bottom: number };
+}): Geometry =>
+  getDefaultGeometry({
+    settings,
+    viewport,
+    anchor: controls ? { ...controls, right: controls.right + 16 } : undefined,
+  });

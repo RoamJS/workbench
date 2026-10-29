@@ -3,6 +3,7 @@ import {
   clampGeometry,
   DEFAULT_SETTINGS,
   getDefaultGeometry,
+  getSettingsExampleGeometry,
   getWidthPresetAfterResize,
   normalizeSettings,
   PreviewState,
@@ -276,4 +277,33 @@ test("queued pin updates cannot be overwritten by a slower earlier save", async 
   finishFirst?.();
   await Promise.all([first, second]);
   expect(readPinnedWindows(api, { width: 1000, height: 800 })).toEqual([]);
+});
+
+test("settings sample opens beside controls using the whole viewport", () => {
+  const geometry = getSettingsExampleGeometry({
+    settings: DEFAULT_SETTINGS,
+    viewport: { width: 1436, height: 1108 },
+    controls: { left: 24, right: 384, top: 24, bottom: 900 },
+  });
+  expect(geometry).toEqual({ x: 408, y: 24, width: 480, height: 380 });
+});
+
+test("Full example uses viewport width and does not reduce the requested height to a nested stage", () => {
+  expect(
+    getSettingsExampleGeometry({
+      settings: { ...DEFAULT_SETTINGS, widthPreset: "full", height: 700 },
+      viewport: { width: 1436, height: 1108 },
+      controls: { left: 24, right: 384, top: 24, bottom: 900 },
+    })
+  ).toMatchObject({ x: 8, width: 1420, height: 700 });
+});
+
+test("narrow example opens below collapsed controls and stays in the viewport", () => {
+  expect(
+    getSettingsExampleGeometry({
+      settings: { ...DEFAULT_SETTINGS, widthPreset: "small" },
+      viewport: { width: 390, height: 667 },
+      controls: { left: 16, right: 374, top: 16, bottom: 76 },
+    })
+  ).toEqual({ x: 8, y: 84, width: 360, height: 380 });
 });

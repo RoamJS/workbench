@@ -10,6 +10,7 @@ import {
   Dialog,
   FormGroup,
   HTMLSelect,
+  H4,
   Icon,
   InputGroup,
   Spinner,
@@ -20,6 +21,7 @@ import {
   DEFAULT_SETTINGS,
   getDefaultGeometry,
   getPresetWidth,
+  getSettingsExampleGeometry,
   LivePreviewSettings as Settings,
   MIN_HEIGHT,
   MIN_WIDTH,
@@ -50,7 +52,6 @@ const SAMPLE_ROWS = [
   "A useful note is a starting point for the next thought.",
 ];
 const PRESET_WIDTHS = { small: 360, medium: 480, large: 640 };
-const EXAMPLE_SOURCE_HEIGHT = 100;
 const MODIFIER_LABELS = {
   Alt: "Option / Alt",
   Control: "Control",
@@ -85,17 +86,20 @@ const LivePreviewSettings = ({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("Changes appear here as you make them.");
-  const [bounds, setBounds] = useState<Viewport>({
-    top: EXAMPLE_SOURCE_HEIGHT,
-    width: 600,
-    height: 496 - EXAMPLE_SOURCE_HEIGHT,
-  });
+  const [bounds, setBounds] = useState<Viewport>(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }));
+  const [controlsCollapsed, setControlsCollapsed] = useState(
+    () => window.innerWidth < 760
+  );
   const boundsRef = useRef(bounds);
   const [sample, setSample] = useState<PreviewState | null>(null);
   const sampleRef = useRef(sample);
   const [sampleEpoch, setSampleEpoch] = useState(0);
   const sampleRows = useRef([...SAMPLE_ROWS]);
-  const stageRef = useRef<HTMLDivElement>(null);
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const sampleHostRef = useRef<HTMLDivElement>(null);
   const linkRef = useRef<HTMLButtonElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>();
   const openTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -124,28 +128,11 @@ const LivePreviewSettings = ({
   }, []);
 
   const makeSample = useCallback(
-    ({
-      settings,
-      anchored = false,
-    }: {
-      settings: Settings;
-      anchored?: boolean;
-    }): PreviewState => {
-      const stage = stageRef.current?.getBoundingClientRect();
-      const link = linkRef.current?.getBoundingClientRect();
-      const anchor =
-        anchored && stage && link
-          ? {
-              left: link.left - stage.left,
-              right: link.right - stage.left,
-              top: link.top - stage.top,
-              bottom: link.bottom - stage.top,
-            }
-          : undefined;
-      const geometry = getDefaultGeometry({
+    ({ settings }: { settings: Settings }): PreviewState => {
+      const geometry = getSettingsExampleGeometry({
         settings,
         viewport: boundsRef.current,
-        anchor,
+        controls: controlsRef.current?.getBoundingClientRect(),
       });
       return {
         id: `${id}-example`,
@@ -155,7 +142,7 @@ const LivePreviewSettings = ({
         minimized: false,
         widthPreset: settings.widthPreset,
         geometry: clampGeometry({
-          geometry: { ...geometry, y: anchor ? geometry.y : 108 },
+          geometry,
           viewport: boundsRef.current,
         }),
       };
@@ -244,23 +231,16 @@ const LivePreviewSettings = ({
   ]);
 
   useLayoutEffect(() => {
-    if (!isOpen || loading || !stageRef.current) return;
-    const stage = stageRef.current;
+    if (!isOpen || loading) return;
     const measure = (): void => {
-      const next = {
-        top: EXAMPLE_SOURCE_HEIGHT,
-        width: stage.clientWidth,
-        height: stage.clientHeight - EXAMPLE_SOURCE_HEIGHT,
-      };
-      if (!next.width || !next.height) return;
+      const next = { width: window.innerWidth, height: window.innerHeight };
       boundsRef.current = next;
       setBounds(next);
       if (sampleRef.current) applySampleSize(draftRef.current);
     };
     measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(stage);
-    return () => observer.disconnect();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
   }, [isOpen, loading, applySampleSize]);
 
   const openSample = useCallback(
@@ -268,8 +248,7 @@ const LivePreviewSettings = ({
       clearTimers();
       allowHoverDismiss.current = !explicit;
       const previous = sampleRef.current;
-      const next =
-        previous ?? makeSample({ settings: draftRef.current, anchored: true });
+      const next = previous ?? makeSample({ settings: draftRef.current });
       replaceSample(
         explicit ? { ...next, pinned: true, minimized: false } : next
       );
@@ -309,7 +288,7 @@ const LivePreviewSettings = ({
         sampleRef.current?.pinned
       )
         return;
-      const panel = stageRef.current?.querySelector(
+      const panel = sampleHostRef.current?.querySelector(
         ".roamjs-workbench-live-preview-window"
       );
       if (
@@ -529,344 +508,381 @@ const LivePreviewSettings = ({
 
   return (
     <Dialog
-      className="roamjs-workbench-live-preview-settings"
+      className="roamjs-workbench-live-preview-settings-layout"
       isOpen={isOpen}
-      title="Live Preview settings"
+      aria-labelledby={`${id}-title`}
       onClose={cancel}
-      canOutsideClickClose={!saving}
+      canOutsideClickClose={false}
       canEscapeKeyClose={!saving}
-      isCloseButtonShown={!saving}
       autoFocus
       enforceFocus
       usePortal
     >
-      {loading ? (
-        <div className="roamjs-workbench-live-preview-settings-loading">
-          <Spinner size={24} />
-        </div>
-      ) : (
-        <div className="roamjs-workbench-live-preview-settings-grid">
-          <div className="roamjs-workbench-live-preview-settings-form">
-            <FormGroup label="Open a preview" labelFor={`${id}-trigger`}>
-              <HTMLSelect
-                id={`${id}-trigger`}
-                value={draft.trigger}
-                fill
-                data-setting="trigger"
-                onChange={(event) =>
-                  updateSetting({
-                    trigger: event.currentTarget.value as Settings["trigger"],
-                  })
-                }
-                options={[
-                  { label: "Hover over a page link", value: "hover" },
-                  { label: "Hold a key while hovering", value: "modifier" },
-                ]}
-              />
-            </FormGroup>
-            {draft.trigger === "modifier" && (
-              <FormGroup label="Modifier key" labelFor={`${id}-modifier`}>
-                <HTMLSelect
-                  id={`${id}-modifier`}
-                  value={draft.modifier}
-                  fill
-                  data-setting="modifier"
-                  onChange={(event) =>
-                    updateSetting({
-                      modifier: event.currentTarget
-                        .value as Settings["modifier"],
-                    })
-                  }
-                  options={Object.entries(MODIFIER_LABELS).map(
-                    ([value, label]) => ({ value, label })
+      <div className="roamjs-workbench-live-preview-settings" ref={controlsRef}>
+        <header className="roamjs-workbench-live-preview-settings-header">
+          <H4 id={`${id}-title`}>Live Preview settings</H4>
+          <Button
+            minimal
+            small
+            icon={controlsCollapsed ? "chevron-down" : "chevron-up"}
+            aria-label={
+              controlsCollapsed ? "Expand settings" : "Collapse settings"
+            }
+            title={controlsCollapsed ? "Expand settings" : "Collapse settings"}
+            onClick={() => setControlsCollapsed((collapsed) => !collapsed)}
+          />
+          <Button
+            minimal
+            small
+            icon="cross"
+            aria-label="Cancel settings"
+            onClick={cancel}
+            disabled={saving}
+          />
+        </header>
+        {!controlsCollapsed && (
+          <>
+            {loading ? (
+              <div className="roamjs-workbench-live-preview-settings-loading">
+                <Spinner size={24} />
+              </div>
+            ) : (
+              <div className="roamjs-workbench-live-preview-settings-grid">
+                <div className="roamjs-workbench-live-preview-settings-form">
+                  <FormGroup label="Open a preview" labelFor={`${id}-trigger`}>
+                    <HTMLSelect
+                      id={`${id}-trigger`}
+                      value={draft.trigger}
+                      fill
+                      data-setting="trigger"
+                      onChange={(event) =>
+                        updateSetting({
+                          trigger: event.currentTarget
+                            .value as Settings["trigger"],
+                        })
+                      }
+                      options={[
+                        { label: "Hover over a page link", value: "hover" },
+                        {
+                          label: "Hold a key while hovering",
+                          value: "modifier",
+                        },
+                      ]}
+                    />
+                  </FormGroup>
+                  {draft.trigger === "modifier" && (
+                    <FormGroup label="Modifier key" labelFor={`${id}-modifier`}>
+                      <HTMLSelect
+                        id={`${id}-modifier`}
+                        value={draft.modifier}
+                        fill
+                        data-setting="modifier"
+                        onChange={(event) =>
+                          updateSetting({
+                            modifier: event.currentTarget
+                              .value as Settings["modifier"],
+                          })
+                        }
+                        options={Object.entries(MODIFIER_LABELS).map(
+                          ([value, label]) => ({ value, label })
+                        )}
+                      />
+                    </FormGroup>
                   )}
-                />
-              </FormGroup>
-            )}
-            <div className="roamjs-workbench-live-preview-setting-label">
-              <label htmlFor={`${id}-delay`}>Hover delay</label>
-              <InputGroup
-                id={`${id}-delay`}
-                type="number"
-                min={0}
-                max={10000}
-                value={fields.delay}
-                data-setting="delay"
-                rightElement={
-                  <span className="roamjs-workbench-live-preview-unit">ms</span>
-                }
-                onChange={(event) =>
-                  changeField({
-                    field: "delay",
-                    value: event.currentTarget.value,
-                  })
-                }
-                onBlur={() => commitField("delay")}
-              />
-            </div>
-            <input
-              className="roamjs-workbench-live-preview-delay-range"
-              aria-label="Hover delay"
-              type="range"
-              min={0}
-              max={1500}
-              step={50}
-              value={Math.min(1500, draft.delay)}
-              onChange={(event) => {
-                const delay = Number(event.currentTarget.value);
-                dirtyFields.current.delete("delay");
-                replaceFields({ ...fieldsRef.current, delay: String(delay) });
-                updateSetting({ delay });
-              }}
-            />
-            <div className="roamjs-workbench-live-preview-range-labels">
-              <span>Immediate</span>
-              <span>1.5 seconds</span>
-            </div>
-            <div className="roamjs-workbench-live-preview-default-size">
-              <h4>Default size</h4>
-              <FormGroup label="Width preset" labelFor={`${id}-preset`}>
-                <HTMLSelect
-                  id={`${id}-preset`}
-                  value={draft.widthPreset}
-                  fill
-                  data-setting="preset"
-                  onChange={(event) =>
-                    changePreset(event.currentTarget.value as WidthPreset)
-                  }
-                  options={[
-                    { label: "Small", value: "small" },
-                    { label: "Medium", value: "medium" },
-                    { label: "Large", value: "large" },
-                    { label: "Full", value: "full" },
-                    { label: "Custom", value: "custom" },
-                  ]}
-                />
-              </FormGroup>
-              <div className="roamjs-workbench-live-preview-dimensions">
-                <label htmlFor={`${id}-width`}>
-                  Width
-                  <InputGroup
-                    id={`${id}-width`}
-                    value={widthValue}
-                    data-setting="width"
-                    inputMode="decimal"
-                    rightElement={
-                      typeof draft.width === "number" ? (
+                  <div className="roamjs-workbench-live-preview-setting-label">
+                    <label htmlFor={`${id}-delay`}>Hover delay</label>
+                    <InputGroup
+                      id={`${id}-delay`}
+                      type="number"
+                      min={0}
+                      max={10000}
+                      value={fields.delay}
+                      data-setting="delay"
+                      rightElement={
                         <span className="roamjs-workbench-live-preview-unit">
-                          px
+                          ms
                         </span>
-                      ) : undefined
-                    }
-                    onChange={(event) =>
-                      changeField({
-                        field: "width",
-                        value: event.currentTarget.value,
-                      })
-                    }
-                    onBlur={() => commitField("width")}
-                  />
-                </label>
-                <span aria-hidden>×</span>
-                <label htmlFor={`${id}-height`}>
-                  Height
-                  <InputGroup
-                    id={`${id}-height`}
-                    value={fields.height}
-                    data-setting="height"
-                    inputMode="decimal"
-                    rightElement={
-                      typeof draft.height === "number" ? (
-                        <span className="roamjs-workbench-live-preview-unit">
-                          px
-                        </span>
-                      ) : undefined
-                    }
-                    onChange={(event) =>
-                      changeField({
-                        field: "height",
-                        value: event.currentTarget.value,
-                      })
-                    }
-                    onBlur={() => commitField("height")}
-                  />
-                </label>
-              </div>
-              <p className="roamjs-workbench-live-preview-help">
-                Resize the example to find a comfortable size.
-              </p>
-            </div>
-            <p className="roamjs-workbench-live-preview-settings-note">
-              These settings apply to new previews. You can still move and
-              resize each preview individually.
-            </p>
-          </div>
-          <section
-            className="roamjs-workbench-live-preview-example"
-            aria-label="Live example page"
-          >
-            <div className="roamjs-workbench-live-preview-example-heading">
-              <div>
-                <h4>Example page</h4>
-                <p>Edit, move, or resize the sample below.</p>
-              </div>
-              <Button
-                minimal
-                small
-                icon="reset"
-                text="Reset example"
-                onClick={() => {
-                  clearTimers();
-                  allowHoverDismiss.current = false;
-                  sampleRows.current = [...SAMPLE_ROWS];
-                  setSampleEpoch((value) => value + 1);
-                  replaceSample(makeSample({ settings: draftRef.current }));
-                  setStatus("Example reset. Your settings are unchanged.");
-                }}
-              />
-            </div>
-            <div
-              className="roamjs-workbench-live-preview-example-stage"
-              ref={stageRef}
-            >
-              <div className="roamjs-workbench-live-preview-example-source">
-                <div className="roamjs-workbench-live-preview-example-context">
-                  Preview playground
-                </div>
-                <span>Try </span>
-                <Button
-                  minimal
-                  small
-                  elementRef={linkRef}
-                  className="roamjs-workbench-live-preview-example-link"
-                  text="Evergreen notes"
-                  onPointerEnter={(event) => requestSample(event.nativeEvent)}
-                  onPointerLeave={() => {
-                    clearTimeout(openTimer.current);
-                    scheduleClose();
-                  }}
-                  onClick={() => openSample(true)}
-                />
-                <p>
-                  {draft.trigger === "modifier"
-                    ? `Hold ${
-                        MODIFIER_LABELS[draft.modifier]
-                      } and hover the link.`
-                    : "Hover the link to test your delay."}
-                </p>
-              </div>
-              {sample ? (
-                <LivePreviewWindow
-                  preview={sample}
-                  onChange={changeSample}
-                  onClose={() => {
-                    clearTimers();
-                    replaceSample(null);
-                    setStatus("Hover the example link to open a new preview.");
-                  }}
-                  embedded
-                  bounds={bounds}
-                  onPointerEnter={() => clearTimeout(closeTimer.current)}
-                  onPointerLeave={scheduleClose}
-                  onFocus={() => clearTimeout(closeTimer.current)}
-                  onBlur={scheduleClose}
-                  onInteractionStart={() => {
-                    interacting.current = true;
-                    clearTimers();
-                  }}
-                  onInteractionEnd={() => {
-                    interacting.current = false;
-                  }}
-                >
-                  <div
-                    className="roamjs-workbench-live-preview-sample"
-                    key={sampleEpoch}
-                  >
-                    <div className="roamjs-workbench-live-preview-sample-origin">
-                      <Icon icon="link" size={12} />
-                      Example page
-                    </div>
-                    <h2>Evergreen notes</h2>
-                    <div>
-                      {SAMPLE_ROWS.map((original, index) => (
-                        <div
-                          className="roamjs-workbench-live-preview-sample-row"
-                          key={`${sampleEpoch}-${index}`}
-                        >
-                          <div
-                            contentEditable
-                            suppressContentEditableWarning
-                            spellCheck={false}
-                            role="textbox"
-                            aria-label={`Example block ${index + 1}`}
-                            onInput={(event) => {
-                              sampleRows.current[index] =
-                                event.currentTarget.textContent ?? "";
-                            }}
-                            onBlur={() =>
-                              setStatus("Sample edits stay in this example.")
-                            }
-                          >
-                            {sampleRows.current[index] ?? original}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="roamjs-workbench-live-preview-sample-references">
-                      <Icon icon="chevron-right" size={12} /> 8 Linked
-                      References
-                    </div>
+                      }
+                      onChange={(event) =>
+                        changeField({
+                          field: "delay",
+                          value: event.currentTarget.value,
+                        })
+                      }
+                      onBlur={() => commitField("delay")}
+                    />
                   </div>
-                </LivePreviewWindow>
-              ) : (
-                <div className="roamjs-workbench-live-preview-example-empty">
-                  <Icon icon="select" size={22} />
-                  <span>Hover the page link to try your settings.</span>
-                  <Button
-                    text="Show preview"
-                    onClick={() => {
-                      allowHoverDismiss.current = false;
-                      replaceSample(makeSample({ settings: draftRef.current }));
+                  <input
+                    className="roamjs-workbench-live-preview-delay-range"
+                    aria-label="Hover delay"
+                    type="range"
+                    min={0}
+                    max={1500}
+                    step={50}
+                    value={Math.min(1500, draft.delay)}
+                    onChange={(event) => {
+                      const delay = Number(event.currentTarget.value);
+                      dirtyFields.current.delete("delay");
+                      replaceFields({
+                        ...fieldsRef.current,
+                        delay: String(delay),
+                      });
+                      updateSetting({ delay });
                     }}
                   />
+                  <div className="roamjs-workbench-live-preview-range-labels">
+                    <span>Immediate</span>
+                    <span>1.5 seconds</span>
+                  </div>
+                  <div className="roamjs-workbench-live-preview-default-size">
+                    <h4>Default size</h4>
+                    <FormGroup label="Width preset" labelFor={`${id}-preset`}>
+                      <HTMLSelect
+                        id={`${id}-preset`}
+                        value={draft.widthPreset}
+                        fill
+                        data-setting="preset"
+                        onChange={(event) =>
+                          changePreset(event.currentTarget.value as WidthPreset)
+                        }
+                        options={[
+                          { label: "Small", value: "small" },
+                          { label: "Medium", value: "medium" },
+                          { label: "Large", value: "large" },
+                          { label: "Full", value: "full" },
+                          { label: "Custom", value: "custom" },
+                        ]}
+                      />
+                    </FormGroup>
+                    <div className="roamjs-workbench-live-preview-dimensions">
+                      <label htmlFor={`${id}-width`}>
+                        Width
+                        <InputGroup
+                          id={`${id}-width`}
+                          value={widthValue}
+                          data-setting="width"
+                          inputMode="decimal"
+                          rightElement={
+                            typeof draft.width === "number" ? (
+                              <span className="roamjs-workbench-live-preview-unit">
+                                px
+                              </span>
+                            ) : undefined
+                          }
+                          onChange={(event) =>
+                            changeField({
+                              field: "width",
+                              value: event.currentTarget.value,
+                            })
+                          }
+                          onBlur={() => commitField("width")}
+                        />
+                      </label>
+                      <span aria-hidden>×</span>
+                      <label htmlFor={`${id}-height`}>
+                        Height
+                        <InputGroup
+                          id={`${id}-height`}
+                          value={fields.height}
+                          data-setting="height"
+                          inputMode="decimal"
+                          rightElement={
+                            typeof draft.height === "number" ? (
+                              <span className="roamjs-workbench-live-preview-unit">
+                                px
+                              </span>
+                            ) : undefined
+                          }
+                          onChange={(event) =>
+                            changeField({
+                              field: "height",
+                              value: event.currentTarget.value,
+                            })
+                          }
+                          onBlur={() => commitField("height")}
+                        />
+                      </label>
+                    </div>
+                    <p className="roamjs-workbench-live-preview-help">
+                      Resize the example to find a comfortable size.
+                    </p>
+                  </div>
+                  <p className="roamjs-workbench-live-preview-settings-note">
+                    Resize the floating sample anywhere on screen. Collapse
+                    these controls for more space. Changes apply to new previews
+                    after saving.
+                  </p>
                 </div>
-              )}
+                <section
+                  className="roamjs-workbench-live-preview-example"
+                  aria-label="Live example page"
+                >
+                  <div className="roamjs-workbench-live-preview-example-heading">
+                    <div>
+                      <h4>Example page</h4>
+                      <p>The sample floats beside these controls.</p>
+                    </div>
+                    <Button
+                      minimal
+                      small
+                      icon="reset"
+                      text="Reset example"
+                      onClick={() => {
+                        clearTimers();
+                        allowHoverDismiss.current = false;
+                        sampleRows.current = [...SAMPLE_ROWS];
+                        setSampleEpoch((value) => value + 1);
+                        replaceSample(
+                          makeSample({ settings: draftRef.current })
+                        );
+                        setStatus(
+                          "Example reset. Your settings are unchanged."
+                        );
+                      }}
+                    />
+                  </div>
+                  <div className="roamjs-workbench-live-preview-example-launcher">
+                    <div className="roamjs-workbench-live-preview-example-source">
+                      <div className="roamjs-workbench-live-preview-example-context">
+                        Preview playground
+                      </div>
+                      <span>Try </span>
+                      <Button
+                        minimal
+                        small
+                        elementRef={linkRef}
+                        className="roamjs-workbench-live-preview-example-link"
+                        text="[[Evergreen notes]]"
+                        onPointerEnter={(event) =>
+                          requestSample(event.nativeEvent)
+                        }
+                        onPointerLeave={() => {
+                          clearTimeout(openTimer.current);
+                          scheduleClose();
+                        }}
+                        onClick={() => openSample(true)}
+                      />
+                      <p>
+                        {draft.trigger === "modifier"
+                          ? `Hold ${
+                              MODIFIER_LABELS[draft.modifier]
+                            } and hover the link.`
+                          : "Hover the link to test your delay."}
+                      </p>
+                    </div>
+                    {!sample && (
+                      <Button
+                        text="Show preview"
+                        onClick={() => openSample(true)}
+                      />
+                    )}
+                  </div>
+                  <div
+                    className="roamjs-workbench-live-preview-example-status"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span>{status}</span>
+                    {fitHint && <span>{fitHint}</span>}
+                  </div>
+                </section>
+              </div>
+            )}
+            {error && (
+              <div
+                className="roamjs-workbench-live-preview-settings-error"
+                role="alert"
+              >
+                {error}
+              </div>
+            )}
+            <div className="roamjs-workbench-live-preview-settings-actions">
+              <span>
+                <Icon icon="lab-test" size={13} />
+                Sample content only
+              </span>
+              <div>
+                <Button text="Cancel" onClick={cancel} disabled={saving} />
+                <Button
+                  intent="primary"
+                  text="Save settings"
+                  loading={saving}
+                  disabled={loading || (!!error && !sample)}
+                  onClick={() => void save()}
+                />
+              </div>
             </div>
-            <div
-              className="roamjs-workbench-live-preview-example-status"
-              role="status"
-              aria-live="polite"
-            >
-              <span>{status}</span>
-              {fitHint && <span>{fitHint}</span>}
-            </div>
-          </section>
-        </div>
-      )}
-      {error && (
-        <div
-          className="roamjs-workbench-live-preview-settings-error"
-          role="alert"
-        >
-          {error}
-        </div>
-      )}
-      <div className="roamjs-workbench-live-preview-settings-actions">
-        <span>
-          <Icon icon="lab-test" size={13} />
-          Sample content only
-        </span>
-        <div>
-          <Button text="Cancel" onClick={cancel} disabled={saving} />
-          <Button
-            intent="primary"
-            text="Save settings"
-            loading={saving}
-            disabled={loading || (!!error && !sample)}
-            onClick={() => void save()}
-          />
-        </div>
+          </>
+        )}
       </div>
+      {!loading && sample && (
+        <div
+          className="roamjs-workbench-live-preview-example-layer"
+          ref={sampleHostRef}
+        >
+          <LivePreviewWindow
+            preview={sample}
+            onChange={changeSample}
+            onClose={() => {
+              clearTimers();
+              replaceSample(null);
+              setStatus("Hover the example link to open a new preview.");
+            }}
+            bounds={bounds}
+            zIndex={1}
+            onPointerEnter={() => clearTimeout(closeTimer.current)}
+            onPointerLeave={scheduleClose}
+            onFocus={() => clearTimeout(closeTimer.current)}
+            onBlur={scheduleClose}
+            onInteractionStart={() => {
+              interacting.current = true;
+              clearTimers();
+            }}
+            onInteractionEnd={() => {
+              interacting.current = false;
+            }}
+          >
+            <div
+              className="roamjs-workbench-live-preview-sample"
+              key={sampleEpoch}
+            >
+              <div className="roamjs-workbench-live-preview-sample-origin">
+                <Icon icon="link" size={12} />
+                Example page
+              </div>
+              <h2>Evergreen notes</h2>
+              <div>
+                {SAMPLE_ROWS.map((original, index) => (
+                  <div
+                    className="roamjs-workbench-live-preview-sample-row"
+                    key={`${sampleEpoch}-${index}`}
+                  >
+                    <div
+                      contentEditable
+                      suppressContentEditableWarning
+                      spellCheck={false}
+                      role="textbox"
+                      aria-label={`Example block ${index + 1}`}
+                      onInput={(event) => {
+                        sampleRows.current[index] =
+                          event.currentTarget.textContent ?? "";
+                      }}
+                      onBlur={() =>
+                        setStatus("Sample edits stay in this example.")
+                      }
+                    >
+                      {sampleRows.current[index] ?? original}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="roamjs-workbench-live-preview-sample-references">
+                <Icon icon="chevron-right" size={12} /> 8 Linked References
+              </div>
+            </div>
+          </LivePreviewWindow>
+        </div>
+      )}
     </Dialog>
   );
 };

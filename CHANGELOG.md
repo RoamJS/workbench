@@ -18,10 +18,12 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 
 ### Changed
 
+- The settings sample floats across the full screen, with collapsible controls for more room to move and resize it.
 - Existing Live Preview settings are imported once from `42Setting` blocks. Other WorkBench features keep their existing settings.
 
 ### Fixed
 
+- Remove extra spacing inside the settings example page link.
 - Live Preview's resize control has its own corner outside the scrolling area, including at small sizes.
 - Disabling Live Preview removes its event listeners, timers, and rendered pages while preserving saved pinned windows.
 

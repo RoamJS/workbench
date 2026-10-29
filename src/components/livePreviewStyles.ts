@@ -76,27 +76,26 @@ export const LIVE_PREVIEW_STYLES = `
   --lp-link: #91c5ef;
   --lp-active: #30485c;
 }
-.roamjs-workbench-live-preview-settings.bp3-dialog {
-  width: min(980px, calc(100vw - 32px));
-  max-width: none;
-  max-height: calc(100vh - 48px);
-  padding: 0;
-  margin: 24px 0;
-  border: 0;
-  border-radius: 8px;
-  background: #fff;
-  color: #293740;
-  box-shadow: 0 8px 28px rgba(0,0,0,.18);
-  overflow: hidden;
+.roamjs-workbench-live-preview-settings-layout.bp3-dialog {
+  position: fixed; inset: 0; width: 100vw; height: 100vh; max-width: none; max-height: none;
+  padding: 0; margin: 0; border: 0; background: transparent; box-shadow: none;
+  overflow: visible; pointer-events: none; transform: none !important;
+}
+.roamjs-workbench-live-preview-settings {
+  position: fixed; top: 24px; left: 24px; z-index: 2; width: 360px; max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 48px); display: flex; flex-direction: column; padding: 0;
+  border: 1px solid #e1e7eb; border-radius: 8px; background: #fff; color: #293740;
+  box-shadow: 0 8px 28px rgba(0,0,0,.18); overflow: hidden; pointer-events: auto;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 .roamjs-workbench-live-preview-settings * { box-sizing: border-box; }
-.roamjs-workbench-live-preview-settings .bp3-dialog-header { background: #fff; box-shadow: none; padding: 25px 26px 20px; min-height: 65px; flex-shrink: 0; }
-.roamjs-workbench-live-preview-settings .bp3-dialog-header .bp3-heading { color: #293740; font-size: 21px; line-height: 1.3; font-weight: 600; }
-.roamjs-workbench-live-preview-settings .bp3-dialog-close-button { color: #6a7a85; }
-.roamjs-workbench-live-preview-settings-grid { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 0; min-width: 0; overflow-x: hidden; overflow-y: auto; background: #fff; }
-.roamjs-workbench-live-preview-settings-form { padding: 5px 26px 24px; border-right: 1px solid #e8edf0; }
-.roamjs-workbench-live-preview-settings .bp3-form-group { margin-bottom: 25px; }
+.roamjs-workbench-live-preview-settings-header { display: flex; align-items: center; gap: 4px; padding: 17px 16px 17px 22px; flex-shrink: 0; }
+.roamjs-workbench-live-preview-settings-header .bp3-heading { flex: 1; margin: 0; color: #293740; font-size: 18px; line-height: 1.3; font-weight: 600; }
+.roamjs-workbench-live-preview-settings-header .bp3-button { color: #6a7a85; }
+.roamjs-workbench-live-preview-settings-grid { min-height: 0; min-width: 0; overflow-x: hidden; overflow-y: auto; background: #fff; }
+.roamjs-workbench-live-preview-settings-form { padding: 3px 24px 20px; }
+.roamjs-workbench-live-preview-example-layer { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+.roamjs-workbench-live-preview-settings .bp3-form-group { margin-bottom: 20px; }
 .roamjs-workbench-live-preview-settings .bp3-label { color: #293740; font-size: 13px; font-weight: 500; }
 .roamjs-workbench-live-preview-settings .bp3-input, .roamjs-workbench-live-preview-settings .bp3-html-select select {
   color: #293740; background: #fff; box-shadow: inset 0 0 0 1px #d6dfe5; font-size: 13px; height: 35px; border-radius: 4px;
@@ -108,25 +107,23 @@ export const LIVE_PREVIEW_STYLES = `
 .roamjs-workbench-live-preview-unit { display: inline-flex; align-items: center; height: 35px; padding-right: 9px; color: #70818d; font-size: 12px; }
 .roamjs-workbench-live-preview-delay-range { display: block; width: 100%; accent-color: #2d76ac; margin: 0; }
 .roamjs-workbench-live-preview-range-labels { display: flex; justify-content: space-between; margin-top: 7px; color: #76858f; font-size: 11px; }
-.roamjs-workbench-live-preview-default-size { margin: 30px 0 0; }
+.roamjs-workbench-live-preview-default-size { margin: 22px 0 0; }
 .roamjs-workbench-live-preview-default-size > h4 { margin: 0 0 14px; font-size: 13px; font-weight: 500; color: #293740; }
 .roamjs-workbench-live-preview-dimensions { display: grid; grid-template-columns: minmax(0,1fr) 10px minmax(0,1fr); gap: 7px; align-items: end; }
 .roamjs-workbench-live-preview-dimensions label { font-size: 12px; color: #687984; margin: 0; }
 .roamjs-workbench-live-preview-dimensions .bp3-input-group { margin-top: 7px; }
 .roamjs-workbench-live-preview-dimensions > span { padding-bottom: 10px; color: #8998a2; }
 .roamjs-workbench-live-preview-help { font-size: 12px; color: #6a7a85; line-height: 1.6; margin: 12px 0 0; }
-.roamjs-workbench-live-preview-settings-note { font-size: 12px; color: #7a8993; line-height: 1.65; margin: 27px 0 0; }
-.roamjs-workbench-live-preview-example { min-width: 0; padding: 5px 24px 15px; }
+.roamjs-workbench-live-preview-settings-note { font-size: 12px; color: #7a8993; line-height: 1.65; margin: 18px 0 0; }
+.roamjs-workbench-live-preview-example { min-width: 0; padding: 18px 24px; border-top: 1px solid #edf0f2; }
 .roamjs-workbench-live-preview-example-heading { display: flex; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; align-items: flex-start; }
 .roamjs-workbench-live-preview-example-heading h4 { font-size: 14px; font-weight: 600; color: #293740; margin: 0 0 5px; }
 .roamjs-workbench-live-preview-example-heading p { font-size: 12px; color: #71818c; margin: 0; }
 .roamjs-workbench-live-preview-example-heading .bp3-button { color: #647785; font-size: 12px; }
-.roamjs-workbench-live-preview-example-stage { position: relative; height: min(496px, max(300px, calc(100vh - 320px))); margin-top: 13px; min-width: 0; overflow: hidden; }
-.roamjs-workbench-live-preview-example-source { padding: 13px 8px; }
+.roamjs-workbench-live-preview-example-launcher { margin: 14px 0; }
+.roamjs-workbench-live-preview-example-source { padding: 0; }
 .roamjs-workbench-live-preview-example-context { color: #75858f; font-size: 11px; margin-bottom: 14px; }
 .roamjs-workbench-live-preview-example-link.bp3-button { color: #246da6; padding: 0 3px; min-height: 24px; line-height: 1.4; }
-.roamjs-workbench-live-preview-example-link::before { content: "[["; opacity: .55; }
-.roamjs-workbench-live-preview-example-link::after { content: "]]"; opacity: .55; }
 .roamjs-workbench-live-preview-example-source > p { color: #7a8993; font-size: 11px; margin: 5px 0 0; }
 .roamjs-workbench-live-preview-sample { padding: 19px 22px 18px; color: #293740; line-height: 1.55; font-size: 14px; }
 .roamjs-workbench-live-preview-sample-origin { font-size: 11px; color: #6a7a85; display: flex; gap: 6px; align-items: center; margin-bottom: 12px; }
@@ -140,23 +137,14 @@ export const LIVE_PREVIEW_STYLES = `
 .roamjs-workbench-live-preview-sample-references { border-top: 1px solid #e1e7eb; padding-top: 14px; margin-top: 23px; color: #6a7a85; font-size: 12px; }
 .roamjs-workbench-live-preview-example-status { color: #75858f; font-size: 11px; line-height: 1.5; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; min-height: 18px; }
 .roamjs-workbench-live-preview-example-empty { position: absolute; inset: 125px 12px 12px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; color: #82909a; font-size: 12px; text-align: center; }
-.roamjs-workbench-live-preview-settings-actions { display: flex; flex-shrink: 0; justify-content: space-between; align-items: center; gap: 14px; padding: 18px 26px 20px; border-top: 1px solid #edf0f2; background: #fff; }
+.roamjs-workbench-live-preview-settings-actions { display: flex; flex-shrink: 0; justify-content: space-between; align-items: center; gap: 14px; padding: 16px 24px; flex-wrap: wrap; border-top: 1px solid #edf0f2; background: #fff; }
 .roamjs-workbench-live-preview-settings-actions > span { display: flex; align-items: center; gap: 6px; color: #7c8a94; font-size: 11px; }
-.roamjs-workbench-live-preview-settings-actions > div { display: flex; gap: 8px; }
+.roamjs-workbench-live-preview-settings-actions > div { display: flex; gap: 8px; margin-left: auto; }
 .roamjs-workbench-live-preview-settings-actions .bp3-button:not(.bp3-intent-primary) { background: #fff; color: #293740; box-shadow: inset 0 0 0 1px #d6dfe5; }
 .roamjs-workbench-live-preview-settings-error { color: #a82a2a; font-size: 12px; padding: 0 26px 14px; }
 .roamjs-workbench-live-preview-settings-loading { min-height: 570px; display: flex; justify-content: center; align-items: center; }
-@media (max-width: 760px) {
-  .roamjs-workbench-live-preview-settings-grid { grid-template-columns: 220px minmax(0,1fr); }
-  .roamjs-workbench-live-preview-settings-form { padding-left: 20px; padding-right: 20px; }
-  .roamjs-workbench-live-preview-example { padding-left: 15px; padding-right: 15px; }
-}
 @media (max-width: 620px) {
-  .roamjs-workbench-live-preview-settings-grid { grid-template-columns: minmax(0,1fr); }
-  .roamjs-workbench-live-preview-settings-form { border-right: 0; padding-bottom: 22px; }
-  .roamjs-workbench-live-preview-example { border-top: 1px solid #edf0f2; padding-top: 20px; }
-  .roamjs-workbench-live-preview-settings-actions { padding: 16px 20px; flex-wrap: wrap; }
-  .roamjs-workbench-live-preview-settings-actions > div { margin-left: auto; }
+  .roamjs-workbench-live-preview-settings { top: 16px; left: 16px; max-height: calc(100vh - 32px); }
   .roamjs-workbench-live-preview-sample { padding-left: 17px; padding-right: 17px; }
 }
 @media (pointer: coarse) {
