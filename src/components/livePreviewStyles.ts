@@ -23,7 +23,10 @@ export const LIVE_PREVIEW_STYLES = `
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 14px;
 }
-.roamjs-workbench-live-preview-window * { box-sizing: border-box; }
+.roamjs-workbench-live-preview-header,
+.roamjs-workbench-live-preview-header *,
+.roamjs-workbench-live-preview-scroll,
+.roamjs-workbench-live-preview-resize { box-sizing: border-box; }
 .roamjs-workbench-live-preview-header {
   display: flex;
   align-items: center;
@@ -51,6 +54,7 @@ export const LIVE_PREVIEW_STYLES = `
 .roamjs-workbench-live-preview-scroll[hidden] { display: none; }
 .workbench-live-preview-page { padding: 20px 24px 18px 32px; min-width: 0; }
 .workbench-live-preview-page .rm-title-display { margin: 0 0 18px; font-size: 26px; line-height: 1.25; min-width: 0; overflow-wrap: anywhere; }
+.workbench-live-preview-page .rm-title-display-container .rm-title-icon { margin-top: 4px; }
 .workbench-live-preview-page .rm-block-separator { min-width: 8px; }
 .roamjs-workbench-live-preview-window .roamjs-workbench-live-preview-resize.bp3-button {
   position: absolute;

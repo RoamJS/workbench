@@ -23,6 +23,7 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 
 ### Fixed
 
+- Keep unpinned previews open while the pointer moves into editable Roam content, preserve native block bullets, and align person-page icons with their titles.
 - Remove extra spacing inside the settings example page link.
 - Live Preview's resize control has its own corner outside the scrolling area, including at small sizes.
 - Disabling Live Preview removes its event listeners, timers, and rendered pages while preserving saved pinned windows.

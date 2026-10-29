@@ -143,11 +143,14 @@ const mountPreviews = ({
   };
   const closeTransient = (): void => {
     clearClose();
-    closeTimer = window.setTimeout(() => {
-      if (disposed || interacting || focused() || hovered.size) return;
-      windows = windows.filter((preview) => preview.pinned);
-      render();
-    }, Math.max(250, settings.delay));
+    closeTimer = window.setTimeout(
+      () => {
+        if (disposed || interacting || focused() || hovered.size) return;
+        windows = windows.filter((preview) => preview.pinned);
+        render();
+      },
+      Math.max(250, settings.delay)
+    );
   };
   const update = (id: string, patch: Partial<PreviewState>): void => {
     const previous = windows.find((preview) => preview.id === id);
@@ -203,14 +206,6 @@ const mountPreviews = ({
             onChange={(patch) => update(preview.id, patch)}
             onClose={() => close(preview.id)}
             onActivate={() => activate(preview.id)}
-            onPointerEnter={() => {
-              hovered.add(preview.id);
-              clearClose();
-            }}
-            onPointerLeave={() => {
-              hovered.delete(preview.id);
-              closeTransient();
-            }}
             onFocus={() => {
               clearClose();
               activate(preview.id);
@@ -267,7 +262,22 @@ const mountPreviews = ({
       render();
     }, settings.delay);
   };
+  const trackHoveredPreview = (target: EventTarget | null): void => {
+    const id =
+      target instanceof Element
+        ? target.closest("[data-preview-id]")?.getAttribute("data-preview-id")
+        : null;
+    const previous = hovered.size;
+    hovered.clear();
+    if (id && windows.some((preview) => preview.id === id)) {
+      hovered.add(id);
+      clearClose();
+    } else if (previous) {
+      closeTransient();
+    }
+  };
   const onOver = (event: PointerEvent): void => {
+    trackHoveredPreview(event.target);
     const link = getLink(event.target);
     if (!link || getLink(event.relatedTarget) === link) return;
     // Native links remain clickable in temporary previews; pinned windows can spawn another preview.
@@ -284,6 +294,7 @@ const mountPreviews = ({
     scheduleOpen(event);
   };
   const onOut = (event: PointerEvent): void => {
+    trackHoveredPreview(event.relatedTarget);
     if (
       !source ||
       getLink(event.target) !== source ||
@@ -323,8 +334,9 @@ const mountPreviews = ({
     settings = next;
     window.clearTimeout(openTimer);
   });
-  document.addEventListener("pointerover", onOver);
-  document.addEventListener("pointerout", onOut);
+  // Capture before Roam's nested React root handles events in rendered pages.
+  document.addEventListener("pointerover", onOver, true);
+  document.addEventListener("pointerout", onOut, true);
   document.addEventListener("keydown", onKeyDown);
   document.addEventListener("keyup", onKeyUp);
   window.addEventListener("resize", onResize);
@@ -336,8 +348,8 @@ const mountPreviews = ({
     clearClose();
     persist();
     unsubscribe();
-    document.removeEventListener("pointerover", onOver);
-    document.removeEventListener("pointerout", onOut);
+    document.removeEventListener("pointerover", onOver, true);
+    document.removeEventListener("pointerout", onOut, true);
     document.removeEventListener("keydown", onKeyDown);
     document.removeEventListener("keyup", onKeyUp);
     window.removeEventListener("resize", onResize);
