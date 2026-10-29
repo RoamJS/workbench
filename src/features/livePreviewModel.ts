@@ -55,7 +55,7 @@ export const isWidthPreset = (value: unknown): value is WidthPreset =>
   typeof value === "string" && WIDTH_PRESETS.some((preset) => preset === value);
 
 export const normalizeModifier = (
-  value: unknown
+  value: unknown,
 ): LivePreviewSettings["modifier"] | undefined => {
   if (typeof value !== "string") return undefined;
   const normalized = value.trim().toLowerCase();
@@ -96,8 +96,8 @@ export const normalizeSettings = (value: unknown): LivePreviewSettings => {
     typeof record.delay === "number"
       ? record.delay
       : typeof record.delay === "string" && record.delay.trim()
-      ? Number(record.delay)
-      : NaN;
+        ? Number(record.delay)
+        : NaN;
   return {
     trigger: record.trigger === "modifier" ? "modifier" : "hover",
     modifier: normalizeModifier(record.modifier) ?? DEFAULT_SETTINGS.modifier,
@@ -132,8 +132,8 @@ export const getPresetWidth = ({
     preset === "full"
       ? available
       : preset === "custom"
-      ? DEFAULT_SETTINGS.width
-      : widths[preset];
+        ? DEFAULT_SETTINGS.width
+        : widths[preset];
   return Math.min(Number(width), available);
 };
 
@@ -185,11 +185,11 @@ export const clampGeometry = ({
   const availableHeight = viewportHeight - insetY * 2;
   const width = Math.min(
     availableWidth,
-    Math.max(MIN_WIDTH, finite(geometry.width, 480))
+    Math.max(MIN_WIDTH, finite(geometry.width, 480)),
   );
   const height = Math.min(
     availableHeight,
-    Math.max(MIN_HEIGHT, finite(geometry.height, 380))
+    Math.max(MIN_HEIGHT, finite(geometry.height, 380)),
   );
   const visibleHeight = minimized ? Math.min(HEADER_HEIGHT, height) : height;
   return {
@@ -197,15 +197,15 @@ export const clampGeometry = ({
       left + insetX,
       Math.min(
         finite(geometry.x, left + insetX),
-        left + viewportWidth - insetX - width
-      )
+        left + viewportWidth - insetX - width,
+      ),
     ),
     y: Math.max(
       top + insetY,
       Math.min(
         finite(geometry.y, top + insetY),
-        top + viewportHeight - insetY - visibleHeight
-      )
+        top + viewportHeight - insetY - visibleHeight,
+      ),
     ),
     width,
     height,
@@ -280,5 +280,12 @@ export const getSettingsExampleGeometry = ({
   getDefaultGeometry({
     settings,
     viewport,
-    anchor: controls ? { ...controls, right: controls.right + 16 } : undefined,
+    anchor: controls
+      ? {
+          left: controls.left,
+          right: controls.right + 16,
+          top: controls.top,
+          bottom: controls.bottom,
+        }
+      : undefined,
   });

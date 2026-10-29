@@ -106,7 +106,7 @@ for (const [alias, expected] of [
   test(`preserves the ${alias} legacy modifier`, async () => {
     const { api } = createApi();
     const settings = await loadSettings(api, (key) =>
-      key === LEGACY_SETTING_KEYS.modifier ? alias : undefined
+      key === LEGACY_SETTING_KEYS.modifier ? alias : undefined,
     );
     expect(settings.trigger).toBe("modifier");
     expect(settings.modifier).toBe(expected);
@@ -120,7 +120,7 @@ test("invalid dimensions and delay fall back without accepting CSS injection", (
       height: "10px; position:fixed",
       delay: -1,
       modifier: "unsupported",
-    })
+    }),
   ).toEqual(DEFAULT_SETTINGS);
 });
 
@@ -135,7 +135,7 @@ test("custom viewport dimensions remain relative and previews fit beside a link"
       },
       viewport: { width: 1000, height: 800, left: 100, top: 50 },
       anchor: { left: 850, right: 900, top: 100, bottom: 120 },
-    })
+    }),
   ).toEqual({ x: 342, y: 100, width: 500, height: 400 });
 });
 
@@ -144,14 +144,14 @@ test("Full fills available workspace width while retaining chosen height", () =>
     getDefaultGeometry({
       settings: { ...DEFAULT_SETTINGS, widthPreset: "full", height: 300 },
       viewport: { width: 900, height: 700, left: 160, top: 40 },
-    })
+    }),
   ).toEqual({ x: 168, y: 48, width: 884, height: 300 });
 });
 
 test("clamps restored geometry to a smaller viewport without hiding the header", () => {
   const geometry = { x: 2000, y: 1500, width: 1200, height: 1000 };
   expect(
-    clampGeometry({ geometry, viewport: { width: 320, height: 500 } })
+    clampGeometry({ geometry, viewport: { width: 320, height: 500 } }),
   ).toEqual({
     x: 8,
     y: 8,
@@ -163,7 +163,7 @@ test("clamps restored geometry to a smaller viewport without hiding the header",
       geometry,
       viewport: { width: 320, height: 500 },
       minimized: true,
-    })
+    }),
   ).toEqual({ x: 8, y: 448, width: 304, height: 484 });
 });
 
@@ -173,14 +173,14 @@ test("vertical-only resize preserves a width preset", () => {
       previousPreset: "large",
       previousWidth: 640,
       width: 640,
-    })
+    }),
   ).toBe("large");
   expect(
     getWidthPresetAfterResize({
       previousPreset: "large",
       previousWidth: 640,
       width: 641,
-    })
+    }),
   ).toBe("custom");
 });
 
@@ -204,7 +204,7 @@ test("minimizing, saving, and restoring retain the expanded window height", asyn
       geometry: restored.geometry,
       viewport,
       minimized: false,
-    })
+    }),
   ).toEqual(original);
 });
 
@@ -245,7 +245,7 @@ test("settings subscribers are scoped and unsubscribe without affecting storage"
   const second = createApi();
   const observed: number[] = [];
   const unsubscribe = subscribeSettings(first.api, (settings) =>
-    observed.push(settings.delay)
+    observed.push(settings.delay),
   );
   await saveSettings(second.api, { ...DEFAULT_SETTINGS, delay: 100 });
   await saveSettings(first.api, { ...DEFAULT_SETTINGS, delay: 0 });
@@ -294,7 +294,7 @@ test("Full example uses viewport width and does not reduce the requested height 
       settings: { ...DEFAULT_SETTINGS, widthPreset: "full", height: 700 },
       viewport: { width: 1436, height: 1108 },
       controls: { left: 24, right: 384, top: 24, bottom: 900 },
-    })
+    }),
   ).toMatchObject({ x: 8, width: 1420, height: 700 });
 });
 
@@ -304,6 +304,28 @@ test("narrow example opens below collapsed controls and stays in the viewport", 
       settings: { ...DEFAULT_SETTINGS, widthPreset: "small" },
       viewport: { width: 390, height: 667 },
       controls: { left: 16, right: 374, top: 16, bottom: 76 },
-    })
+    }),
+  ).toEqual({ x: 8, y: 84, width: 360, height: 380 });
+});
+
+test("settings sample reads inherited rectangle coordinates returned by the browser", () => {
+  const controls = Object.create(
+    Object.defineProperties(
+      {},
+      {
+        left: { get: () => 16 },
+        right: { get: () => 374 },
+        top: { get: () => 16 },
+        bottom: { get: () => 76 },
+      },
+    ),
+  ) as { left: number; right: number; top: number; bottom: number };
+  expect(Object.keys(controls)).toEqual([]);
+  expect(
+    getSettingsExampleGeometry({
+      settings: { ...DEFAULT_SETTINGS, widthPreset: "small" },
+      viewport: { width: 390, height: 667 },
+      controls,
+    }),
   ).toEqual({ x: 8, y: 84, width: 360, height: 380 });
 });
