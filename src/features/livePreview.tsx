@@ -103,7 +103,8 @@ const mountPreviews = ({
 }): (() => void) => {
   const mount = document.createElement("div");
   mount.id = "workbench-live-preview-windows";
-  document.body.appendChild(mount);
+  // Share Roam's stacking context so its menus and lifted dialogs stay above previews.
+  (document.querySelector(".roam-app") ?? document.body).appendChild(mount);
   const api = extensionAPI.settings;
   let settings = initialSettings;
   let windows = readPinnedWindows(api, getPreviewViewport()).flatMap(
