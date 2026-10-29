@@ -76,6 +76,14 @@ export const LIVE_PREVIEW_STYLES = `
   --lp-link: #91c5ef;
   --lp-active: #30485c;
 }
+.bp3-dark .roamjs-workbench-live-preview-example-layer .roamjs-workbench-live-preview-window {
+  --lp-background: #fff;
+  --lp-text: #293740;
+  --lp-muted: #6a7a85;
+  --lp-line: #e1e7eb;
+  --lp-link: #246da6;
+  --lp-active: #edf5fc;
+}
 .roamjs-workbench-live-preview-settings-layout.bp3-dialog {
   position: fixed; inset: 0; width: 100vw; height: 100vh; max-width: none; max-height: none;
   padding: 0; margin: 0; border: 0; background: transparent; box-shadow: none;
