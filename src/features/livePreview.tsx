@@ -183,6 +183,9 @@ const mountPreviews = ({
   };
   const render = (): void => {
     if (disposed) return;
+    hovered.forEach((id) => {
+      if (!windows.some((preview) => preview.id === id)) hovered.delete(id);
+    });
     stackingOrder = stackingOrder.filter((id) =>
       windows.some((preview) => preview.id === id)
     );
