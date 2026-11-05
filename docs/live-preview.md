@@ -2,6 +2,10 @@
 
 Enable **Live Preview** in WorkBench's extension settings, then hover over a page link or tag. An editable page opens beside the link without changing your main page. Use Roam's normal block editing and linked references inside the preview.
 
+## Product walkthrough
+
+https://github.com/user-attachments/assets/2e3b89d8-a91d-46df-9528-64f91a17b894
+
 ## Keep a page nearby
 
 - **Pin** keeps the preview open until you close or unpin it. The pin button changes state; the page icon stays the same.
