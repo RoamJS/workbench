@@ -1,7 +1,7 @@
 import { useLayoutEffect } from "react";
 
 export const LIVE_PREVIEW_STYLES = `
-.roamjs-workbench-live-preview-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.roamjs-workbench-live-preview-layer { position: fixed; inset: 0; z-index: 1000; pointer-events: none; }
 .roamjs-workbench-live-preview-window {
   --lp-background: #fff;
   --lp-text: #293740;

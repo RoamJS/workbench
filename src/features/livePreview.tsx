@@ -55,21 +55,10 @@ const NativePage = ({ uid }: { uid: string }): JSX.Element => {
   );
 };
 
-export const getPreviewViewport = (): Viewport => {
-  const workspace = document
-    .querySelector(".roam-main")
-    ?.getBoundingClientRect();
-  return workspace && workspace.width >= 280
-    ? {
-        left: Math.max(0, workspace.left),
-        top: Math.max(0, workspace.top),
-        width:
-          Math.min(window.innerWidth, workspace.right) -
-          Math.max(0, workspace.left),
-        height: window.innerHeight - Math.max(0, workspace.top),
-      }
-    : { width: window.innerWidth, height: window.innerHeight };
-};
+export const getPreviewViewport = (): Viewport => ({
+  width: window.innerWidth,
+  height: window.innerHeight,
+});
 
 const modifierHeld = (
   event: MouseEvent | KeyboardEvent,

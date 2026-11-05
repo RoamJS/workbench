@@ -8,9 +8,21 @@ import { LIVE_PREVIEW_STYLES } from "../src/components/livePreviewStyles";
 
 test("native page event boundaries retain an unpinned preview until the pointer leaves its window", async () => {
   const dom = new JSDOM(
-    '<div class="roam-app"><span class="rm-page-ref" data-tag="Example">Example</span></div>',
+    '<div class="roam-app"><aside class="roam-sidebar-container"></aside><main class="roam-main"><span class="rm-page-ref" data-tag="Example">Example</span></main><aside id="right-sidebar"></aside></div>',
     { pretendToBeVisual: true }
   );
+  const workspace = dom.window.document.querySelector(".roam-main")!;
+  workspace.getBoundingClientRect = () => ({
+    left: 232,
+    top: 40,
+    right: 700,
+    bottom: 768,
+    width: 468,
+    height: 728,
+    x: 232,
+    y: 40,
+    toJSON: () => ({}),
+  });
   const globals = [
     "window",
     "self",
@@ -87,14 +99,17 @@ test("native page event boundaries retain an unpinned preview until the pointer 
     ],
   });
   const module = {
-    exports: {} as { toggleFeature: (flag: boolean, api: unknown) => void },
+    exports: {} as {
+      toggleFeature: (flag: boolean, api: unknown) => void;
+      getPreviewViewport: () => { width: number; height: number };
+    },
   };
   new Function("require", "module", "exports", compiled.outputFiles[0].text)(
     require,
     module,
     module.exports
   );
-  const { toggleFeature } = module.exports;
+  const { toggleFeature, getPreviewViewport } = module.exports;
   const pointer = (
     target: Element,
     type: string,
@@ -105,6 +120,10 @@ test("native page event boundaries retain an unpinned preview until the pointer 
     );
   };
   try {
+    expect(getPreviewViewport()).toEqual({
+      width: dom.window.innerWidth,
+      height: dom.window.innerHeight,
+    });
     toggleFeature(true, api as Parameters<typeof toggleFeature>[1]);
     await expect
       .poll(
@@ -173,5 +192,24 @@ test("preview chrome preserves native bullet sizing and aligns person-page icons
       dom.window.document.querySelector(".rm-title-icon")!
     ).marginTop
   ).toBe("4px");
+  dom.window.close();
+});
+
+test("preview layer sits above both sidebars without intercepting the surrounding page", () => {
+  const dom = new JSDOM(`<style>${LIVE_PREVIEW_STYLES}</style>
+    <div class="roamjs-workbench-live-preview-layer"><section class="roamjs-workbench-live-preview-window"></section></div>`);
+  const layer = dom.window.getComputedStyle(
+    dom.window.document.querySelector(".roamjs-workbench-live-preview-layer")!
+  );
+  expect(Number(layer.zIndex)).toBeGreaterThan(999);
+  expect(layer.position).toBe("fixed");
+  expect(layer.pointerEvents).toBe("none");
+  expect(
+    dom.window.getComputedStyle(
+      dom.window.document.querySelector(
+        ".roamjs-workbench-live-preview-window"
+      )!
+    ).pointerEvents
+  ).toBe("auto");
   dom.window.close();
 });

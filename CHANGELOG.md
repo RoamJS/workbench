@@ -9,6 +9,12 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 - Minor version bumps are released on a regular cadence.
 - Patch version bumps are for bugfixes and hotfixes.
 
+## [1.10.1] - 2026-11-04
+
+### Fixed
+
+- Live Preview windows can move and resize across both Roam sidebars instead of staying confined to the center pane.
+
 ## [1.10.0] - 2026-10-29
 
 ### Added
