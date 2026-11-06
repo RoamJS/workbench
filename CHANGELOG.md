@@ -9,6 +9,12 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 - Minor version bumps are released on a regular cadence.
 - Patch version bumps are for bugfixes and hotfixes.
 
+## [Unreleased]
+
+### Changed
+
+- Daily Note Popup now matches Live Preview's window style, with a visible title bar, a lower-right resize control, keyboard move and resize, and minimize and restore in place. Saved window size and position continue to work.
+
 ## [1.11.0] - 2026-11-06
 
 ### Added

@@ -12,9 +12,13 @@ Toggle the Daily Notes Popup module on inside WorkBench.
 
 To toggle your daily note page popup, hit `ALT` + `SHIFT` + `,`. The popup that appears is editable, without needing to leave your current location.
 
-You can drag the window by clicking on the top bar. Resize the window by clicking and dragging the borders.
+The popup uses the same window style as Live Preview, with a visible title bar and controls. Drag the title bar to move it, or drag the lower-right resize corner to change its size. Windows stay within the browser, including across either sidebar.
 
-To toggle focus between the main window and the Daily Note Popup window, simply hit `ALT` + `SHIFT` + `CTRL` + `,`.
+Use **Minimize in place** to collapse the popup to its title bar without moving it. **Restore popup** brings back the same page and size. The popup stays open until you close it or toggle the command again; it does not need to be pinned.
+
+Focus the title bar and press the arrow keys to move it, or focus the resize corner and press the arrow keys to resize it. Hold `SHIFT` for larger steps. Its size and position are remembered in this browser when you close and reopen it, including layouts saved by earlier versions.
+
+To toggle focus between the main window and the Daily Note Popup window, simply hit `ALT` + `SHIFT` + `CTRL` + `.`.
 
 It's possible to assign a unique hotkey to individual commands, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workench Extension Settings.
 

@@ -1,9 +1,14 @@
 import { get } from "../settings";
-import { Button, Overlay } from "@blueprintjs/core";
 import renderOverlay, {
   RoamOverlayProps,
 } from "roamjs-components/util/renderOverlay";
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+} from "react";
 import { render as renderToast } from "roamjs-components/components/Toast";
 import getFirstChildUidByBlockUid from "roamjs-components/queries/getFirstChildUidByBlockUid";
 import createBlock from "roamjs-components/writes/createBlock";
@@ -12,6 +17,9 @@ import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageU
 import type { OnloadArgs } from "roamjs-components/types";
 import { addCommand } from "./workBench";
 import createHTMLObserver from "roamjs-components/dom/createHTMLObserver";
+import LivePreviewWindow from "../components/LivePreviewWindow";
+import { clampGeometry, PreviewState } from "./livePreviewModel";
+import { readDailyNotesGeometry } from "./dailyNotesPopupModel";
 
 let closeDailyNotesPopup: (() => void) | undefined;
 
@@ -51,451 +59,135 @@ export const moveForwardToDate = (bForward: boolean) => {
   });
 };
 
-const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>) => {
-  const [loaded, setLoaded] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>): JSX.Element => {
   const pageUid = useMemo(
     () => window.roamAlphaAPI.util.dateToPageUid(new Date()),
-    []
+    [],
   );
-  const [minimized, _setMinimized] = useState(false);
-  const minimizedRef = useRef(false);
-  const setMinimized = (f: boolean) =>
-    _setMinimized((minimizedRef.current = f));
   const containerRef = useRef<HTMLDivElement>(null);
-  var loc = useMemo(() => {
-    const item = localStorage.getItem("DNP_Parameters_Dimensions");
-    return item
-      ? (JSON.parse(item) as {
-          height: number;
-          width: number;
-          left: number;
-          top: number;
-        })
-      : {
-          height: 300,
-          width: 500,
-          left: window.innerWidth / 2 - 300,
-          top: window.innerHeight / 2 - 150,
-        };
-  }, []);
-  const [height, setHeight] = useState(loc.height);
-  const [width, setWidth] = useState(loc.width);
-  const [top, setTop] = useState(loc.top);
-  const [left, setLeft] = useState(loc.left);
+  const [failed, setFailed] = useState(false);
+  const [preview, setPreview] = useState<PreviewState>(() => {
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem("DNP_Parameters_Dimensions");
+    } catch {
+      // The popup remains usable when browser storage is unavailable.
+    }
+    return {
+      id: "daily-notes-popup",
+      uid: pageUid,
+      title: "Daily Notes",
+      pinned: true,
+      minimized: false,
+      widthPreset: "custom",
+      geometry: readDailyNotesGeometry({
+        stored,
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+      }),
+    };
+  });
   useEffect(() => {
-    if (containerRef.current && !minimizedRef.current) {
-      window.roamAlphaAPI.ui.components.renderPage({
-        el: containerRef.current,
-        uid: pageUid,
-      });
-      Promise.resolve(
-        getFirstChildUidByBlockUid(pageUid) ||
-          createBlock({
-            node: { text: "" },
-            parentUid: pageUid,
-          })
-      ).then((uid) => {
-        const blockElement = containerRef.current?.querySelector(
-          ".roam-block"
-        ) as HTMLDivElement;
-        if (blockElement) {
+    const { width, height, x: left, y: top } = preview.geometry;
+    component.saveUIChanges({ width, height, left, top });
+  }, [preview.geometry]);
+  useEffect(() => {
+    const onResize = (): void => {
+      setPreview((current) => ({
+        ...current,
+        geometry: clampGeometry({
+          geometry: current.geometry,
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+          minimized: current.minimized,
+        }),
+      }));
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    let disposed = false;
+    let focusObserver: MutationObserver | undefined;
+    const rendered = window.roamAlphaAPI.ui.components.renderPage({
+      el,
+      uid: pageUid,
+    });
+    void Promise.resolve(rendered)
+      .then(async () => {
+        if (disposed) return;
+        const uid =
+          getFirstChildUidByBlockUid(pageUid) ||
+          (await createBlock({ node: { text: "" }, parentUid: pageUid }));
+        if (disposed) return;
+        const focusBlock = (): void => {
+          const blockElement = el.querySelector<HTMLDivElement>(".roam-block");
+          if (!blockElement || disposed) return;
+          focusObserver?.disconnect();
           const { windowId } = getUids(blockElement);
           window.roamAlphaAPI.ui.setBlockFocusAndSelection({
-            location: {
-              "block-uid": uid,
-              "window-id": windowId,
-            },
+            location: { "block-uid": uid, "window-id": windowId },
           });
-        }
+        };
+        focusObserver = new MutationObserver(focusBlock);
+        focusObserver.observe(el, { childList: true, subtree: true });
+        focusBlock();
+      })
+      .catch(() => {
+        if (!disposed) setFailed(true);
       });
-    } else if (!loaded) {
-      setLoaded(true);
-    } else if (minimizedRef.current) {
-      setLoaded(false);
-    }
-  }, [containerRef.current, loaded, setLoaded, minimizedRef]);
-  const onDragEnd = () => {
-    component.saveUIChanges({ width, top, left, height });
-    setIsDragging(false);
-  };
-  const dragImage = useMemo(() => {
-    const img = document.createElement("img");
-    img.src =
-      "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-    return img;
-  }, []);
-  const cancelDragImage = (e: React.DragEvent) => {
-    e.dataTransfer.setDragImage(dragImage, 0, 0);
-  };
-  const dragRef = useRef({ top: 0, left: 0, width: 0, height: 0 });
-  return minimized ? (
-    <div
-      className="absolute bottom-0 left-0 px-4 py-2 text-white flex justify-between items-center gap-12"
-      style={{ background: "#565c70" }}
-    >
-      <span>Daily Notes</span>
-      <span>
-        <Button
-          icon={"expand-all"}
-          minimal
-          onClick={() => setMinimized(false)}
-          style={{
-            minHeight: 16,
-            minWidth: 16,
-            height: 16,
-            width: 16,
-          }}
+    return () => {
+      disposed = true;
+      focusObserver?.disconnect();
+      void Promise.resolve(rendered)
+        .then(
+          () => window.roamAlphaAPI.ui.components.unmountNode({ el }),
+          () => window.roamAlphaAPI.ui.components.unmountNode({ el }),
+        )
+        .catch((error: unknown) =>
+          console.error("WorkBench could not unmount Daily Notes", error),
+        );
+    };
+  }, [pageUid]);
+  return (
+    <div className="roamjs-daily-notes-popup roamjs-workbench-live-preview-layer">
+      <LivePreviewWindow
+        preview={preview}
+        pinnable={false}
+        label="popup"
+        zIndex={200}
+        onChange={(patch) =>
+          setPreview((current) => ({ ...current, ...patch }))
+        }
+        onClose={onClose}
+      >
+        {failed && (
+          <p role="alert">
+            Daily Notes could not be opened. Close the popup and try again.
+          </p>
+        )}
+        <div
+          className="workbench-live-preview-page dnp-content"
+          ref={containerRef}
         />
-        <Button
-          icon={"cross"}
-          minimal
-          onClick={onClose}
-          style={{
-            minHeight: 16,
-            minWidth: 16,
-            height: 16,
-            width: 16,
-          }}
-        />
-      </span>
+      </LivePreviewWindow>
     </div>
-  ) : (
-    <Overlay
-      isOpen={true}
-      onClose={onClose}
-      className={`roamjs-daily-notes-popup ${
-        isDragging && "roamjs-daily-notes-dragging"
-      }`}
-      autoFocus={false}
-      enforceFocus={false}
-      hasBackdrop={false}
-      canOutsideClickClose={false}
-      canEscapeKeyClose={false}
-      portalClassName={"roamjs-daily-notes-portal"}
-    >
-      <div style={{ top, left }}>
-        <style>
-          {`.roamjs-daily-notes-popup {
-            background: transparent;
-            width: auto;
-          }
-
-          .roamjs-daily-notes-popup .bp3-dialog-header {
-            cursor: move;
-            padding: 8px 16px;
-            background: transparent;
-            color: transparent;
-            
-            .bp3-icon {
-              color: transparent;
-            }
-          }
-
-          .roamjs-daily-notes-popup .bp3-dialog-header .bp3-icon {
-            color: transparent;
-          }
-
-          .roamjs-daily-notes-popup .bp3-dialog-header:hover,
-          .roamjs-daily-notes-popup.roamjs-daily-notes-dragging .bp3-dialog-header {
-            background: #565c70;
-            color: white;
-
-            .bp3-icon {
-              color: white;
-            }
-          }
-
-          .roamjs-daily-notes-popup .bp3-dialog-header:hover .bp3-icon,
-          .roamjs-daily-notes-popup.roamjs-daily-notes-dragging .bp3-dialog-header .bp3-icon {
-            color: white;
-          }
-
-          .roamjs-daily-notes-popup .bp3-overlay-content {
-            box-shadow: 0 19px 38px rgb(0 0 0 / 30%), 0 15px 12px rgb(0 0 0 / 22%);
-          }
-          
-          .rm-autocomplete__results {
-            z-index: 1020;
-          }`}
-        </style>
-        <div
-          aria-label="Daily Notes Popup Header"
-          tabIndex={-1}
-          className="bp3-dialog-header absolute left-0 bottom-full right-0"
-          draggable
-          onDragStart={(e) => {
-            setIsDragging(true);
-            cancelDragImage(e);
-            const rect = (e.target as HTMLDivElement).getBoundingClientRect();
-            if (e.clientX && e.clientY) {
-              dragRef.current.top = e.clientY - rect.top - rect.height;
-              dragRef.current.left = e.clientX - rect.left;
-            }
-          }}
-          onDrag={(e) => {
-            if (e.clientX && e.clientY) {
-              setTop(e.clientY - dragRef.current.top);
-              setLeft(e.clientX - dragRef.current.left);
-            }
-          }}
-          onDragEnd={onDragEnd}
-        >
-          <div className="flex justify-between items-center">
-            <span>Daily Notes</span>
-            <span>
-              <Button
-                icon={"caret-down"}
-                minimal
-                onClick={() => setMinimized(true)}
-                style={{
-                  minHeight: 16,
-                  minWidth: 16,
-                  height: 16,
-                  width: 16,
-                }}
-              />
-              <Button
-                icon={"cross"}
-                minimal
-                onClick={onClose}
-                style={{
-                  minHeight: 16,
-                  minWidth: 16,
-                  height: 16,
-                  width: 16,
-                }}
-              />
-            </span>
-          </div>
-        </div>
-        <div
-          aria-label="Bottom Resize Handle"
-          className="absolute h-3 left-2 -bottom-1"
-          style={{ width: "calc(100% - 16px)", cursor: "s-resize" }}
-          draggable
-          onDragStart={(e) => {
-            cancelDragImage(e);
-            const targetElement = (
-              e.target as HTMLDivElement
-            ).parentElement?.querySelector(".dnp-content");
-            const rect = targetElement?.getBoundingClientRect();
-            if (rect) dragRef.current.top = rect.top;
-          }}
-          onDrag={(e) => {
-            if (e.clientY) {
-              setHeight(e.clientY - dragRef.current.top);
-            }
-          }}
-          onDragEnd={onDragEnd}
-        />
-        <div
-          aria-label="Bottom Left Corner Resize Handle"
-          className="absolute h-3 -left-1 w-3 -bottom-1"
-          style={{ cursor: "sw-resize" }}
-          draggable
-          onDragStart={(e) => {
-            cancelDragImage(e);
-            const targetElement = (
-              e.target as HTMLDivElement
-            ).parentElement?.querySelector(".dnp-content");
-            const rect = targetElement?.getBoundingClientRect();
-            if (rect) {
-              dragRef.current.top = rect.top;
-              dragRef.current.width = rect.width;
-              dragRef.current.left = rect.left;
-            }
-          }}
-          onDrag={(e) => {
-            if (e.clientY) {
-              setHeight(e.clientY - dragRef.current.top);
-              setWidth(
-                dragRef.current.left - e.clientX + dragRef.current.width
-              );
-              setLeft(e.clientX);
-            }
-          }}
-          onDragEnd={onDragEnd}
-        />
-        <div
-          aria-label="Left Resize Handle"
-          className="absolute w-3 bottom-2 -left-1"
-          style={{ height: "calc(100% - 16px)", cursor: "w-resize" }}
-          draggable
-          onDragStart={(e) => {
-            cancelDragImage(e);
-            const targetElement = (
-              e.target as HTMLDivElement
-            ).parentElement?.querySelector(".dnp-content");
-            const rect = targetElement?.getBoundingClientRect();
-            if (rect) {
-              dragRef.current.left = rect.left;
-              dragRef.current.width = rect.width;
-            }
-          }}
-          onDrag={(e) => {
-            if (e.clientY) {
-              setWidth(
-                dragRef.current.left - e.clientX + dragRef.current.width
-              );
-              setLeft(e.clientX);
-            }
-          }}
-          onDragEnd={onDragEnd}
-        />
-        <div
-          aria-label="Top Left Corner Resize Handle"
-          className="absolute h-3 -left-1 w-3 -top-1"
-          style={{ cursor: "nw-resize" }}
-          draggable
-          onDragStart={(e) => {
-            cancelDragImage(e);
-            const targetElement = (
-              e.target as HTMLDivElement
-            ).parentElement?.querySelector(".dnp-content");
-            const rect = targetElement?.getBoundingClientRect();
-            if (rect) {
-              dragRef.current.top = rect.top;
-              dragRef.current.height = rect.height;
-              dragRef.current.left = rect.left;
-              dragRef.current.width = rect.width;
-            }
-          }}
-          onDrag={(e) => {
-            if (e.clientY) {
-              setWidth(
-                dragRef.current.left - e.clientX + dragRef.current.width
-              );
-              setHeight(
-                dragRef.current.top - e.clientY + dragRef.current.height
-              );
-              setLeft(e.clientX);
-              setTop(e.clientY);
-            }
-          }}
-          onDragEnd={onDragEnd}
-        />
-        <div
-          aria-label="Top Resize Handle"
-          className="absolute h-3 left-2 -top-1"
-          style={{ width: "calc(100% - 16px)", cursor: "n-resize" }}
-          draggable
-          onDragStart={(e) => {
-            cancelDragImage(e);
-            const targetElement = (
-              e.target as HTMLDivElement
-            ).parentElement?.querySelector(".dnp-content");
-            const rect = targetElement?.getBoundingClientRect();
-            if (rect) {
-              dragRef.current.top = rect.top;
-              dragRef.current.height = rect.height;
-            }
-          }}
-          onDrag={(e) => {
-            if (e.clientY) {
-              setHeight(
-                dragRef.current.top - e.clientY + dragRef.current.height
-              );
-              setTop(e.clientY);
-            }
-          }}
-          onDragEnd={onDragEnd}
-        />
-        <div
-          aria-label="Top Right Corner Resize Handle"
-          className="absolute h-3 -right-1 w-3 -top-1"
-          style={{ cursor: "ne-resize" }}
-          draggable
-          onDragStart={(e) => {
-            cancelDragImage(e);
-            const targetElement = (
-              e.target as HTMLDivElement
-            ).parentElement?.querySelector(".dnp-content");
-            const rect = targetElement?.getBoundingClientRect();
-            if (rect) {
-              dragRef.current.top = rect.top;
-              dragRef.current.height = rect.height;
-              dragRef.current.left = rect.left;
-            }
-          }}
-          onDrag={(e) => {
-            if (e.clientY) {
-              setHeight(
-                dragRef.current.top - e.clientY + dragRef.current.height
-              );
-              setWidth(e.clientX - dragRef.current.left);
-              setTop(e.clientY);
-            }
-          }}
-          onDragEnd={onDragEnd}
-        />
-        <div
-          aria-label="Right Resize Handle"
-          className="absolute w-3 bottom-2 -right-1"
-          style={{ height: "calc(100% - 16px)", cursor: "e-resize" }}
-          draggable
-          onDragStart={(e) => {
-            cancelDragImage(e);
-            const targetElement = (
-              e.target as HTMLDivElement
-            ).parentElement?.querySelector(".dnp-content");
-            const rect = targetElement?.getBoundingClientRect();
-            if (rect) dragRef.current.left = rect.left;
-          }}
-          onDrag={(e) => {
-            if (e.clientY) {
-              setWidth(e.clientX - dragRef.current.left);
-            }
-          }}
-          onDragEnd={onDragEnd}
-        />
-        <div
-          aria-label="Bottom Right Corner Resize Handle"
-          className="absolute h-3 -right-1 w-3 -bottom-1"
-          style={{ cursor: "se-resize" }}
-          draggable
-          onDragStart={(e) => {
-            cancelDragImage(e);
-            const targetElement = (
-              e.target as HTMLDivElement
-            ).parentElement?.querySelector(".dnp-content");
-            const rect = targetElement?.getBoundingClientRect();
-            if (rect) {
-              dragRef.current.top = rect.top;
-              dragRef.current.left = rect.left;
-            }
-          }}
-          onDrag={(e) => {
-            if (e.clientY) {
-              setWidth(e.clientX - dragRef.current.left);
-              setHeight(e.clientY - dragRef.current.top);
-            }
-          }}
-          onDragEnd={onDragEnd}
-        />
-        <div
-          className={`bg-white overflow-auto dnp-content`}
-          style={{ width, height }}
-        >
-          <div className={`roamjs-dialog-body pr-6 pl-6`} ref={containerRef} />
-        </div>
-      </div>
-    </Overlay>
   );
 };
 
 const toggleFocus = () => {
   const selection = window.getSelection();
-  const range = selection?.getRangeAt(0);
+  const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+  const focused = document.activeElement;
+  const ancestor = range?.commonAncestorContainer;
+  const selectionElement =
+    ancestor instanceof Element ? ancestor : ancestor?.parentElement;
   const popup =
-    range?.commonAncestorContainer instanceof Element
-      ? (range.commonAncestorContainer as Element).closest(
-          ".roamjs-daily-notes-popup"
-        )
-      : null;
+    focused?.closest(".roamjs-daily-notes-popup") ||
+    selectionElement?.closest(".roamjs-daily-notes-popup");
   if (!popup) {
     const firstPopupBlock = document.querySelector<HTMLDivElement>(
-      ".roamjs-daily-notes-popup .rm-block-children .roam-block"
+      ".roamjs-daily-notes-popup .rm-block-children .roam-block",
     );
     if (firstPopupBlock) {
       const { blockUid, windowId } = getUids(firstPopupBlock);
@@ -505,7 +197,7 @@ const toggleFocus = () => {
     }
   } else {
     const firstMainBlock = document.querySelector<HTMLDivElement>(
-      ".roam-article .roam-block"
+      ".roam-article .roam-block",
     );
     if (firstMainBlock) {
       const { blockUid, windowId } = getUids(firstMainBlock);
@@ -528,14 +220,14 @@ const jumpDateBack = () => {
 };
 const jumpDateIcon = () => {
   const roamNativeDate = document.querySelector<HTMLSpanElement>(
-    "div.rm-topbar span.bp3-icon-calendar"
+    "div.rm-topbar span.bp3-icon-calendar",
   );
   if (roamNativeDate) {
     roamNativeDate.click();
     setTimeout(() => {
       const day = new Date().getDate();
       const dayEl = Array.from(
-        document.querySelectorAll<HTMLSpanElement>(".DayPicker-Day")
+        document.querySelectorAll<HTMLSpanElement>(".DayPicker-Day"),
       ).find((d) => d.innerText === `${day}`);
       dayEl?.focus?.();
     }, 1);
@@ -584,13 +276,13 @@ const parseDateFromHeading = (headingText: string): Date | null => {
   const pageDate = new Date(
     Number(year),
     MONTHS.indexOf(month),
-    Number(dateMatch[1])
+    Number(dateMatch[1]),
   );
   return !isNaN(pageDate.valueOf()) ? pageDate : null;
 };
 const createDayBanner = (
   dayOfWeek: number,
-  heading: HTMLHeadingElement
+  heading: HTMLHeadingElement,
 ): HTMLDivElement => {
   const banner = document.createElement("div");
   banner.className = DAY_BANNER_CLASS;
@@ -607,7 +299,7 @@ const createDayBanner = (
 };
 const insertBanner = (
   banner: HTMLDivElement,
-  heading: HTMLHeadingElement
+  heading: HTMLHeadingElement,
 ): void => {
   const container = heading.closest(`.${ROAM_TITLE_CONTAINER_CLASS}`);
   const insertionPoint = container || heading;
@@ -677,7 +369,14 @@ export const component = {
     left: number;
     top: number;
   }) {
-    localStorage.setItem("DNP_Parameters_Dimensions", JSON.stringify(UIValues));
+    try {
+      localStorage.setItem(
+        "DNP_Parameters_Dimensions",
+        JSON.stringify(UIValues),
+      );
+    } catch {
+      // Moving or resizing still works when browser storage is unavailable.
+    }
   },
 
   toggleVisible() {
@@ -687,6 +386,8 @@ export const component = {
       closeDailyNotesPopup =
         renderOverlay({
           Overlay: DailyNotesPopup,
+          path:
+            document.querySelector<HTMLElement>(".roam-app") ?? document.body,
           props: {
             onClose: () => {
               closeDailyNotesPopup = undefined;
@@ -701,7 +402,7 @@ let unloads = new Set<() => void>();
 export let enabled = false;
 export const toggleFeature = (
   flag: boolean,
-  extensionAPI: OnloadArgs["extensionAPI"]
+  extensionAPI: OnloadArgs["extensionAPI"],
 ) => {
   enabled = flag;
   if (flag) {
@@ -712,8 +413,8 @@ export const toggleFeature = (
           callback: toggleDNPPopup,
           defaultHotkey: "alt-shift-,",
         },
-        extensionAPI
-      )
+        extensionAPI,
+      ),
     );
     unloads.add(
       addCommand(
@@ -722,8 +423,8 @@ export const toggleFeature = (
           callback: toggleFocus,
           defaultHotkey: "alt-ctrl-shift-.",
         },
-        extensionAPI
-      )
+        extensionAPI,
+      ),
     );
     unloads.add(
       addCommand(
@@ -731,8 +432,8 @@ export const toggleFeature = (
           label: `DNP Jump Date Forward`,
           callback: jumpDateForward,
         },
-        extensionAPI
-      )
+        extensionAPI,
+      ),
     );
     unloads.add(
       addCommand(
@@ -740,8 +441,8 @@ export const toggleFeature = (
           label: `DNP Jump Date Backward`,
           callback: jumpDateBack,
         },
-        extensionAPI
-      )
+        extensionAPI,
+      ),
     );
     unloads.add(
       addCommand(
@@ -750,11 +451,12 @@ export const toggleFeature = (
           callback: jumpDateIcon,
           defaultHotkey: "alt-shift-j",
         },
-        extensionAPI
-      )
+        extensionAPI,
+      ),
     );
     component.initialize();
   } else {
+    closeDailyNotesPopup?.();
     cleanupHeadingObserver();
     unloads.forEach((u) => u());
     unloads.clear();
