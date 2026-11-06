@@ -34,14 +34,6 @@ Click on the name of the feature for more details and information about it.
 | [Tutorials](https://github.com/RoamJs/workbench/blob/main/docs/tutorials.md)                   | Learn how to use extensions and Roam basics right from within Roam.                                      |
 | [Weekly Notes](https://github.com/RoamJs/workbench/blob/main/docs/weekly-notes.md)             | Enabling workflows surrounding weekly note pages.                                                        |
 
-## Live Preview
-
-Read and edit a linked page without leaving your outline. Enable **Live Preview** in WorkBench's extension settings, then hover over a page link or tag. Pin useful pages, drag or resize their windows, and minimize them to their title bars. Pinned pages return after reloading Roam.
-
-Use the **Live Preview settings** cog to choose hover or modifier activation, delay, and a Small, Medium, Large, Full, or Custom width. Try changes immediately with a safe floating sample page, then save defaults for new previews. Existing windows keep their individual layout. Roam's built-in Desk remains available for docking.
-
-See the [Live Preview guide](docs/live-preview.md) for controls, keyboard access, persistence, and legacy-setting migration.
-
 ## Enabling Features
 
 All WorkBench features are **disabled** by default.
