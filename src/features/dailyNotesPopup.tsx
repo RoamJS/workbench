@@ -65,6 +65,7 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>): JSX.Element => {
     [],
   );
   const containerRef = useRef<HTMLDivElement>(null);
+  const autofocusAllowed = useRef(true);
   const [failed, setFailed] = useState(false);
   const [preview, setPreview] = useState<PreviewState>(() => {
     let stored: string | null = null;
@@ -119,8 +120,12 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>): JSX.Element => {
         const uid =
           getFirstChildUidByBlockUid(pageUid) ||
           (await createBlock({ node: { text: "" }, parentUid: pageUid }));
-        if (disposed) return;
+        if (disposed || !autofocusAllowed.current) return;
         const focusBlock = (): void => {
+          if (disposed || !autofocusAllowed.current) {
+            focusObserver?.disconnect();
+            return;
+          }
           const blockElement = el.querySelector<HTMLDivElement>(".roam-block");
           if (!blockElement || disposed) return;
           focusObserver?.disconnect();
@@ -156,9 +161,10 @@ const DailyNotesPopup = ({ onClose }: RoamOverlayProps<{}>): JSX.Element => {
         pinnable={false}
         label="popup"
         zIndex={200}
-        onChange={(patch) =>
-          setPreview((current) => ({ ...current, ...patch }))
-        }
+        onChange={(patch) => {
+          if (patch.minimized) autofocusAllowed.current = false;
+          setPreview((current) => ({ ...current, ...patch }));
+        }}
         onClose={onClose}
       >
         {failed && (

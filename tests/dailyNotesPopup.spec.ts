@@ -348,6 +348,24 @@ test("closing during native page loading cancels focus and unmounts after render
   }
 });
 
+test("minimizing during page loading cancels pending autofocus", async () => {
+  const s = setup({ delayed: true });
+  try {
+    s.api.component.toggleVisible();
+    await expect.poll(s.renders).toBe(1);
+    s.click("minimize");
+    s.finish();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(s.focus).toEqual([]);
+    expect(s.popup().dataset.minimized).toBe("true");
+    s.click("minimize");
+    expect(s.popup().querySelector(".roam-block")).not.toBeNull();
+    expect(s.focus).toEqual([]);
+  } finally {
+    await s.cleanup();
+  }
+});
+
 test("native rendering failure leaves close controls available", async () => {
   const s = setup({ fail: true });
   try {
