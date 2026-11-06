@@ -31,6 +31,17 @@ It's possible to assign a unique hotkey to individual commands, should you prefe
 - Daily Notes Page - Move a block to a Daily Notes Page using Natural Language Processing for dates
 - Copying block reference - with and without alias
 - Sort Child Blocks
+- Set shared default to collapsed / expanded — override the shared fold default, primarily for other people's blocks in multiplayer graphs. See below.
+
+### Shared fold defaults in multiplayer graphs
+
+Roam normally uses the last fold state left by a block's creator as that block's default state. **Set shared default to collapsed** and **Set shared default to expanded** let you override that default through Roam's API, including for blocks someone else created.
+
+These commands are primarily useful in multiplayer graphs. For your own blocks, ordinary folding already sets the default, so the commands usually add little.
+
+Enable **Command Palette+**, then run either `(WB)` command from the command palette or assign it a hotkey. Selected blocks take priority; when nothing is selected, the command uses the focused block. Only the targeted blocks change; their descendants keep their own defaults.
+
+Both actions also appear under **Plugins** when right-clicking a block bullet or a selection of blocks. Right-clicking a selected block applies the action to the selection; right-clicking a block outside the selection targets that block instead.
 
 ## Working with Sidebars
 

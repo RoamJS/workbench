@@ -9,6 +9,12 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 - Minor version bumps are released on a regular cadence.
 - Patch version bumps are for bugfixes and hotfixes.
 
+## [Unreleased]
+
+### Added
+
+- Command Palette+ commands to override blocks' shared fold default as collapsed or expanded, primarily for other people's blocks in multiplayer graphs. They act on selected blocks or the focused block and are also available from the block and multiselect right-click menus.
+
 ## [1.10.1] - 2026-11-04
 
 ### Fixed
