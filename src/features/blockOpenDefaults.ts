@@ -6,6 +6,12 @@ type PaletteCommand = {
   callback: () => Promise<void>;
 };
 
+type MultiselectContext = {
+  blocks: { "block-uid": string }[];
+  "read-only"?: boolean;
+  immutable?: boolean;
+};
+
 const getSelectedBlockUids = (): string[] => {
   const ui = window.roamAlphaAPI.ui as typeof window.roamAlphaAPI.ui & {
     multiselect?: { getSelected: () => { "block-uid": string }[] };
@@ -100,8 +106,17 @@ export const registerBlockOpenDefaults = ({
     });
     msContextMenu.addCommand({
       label: menuLabel,
-      callback: async () =>
-        setBlockOpenDefaults({ uids: getSelectedBlockUids(), open }),
+      callback: async (context?: MultiselectContext) => {
+        if (context?.["read-only"] || context?.immutable) return;
+        // Roam clears the live selection before invoking the menu callback.
+        const uids = context
+          ? context.blocks.map((block) => block["block-uid"])
+          : getSelectedBlockUids();
+        await setBlockOpenDefaults({
+          uids: [...new Set(uids.filter(Boolean))],
+          open,
+        });
+      },
     });
     unloads.push(
       () => blockContextMenu.removeCommand({ label: menuLabel }),

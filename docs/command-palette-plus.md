@@ -41,7 +41,7 @@ These commands are primarily useful in multiplayer graphs. For your own blocks, 
 
 Enable **Command Palette+**, then run either `(WB)` command from the command palette or assign it a hotkey. Selected blocks take priority; when nothing is selected, the command uses the focused block. Only the targeted blocks change; their descendants keep their own defaults.
 
-Both actions also appear under **Plugins** when right-clicking a block bullet or a selection of blocks. Right-clicking a selected block applies the action to the selection; right-clicking a block outside the selection targets that block instead.
+Both actions also appear under **Extensions** when right-clicking a block bullet, or **Plugins** when right-clicking a selection of blocks. Right-clicking a selected block applies the action to the selection; right-clicking a block outside the selection targets that block instead.
 
 ## Working with Sidebars
 

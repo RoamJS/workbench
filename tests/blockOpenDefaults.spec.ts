@@ -5,9 +5,14 @@ import fs from "node:fs";
 import path from "node:path";
 
 type Context = { "block-uid": string; "read-only?"?: boolean };
+type MultiselectContext = {
+  blocks: { "block-uid": string }[];
+  "read-only"?: boolean;
+  immutable?: boolean;
+};
 type Command = {
   label: string;
-  callback: (context?: Context) => Promise<void>;
+  callback: (context?: Context | MultiselectContext) => Promise<void>;
 };
 const createHarness = () => {
   const dom = new JSDOM("<body></body>");
@@ -137,7 +142,15 @@ for (const [word, open] of [
       { uid: "selected2", open },
     ]);
     h.updates.length = 0;
-    await h.selectionMenu.get(label)!.callback();
+    h.state.selected = [];
+    h.state.focused = "focused01";
+    await h.selectionMenu.get(label)!.callback({
+      blocks: [
+        { "block-uid": "selected1" },
+        { "block-uid": "selected2" },
+        { "block-uid": "selected2" },
+      ],
+    });
     expect(h.updates.map(({ block }) => block)).toEqual([
       { uid: "selected1", open },
       { uid: "selected2", open },
@@ -188,6 +201,20 @@ test("read-only context does not mutate a block", async () => {
     "block-uid": "readonly1",
     "read-only?": true,
   });
+  expect(h.updates).toEqual([]);
+  h.dom.window.close();
+});
+
+test("read-only or immutable multiselect context does not mutate blocks", async () => {
+  const h = createHarness();
+  for (const flag of ["read-only", "immutable"]) {
+    await h.selectionMenu
+      .get("(WB) Set shared default to collapsed")!
+      .callback({
+        blocks: [{ "block-uid": "readonly1" }],
+        [flag]: true,
+      });
+  }
   expect(h.updates).toEqual([]);
   h.dom.window.close();
 });
