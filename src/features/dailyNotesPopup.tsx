@@ -187,7 +187,7 @@ const toggleFocus = () => {
     selectionElement?.closest(".roamjs-daily-notes-popup");
   if (!popup) {
     const firstPopupBlock = document.querySelector<HTMLDivElement>(
-      ".roamjs-daily-notes-popup .rm-block-children .roam-block",
+      '.roamjs-daily-notes-popup [data-minimized="false"] .rm-block-children .roam-block',
     );
     if (firstPopupBlock) {
       const { blockUid, windowId } = getUids(firstPopupBlock);

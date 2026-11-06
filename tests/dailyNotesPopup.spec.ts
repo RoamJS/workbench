@@ -314,6 +314,26 @@ test("focus shortcut tolerates no selection and switches between popup and main 
   }
 });
 
+test("focus shortcut does not send focus into a minimized popup", async () => {
+  const s = setup();
+  try {
+    s.api.component.toggleVisible();
+    await expect.poll(() => s.focus.length).toBe(1);
+    s.click("minimize");
+    const main = s.dom.window.document.querySelector<HTMLElement>(
+      ".roam-article .roam-block",
+    )!;
+    main.tabIndex = 0;
+    main.focus();
+    s.dom.window.getSelection()!.removeAllRanges();
+    s.commands.get("Daily Notes Popup - Toggle Focus")!();
+    expect(s.focus).toEqual(["test-block"]);
+    expect(s.popup().dataset.minimized).toBe("true");
+  } finally {
+    await s.cleanup();
+  }
+});
+
 test("closing during native page loading cancels focus and unmounts after rendering", async () => {
   const s = setup({ delayed: true });
   try {
