@@ -38,6 +38,7 @@ import registerSmartBlocksCommand from "roamjs-components/util/registerSmartBloc
 import type { OnloadArgs } from "roamjs-components/types/native";
 import apiPost from "roamjs-components/util/apiPost";
 import getCommandPalette from "../utils/getCommandPalette";
+import { registerBlockOpenDefaults } from "./blockOpenDefaults";
 
 export let active = false;
 type ExtendAddCommandOptions = Omit<AddCommandOptions, "callback"> & {
@@ -599,6 +600,11 @@ const pullReferences = async (uids: string[], removeTags?: boolean) => {
 
 const unloads = new Set<() => void>();
 export const initialize = async (extensionAPI: OnloadArgs["extensionAPI"]) => {
+  unloads.add(
+    registerBlockOpenDefaults({
+      addPaletteCommand: (command) => addCommand(command, extensionAPI),
+    })
+  );
   // Commands are ordered in line with the docs at: https://roamjs.com/extensions/workbench/command_palette_plus
   addCommand(
     {
