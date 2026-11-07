@@ -19,7 +19,12 @@ import {
   subscribeSettings,
 } from "./livePreviewSettings";
 
-const NativePage = ({ uid }: { uid: string }): JSX.Element => {
+type PreviewTarget = Pick<PreviewState, "uid" | "title" | "kind">;
+
+const NativePreview = ({
+  uid,
+  kind,
+}: Pick<PreviewTarget, "uid" | "kind">): JSX.Element => {
   const host = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -27,7 +32,11 @@ const NativePage = ({ uid }: { uid: string }): JSX.Element => {
     if (!el) return;
     let disposed = false;
     // Roam owns this nested React root, including its editable block state.
-    const rendered = window.roamAlphaAPI.ui.components.renderPage({ uid, el });
+    const components = window.roamAlphaAPI.ui.components;
+    const rendered =
+      kind === "block"
+        ? components.renderBlock({ uid, el, "open?": true })
+        : components.renderPage({ uid, el });
     Promise.resolve(rendered).catch(() => {
       if (!disposed) setFailed(true);
     });
@@ -42,12 +51,13 @@ const NativePage = ({ uid }: { uid: string }): JSX.Element => {
           console.error("WorkBench could not unmount a preview", error)
         );
     };
-  }, [uid]);
+  }, [uid, kind]);
   return (
     <>
       {failed && (
         <p role="alert">
-          This page could not be opened. Close the preview and try again.
+          This {kind === "block" ? "block" : "page"} could not be opened. Close
+          the preview and try again.
         </p>
       )}
       <div ref={host} className="workbench-live-preview-page" />
@@ -72,16 +82,27 @@ const modifierHeld = (
     Shift: event.shiftKey,
   }[settings.modifier];
 
-const getLink = (target: EventTarget | null): HTMLElement | null =>
-  target instanceof Element
-    ? target.closest<HTMLElement>(".rm-page-ref")
-    : null;
+const BLOCK_REF = ".rm-block-ref[data-uid]";
 
-const getLinkTitle = (link: HTMLElement): string =>
-  link.getAttribute("data-tag") ||
-  link.closest("[data-link-title]")?.getAttribute("data-link-title") ||
-  link.getAttribute("data-link-title") ||
-  "";
+const getBlockTitle = (uid: string): string =>
+  typeof window.roamAlphaAPI.pull("[:block/string]", [":block/uid", uid])?.[
+    ":block/string"
+  ] === "string"
+    ? "Block reference"
+    : "";
+
+const getPreviewTarget = (link: HTMLElement): PreviewTarget | undefined => {
+  if (link.matches(BLOCK_REF)) {
+    const uid = link.getAttribute("data-uid");
+    const title = uid && getBlockTitle(uid);
+    return uid && title ? { uid, title, kind: "block" } : undefined;
+  }
+  const title =
+    link.getAttribute("data-tag") ||
+    link.closest("[data-link-title]")?.getAttribute("data-link-title");
+  const uid = title && getPageUidByPageTitle(title);
+  return uid && title ? { uid, title } : undefined;
+};
 
 const mountPreviews = ({
   extensionAPI,
@@ -98,7 +119,10 @@ const mountPreviews = ({
   let settings = initialSettings;
   let windows = readPinnedWindows(api, getPreviewViewport()).flatMap(
     (preview) => {
-      const title = getPageTitleByPageUid(preview.uid);
+      const title =
+        preview.kind === "block"
+          ? getBlockTitle(preview.uid)
+          : getPageTitleByPageUid(preview.uid);
       return title ? [{ ...preview, title }] : [];
     }
   );
@@ -110,6 +134,16 @@ const mountPreviews = ({
   let disposed = false;
   let interacting = false;
   const hovered = new Set<string>();
+
+  const getLink = (target: EventTarget | null): HTMLElement | null => {
+    if (!(target instanceof Element)) return null;
+    // Roam can route pointer events to the page link's wrapper inside a block reference.
+    return target.closest<HTMLElement>(
+      settings.includeBlockReferences
+        ? `.rm-page-ref, ${BLOCK_REF} [data-link-title], ${BLOCK_REF}`
+        : ".rm-page-ref"
+    );
+  };
 
   const persist = (): void => {
     window.clearTimeout(saveTimer);
@@ -210,7 +244,7 @@ const mountPreviews = ({
               persist();
             }}
           >
-            <NativePage uid={preview.uid} />
+            <NativePreview uid={preview.uid} kind={preview.kind} />
           </LivePreviewWindow>
         ))}
       </div>,
@@ -221,13 +255,11 @@ const mountPreviews = ({
     window.clearTimeout(openTimer);
     if (!source || !modifierHeld(event, settings)) return;
     const link = source;
-    const title = getLinkTitle(link);
-    if (!title) return;
     openTimer = window.setTimeout(() => {
       if (disposed || source !== link || !link.isConnected) return;
-      const uid = getPageUidByPageTitle(title);
-      if (!uid) return;
-      const existing = windows.find((preview) => preview.uid === uid);
+      const target = getPreviewTarget(link);
+      if (!target) return;
+      const existing = windows.find((preview) => preview.uid === target.uid);
       if (existing) {
         activate(existing.id);
         return;
@@ -235,9 +267,8 @@ const mountPreviews = ({
       if (focused() || interacting) return;
       windows = windows.filter((preview) => preview.pinned);
       windows.push({
-        id: `live-preview-${uid}`,
-        uid,
-        title,
+        ...target,
+        id: `live-preview-${target.uid}`,
         pinned: false,
         minimized: false,
         widthPreset: settings.widthPreset,
@@ -322,6 +353,7 @@ const mountPreviews = ({
   const unsubscribe = subscribeSettings(api, (next) => {
     settings = next;
     window.clearTimeout(openTimer);
+    if (source && getLink(source) !== source) source = null;
   });
   // Capture before Roam's nested React root handles events in rendered pages.
   document.addEventListener("pointerover", onOver, true);

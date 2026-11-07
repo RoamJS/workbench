@@ -24,7 +24,9 @@ For keyboard control, focus a preview's title bar and use the arrow keys to move
 
 Open the **Live Preview settings** cog in WorkBench. The white settings panel opens beside a floating editable sample page so you can try the controls without changing your graph. Move and resize the sample across the full browser window. Collapse the settings panel with its chevron for more space, then expand it to keep adjusting or save your changes.
 
-Under **Open a preview**, choose **Hover over a page link** or **Hold a key while hovering**, then set the modifier key and hover delay. The modifier can also be pressed while your pointer is already over a link.
+Under **Open a preview**, choose **Hover over a link** or **Hold a key while hovering**, then set the modifier key and hover delay. The modifier can also be pressed while your pointer is already over a link.
+
+Turn on **Include block references** and select **Save settings** to preview referenced blocks and their children with the same hover gesture. This option is off by default.
 
 Choose a width preset: **Small**, **Medium**, **Large**, or **Full**. Full uses the available workspace width and keeps the height you chose. Edit the width or resize horizontally to switch to **Custom**. Resizing only the height keeps the width preset.
 

@@ -163,6 +163,7 @@ const sanitizePinnedWindows = (value: unknown): PreviewState[] => {
     result.push({
       id: record.id,
       uid: record.uid,
+      kind: record.kind === "block" ? "block" : undefined,
       title:
         typeof record.title === "string" && record.title.trim()
           ? record.title

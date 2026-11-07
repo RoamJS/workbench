@@ -59,6 +59,7 @@ test("migrates legacy dimensions, modifier aliases, and a zero delay once", asyn
   const settings = await loadSettings(api, getLegacy);
   expect(settings).toEqual({
     trigger: "modifier",
+    includeBlockReferences: false,
     modifier: "Meta",
     delay: 0,
     widthPreset: "custom",
@@ -90,6 +91,19 @@ test("existing extension settings take precedence over legacy graph settings", a
   });
   expect(settings).toEqual(saved);
   expect(calls).toEqual([]);
+});
+
+test("existing settings default to page previews and the block reference toggle round-trips", async () => {
+  const { includeBlockReferences, ...oldSettings } = DEFAULT_SETTINGS;
+  const { api } = createApi({ [SETTINGS_KEY]: JSON.stringify(oldSettings) });
+  expect((await loadSettings(api)).includeBlockReferences).toBe(
+    includeBlockReferences
+  );
+  await saveSettings(api, { ...DEFAULT_SETTINGS, includeBlockReferences: true });
+  expect((await loadSettings(api)).includeBlockReferences).toBe(true);
+  expect(normalizeSettings({ includeBlockReferences: "true" })).toEqual(
+    DEFAULT_SETTINGS
+  );
 });
 
 for (const [alias, expected] of [

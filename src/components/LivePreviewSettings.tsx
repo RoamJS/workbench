@@ -14,6 +14,7 @@ import {
   Icon,
   InputGroup,
   Spinner,
+  Switch,
 } from "@blueprintjs/core";
 import { OnloadArgs } from "roamjs-components/types";
 import {
@@ -562,7 +563,7 @@ const LivePreviewSettings = ({
                         })
                       }
                       options={[
-                        { label: "Hover over a page link", value: "hover" },
+                        { label: "Hover over a link", value: "hover" },
                         {
                           label: "Hold a key while hovering",
                           value: "modifier",
@@ -589,6 +590,17 @@ const LivePreviewSettings = ({
                       />
                     </FormGroup>
                   )}
+                  <FormGroup>
+                    <Switch
+                      label="Include block references"
+                      checked={draft.includeBlockReferences}
+                      onChange={(event) =>
+                        updateSetting({
+                          includeBlockReferences: event.currentTarget.checked,
+                        })
+                      }
+                    />
+                  </FormGroup>
                   <div className="roamjs-workbench-live-preview-setting-label">
                     <label htmlFor={`${id}-delay`}>Hover delay</label>
                     <InputGroup

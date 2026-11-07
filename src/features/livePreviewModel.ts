@@ -2,6 +2,7 @@ export type WidthPreset = "small" | "medium" | "large" | "full" | "custom";
 
 export type LivePreviewSettings = {
   trigger: "hover" | "modifier";
+  includeBlockReferences: boolean;
   modifier: "Alt" | "Control" | "Meta" | "Shift";
   delay: number;
   widthPreset: WidthPreset;
@@ -20,6 +21,7 @@ export type PreviewState = {
   id: string;
   uid: string;
   title: string;
+  kind?: "page" | "block";
   geometry: Geometry;
   pinned: boolean;
   minimized: boolean;
@@ -33,6 +35,7 @@ export const EDGE = 8;
 
 export const DEFAULT_SETTINGS: LivePreviewSettings = {
   trigger: "hover",
+  includeBlockReferences: false,
   modifier: "Alt",
   delay: 250,
   widthPreset: "medium",
@@ -100,6 +103,7 @@ export const normalizeSettings = (value: unknown): LivePreviewSettings => {
         : NaN;
   return {
     trigger: record.trigger === "modifier" ? "modifier" : "hover",
+    includeBlockReferences: record.includeBlockReferences === true,
     modifier: normalizeModifier(record.modifier) ?? DEFAULT_SETTINGS.modifier,
     delay:
       Number.isFinite(delay) && delay >= 0
