@@ -12,7 +12,7 @@ Toggle the Daily Notes Popup module on inside WorkBench.
 
 To toggle your daily note page popup, hit `ALT` + `SHIFT` + `,`. The popup that appears is editable, without needing to leave your current location.
 
-The popup uses the same window style as Live Preview, with a visible title bar and controls. Drag the title bar to move it, or drag the lower-right resize corner to change its size. Windows stay within the browser, including across either sidebar.
+Drag the title bar to move the popup, or drag the lower-right corner to resize it. You can move the popup over either sidebar, and it stays within the browser window.
 
 Use **Minimize in place** to collapse the popup to its title bar without moving it. **Restore popup** brings back the same page and size. The popup stays open until you close it or toggle the command again; it does not need to be pinned.
 
