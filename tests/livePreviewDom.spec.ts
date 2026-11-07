@@ -3,12 +3,15 @@ import { JSDOM } from "jsdom";
 import { buildSync } from "esbuild";
 import path from "node:path";
 import { DEFAULT_SETTINGS } from "../src/features/livePreviewModel";
-import { SETTINGS_KEY } from "../src/features/livePreviewSettings";
+import {
+  PINNED_WINDOWS_KEY,
+  SETTINGS_KEY,
+} from "../src/features/livePreviewSettings";
 import { LIVE_PREVIEW_STYLES } from "../src/components/livePreviewStyles";
 
-test("native page event boundaries retain an unpinned preview until the pointer leaves its window", async () => {
+test("native previews keep hover boundaries and open block references only when enabled", async () => {
   const dom = new JSDOM(
-    '<div class="roam-app"><aside class="roam-sidebar-container"></aside><main class="roam-main"><span class="rm-page-ref" data-tag="Example">Example</span></main><aside id="right-sidebar"></aside></div>',
+    '<div class="roam-app"><aside class="roam-sidebar-container"></aside><main class="roam-main"><span class="rm-page-ref" data-tag="Example">Example</span><span class="rm-block-ref" data-uid="target-01"><strong>Referenced block</strong><span data-link-title="Example"><span class="rm-page-ref">Nested page link</span></span></span></main><aside id="right-sidebar"></aside></div>',
     { pretendToBeVisual: true }
   );
   const workspace = dom.window.document.querySelector(".roam-main")!;
@@ -66,7 +69,12 @@ test("native page event boundaries retain an unpinned preview until the pointer 
     },
   };
   dom.window.roamAlphaAPI = {
-    pull: () => ({ ":block/uid": "example-1", ":node/title": "Example" }),
+    pull: (pattern: string, ref: string[]) =>
+      pattern.includes(":block/string")
+        ? ref[1] === "target-01"
+          ? { ":block/string": "Referenced block" }
+          : null
+        : { ":block/uid": "example-1", ":node/title": "Example" },
     ui: {
       components: {
         renderPage: ({ el }: { el: HTMLElement }) => {
@@ -81,12 +89,29 @@ test("native page event boundaries retain an unpinned preview until the pointer 
           );
           el.appendChild(body);
         },
+        renderBlock: ({
+          el,
+          uid,
+          "open?": open,
+        }: {
+          el: HTMLElement;
+          uid: string;
+          "open?"?: boolean;
+        }) => {
+          if (open) el.dataset.renderedBlock = uid;
+        },
         unmountNode: () => undefined,
       },
     },
   };
   const compiled = buildSync({
-    entryPoints: [path.resolve(__dirname, "../src/features/livePreview.tsx")],
+    stdin: {
+      contents: `
+        export * from "./livePreview";
+        export { saveSettings } from "./livePreviewSettings";
+      `,
+      resolveDir: path.resolve(__dirname, "../src/features"),
+    },
     bundle: true,
     platform: "node",
     format: "cjs",
@@ -102,6 +127,10 @@ test("native page event boundaries retain an unpinned preview until the pointer 
     exports: {} as {
       toggleFeature: (flag: boolean, api: unknown) => void;
       getPreviewViewport: () => { width: number; height: number };
+      saveSettings: (
+        api: typeof api.settings,
+        settings: typeof DEFAULT_SETTINGS
+      ) => Promise<unknown>;
     },
   };
   new Function("require", "module", "exports", compiled.outputFiles[0].text)(
@@ -109,7 +138,7 @@ test("native page event boundaries retain an unpinned preview until the pointer 
     module,
     module.exports
   );
-  const { toggleFeature, getPreviewViewport } = module.exports;
+  const { toggleFeature, getPreviewViewport, saveSettings } = module.exports;
   const pointer = (
     target: Element,
     type: string,
@@ -165,8 +194,44 @@ test("native page event boundaries retain an unpinned preview until the pointer 
         () => dom.window.document.querySelectorAll("[data-preview-id]").length
       )
       .toBe(0);
+    const block = dom.window.document.querySelector(".rm-block-ref strong")!;
+    const renderedBlock = () =>
+      dom.window.document.querySelector('[data-rendered-block="target-01"]');
+    pointer(block, "pointerover", dom.window.document.body);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(renderedBlock()).toBeNull();
+
+    await saveSettings(api.settings, {
+      ...DEFAULT_SETTINGS,
+      delay: 0,
+      includeBlockReferences: true,
+    });
+    const nestedLink = dom.window.document.querySelector(
+      ".rm-block-ref [data-link-title]"
+    )!;
+    pointer(nestedLink, "pointerover", dom.window.document.body);
+    await expect
+      .poll(() => Boolean(dom.window.document.querySelector(".native-page-body")))
+      .toBe(true);
+    expect(renderedBlock()).toBeNull();
+
+    pointer(nestedLink, "pointerout", block);
+    pointer(block, "pointerover", nestedLink);
+    await expect.poll(() => Boolean(renderedBlock())).toBe(true);
+    dom.window.document
+      .querySelector<HTMLButtonElement>('button[aria-label="Pin preview"]')!
+      .click();
+    await expect
+      .poll(() => JSON.parse(values.get(PINNED_WINDOWS_KEY) ?? "[]"))
+      .toMatchObject([{ uid: "target-01", kind: "block", pinned: true }]);
+    toggleFeature(false, api);
+    toggleFeature(true, api);
+    await expect.poll(() => Boolean(renderedBlock())).toBe(true);
+    expect(renderedBlock()?.closest('[data-pinned="true"]')).not.toBeNull();
   } finally {
-    toggleFeature(false, api as Parameters<typeof toggleFeature>[1]);
+    const { act } = require("react-dom/test-utils") as typeof import("react-dom/test-utils");
+    act(() => toggleFeature(false, api));
+    await Promise.resolve();
     for (const key of globals) {
       const descriptor = previous.get(key);
       if (descriptor) Object.defineProperty(globalThis, key, descriptor);
