@@ -9,6 +9,12 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 - Minor version bumps are released on a regular cadence.
 - Patch version bumps are for bugfixes and hotfixes.
 
+## [Unreleased]
+
+### Added
+
+- Live Preview can open editable block references when **Include block references** is enabled.
+
 ## [1.11.0] - 2026-11-06
 
 ### Added
