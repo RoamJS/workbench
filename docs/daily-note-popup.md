@@ -2,7 +2,7 @@
 
 Daily Note Popup is a second window that you can quickly toggle open and closed to get at your daily notes page or any other page. It is often referred to as the "Roam within your Roam."
 
-![](media/short-demo-dnp.gif)
+https://github.com/user-attachments/assets/bffb504c-7b2c-460e-802c-fbe526d14125
 
 # How to Use
 
