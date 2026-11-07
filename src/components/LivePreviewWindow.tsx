@@ -17,6 +17,8 @@ export type LivePreviewWindowProps = {
   embedded?: boolean;
   bounds?: Viewport;
   zIndex?: number;
+  pinnable?: boolean;
+  label?: string;
   onPointerEnter?: () => void;
   onPointerLeave?: () => void;
   onFocus?: () => void;
@@ -45,6 +47,8 @@ const LivePreviewWindow = ({
   embedded = false,
   bounds,
   zIndex,
+  pinnable = true,
+  label = "preview",
   onPointerEnter,
   onPointerLeave,
   onFocus,
@@ -176,14 +180,14 @@ const LivePreviewWindow = ({
 
   const pinLabel = preview.pinned ? "Unpin preview" : "Pin preview";
   const minimizeLabel = preview.minimized
-    ? "Restore preview"
+    ? `Restore ${label}`
     : "Minimize in place";
 
   return (
     <section
       className="roamjs-workbench-live-preview-window"
       role="region"
-      aria-label={`${preview.title} preview`}
+      aria-label={`${preview.title} ${label}`}
       data-preview-id={preview.id}
       data-page-uid={preview.uid}
       data-pinned={preview.pinned}
@@ -208,7 +212,7 @@ const LivePreviewWindow = ({
         className="roamjs-workbench-live-preview-header flex"
         role="group"
         tabIndex={0}
-        aria-label={`Move ${preview.title} preview with arrow keys. Hold Shift for larger steps.`}
+        aria-label={`Move ${preview.title} ${label} with arrow keys. Hold Shift for larger steps.`}
         onPointerDown={(event) => startGesture({ event, resize: false })}
         onPointerMove={moveGesture}
         onPointerUp={endGesture}
@@ -233,18 +237,20 @@ const LivePreviewWindow = ({
           {preview.title}
         </span>
         <div className="roamjs-workbench-live-preview-controls flex">
-          <Tooltip content={pinLabel} hoverOpenDelay={500}>
-            <Button
-              minimal
-              small
-              icon={preview.pinned ? "unpin" : "pin"}
-              active={preview.pinned}
-              aria-label={pinLabel}
-              aria-pressed={preview.pinned}
-              data-action="pin"
-              onClick={() => onChange({ pinned: !preview.pinned })}
-            />
-          </Tooltip>
+          {pinnable && (
+            <Tooltip content={pinLabel} hoverOpenDelay={500}>
+              <Button
+                minimal
+                small
+                icon={preview.pinned ? "unpin" : "pin"}
+                active={preview.pinned}
+                aria-label={pinLabel}
+                aria-pressed={preview.pinned}
+                data-action="pin"
+                onClick={() => onChange({ pinned: !preview.pinned })}
+              />
+            </Tooltip>
+          )}
           <Tooltip content={minimizeLabel} hoverOpenDelay={500}>
             <Button
               minimal
@@ -257,12 +263,12 @@ const LivePreviewWindow = ({
               }
             />
           </Tooltip>
-          <Tooltip content="Close preview" hoverOpenDelay={500}>
+          <Tooltip content={`Close ${label}`} hoverOpenDelay={500}>
             <Button
               minimal
               small
               icon="cross"
-              aria-label="Close preview"
+              aria-label={`Close ${label}`}
               data-action="close"
               onClick={onClose}
             />
@@ -281,7 +287,7 @@ const LivePreviewWindow = ({
           small
           icon="maximize"
           className="roamjs-workbench-live-preview-resize"
-          aria-label="Resize preview with arrow keys. Hold Shift for larger steps."
+          aria-label={`Resize ${label} with arrow keys. Hold Shift for larger steps.`}
           title="Drag to resize. Arrow keys also work."
           onPointerDown={(event) => startGesture({ event, resize: true })}
           onPointerMove={moveGesture}

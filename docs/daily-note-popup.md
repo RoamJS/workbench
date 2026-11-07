@@ -2,7 +2,7 @@
 
 Daily Note Popup is a second window that you can quickly toggle open and closed to get at your daily notes page or any other page. It is often referred to as the "Roam within your Roam."
 
-![](media/short-demo-dnp.gif)
+https://github.com/user-attachments/assets/bffb504c-7b2c-460e-802c-fbe526d14125
 
 # How to Use
 
@@ -12,9 +12,13 @@ Toggle the Daily Notes Popup module on inside WorkBench.
 
 To toggle your daily note page popup, hit `ALT` + `SHIFT` + `,`. The popup that appears is editable, without needing to leave your current location.
 
-You can drag the window by clicking on the top bar. Resize the window by clicking and dragging the borders.
+Drag the title bar to move the popup, or drag the lower-right corner to resize it. You can move the popup over either sidebar, and it stays within the browser window.
 
-To toggle focus between the main window and the Daily Note Popup window, simply hit `ALT` + `SHIFT` + `CTRL` + `,`.
+Use **Minimize in place** to collapse the popup to its title bar without moving it. **Restore popup** brings back the same page and size. The popup stays open until you close it or toggle the command again; it does not need to be pinned.
+
+Focus the title bar and press the arrow keys to move it, or focus the resize corner and press the arrow keys to resize it. Hold `SHIFT` for larger steps. Its size and position are remembered in this browser when you close and reopen it, including layouts saved by earlier versions.
+
+To toggle focus between the main window and the Daily Note Popup window, simply hit `ALT` + `SHIFT` + `CTRL` + `.`.
 
 It's possible to assign a unique hotkey to individual commands, should you prefer to do so. To accomplish this, navigate to either `Settings` > `Hotkeys` or the Workench Extension Settings.
 

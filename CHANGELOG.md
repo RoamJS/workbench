@@ -9,11 +9,15 @@ and this project does not follow Semantic Versioning, here's what we do instead:
 - Minor version bumps are released on a regular cadence.
 - Patch version bumps are for bugfixes and hotfixes.
 
-## [Unreleased]
+## [1.12.0] - 2026-11-07
 
 ### Added
 
 - Live Preview can open editable block references when **Include block references** is enabled.
+
+### Changed
+
+- Daily Note Popup has a visible title bar and a lower-right resize handle. Move and resize it with the mouse or keyboard, and minimize and restore it in place. The popup remembers its size and position.
 
 ## [1.11.0] - 2026-11-06
 
