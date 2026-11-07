@@ -11,7 +11,7 @@ import { LIVE_PREVIEW_STYLES } from "../src/components/livePreviewStyles";
 
 test("native previews keep hover boundaries and open block references only when enabled", async () => {
   const dom = new JSDOM(
-    '<div class="roam-app"><aside class="roam-sidebar-container"></aside><main class="roam-main"><span class="rm-page-ref" data-tag="Example">Example</span><span class="rm-block-ref" data-uid="target-01"><strong>Referenced block</strong></span></main><aside id="right-sidebar"></aside></div>',
+    '<div class="roam-app"><aside class="roam-sidebar-container"></aside><main class="roam-main"><span class="rm-page-ref" data-tag="Example">Example</span><span class="rm-block-ref" data-uid="target-01"><strong>Referenced block</strong><span data-link-title="Example"><span class="rm-page-ref">Nested page link</span></span></span></main><aside id="right-sidebar"></aside></div>',
     { pretendToBeVisual: true }
   );
   const workspace = dom.window.document.querySelector(".roam-main")!;
@@ -206,7 +206,17 @@ test("native previews keep hover boundaries and open block references only when 
       delay: 0,
       includeBlockReferences: true,
     });
-    pointer(block, "pointerover", dom.window.document.body);
+    const nestedLink = dom.window.document.querySelector(
+      ".rm-block-ref [data-link-title]"
+    )!;
+    pointer(nestedLink, "pointerover", dom.window.document.body);
+    await expect
+      .poll(() => Boolean(dom.window.document.querySelector(".native-page-body")))
+      .toBe(true);
+    expect(renderedBlock()).toBeNull();
+
+    pointer(nestedLink, "pointerout", block);
+    pointer(block, "pointerover", nestedLink);
     await expect.poll(() => Boolean(renderedBlock())).toBe(true);
     dom.window.document
       .querySelector<HTMLButtonElement>('button[aria-label="Pin preview"]')!
@@ -221,6 +231,7 @@ test("native previews keep hover boundaries and open block references only when 
   } finally {
     const { act } = require("react-dom/test-utils") as typeof import("react-dom/test-utils");
     act(() => toggleFeature(false, api));
+    await Promise.resolve();
     for (const key of globals) {
       const descriptor = previous.get(key);
       if (descriptor) Object.defineProperty(globalThis, key, descriptor);

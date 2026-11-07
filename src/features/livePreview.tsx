@@ -137,10 +137,12 @@ const mountPreviews = ({
 
   const getLink = (target: EventTarget | null): HTMLElement | null => {
     if (!(target instanceof Element)) return null;
-    const blockRef = settings.includeBlockReferences
-      ? target.closest<HTMLElement>(BLOCK_REF)
-      : null;
-    return blockRef ?? target.closest<HTMLElement>(".rm-page-ref");
+    // Roam can route pointer events to the page link's wrapper inside a block reference.
+    return target.closest<HTMLElement>(
+      settings.includeBlockReferences
+        ? `.rm-page-ref, ${BLOCK_REF} [data-link-title], ${BLOCK_REF}`
+        : ".rm-page-ref"
+    );
   };
 
   const persist = (): void => {
