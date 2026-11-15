@@ -22,11 +22,9 @@ would create a page name of:
 [[04/19 2021 - 04/25 2021]]
 ```
 
-For format, check out [this page](https://date-fns.org/v2.21.1/docs/format) for the syntax on what each symbol means.
-
 ## ISO Week Format
 
-Weekly Notes supports ISO week-numbering formats. Use the following tokens for ISO week-based naming:
+Weekly Notes supports ISO week-numbering formats. Use these tokens for ISO week-based naming:
 
 | Token | Description | Example |
 |-------|-------------|---------|
@@ -35,19 +33,25 @@ Weekly Notes supports ISO week-numbering formats. Use the following tokens for I
 | `R` | ISO week-numbering year | `2024` |
 | `RRRR` | ISO week-numbering year, 4 digits | `2024` |
 
-**Examples:**
+For the week of December 23–29, 2024, these formats create the following page names:
 
 ```plain text
-{monday:RRRR}-W{monday:II}
+{monday:RRRR-'W'II}
 ```
-would create: `[[2024-W52]]`
+
+creates `[[2024-W52]]`, and
 
 ```plain text
-Week {monday:I} {monday:RRRR}
+Week {monday:I RRRR}
 ```
-would create: `[[Week 52 2024]]`
 
-**Note:** ISO weeks always start on Monday. ISO week 1 is the week containing the first Thursday of the year, so dates in late December may belong to week 1 of the following year. Use `R`/`RRRR` (ISO week-numbering year) instead of `yyyy` (calendar year) when using ISO week numbers to ensure consistency.
+creates `[[Week 52 2024]]`.
+
+Keep the ISO year and week number in the same placeholder. Each placeholder is parsed separately for previous and next week navigation. For example, the next week begins December 30, 2024, and is named `[[2025-W01]]` or `[[Week 1 2025]]` with the respective formats above.
+
+ISO weeks start on Monday, and week 1 contains the first Thursday of the year. Dates in late December can therefore belong to week 1 of the following ISO year. Use `R`/`RRRR` (ISO week-numbering year), rather than `yyyy` (calendar year), with ISO week numbers.
+
+For format, check out [this page](https://date-fns.org/v2.21.1/docs/format) for the syntax on what each symbol means.
 
 # Auto Tagging
 
